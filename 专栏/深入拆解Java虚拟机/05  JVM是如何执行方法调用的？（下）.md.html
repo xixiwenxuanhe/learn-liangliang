@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="05  JVM是如何执行方法调用的？（下）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>05  JVM是如何执行方法调用的？（下） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e8%a6%81%e5%ad%a6%e4%b9%a0Java%e8%99%9a%e6%8b%9f%e6%9c%ba%ef%bc%9f.md.html" id="00 开篇词  为什么我们要学习Java虚拟机？.md.html">00 开篇词  为什么我们要学习Java虚拟机？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/01%20%20Java%e4%bb%a3%e7%a0%81%e6%98%af%e6%80%8e%e4%b9%88%e8%bf%90%e8%a1%8c%e7%9a%84%ef%bc%9f.md.html" id="01  Java代码是怎么运行的？.md.html">01  Java代码是怎么运行的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/02%20%20Java%e7%9a%84%e5%9f%ba%e6%9c%ac%e7%b1%bb%e5%9e%8b.md.html" id="02  Java的基本类型.md.html">02  Java的基本类型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/03%20%20Java%e8%99%9a%e6%8b%9f%e6%9c%ba%e6%98%af%e5%a6%82%e4%bd%95%e5%8a%a0%e8%bd%bdJava%e7%b1%bb%e7%9a%84.md.html" id="03  Java虚拟机是如何加载Java类的.md.html">03  Java虚拟机是如何加载Java类的.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/04%20%20JVM%e6%98%af%e5%a6%82%e4%bd%95%e6%89%a7%e8%a1%8c%e6%96%b9%e6%b3%95%e8%b0%83%e7%94%a8%e7%9a%84%ef%bc%9f%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="04  JVM是如何执行方法调用的？（上）.md.html">04  JVM是如何执行方法调用的？（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/05%20%20JVM%e6%98%af%e5%a6%82%e4%bd%95%e6%89%a7%e8%a1%8c%e6%96%b9%e6%b3%95%e8%b0%83%e7%94%a8%e7%9a%84%ef%bc%9f%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="05  JVM是如何执行方法调用的？（下）.md.html">05  JVM是如何执行方法调用的？（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/06%20%20JVM%e6%98%af%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%bc%82%e5%b8%b8%e7%9a%84%ef%bc%9f.md.html" id="06  JVM是如何处理异常的？.md.html">06  JVM是如何处理异常的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/07%20%20JVM%e6%98%af%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%8f%8d%e5%b0%84%e7%9a%84%ef%bc%9f.md.html" id="07  JVM是如何实现反射的？.md.html">07  JVM是如何实现反射的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/08%20%20JVM%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0invokedynamic%e7%9a%84%ef%bc%9f%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="08  JVM是怎么实现invokedynamic的？（上）.md.html">08  JVM是怎么实现invokedynamic的？（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/09%20%20JVM%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0invokedynamic%e7%9a%84%ef%bc%9f%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="09  JVM是怎么实现invokedynamic的？（下）.md.html">09  JVM是怎么实现invokedynamic的？（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/10%20%20Java%e5%af%b9%e8%b1%a1%e7%9a%84%e5%86%85%e5%ad%98%e5%b8%83%e5%b1%80.md.html" id="10  Java对象的内存布局.md.html">10  Java对象的内存布局.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/11%20%20%e5%9e%83%e5%9c%be%e5%9b%9e%e6%94%b6%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="11  垃圾回收（上）.md.html">11  垃圾回收（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/12%20%20%e5%9e%83%e5%9c%be%e5%9b%9e%e6%94%b6%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12  垃圾回收（下）.md.html">12  垃圾回收（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/13%20%20Java%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b.md.html" id="13  Java内存模型.md.html">13  Java内存模型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/14%20%20Java%e8%99%9a%e6%8b%9f%e6%9c%ba%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0synchronized%e7%9a%84%ef%bc%9f.md.html" id="14  Java虚拟机是怎么实现synchronized的？.md.html">14  Java虚拟机是怎么实现synchronized的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/15%20%20Java%e8%af%ad%e6%b3%95%e7%b3%96%e4%b8%8eJava%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="15  Java语法糖与Java编译器.md.html">15  Java语法糖与Java编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/16%20%20%e5%8d%b3%e6%97%b6%e7%bc%96%e8%af%91%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="16  即时编译（上）.md.html">16  即时编译（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/17%20%20%e5%8d%b3%e6%97%b6%e7%bc%96%e8%af%91%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="17  即时编译（下）.md.html">17  即时编译（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/18%20%20%e5%8d%b3%e6%97%b6%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%b8%ad%e9%97%b4%e8%a1%a8%e8%be%be%e5%bd%a2%e5%bc%8f.md.html" id="18  即时编译器的中间表达形式.md.html">18  即时编译器的中间表达形式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/19%20%20Java%e5%ad%97%e8%8a%82%e7%a0%81%ef%bc%88%e5%9f%ba%e7%a1%80%e7%af%87%ef%bc%89.md.html" id="19  Java字节码（基础篇）.md.html">19  Java字节码（基础篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/20%20%20%e6%96%b9%e6%b3%95%e5%86%85%e8%81%94%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="20  方法内联（上）.md.html">20  方法内联（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/21%20%20%e6%96%b9%e6%b3%95%e5%86%85%e8%81%94%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="21  方法内联（下）.md.html">21  方法内联（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/22%20%20HotSpot%e8%99%9a%e6%8b%9f%e6%9c%ba%e7%9a%84intrinsic.md.html" id="22  HotSpot虚拟机的intrinsic.md.html">22  HotSpot虚拟机的intrinsic.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/23%20%20%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90.md.html" id="23  逃逸分析.md.html">23  逃逸分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/24%20%20%e5%ad%97%e6%ae%b5%e8%ae%bf%e9%97%ae%e7%9b%b8%e5%85%b3%e4%bc%98%e5%8c%96.md.html" id="24  字段访问相关优化.md.html">24  字段访问相关优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/25%20%20%e5%be%aa%e7%8e%af%e4%bc%98%e5%8c%96.md.html" id="25  循环优化.md.html">25  循环优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/26%20%20%e5%90%91%e9%87%8f%e5%8c%96.md.html" id="26  向量化.md.html">26  向量化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/27%20%20%e6%b3%a8%e8%a7%a3%e5%a4%84%e7%90%86%e5%99%a8.md.html" id="27  注解处理器.md.html">27  注解处理器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/28%20%20%e5%9f%ba%e5%87%86%e6%b5%8b%e8%af%95%e6%a1%86%e6%9e%b6JMH%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="28  基准测试框架JMH（上）.md.html">28  基准测试框架JMH（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/29%20%20%e5%9f%ba%e5%87%86%e6%b5%8b%e8%af%95%e6%a1%86%e6%9e%b6JMH%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="29  基准测试框架JMH（下）.md.html">29  基准测试框架JMH（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/30%20%20Java%e8%99%9a%e6%8b%9f%e6%9c%ba%e7%9a%84%e7%9b%91%e6%8e%a7%e5%8f%8a%e8%af%8a%e6%96%ad%e5%b7%a5%e5%85%b7%ef%bc%88%e5%91%bd%e4%bb%a4%e8%a1%8c%e7%af%87%ef%bc%89.md.html" id="30  Java虚拟机的监控及诊断工具（命令行篇）.md.html">30  Java虚拟机的监控及诊断工具（命令行篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/31%20%20Java%e8%99%9a%e6%8b%9f%e6%9c%ba%e7%9a%84%e7%9b%91%e6%8e%a7%e5%8f%8a%e8%af%8a%e6%96%ad%e5%b7%a5%e5%85%b7%ef%bc%88GUI%e7%af%87%ef%bc%89.md.html" id="31  Java虚拟机的监控及诊断工具（GUI篇）.md.html">31  Java虚拟机的监控及诊断工具（GUI篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/32%20%20JNI%e7%9a%84%e8%bf%90%e8%a1%8c%e6%9c%ba%e5%88%b6.md.html" id="32  JNI的运行机制.md.html">32  JNI的运行机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/33%20%20Java%20Agent%e4%b8%8e%e5%ad%97%e8%8a%82%e7%a0%81%e6%b3%a8%e5%85%a5.md.html" id="33  Java Agent与字节码注入.md.html">33  Java Agent与字节码注入.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/34%20%20Graal%ef%bc%9a%e7%94%a8Java%e7%bc%96%e8%af%91Java.md.html" id="34  Graal：用Java编译Java.md.html">34  Graal：用Java编译Java.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/35%20%20Truffle%ef%bc%9a%e8%af%ad%e8%a8%80%e5%ae%9e%e7%8e%b0%e6%a1%86%e6%9e%b6.md.html" id="35  Truffle：语言实现框架.md.html">35  Truffle：语言实现框架.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/36%20%20SubstrateVM%ef%bc%9aAOT%e7%bc%96%e8%af%91%e6%a1%86%e6%9e%b6.md.html" id="36  SubstrateVM：AOT编译框架.md.html">36  SubstrateVM：AOT编译框架.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/%e5%b0%be%e5%a3%b0%e4%b8%a8%e9%81%93%e9%98%bb%e4%b8%94%e9%95%bf%ef%bc%8c%e5%8a%aa%e5%8a%9b%e5%8a%a0%e9%a4%90.html.md.html" id="尾声丨道阻且长，努力加餐.html.md.html">尾声丨道阻且长，努力加餐.html.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e6%8b%86%e8%a7%a3Java%e8%99%9a%e6%8b%9f%e6%9c%ba/%e5%b7%a5%e5%85%b7%e7%af%87%20%20%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7%e4%bb%8b%e7%bb%8d.md.html" id="工具篇  常用工具介绍.md.html">工具篇  常用工具介绍.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="05  JVM是如何执行方法调用的？（下）" id="title">05  JVM是如何执行方法调用的？（下）</h1>
+<div><p>我在读博士的时候，最怕的事情就是被问有没有新的 Idea。有一次我被老板问急了，就随口说了一个。</p>
+<p>这个 Idea 究竟是什么呢，我们知道，设计模式大量使用了虚方法来实现多态。但是虚方法的性能效率并不高，所以我就说，是否能够在此基础上写篇文章，评估每一种设计模式因为虚方法调用而造成的性能开销，并且在文章中强烈谴责一下？</p>
+<p>当时呢，我老板教的是一门高级程序设计的课，其中有好几节课刚好在讲设计模式的各种好处。所以，我说完这个 Idea，就看到老板的神色略有不悦了，脸上写满了“小郑啊，你这是舍本逐末啊”，于是，我就连忙挽尊，说我是开玩笑的。</p>
+<p>在这里呢，我犯的错误其实有两个。第一，我不应该因为虚方法的性能效率，而放弃良好的设计。第二，通常来说，Java 虚拟机中虚方法调用的性能开销并不大，有些时候甚至可以完全消除。第一个错误是原则上的，这里就不展开了。至于第二个错误，我们今天便来聊一聊 Java 虚拟机中虚方法调用的具体实现。</p>
+<p>首先，我们来看一个模拟出国边检的小例子。</p>
+<pre><code>abstract class Passenger {
+  abstract void passThroughImmigration();
+  @Override
+  public String toString() { ... }
+}
+class ForeignerPassenger extends Passenger {
+	 @Override
+ 	void passThroughImmigration() { /* 进外国人通道 */ }
+}
+class ChinesePassenger extends Passenger {
+  @Override
+  void passThroughImmigration() { /* 进中国人通道 */ }
+  void visitDutyFreeShops() { /* 逛免税店 */ }
+}
+ 
+Passenger passenger = ...
+passenger.passThroughImmigration();
+</code></pre>
+<p>这里我定义了一个抽象类，叫做 Passenger，这个类中有一个名为 passThroughImmigration 的抽象方法，以及重写自 Object 类的 toString 方法。</p>
+<p>然后，我将 Passenger 粗暴地分为两种：ChinesePassenger 和 ForeignerPassenger。</p>
+<p>两个类分别实现了 passThroughImmigration 这个方法，具体来说，就是中国人走中国人通道，外国人走外国人通道。由于咱们储蓄较多，所以我在 ChinesePassenger 这个类中，还特意添加了一个叫做 visitDutyFreeShops 的方法。</p>
+<p>那么在实际运行过程中，Java 虚拟机是如何高效地确定每个 Passenger 实例应该去哪条通道的呢？我们一起来看一下。</p>
+<h2 id="1-虚方法调用">1. 虚方法调用</h2>
+<p>在上一篇中我曾经提到，Java 里所有非私有实例方法调用都会被编译成 invokevirtual 指令，而接口方法调用都会被编译成 invokeinterface 指令。这两种指令，均属于 Java 虚拟机中的虚方法调用。</p>
+<p>在绝大多数情况下，Java 虚拟机需要根据调用者的动态类型，来确定虚方法调用的目标方法。这个过程我们称之为动态绑定。那么，相对于静态绑定的非虚方法调用来说，虚方法调用更加耗时。</p>
+<p>在 Java 虚拟机中，静态绑定包括用于调用静态方法的 invokestatic 指令，和用于调用构造器、私有实例方法以及超类非私有实例方法的 invokespecial 指令。如果虚方法调用指向一个标记为 final 的方法，那么 Java 虚拟机也可以静态绑定该虚方法调用的目标方法。</p>
+<p>Java 虚拟机中采取了一种用空间换取时间的策略来实现动态绑定。它为每个类生成一张方法表，用以快速定位目标方法。那么方法表具体是怎样实现的呢？</p>
+<h2 id="2-方法表">2. 方法表</h2>
+<p>在介绍那篇类加载机制的链接部分中，我曾提到类加载的准备阶段，它除了为静态字段分配内存之外，还会构造与该类相关联的方法表。</p>
+<p>这个数据结构，便是 Java 虚拟机实现动态绑定的关键所在。下面我将以 invokevirtual 所使用的虚方法表（virtual method table，vtable）为例介绍方法表的用法。invokeinterface 所使用的接口方法表（interface method table，itable）稍微复杂些，但是原理其实是类似的。</p>
+<p>方法表本质上是一个数组，每个数组元素指向一个当前类及其祖先类中非私有的实例方法。</p>
+<p>这些方法可能是具体的、可执行的方法，也可能是没有相应字节码的抽象方法。方法表满足两个特质：其一，子类方法表中包含父类方法表中的所有方法；其二，子类方法在方法表中的索引值，与它所重写的父类方法的索引值相同。</p>
+<p>我们知道，方法调用指令中的符号引用会在执行之前解析成实际引用。对于静态绑定的方法调用而言，实际引用将指向具体的目标方法。对于动态绑定的方法调用而言，实际引用则是方法表的索引值（实际上并不仅是索引值）。</p>
+<p>在执行过程中，Java 虚拟机将获取调用者的实际类型，并在该实际类型的虚方法表中，根据索引值获得目标方法。这个过程便是动态绑定。</p>
+<p><img alt="img" src="assets/f1ff9dcb297a458981bd1d189a5b04c3.png"/></p>
+<p>在我们的例子中，Passenger 类的方法表包括两个方法：</p>
+<ul>
+<li>toString</li>
+<li>passThroughImmigration，</li>
+</ul>
+<p>它们分别对应 0 号和 1 号。之所以方法表调换了 toString 方法和 passThroughImmigration 方法的位置，是因为 toString 方法的索引值需要与 Object 类中同名方法的索引值一致。为了保持简洁，这里我就不考虑 Object 类中的其他方法。</p>
+<p>ForeignerPassenger 的方法表同样有两行。其中，0 号方法指向继承而来的 Passenger 类的 toString 方法。1 号方法则指向自己重写的 passThroughImmigration 方法。</p>
+<p>ChinesePassenger 的方法表则包括三个方法，除了继承而来的 Passenger 类的 toString 方法，自己重写的 passThroughImmigration 方法之外，还包括独有的 visitDutyFreeShops 方法。</p>
+<pre><code>Passenger passenger = ...
+passenger.passThroughImmigration();
+</code></pre>
+<p>这里，Java 虚拟机的工作可以想象为导航员。每当来了一个乘客需要出境，导航员会先问是中国人还是外国人（获取动态类型），然后翻出中国人 / 外国人对应的小册子（获取动态类型的方法表），小册子的第 1 页便写着应该到哪条通道办理出境手续（用 1 作为索引来查找方法表所对应的目标方法）。</p>
+<p>实际上，使用了方法表的动态绑定与静态绑定相比，仅仅多出几个内存解引用操作：访问栈上的调用者，读取调用者的动态类型，读取该类型的方法表，读取方法表中某个索引值所对应的目标方法。相对于创建并初始化 Java 栈帧来说，这几个内存解引用操作的开销简直可以忽略不计。</p>
+<p>那么我们是否可以认为虚方法调用对性能没有太大影响呢？</p>
+<p>其实是不能的，上述优化的效果看上去十分美好，但实际上仅存在于解释执行中，或者即时编译代码的最坏情况中。这是因为即时编译还拥有另外两种性能更好的优化手段：内联缓存（inlining cache）和方法内联（method inlining）。下面我便来介绍第一种内联缓存。</p>
+<h2 id="3-内联缓存">3. 内联缓存</h2>
+<p>内联缓存是一种加快动态绑定的优化技术。它能够缓存虚方法调用中调用者的动态类型，以及该类型所对应的目标方法。在之后的执行过程中，如果碰到已缓存的类型，内联缓存便会直接调用该类型所对应的目标方法。如果没有碰到已缓存的类型，内联缓存则会退化至使用基于方法表的动态绑定。</p>
+<p>在我们的例子中，这相当于导航员记住了上一个出境乘客的国籍和对应的通道，例如中国人，走了左边通道出境。那么下一个乘客想要出境的时候，导航员会先问是不是中国人，是的话就走左边通道。如果不是的话，只好拿出外国人的小册子，翻到第 1 页，再告知查询结果：右边。</p>
+<p>在针对多态的优化手段中，我们通常会提及以下三个术语。</p>
+<ol>
+<li>单态（monomorphic）指的是仅有一种状态的情况。</li>
+<li>多态（polymorphic）指的是有限数量种状态的情况。二态（bimorphic）是多态的其中一种。</li>
+<li>超多态（megamorphic）指的是更多种状态的情况。通常我们用一个具体数值来区分多态和超多态。在这个数值之下，我们称之为多态。否则，我们称之为超多态。</li>
+</ol>
+<p>对于内联缓存来说，我们也有对应的单态内联缓存、多态内联缓存和超多态内联缓存。单态内联缓存，顾名思义，便是只缓存了一种动态类型以及它所对应的目标方法。它的实现非常简单：比较所缓存的动态类型，如果命中，则直接调用对应的目标方法。</p>
+<p>多态内联缓存则缓存了多个动态类型及其目标方法。它需要逐个将所缓存的动态类型与当前动态类型进行比较，如果命中，则调用对应的目标方法。</p>
+<p>一般来说，我们会将更加热门的动态类型放在前面。在实践中，大部分的虚方法调用均是单态的，也就是只有一种动态类型。为了节省内存空间，Java 虚拟机只采用单态内联缓存。</p>
+<p>前面提到，当内联缓存没有命中的情况下，Java 虚拟机需要重新使用方法表进行动态绑定。对于内联缓存中的内容，我们有两种选择。一是替换单态内联缓存中的纪录。这种做法就好比 CPU 中的数据缓存，它对数据的局部性有要求，即在替换内联缓存之后的一段时间内，方法调用的调用者的动态类型应当保持一致，从而能够有效地利用内联缓存。</p>
+<p>因此，在最坏情况下，我们用两种不同类型的调用者，轮流执行该方法调用，那么每次进行方法调用都将替换内联缓存。也就是说，只有写缓存的额外开销，而没有用缓存的性能提升。</p>
+<p>另外一种选择则是劣化为超多态状态。这也是 Java 虚拟机的具体实现方式。处于这种状态下的内联缓存，实际上放弃了优化的机会。它将直接访问方法表，来动态绑定目标方法。与替换内联缓存纪录的做法相比，它牺牲了优化的机会，但是节省了写缓存的额外开销。</p>
+<p>具体到我们的例子，如果来了一队乘客，其中外国人和中国人依次隔开，那么在重复使用的单态内联缓存中，导航员需要反复记住上个出境的乘客，而且记住的信息在处理下一乘客时又会被替换掉。因此，倒不如一直不记，以此来节省脑细胞。</p>
+<p>虽然内联缓存附带内联二字，但是它并没有内联目标方法。这里需要明确的是，任何方法调用除非被内联，否则都会有固定开销。这些开销来源于保存程序在该方法中的执行位置，以及新建、压入和弹出新方法所使用的栈帧。</p>
+<p>对于极其简单的方法而言，比如说 getter/setter，这部分固定开销占据的 CPU 时间甚至超过了方法本身。此外，在即时编译中，方法内联不仅仅能够消除方法调用的固定开销，而且还增加了进一步优化的可能性，我们会在专栏的第二部分详细介绍方法内联的内容。</p>
+<h2 id="总结与实践">总结与实践</h2>
+<p>今天我介绍了虚方法调用在 Java 虚拟机中的实现方式。</p>
+<p>虚方法调用包括 invokevirtual 指令和 invokeinterface 指令。如果这两种指令所声明的目标方法被标记为 final，那么 Java 虚拟机会采用静态绑定。</p>
+<p>否则，Java 虚拟机将采用动态绑定，在运行过程中根据调用者的动态类型，来决定具体的目标方法。</p>
+<p>Java 虚拟机的动态绑定是通过方法表这一数据结构来实现的。方法表中每一个重写方法的索引值，与父类方法表中被重写的方法的索引值一致。</p>
+<p>在解析虚方法调用时，Java 虚拟机会纪录下所声明的目标方法的索引值，并且在运行过程中根据这个索引值查找具体的目标方法。</p>
+<p>Java 虚拟机中的即时编译器会使用内联缓存来加速动态绑定。Java 虚拟机所采用的单态内联缓存将纪录调用者的动态类型，以及它所对应的目标方法。</p>
+<p>当碰到新的调用者时，如果其动态类型与缓存中的类型匹配，则直接调用缓存的目标方法。</p>
+<p>否则，Java 虚拟机将该内联缓存劣化为超多态内联缓存，在今后的执行过程中直接使用方法表进行动态绑定。</p>
+<p>在今天的实践环节，我们来观测一下单态内联缓存和超多态内联缓存的性能差距。为了消除方法内联的影响，请使用如下的命令。</p>
+<pre><code>// Run with: java -XX:CompileCommand='dontinline,*.passThroughImmigration' Passenger
+public abstract class Passenger {
+	 abstract void passThroughImmigration();
+  public static void main(String[] args) {
+  	Passenger a = new ChinesePassenger();
+	Passenger b = new ForeignerPassenger();
+    long current = System.currentTimeMillis();
+    for (int i = 1; i &lt;= 2_000_000_000; i++) {
+      if (i % 100_000_000 == 0) {
+        long temp = System.currentTimeMillis();
+        System.out.println(temp - current);
+        current = temp;
+      }
+      Passenger c = (i &lt; 1_000_000_000) ? a : b;
+      c.passThroughImmigration();
+	}
+  }
+}
+class ChinesePassenger extends Passenger {
+  @Override void passThroughImmigration() {} 
+}
+class ForeignerPassenger extends Passenger {
+  @Override void passThroughImmigration() {}
+}
+</code></pre>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#026e6e6e3b363333323542656f636b6e2c616d6f" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935943393ed2d704',t:'MTc0NTUzNjEwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
