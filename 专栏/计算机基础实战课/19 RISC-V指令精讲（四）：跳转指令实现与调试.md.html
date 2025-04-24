@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="19 RISC-V指令精讲（四）：跳转指令实现与调试" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>19 RISC-V指令精讲（四）：跳转指令实现与调试 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e7%bb%83%e5%a5%bd%e5%9f%ba%e6%9c%ac%e5%8a%9f%ef%bc%8c%e4%bc%98%e7%a7%80%e5%b7%a5%e7%a8%8b%e5%b8%88%e6%88%90%e9%95%bf%e7%ac%ac%e4%b8%80%e6%ad%a5.md.html" id="00 开篇词 练好基本功，优秀工程师成长第一步.md.html">00 开篇词 练好基本功，优秀工程师成长第一步.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/01%20CISC%20&amp;%20RISC%ef%bc%9a%e4%bb%8e%e4%bd%95%e8%80%8c%e6%9d%a5%ef%bc%8c%e4%bd%95%e8%87%b3%e4%ba%8e%e6%ad%a4.md.html" id="01 CISC &amp; RISC：从何而来，何至于此.md.html">01 CISC &amp; RISC：从何而来，何至于此.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/02%20RISC%e7%89%b9%e6%80%a7%e4%b8%8e%e5%8f%91%e5%b1%95%ef%bc%9aRISC-V%e5%87%ad%e4%bb%80%e4%b9%88%e6%88%90%e4%b8%ba%e2%80%9c%e5%8d%8a%e5%af%bc%e4%bd%93%e8%a1%8c%e4%b8%9a%e7%9a%84Linux%e2%80%9d%ef%bc%9f.md.html" id="02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html">02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/03%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e5%bc%80%e5%90%af%e6%89%8b%e5%86%99CPU%e4%b9%8b%e6%97%85.md.html" id="03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html">03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/04%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%ba%8c%ef%bc%89_%20%e4%bb%a3%e7%a0%81%e6%98%af%e6%80%8e%e4%b9%88%e7%94%9f%e6%88%90%e5%85%b7%e4%bd%93%e7%94%b5%e8%b7%af%e7%9a%84%ef%bc%9f.md.html" id="04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html">04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/05%20%e6%8c%87%e4%bb%a4%e6%9e%b6%e6%9e%84%ef%bc%9aRISC-V%e5%9c%a8CPU%e8%ae%be%e8%ae%a1%e4%b8%8a%e5%88%b0%e5%ba%95%e6%9c%89%e5%93%aa%e4%ba%9b%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html">05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%8f%96%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0.md.html" id="06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html">06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/07%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e8%af%91%e7%a0%81%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="07 手写CPU（二）：如何实现指令译码模块？.md.html">07 手写CPU（二）：如何实现指令译码模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/08%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e6%89%a7%e8%a1%8c%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="08 手写CPU（三）：如何实现指令执行模块？.md.html">08 手写CPU（三）：如何实现指令执行模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/09%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0CPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e8%ae%bf%e5%ad%98%e9%98%b6%e6%ae%b5%ef%bc%9f.md.html" id="09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html">09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/10%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9aCPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e5%86%99%e5%9b%9e%e6%a8%a1%e5%9d%97%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html">10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/11%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e6%88%91%e4%bb%ac%e7%9a%84CPU%e8%b7%91%e8%b5%b7%e6%9d%a5%ef%bc%9f.md.html" id="11 手写CPU（六）：如何让我们的CPU跑起来？.md.html">11 手写CPU（六）：如何让我们的CPU跑起来？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/12%20QEMU%ef%bc%9a%e6%94%af%e6%8c%81RISC-V%e7%9a%84QEMU%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%ef%bc%9f.md.html" id="12 QEMU：支持RISC-V的QEMU如何构建？.md.html">12 QEMU：支持RISC-V的QEMU如何构建？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%b0%8f%e8%af%95%e7%89%9b%e5%88%80%ef%bc%9a%e8%b7%91%e9%80%9aRISC-V%e5%b9%b3%e5%8f%b0%e7%9a%84Hello%20World%e7%a8%8b%e5%ba%8f.md.html" id="13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html">13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b5%b0%e8%bf%9bC%e8%af%ad%e8%a8%80%ef%bc%9a%e9%ab%98%e7%ba%a7%e8%af%ad%e8%a8%80%e6%80%8e%e6%a0%b7%e6%8a%bd%e8%b1%a1%e6%89%a7%e8%a1%8c%e9%80%bb%e8%be%91%ef%bc%9f.md.html" id="14 走进C语言：高级语言怎样抽象执行逻辑？.md.html">14 走进C语言：高级语言怎样抽象执行逻辑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/15%20C%e4%b8%8e%e6%b1%87%e7%bc%96%ef%bc%9a%e6%8f%ad%e7%a7%98C%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e2%80%9c%e6%90%ac%e7%a0%96%e2%80%9d%e6%97%a5%e5%b8%b8.md.html" id="15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html">15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/16%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="16 RISC-V指令精讲（一）：算术指令实现与调试.md.html">16 RISC-V指令精讲（一）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/17%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="17 RISC-V指令精讲（二）：算术指令实现与调试.md.html">17 RISC-V指令精讲（二）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/18%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html">18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/19%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html">19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/20%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9a%e5%8e%9f%e5%ad%90%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="20 RISC-V指令精讲（五）：原子指令实现与调试.md.html">20 RISC-V指令精讲（五）：原子指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/21%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%8a%a0%e8%bd%bd%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="21 RISC-V指令精讲（六）：加载指令实现与调试.md.html">21 RISC-V指令精讲（六）：加载指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/22%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%83%ef%bc%89%ef%bc%9a%e8%ae%bf%e5%ad%98%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="22 RISC-V指令精讲（七）：访存指令实现与调试.md.html">22 RISC-V指令精讲（七）：访存指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/23%20%e5%86%85%e5%ad%98%e5%9c%b0%e5%9d%80%e7%a9%ba%e9%97%b4%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e5%9c%b0%e5%9d%80%e7%9a%84%e4%b8%89%e7%a7%8d%e4%ba%a7%e7%94%9f%e6%96%b9%e5%bc%8f.md.html" id="23 内存地址空间：程序中地址的三种产生方式.md.html">23 内存地址空间：程序中地址的三种产生方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/24%20%e8%99%9a%e5%ae%9e%e7%bb%93%e5%90%88%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%e5%92%8c%e7%89%a9%e7%90%86%e5%86%85%e5%ad%98.md.html" id="24 虚实结合：虚拟内存和物理内存.md.html">24 虚实结合：虚拟内存和物理内存.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/25%20%e5%a0%86&amp;%e6%a0%88%ef%bc%9a%e5%a0%86%e4%b8%8e%e6%a0%88%e7%9a%84%e5%8c%ba%e5%88%ab%e5%92%8c%e5%ba%94%e7%94%a8.md.html" id="25 堆&amp;栈：堆与栈的区别和应用.md.html">25 堆&amp;栈：堆与栈的区别和应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/26%20%e5%bb%b6%e8%bf%9f%e5%88%86%e9%85%8d%ef%bc%9a%e6%8f%90%e9%ab%98%e5%86%85%e5%ad%98%e5%88%a9%e7%94%a8%e7%8e%87%e7%9a%84%e4%b8%89%e7%a7%8d%e6%9c%ba%e5%88%b6.md.html" id="26 延迟分配：提高内存利用率的三种机制.md.html">26 延迟分配：提高内存利用率的三种机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/27%20%e5%ba%94%e7%94%a8%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e7%9a%84%e5%ba%94%e7%94%a8%e4%b8%8e%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86.md.html" id="27 应用内存管理：Linux的应用与内存管理.md.html">27 应用内存管理：Linux的应用与内存管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/28%20%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6%ef%bc%9a%e5%ba%94%e7%94%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%83%bd%e5%b9%b6%e8%a1%8c%e6%89%a7%e8%a1%8c%ef%bc%9f.md.html" id="28 进程调度：应用为什么能并行执行？.md.html">28 进程调度：应用为什么能并行执行？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/29%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="29 应用间通信（一）：详解Linux进程IPC.md.html">29 应用间通信（一）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/30%20%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="30  应用间通信（二）：详解Linux进程IPC.md.html">30  应用间通信（二）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/31%20%e5%a4%96%e8%ae%be%e9%80%9a%e4%bf%a1%ef%bc%9aIO%20Cache%e4%b8%8eIO%e8%b0%83%e5%ba%a6.md.html" id="31 外设通信：IO Cache与IO调度.md.html">31 外设通信：IO Cache与IO调度.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/32%20IO%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%a4%9a%e4%b8%aa%e5%a4%96%e8%ae%be%ef%bc%9f.md.html" id="32 IO管理：Linux如何管理多个外设？.md.html">32 IO管理：Linux如何管理多个外设？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/33%20lotop%e4%b8%8elostat%e5%91%bd%e4%bb%a4%ef%bc%9a%e8%81%8a%e8%81%8a%e5%91%bd%e4%bb%a4%e8%83%8c%e5%90%8e%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%8e%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86.md.html" id="33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html">33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/34%20%e6%96%87%e4%bb%b6%e4%bb%93%e5%ba%93%ef%bc%9a%e5%88%9d%e8%af%86%e6%96%87%e4%bb%b6%e4%b8%8e%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f.md.html" id="34 文件仓库：初识文件与文件系统.md.html">34 文件仓库：初识文件与文件系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/35%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 Linux文件系统（一）：Linux如何存放文件？.md.html">35 Linux文件系统（一）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/36%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="36 Linux文件系统（二）：Linux如何存放文件？.md.html">36 Linux文件系统（二）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/37%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e5%a4%9a%e8%bf%9b%e7%a8%8b%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html">37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/38%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e8%bf%9b%e7%a8%8b%e9%80%9a%e4%bf%a1%e4%b8%8e%e7%bd%91%e7%bb%9c%e6%b8%b2%e6%9f%93%e8%af%a6%e8%a7%a3.md.html" id="38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html">38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/39%20%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%ef%bc%9aV8%20%e6%89%a7%e8%a1%8c%20JS%20%e4%bb%a3%e7%a0%81%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b.md.html" id="39 源码解读：V8 执行 JS 代码的全过程.md.html">39 源码解读：V8 执行 JS 代码的全过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/40%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html">40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/41%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html">41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/42%20%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%ef%bc%9a%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%e5%b7%a5%e5%85%b7eBPF%e5%92%8c%e8%b0%83%e4%bc%98%e6%96%b9%e6%b3%95.md.html" id="42 性能调优：性能调优工具eBPF和调优方法.md.html">42 性能调优：性能调优工具eBPF和调优方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%85%88%e7%9d%b9%e4%b8%ba%e5%bf%ab%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e9%a1%b9%e7%9b%ae%e6%95%88%e6%9e%9c%e6%bc%94%e7%a4%ba.md.html" id="先睹为快：迷你CPU项目效果演示.md.html">先睹为快：迷你CPU项目效果演示.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e4%ba%91%e8%ae%a1%e7%ae%97%e5%9f%ba%e7%a1%80%ef%bc%9a%e8%87%aa%e5%b7%b1%e5%8a%a8%e6%89%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e6%ac%beIAAS%e8%99%9a%e6%8b%9f%e5%8c%96%e5%b9%b3%e5%8f%b0.md.html" id="加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html">加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html">加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html">加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e8%b0%88%e8%b0%88%e5%ae%b9%e5%99%a8%e4%ba%91%e4%b8%8e%e5%92%8cCaaS%e5%b9%b3%e5%8f%b0.md.html" id="加餐04 谈谈容器云与和CaaS平台.md.html">加餐04 谈谈容器云与和CaaS平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9005%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%be%ae%e6%9c%8d%e5%8a%a1%e4%b8%8e%e6%99%ba%e8%83%bdSaaS.md.html" id="加餐05 分布式微服务与智能SaaS.md.html">加餐05 分布式微服务与智能SaaS.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9201%20%e7%9f%a5%e8%af%86%e6%8c%91%e6%88%98%e8%b5%9b%ef%bc%9a%e6%a3%80%e9%aa%8c%e4%b8%80%e4%b8%8b%e5%ad%a6%e4%b9%a0%e6%88%90%e6%9e%9c%e5%90%a7%ef%bc%81.md.html" id="国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html">国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9202%20%e6%9d%a5%e8%87%aa%e8%af%be%e4%bb%a3%e8%a1%a8%e7%9a%84%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a.md.html" id="国庆策划02 来自课代表的学习锦囊.md.html">国庆策划02 来自课代表的学习锦囊.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9203%20%e6%8f%ad%e7%a7%98%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%e6%93%8d%e4%bd%9c%e5%92%8c%e6%a0%88%e4%bf%9d%e6%8a%a4%e6%9c%ba%e5%88%b6.md.html" id="国庆策划03 揭秘代码优化操作和栈保护机制.md.html">国庆策划03 揭秘代码优化操作和栈保护机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e6%b8%a9%e6%95%85%e7%9f%a5%e6%96%b0%20%e6%80%9d%e8%80%83%e9%a2%98%e5%8f%82%e8%80%83%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="温故知新 思考题参考答案（一）.md.html">温故知新 思考题参考答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%91%e6%98%af%e6%80%8e%e6%a0%b7%e5%ad%a6%e4%b9%a0Verilog%e7%9a%84%ef%bc%9f.md.html" id="用户故事 我是怎样学习Verilog的？.md.html">用户故事 我是怎样学习Verilog的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%bf%83%e8%8b%a5%e6%9c%89%e6%89%80%e5%90%91%e5%be%80%ef%bc%8c%e4%bd%95%e6%83%a7%e9%81%93%e9%98%bb%e4%b8%94%e9%95%bf.md.html" id="结束语 心若有所向往，何惧道阻且长.md.html">结束语 心若有所向往，何惧道阻且长.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="19 RISC-V指令精讲（四）：跳转指令实现与调试" id="title">19 RISC-V指令精讲（四）：跳转指令实现与调试</h1>
+<div><p>你好，我是LMOS。</p>
+<p>前面我们学习了无条件跳转指令，但是在一些代码实现里，我们必须根据条件的判断状态进行跳转。比如高级语言中的if-else 语句，这是一个典型程序流程控制语句，它能根据条件状态执行不同的代码。这种语句落到指令集层，就需要有根据条件状态进行跳转的指令来支持，这类指令我们称为有条件跳转指令。</p>
+<p>这节课，我们就来学习这些有条件跳转指令。在RISC-V指令集中，一共有6条有条件跳转指令，分别是beq、bne、blt、bltu、bge、bgeu。</p>
+<p>这节课的配套代码，你可以从<a href="https://gitee.com/lmos/Geek-time-computer-foundation/tree/master/lesson18~19" target="_blank">这里</a>下载。</p>
+<h2 id="比较数据是否相等-beq和bne指令">比较数据是否相等：beq和bne指令</h2>
+<p>我们首先来看看条件相等跳转和条件不等跳转指令，即beq指令和bne指令，它们的汇编代码书写形式如下所示：</p>
+<pre><code>beq rs1，rs2，imm
+#beq 条件相等跳转指令
+#rs1 源寄存器1
+#rs2 源寄存器2
+#imm 立即数
+bne rs1，rs2，imm
+#bne 条件不等跳转指令
+#rs1 源寄存器1
+#rs2 源寄存器2
+#imm 立即数
+</code></pre>
+<p>上述代码中，rs1、rs2可以是任何通用寄存器，imm是立即数（也可称为偏移量），占用13位二进制编码。请注意，<strong>beq指令和bne指令没有目标寄存器，就不会回写结果。</strong></p>
+<p>我们用伪代码描述一下beq指令和bne指令完成的操作。</p>
+<pre><code>//beq
+if(rs1 == rs2) pc = pc + 符号扩展（imm &lt;&lt; 1）
+//bne
+if(rs1 != rs2) pc = pc + 符号扩展（imm &lt;&lt; 1）
+</code></pre>
+<p>你可以这样理解这两个指令。在rs1、rs2寄存器的数据相等时，beq指令就会跳转到标号为imm的地方运行。而rs1、rs2寄存器的数据不相等时，bne指令就会跳转到imm标号处运行。</p>
+<p>下面我们一起写代码来验证。在工程目录下，我们需要建立一个beq.S文件，在文件里用汇编写上beq_ins、bne_ins函数，代码如下所示：</p>
+<pre><code>.global beq_ins
+beq_ins:
+    beq a0，a1，imm_l1          #a0==a1，跳转到imm_l1地址处开始运行
+    mv a0，zero                 #a0=0
+    jr ra                       #函数返回    
+imm_l1:
+    addi a0，zero，1            #a0=1
+    jr ra                       #函数返回
+
+.global bne_ins
+bne_ins:
+    bne a0，a1，imm_l2          #a0!=a1，跳转到imm_l2地址处开始运行
+    mv a0，zero                 #a0=0
+    jr ra                       #函数返回    
+imm_l2:
+    addi a0，zero，1            #a0=1
+    jr ra                       #函数返回    
+</code></pre>
+<p>我们先看代码里的 <strong>beq_ins函数</strong>完成了什么操作，如果a0和a1相等，则跳转到imm_l1处，将a0置1并返回，否则继续顺序执行，将a0置0并返回。然后，我们再看下 <strong>bne_ins函数</strong>的操作，如果a0和a1不相等则跳转到imm_l2处，将a0置1并返回，否则继续顺序执行将a0置0并返回。</p>
+<p>我们在main.c文件中声明一下这两个函数并调用它们，然后用VSCode打开工程目录，按下“F5”键来调试，情况如下所示：</p>
+<p><img alt="图片" src="assets/49f58deaf397223dc8beac03db98ae93.jpg"/></p>
+<p>上图是执行“beq a0，a1，imm_l1”指令后的状态。由于a0、a1寄存器内容不相等，所以没有跳转到imm_l1处运行，而是继续顺序执行beq后面的下一条指令，最后返回到main函数中。</p>
+<p>函数返回结果如下图所示：</p>
+<p><img alt="图片" src="assets/9de3e01df935093db045340ef3b72d0f.jpg"/></p>
+<p>从图里我们能看到，首先会由main函数调用beq_ins函数，然后调用printf输出返回的结果，在终端中的输出为0。这个结果在我们的预料之中，也验证了beq指令的效果和我们之前描述的一致。</p>
+<p>下面我们继续调试，就会进入bne_ins函数中，如下所示：</p>
+<p><img alt="图片" src="assets/e25ea97a9e52f1af1e524ca700a98259.jpg"/></p>
+<p>上图中是执行“bne a0，a1，imm_l2”指令之后的状态。同样因为a0、a1寄存器内容不相等，而bne指令是不相等就跳转。这时程序会直接跳转到imm_l2处运行，执行addi a0，zero，1指令，将a0寄存器置为1后，返回到main函数中，如下所示：</p>
+<p><img alt="图片" src="assets/cb69e671438f856f16f7edb3fd038d43.jpg"/></p>
+<p>上图中第二个printf函数打印出bne_ins函数返回的结果，输出为1。bne指令会因为数据相等而跳转，将a0寄存器置为1，导致返回值为1，这个结果是正确的。</p>
+<p>经过上面的调试验证，我们不难发现：<strong>其实bne是beq的相反操作，作为一对指令搭配使用，完成相等和不相等的流程控制。</strong></p>
+<h2 id="小于则跳转-blt和bltu指令">小于则跳转：blt和bltu指令</h2>
+<p>有了bqe、bne有条件跳转指令后，就能实现C语言 ==和 != 的比较运算符的功能。但这还不够，除了比较数据的相等和不等，我们还希望实现比较数据的大小这个功能。</p>
+<p>这就要说到小于则跳转的指令，即blt指令与bltu指令，bltu指令是blt的无符号数版本。它们的汇编代码书写形式如下：</p>
+<pre><code>blt rs1，rs2，imm
+#blt 条件小于跳转指令
+#rs1 源寄存器1
+#rs2 源寄存器2
+#imm 立即数
+bltu rs1，rs2，imm
+#bltu 无符号数条件小于跳转指令
+#rs1 源寄存器1
+#rs2 源寄存器2
+#imm 立即数
+</code></pre>
+<p>和bqe、bne指令一样，上述代码中rs1、rs2可以是任何通用寄存器，imm是立即数（也可称为偏移量），占用13位二进制编码，它们同样没有目标寄存器，不会回写结果。</p>
+<p>blt指令和bltu指令所完成的操作，可以用后面的伪代码描述：</p>
+<pre><code>//blt
+if(rs1 &lt; rs2) pc = pc + 符号扩展（imm &lt;&lt; 1）
+//bltu
+if((无符号)rs1 &lt; (无符号)rs2) pc = pc + 符号扩展（imm &lt;&lt; 1）
+</code></pre>
+<p>你可以这样理解这两个指令。当rs1小于rs2时且rs1、rs2中为有符号数据，blt指令就会跳转到imm标号处运行。而当rs1小于rs2时且rs1、rs2中为无符号数据，bltu指令就会跳转到imm标号处运行。</p>
+<p>我们同样通过写代码验证一下，加深理解。在beq.S文件中，我们用汇编写上blt_ins、bltu_ins函数，代码如下所示：</p>
+<pre><code>.global blt_ins
+blt_ins:
+    blt a0，a1，imm_l3          #a0&lt;a1，跳转到imm_l3地址处开始运行
+    mv a0，zero                 #a0=0
+    jr ra                       #函数返回    
+imm_l3:
+    addi a0，zero，1            #a0=1
+    jr ra                       #函数返回
+
+.global bltu_ins
+bltu_ins:
+    bltu a0，a1，imm_l4         #a0&lt;a1，跳转到imm_l4地址处开始运行
+    mv a0，zero                 #a0=0
+    jr ra                       #函数返回    
+imm_l4:
+    addi a0，zero，1            #a0=1
+    jr ra                       #函数返回    
+</code></pre>
+<p>blt_ins函数都做了什么呢？如果a0小于a1，则跳转到imm_l3处，将a0置1并返回，否则继续顺序执行将a0置0并返回。</p>
+<p>接着我们来看bltu_ins函数的操作，如果a0中的无符号数小于a1中的无符号数，程序就会跳转到imm_l4处，将a0置1并返回，否则继续顺序执行，将a0置0并返回。</p>
+<p>我们还是用VSCode打开工程目录，按下“F5”键来调试验证。下图是执行“blt a0,a1,imm_l3”指令之后的状态。</p>
+<p><img alt="图片" src="assets/de83yyfa2b78a2befbc8c147e6007d2b.jpg"/></p>
+<p>由于a0中的有符号数小于a1中的有符号数，而blt指令是小于就跳转，这时程序会直接跳转到imm_l3处运行，执行addi a0，zero，1指令，将a0寄存器置为1后，返回到main函数中。返回结果如下所示：</p>
+<p><img alt="图片" src="assets/52a76a672d7439067fb89f47888409de.jpg"/></p>
+<p>对照上图可以发现，main函数先调用了blt_ins函数，然后调用printf在终端上打印返回的结果，输出为1。这个结果同样跟我们预期的一样，也验证了blt指令的功能确实是小于则跳转。</p>
+<p>我们再接再厉，继续调试，进入bltu_ins函数中，如下所示：</p>
+<p><img alt="图片" src="assets/084212450c4ba63965e7e2a041d82c43.jpg"/></p>
+<p>图里的代码表示执行“bltu a0，a1，imm_l4”指令之后的状态。</p>
+<p>由于bltu把a0、a1中的数据当成无符号数，所以a0的数据小于a1的数据，而bltu指令是小于就跳转，这时程序就会跳转到imm_l4处运行，执行addi a0，zero，1指令，将a0寄存器置为1后，就会返回到main函数中。</p>
+<p>对应的跳转情况，你可以对照一下后面的截图：</p>
+<p><img alt="图片" src="assets/577245249a17da3579a7b7af1a024a2e.jpg"/></p>
+<p>我们看到上图中调用bltu_ins函数传递的参数是3和-1，应该返回0才对。然而printf在终端上输出为1，这个结果是不是出乎你的意料呢？</p>
+<p>我们来分析一下原因，没错，这是因为bltu_ins函数<strong>会把两个参数都当成无符号数据</strong>，把-1当成无符号数是0xffffffff，远大于3。所以这里返回1，反而是bltu指令正确的运算结果。</p>
+<h2 id="大于等于则跳转-bge和bgeu指令">大于等于则跳转：bge和bgeu指令</h2>
+<p>有了小于则跳转的指令，我们还是需要大于等于则跳转的指令，这样才可以在C语言中写出类似”a &gt;= b”这种表达式。在RISC-V指令中，为我们提供了bge、bgeu指令，它们分别是有符号数大于等于则跳转的指令和无符号数大于等于则跳转的指令。</p>
+<p>这是最后两条有条件跳转指令，它们的汇编代码形式如下：</p>
+<pre><code>bge rs1，rs2，imm
+#bge 条件大于等于跳转指令
+#rs1 源寄存器1
+#rs2 源寄存器2
+#imm 立即数
+bgeu rs1，rs2，imm
+#bgeu 无符号数条件大于等于跳转指令
+#rs1 源寄存器1
+#rs2 源寄存器2
+#imm 立即数
+</code></pre>
+<p>代码规范和前面四条指令都相同，这里不再重复。</p>
+<p>下面我们用伪代码描述一下bge、bgeu指令，如下所示：</p>
+<pre><code>//bge
+if(rs1 &gt;= rs2) pc = pc + 符号扩展（imm &lt;&lt; 1）
+//bgeu
+if((无符号)rs1 &gt;= (无符号)rs2) pc = pc + 符号扩展（imm &lt;&lt; 1）
+</code></pre>
+<p>我们看完伪代码就能大致理解这两个指令的操作了。当rs1大于等于rs2，且rs1、rs2中为有符号数据时，bge指令就会跳转到imm标号处运行。而当rs1大于等于rs2时且rs1、rs2中为无符号数据，bgeu指令就会跳转到imm标号处运行。</p>
+<p>我们继续在beq.S文件中用汇编写上bge_ins、bgeu_ins函数，进行调试验证，代码如下所示：</p>
+<pre><code>.global bge_ins
+bge_ins:
+    bge a0，a1，imm_l5          #a0&gt;=a1，跳转到imm_l5地址处开始运行
+    mv a0，zero                 #a0=0
+    jr ra                       #函数返回    
+imm_l5:
+    addi a0，zero，1            #a0=1
+    jr ra                       #函数返回
+
+.global bgeu_ins
+bgeu_ins:
+    bgeu a0，a1，imm_l6         #a0&gt;=a1，跳转到imm_l6地址处开始运行
+    mv a0，zero                 #a0=0
+    jr ra                       #函数返回    
+imm_l6:
+    addi a0，zero，1            #a0=1
+    jr ra                       #函数返回        
+</code></pre>
+<p>结合上面的代码，我们依次来看看bge_ins函数和bgeu_ins函数都做了什么。先看bge_ins函数，如果a0大于等于a1，则跳转到imm_l5处将a0置1并返回，否则就会继续顺序执行，将a0置0并返回。</p>
+<p>而bgeu_ins函数也类似，如果a0中无符号数大于等于a1中的无符号数，则跳转到imm_l6处将a0置1并返回，否则继续顺序执行，将a0置0并返回。</p>
+<p>我们用VSCode打开工程目录，按“F5”键调试，情况如下：<img alt="图片" src="assets/364a03d76569d5b60d121a54ddcb41f6.jpg"/></p>
+<p>上图中是执行“bge a0，a1，imm_l5”指令之后的状态，由于a0中的有符号数，大于等于a1中的有符号数。而bge指令是大于等于就跳转，所以这时程序将会直接跳转到imm_l5处运行。执行addi a0，zero，1指令，将a0寄存器置为1后，就会返回到main函数中。</p>
+<p>对照下图，可以看到调用bge_ins(4,4)函数后，之后就是调用printf，在终端上打印其返回结果，输出为1。</p>
+<p><img alt="图片" src="assets/42711ec540d4a45b856692bc0fec7307.jpg"/></p>
+<p>因为两个数相等，所以返回1，这个结果正确，也验证了bge指令的功能确实是大于等于则跳转。</p>
+<p>下面我们继续调试，就会进入bgeu_ins函数之中，如下所示：</p>
+<p><img alt="图片" src="assets/711eeea5c7d9b26988649c80d01128f8.jpg"/></p>
+<p>上图中是执行“bgeu a0，a1，imm_l6”指令之后的状态。</p>
+<p>由于bgeu把a0、a1中的数据当成无符号数，所以a0的数据小于a1的数据。而bgeu指令是大于等于就跳转，这时程序就会就会顺序运行bgeu后面的指令“mv a0，zero”，将a0寄存器置为0后，返回到main函数中。</p>
+<p>可以看到，意料外的结果再次出现了。你可能疑惑，下图里调用bgeu_ins函数传递的参数是3和-1，应该返回1才对，然而printf在终端上的输出却是0。</p>
+<p><img alt="图片" src="assets/31c1bfab78d9e582ecd749da5e8942fd.jpg"/></p>
+<p>出现这样的情况，跟前面bltu_ins函数情况类似，bgeu_ins函数会把两个参数都当成无符号数据，把-1当成无符号数是0xffffffff，3远小于0xffffffff，所以才会返回0。也就是说，图里的结果恰好验证了bgeu指令是正确的。</p>
+<p>到这里，我们已经完成了对beq、bne、blt、bltu、bge、bgeu指令的调试，熟悉了它们的功能细节，现在我们继续一起看看beq_ins、bne_ins、blt_ins、bltu_ins、bge_ins、bgeu_ins函数的二进制数据。</p>
+<p>沿用之前查看jal_ins、jalr_ins函数的方法，我们将main.elf文件反汇编成main.ins文件，然后打开这个文件，就会看到这些函数的二进制数据，如下所示：</p>
+<p><img alt="图片" src="assets/c30f9ebfba9e4aa3ed983dd9f38d1465.jpg"/></p>
+<p>上图里的反汇编代码中使用了一些伪指令，它们的机器码以及对应的汇编语句、指令类型，我画了张表格来梳理。</p>
+<p><img alt="图片" src="assets/d19b398473be5f8441b3e9d27c55f914.jpg"/>-
+有了这些机器码数据，我们同样来拆分一下这些指令各位段的数据，在内存里它们是这样编码的：</p>
+<p><img alt="图片" src="assets/fdf6e7e41b0cd3ef02712890815506eb.jpg"/></p>
+<p>看完图片我们可以发现，bqe、bne、blt、bltu、bge、bgeu指令的操作码是相同的，区分指令的是<strong>功能码</strong>。</p>
+<p>这些指令的立即数都是相同的，这和我们编写的代码有关，其数据正常组合起来是0b00000000110，这个二进制数据左移1位等于十六进制数据0xc。看看那些bxxx_ins函数代码，你就明白了，bxxx指令和imm_lxxx标号之间（包含标号）正好间隔3条，一条指令4字节，其<strong>偏移量正好是12</strong>，pc+12正好落在imm_lxxx标号处的指令上。</p>
+<h2 id="重点回顾">重点回顾</h2>
+<p>这节课就要结束了，我们做个总结。</p>
+<p>RISC-V指令集中的有条件跳转指令一共六条，它们分别是beq、bne、blt、bltu、bge、bgeu。</p>
+<p>bne和beq指令，用于比较数据是否相等，它们是一对相反的指令操作，搭配使用就能完成相等和不相等的流程控制。blt、bltu是小于则跳转的指令，bge、bgeu是大于等于则跳转的指令，区别在于有无符号数。这六条跳转指令的共性是，<strong>都会先比较两个源操作数，然后根据比较结果跳转到具体的偏移地址去运行。</strong></p>
+<p>这节课的要点我给你准备了导图，供你参考复习。</p>
+<p><img alt="图片" src="assets/bce0a544b0c7a1d518ab2bd1ca600a09.jpg"/></p>
+<p>到这里，我们用两节课的时间掌握了RISC-V指令集的八条跳转指令。正是这些“辛勤劳作”的指令，CPU才获得了顺序执行之外的新技能，进而让工程师在高级语言中，顺利实现了函数调用和流程控制与比较表达式。</p>
+<p>下节课我们继续挑战访存指令，敬请期待。</p>
+<h2 id="思考题">思考题</h2>
+<p>我们发现在RISC-V指令集中，没有大于指令和小于等于指令，这是为什么呢？</p>
+<p>别忘了在留言区记录收获，或者向我提问。如果觉得课程还不错，别忘了推荐给身边的朋友，跟他一起学习进步。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#365a5a5a0f020707060176515b575f5a1855595b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359186dcf51d6a3',t:'MTc0NTUzNDM1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

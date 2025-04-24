@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="37 浏览器原理（一）：浏览器为什么要用多进程模型？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>37 浏览器原理（一）：浏览器为什么要用多进程模型？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e7%bb%83%e5%a5%bd%e5%9f%ba%e6%9c%ac%e5%8a%9f%ef%bc%8c%e4%bc%98%e7%a7%80%e5%b7%a5%e7%a8%8b%e5%b8%88%e6%88%90%e9%95%bf%e7%ac%ac%e4%b8%80%e6%ad%a5.md.html" id="00 开篇词 练好基本功，优秀工程师成长第一步.md.html">00 开篇词 练好基本功，优秀工程师成长第一步.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/01%20CISC%20&amp;%20RISC%ef%bc%9a%e4%bb%8e%e4%bd%95%e8%80%8c%e6%9d%a5%ef%bc%8c%e4%bd%95%e8%87%b3%e4%ba%8e%e6%ad%a4.md.html" id="01 CISC &amp; RISC：从何而来，何至于此.md.html">01 CISC &amp; RISC：从何而来，何至于此.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/02%20RISC%e7%89%b9%e6%80%a7%e4%b8%8e%e5%8f%91%e5%b1%95%ef%bc%9aRISC-V%e5%87%ad%e4%bb%80%e4%b9%88%e6%88%90%e4%b8%ba%e2%80%9c%e5%8d%8a%e5%af%bc%e4%bd%93%e8%a1%8c%e4%b8%9a%e7%9a%84Linux%e2%80%9d%ef%bc%9f.md.html" id="02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html">02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/03%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e5%bc%80%e5%90%af%e6%89%8b%e5%86%99CPU%e4%b9%8b%e6%97%85.md.html" id="03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html">03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/04%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%ba%8c%ef%bc%89_%20%e4%bb%a3%e7%a0%81%e6%98%af%e6%80%8e%e4%b9%88%e7%94%9f%e6%88%90%e5%85%b7%e4%bd%93%e7%94%b5%e8%b7%af%e7%9a%84%ef%bc%9f.md.html" id="04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html">04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/05%20%e6%8c%87%e4%bb%a4%e6%9e%b6%e6%9e%84%ef%bc%9aRISC-V%e5%9c%a8CPU%e8%ae%be%e8%ae%a1%e4%b8%8a%e5%88%b0%e5%ba%95%e6%9c%89%e5%93%aa%e4%ba%9b%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html">05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%8f%96%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0.md.html" id="06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html">06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/07%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e8%af%91%e7%a0%81%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="07 手写CPU（二）：如何实现指令译码模块？.md.html">07 手写CPU（二）：如何实现指令译码模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/08%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e6%89%a7%e8%a1%8c%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="08 手写CPU（三）：如何实现指令执行模块？.md.html">08 手写CPU（三）：如何实现指令执行模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/09%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0CPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e8%ae%bf%e5%ad%98%e9%98%b6%e6%ae%b5%ef%bc%9f.md.html" id="09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html">09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/10%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9aCPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e5%86%99%e5%9b%9e%e6%a8%a1%e5%9d%97%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html">10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/11%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e6%88%91%e4%bb%ac%e7%9a%84CPU%e8%b7%91%e8%b5%b7%e6%9d%a5%ef%bc%9f.md.html" id="11 手写CPU（六）：如何让我们的CPU跑起来？.md.html">11 手写CPU（六）：如何让我们的CPU跑起来？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/12%20QEMU%ef%bc%9a%e6%94%af%e6%8c%81RISC-V%e7%9a%84QEMU%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%ef%bc%9f.md.html" id="12 QEMU：支持RISC-V的QEMU如何构建？.md.html">12 QEMU：支持RISC-V的QEMU如何构建？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%b0%8f%e8%af%95%e7%89%9b%e5%88%80%ef%bc%9a%e8%b7%91%e9%80%9aRISC-V%e5%b9%b3%e5%8f%b0%e7%9a%84Hello%20World%e7%a8%8b%e5%ba%8f.md.html" id="13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html">13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b5%b0%e8%bf%9bC%e8%af%ad%e8%a8%80%ef%bc%9a%e9%ab%98%e7%ba%a7%e8%af%ad%e8%a8%80%e6%80%8e%e6%a0%b7%e6%8a%bd%e8%b1%a1%e6%89%a7%e8%a1%8c%e9%80%bb%e8%be%91%ef%bc%9f.md.html" id="14 走进C语言：高级语言怎样抽象执行逻辑？.md.html">14 走进C语言：高级语言怎样抽象执行逻辑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/15%20C%e4%b8%8e%e6%b1%87%e7%bc%96%ef%bc%9a%e6%8f%ad%e7%a7%98C%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e2%80%9c%e6%90%ac%e7%a0%96%e2%80%9d%e6%97%a5%e5%b8%b8.md.html" id="15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html">15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/16%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="16 RISC-V指令精讲（一）：算术指令实现与调试.md.html">16 RISC-V指令精讲（一）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/17%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="17 RISC-V指令精讲（二）：算术指令实现与调试.md.html">17 RISC-V指令精讲（二）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/18%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html">18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/19%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html">19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/20%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9a%e5%8e%9f%e5%ad%90%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="20 RISC-V指令精讲（五）：原子指令实现与调试.md.html">20 RISC-V指令精讲（五）：原子指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/21%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%8a%a0%e8%bd%bd%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="21 RISC-V指令精讲（六）：加载指令实现与调试.md.html">21 RISC-V指令精讲（六）：加载指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/22%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%83%ef%bc%89%ef%bc%9a%e8%ae%bf%e5%ad%98%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="22 RISC-V指令精讲（七）：访存指令实现与调试.md.html">22 RISC-V指令精讲（七）：访存指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/23%20%e5%86%85%e5%ad%98%e5%9c%b0%e5%9d%80%e7%a9%ba%e9%97%b4%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e5%9c%b0%e5%9d%80%e7%9a%84%e4%b8%89%e7%a7%8d%e4%ba%a7%e7%94%9f%e6%96%b9%e5%bc%8f.md.html" id="23 内存地址空间：程序中地址的三种产生方式.md.html">23 内存地址空间：程序中地址的三种产生方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/24%20%e8%99%9a%e5%ae%9e%e7%bb%93%e5%90%88%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%e5%92%8c%e7%89%a9%e7%90%86%e5%86%85%e5%ad%98.md.html" id="24 虚实结合：虚拟内存和物理内存.md.html">24 虚实结合：虚拟内存和物理内存.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/25%20%e5%a0%86&amp;%e6%a0%88%ef%bc%9a%e5%a0%86%e4%b8%8e%e6%a0%88%e7%9a%84%e5%8c%ba%e5%88%ab%e5%92%8c%e5%ba%94%e7%94%a8.md.html" id="25 堆&amp;栈：堆与栈的区别和应用.md.html">25 堆&amp;栈：堆与栈的区别和应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/26%20%e5%bb%b6%e8%bf%9f%e5%88%86%e9%85%8d%ef%bc%9a%e6%8f%90%e9%ab%98%e5%86%85%e5%ad%98%e5%88%a9%e7%94%a8%e7%8e%87%e7%9a%84%e4%b8%89%e7%a7%8d%e6%9c%ba%e5%88%b6.md.html" id="26 延迟分配：提高内存利用率的三种机制.md.html">26 延迟分配：提高内存利用率的三种机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/27%20%e5%ba%94%e7%94%a8%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e7%9a%84%e5%ba%94%e7%94%a8%e4%b8%8e%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86.md.html" id="27 应用内存管理：Linux的应用与内存管理.md.html">27 应用内存管理：Linux的应用与内存管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/28%20%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6%ef%bc%9a%e5%ba%94%e7%94%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%83%bd%e5%b9%b6%e8%a1%8c%e6%89%a7%e8%a1%8c%ef%bc%9f.md.html" id="28 进程调度：应用为什么能并行执行？.md.html">28 进程调度：应用为什么能并行执行？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/29%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="29 应用间通信（一）：详解Linux进程IPC.md.html">29 应用间通信（一）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/30%20%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="30  应用间通信（二）：详解Linux进程IPC.md.html">30  应用间通信（二）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/31%20%e5%a4%96%e8%ae%be%e9%80%9a%e4%bf%a1%ef%bc%9aIO%20Cache%e4%b8%8eIO%e8%b0%83%e5%ba%a6.md.html" id="31 外设通信：IO Cache与IO调度.md.html">31 外设通信：IO Cache与IO调度.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/32%20IO%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%a4%9a%e4%b8%aa%e5%a4%96%e8%ae%be%ef%bc%9f.md.html" id="32 IO管理：Linux如何管理多个外设？.md.html">32 IO管理：Linux如何管理多个外设？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/33%20lotop%e4%b8%8elostat%e5%91%bd%e4%bb%a4%ef%bc%9a%e8%81%8a%e8%81%8a%e5%91%bd%e4%bb%a4%e8%83%8c%e5%90%8e%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%8e%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86.md.html" id="33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html">33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/34%20%e6%96%87%e4%bb%b6%e4%bb%93%e5%ba%93%ef%bc%9a%e5%88%9d%e8%af%86%e6%96%87%e4%bb%b6%e4%b8%8e%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f.md.html" id="34 文件仓库：初识文件与文件系统.md.html">34 文件仓库：初识文件与文件系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/35%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 Linux文件系统（一）：Linux如何存放文件？.md.html">35 Linux文件系统（一）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/36%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="36 Linux文件系统（二）：Linux如何存放文件？.md.html">36 Linux文件系统（二）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/37%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e5%a4%9a%e8%bf%9b%e7%a8%8b%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html">37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/38%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e8%bf%9b%e7%a8%8b%e9%80%9a%e4%bf%a1%e4%b8%8e%e7%bd%91%e7%bb%9c%e6%b8%b2%e6%9f%93%e8%af%a6%e8%a7%a3.md.html" id="38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html">38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/39%20%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%ef%bc%9aV8%20%e6%89%a7%e8%a1%8c%20JS%20%e4%bb%a3%e7%a0%81%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b.md.html" id="39 源码解读：V8 执行 JS 代码的全过程.md.html">39 源码解读：V8 执行 JS 代码的全过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/40%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html">40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/41%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html">41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/42%20%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%ef%bc%9a%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%e5%b7%a5%e5%85%b7eBPF%e5%92%8c%e8%b0%83%e4%bc%98%e6%96%b9%e6%b3%95.md.html" id="42 性能调优：性能调优工具eBPF和调优方法.md.html">42 性能调优：性能调优工具eBPF和调优方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%85%88%e7%9d%b9%e4%b8%ba%e5%bf%ab%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e9%a1%b9%e7%9b%ae%e6%95%88%e6%9e%9c%e6%bc%94%e7%a4%ba.md.html" id="先睹为快：迷你CPU项目效果演示.md.html">先睹为快：迷你CPU项目效果演示.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e4%ba%91%e8%ae%a1%e7%ae%97%e5%9f%ba%e7%a1%80%ef%bc%9a%e8%87%aa%e5%b7%b1%e5%8a%a8%e6%89%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e6%ac%beIAAS%e8%99%9a%e6%8b%9f%e5%8c%96%e5%b9%b3%e5%8f%b0.md.html" id="加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html">加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html">加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html">加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e8%b0%88%e8%b0%88%e5%ae%b9%e5%99%a8%e4%ba%91%e4%b8%8e%e5%92%8cCaaS%e5%b9%b3%e5%8f%b0.md.html" id="加餐04 谈谈容器云与和CaaS平台.md.html">加餐04 谈谈容器云与和CaaS平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9005%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%be%ae%e6%9c%8d%e5%8a%a1%e4%b8%8e%e6%99%ba%e8%83%bdSaaS.md.html" id="加餐05 分布式微服务与智能SaaS.md.html">加餐05 分布式微服务与智能SaaS.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9201%20%e7%9f%a5%e8%af%86%e6%8c%91%e6%88%98%e8%b5%9b%ef%bc%9a%e6%a3%80%e9%aa%8c%e4%b8%80%e4%b8%8b%e5%ad%a6%e4%b9%a0%e6%88%90%e6%9e%9c%e5%90%a7%ef%bc%81.md.html" id="国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html">国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9202%20%e6%9d%a5%e8%87%aa%e8%af%be%e4%bb%a3%e8%a1%a8%e7%9a%84%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a.md.html" id="国庆策划02 来自课代表的学习锦囊.md.html">国庆策划02 来自课代表的学习锦囊.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9203%20%e6%8f%ad%e7%a7%98%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%e6%93%8d%e4%bd%9c%e5%92%8c%e6%a0%88%e4%bf%9d%e6%8a%a4%e6%9c%ba%e5%88%b6.md.html" id="国庆策划03 揭秘代码优化操作和栈保护机制.md.html">国庆策划03 揭秘代码优化操作和栈保护机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e6%b8%a9%e6%95%85%e7%9f%a5%e6%96%b0%20%e6%80%9d%e8%80%83%e9%a2%98%e5%8f%82%e8%80%83%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="温故知新 思考题参考答案（一）.md.html">温故知新 思考题参考答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%91%e6%98%af%e6%80%8e%e6%a0%b7%e5%ad%a6%e4%b9%a0Verilog%e7%9a%84%ef%bc%9f.md.html" id="用户故事 我是怎样学习Verilog的？.md.html">用户故事 我是怎样学习Verilog的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%bf%83%e8%8b%a5%e6%9c%89%e6%89%80%e5%90%91%e5%be%80%ef%bc%8c%e4%bd%95%e6%83%a7%e9%81%93%e9%98%bb%e4%b8%94%e9%95%bf.md.html" id="结束语 心若有所向往，何惧道阻且长.md.html">结束语 心若有所向往，何惧道阻且长.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="37 浏览器原理（一）：浏览器为什么要用多进程模型？" id="title">37 浏览器原理（一）：浏览器为什么要用多进程模型？</h1>
+<div><p>你好，我是 LMOS。</p>
+<p>前面我们学过了很多基础理论，你可能已经迫不及待，想把这些知识运用到应用层开发里了。所以从这应用篇开始，我们会学以致用，分析一些开发工作中的实际问题，挑战几个典型的综合应用场景。</p>
+<p>这节课我会从浏览器开始讲起，浏览器是目前使用范围最广、使用人数最多的终端应用程序之一。作为互联网中最重要的端口，浏览器伴随着互联网的高速发展，发展也是日新月异。通过接下来的两节课，我希望带你看看巨型软件应用优秀的架构设计，同时也带你了解一下平时用到的浏览器里，有哪些技术原理比较关键。</p>
+<p>浏览器原本是很简单的东西，只能渲染简单的页面，后来才逐步迈进百花齐放的阶段。</p>
+<h2 id="浏览器内核的演变史">浏览器内核的演变史</h2>
+<p>我先带你梳理一下浏览器的发展过程。了解了这段历史，你就会重新理解WebKit内核和Chrome浏览器的地位，知道它们是怎么演变而来的。</p>
+<p>说起浏览器，我们就不得不提到1994年诞生的网景浏览器（从Mosaic浏览器衍生而来）。虽然网景浏览器只能展示最简单的 HTML 静态页面，不支持动态的脚本（JavaScript）和样式（CSS），但是它仍然获得了很大的成功。</p>
+<p>在操作系统中，内核是最基本的功能，随着浏览器的发展，在浏览器中，现在同样也存在内核的概念。浏览器内核的作用相对更加简化，浏览器内核的英文名为 Rendering Engine，你可以把它理解成一个渲染引擎，用途就是把文件资源转化成可视化的图像结果。</p>
+<p>浏览器常见的浏览器内核有：Blink、WebKit、Gecko、Trident 等，目前 WebKit 内核占据了非常大的的市场，包括 Chrome、Safari、安卓浏览器等市面上的主流浏览器，都使用了 WebKit 内核。</p>
+<h3 id="从webkit看浏览器内核架构">从WebKit看浏览器内核架构</h3>
+<p>既然 WebKit 这么经典，我们就以它为例来看一下浏览器内核的架构。浏览器内核主要包含：HTML Parser，CSS Parser，Layout，JavaScript Engine 几部分，如下图所示：</p>
+<p><img alt="图片" src="assets/164669f48e3207c6e0b015094cb46f74.jpg"/></p>
+<p>我们简单看一下，上图中的几个关键部分承担了什么工作：</p>
+<ul>
+<li>HTML Parser：HTML 解析器，负责 HTML 文本的解析，将 HTML 解析为可编程结构 —— DOM （文档对象模型）树；</li>
+<li>CSS Parser：CSS 解析器是层叠样式的解析器，用来计算布局所需要的节点样式信息 —— CSSOM（样式）树；</li>
+<li>Layout：布局，在 得到 DOM 树和 CSSOM 树后，需要计算出DOM树中可见元素的几何位置，生成布局树 —— Layout Tree；</li>
+<li>JavaScript Engine：JavaScript语言的解析引擎，执行页面的动态逻辑，并可以访问 DOM 和 CSSOM 数据接口；</li>
+<li>操作系统支持 —— 移植：WebKit 代码中，因为其天生具有跨平台性质，所以部分平台相关的能力需要做跨平台兼容的移植。</li>
+</ul>
+<p>上面是一个简略的浏览器内核的功能，不过它仅仅是完成了核心的渲染过程，实际上浏览器则要复杂得多。</p>
+<p>在 2013 年，Chromium 发布了 Blink 项目。这个项目是从 WebKit 项目独立出来的，它抽离出了一套新的编程接口和进程模型接口，同时浏览器内核屏蔽了 Chromium 底层的进程模型实现。</p>
+<h3 id="chromium-浏览器架构解读">Chromium 浏览器架构解读</h3>
+<p>我们会以 Chromium 浏览器为例，来分析浏览器及其内核。后面是 Chromium 的简易架构图，为方便分析，我删去了部分细节。</p>
+<p><img alt="图片" src="assets/f0c9a3286d2d5a3d55db73e76c370cb0.jpg"/></p>
+<p>在上图中，比较重要的是Content 模块以及 Content 接口。</p>
+<p>你可以这样理解，Content 模块和接口是浏览器对渲染过程的抽象，它们将浏览器的渲染、插件、沙箱等功能，进行了包装和抽象，提供一个接口层，方便上层的应用调用。Chromium 中我们可以看到的浏览器可视化界面，它构建在 Content 接口之上，用于接收用户交互和展示界面，content shell 是一个简易版的浏览器，通常被第三方浏览器软件进行二次开发，它在 Andriod 系统上也应用广泛。</p>
+<h2 id="浏览器下的多进程与多线程模型">浏览器下的多进程与多线程模型</h2>
+<p>Chromium和 Blink最大的一个特性就是采用了新的进程模型和线程模型。在前面进程篇的课程中我们了解到，进程是应用程序运行时操作系统进行资源分配的最小容器，这些资源包括指令集、独立内存空间、IO、PCB 等等。</p>
+<p>不过，进程虽然能帮助我们更方便地分配资源，也会引发一些问题：</p>
+<ol>
+<li>进程切换上下文的开销比较大。由于虚拟内存的存在，我们需要从硬盘中频繁读写；-</li>
+<li>多进程应用通讯复杂度高。由于操作系统的保护策略，系统资源跨进程是无法共享的。如果需要跨进程共享资源就要采用 IPC 通讯 ，但是成本相对高。</li>
+</ol>
+<p>线程则是CPU调度的基本单位。线程的优点显而易见，切换成本很低，只有少量 CPU 寄存器、堆栈等内容，线程的创建、销毁本身也有性能成本，但这个成本相对较低，而且通常可以通过线程池优化。</p>
+<p>不过我们也要关注到不足之处，多线程应用编码复杂度高，这会带来后面这几个问题：</p>
+<ol>
+<li>线程可以共享进程内的所有资源，但需要考虑资源竞态问题；-</li>
+<li>线程间的指令时序不可预测，无法保证代码按照预期的顺序执行；-</li>
+<li>单个进程崩溃可能会影响其他线程。</li>
+</ol>
+<p>那么在目前常见的 Chrome 浏览器里，采用的是多进程还是单进程多线程模型呢？在我们的电脑中，我打开进程管理器，就可以看到浏览器的后台进程占用情况。通常后台都存在多个进程：</p>
+<p><img alt="图片" src="assets/18149cd1b6f3fd43778bbf01yybd2a95.jpg"/></p>
+<p>其实在一些旧的浏览器中，采用的是单进程多线程的模型，如 IE 浏览器；但是以 Chromium 浏览器为例的现代浏览器，采用的都是多进程架构。</p>
+<p>那么为什么现代浏览器采用的是多进程架构呢？我们需要先分析一下，浏览器如果是单进程多线程会引发哪些问题。</p>
+<p>首先是<strong>稳定性的问题</strong>。因为一个浏览器程序，是可以同时启动多个 Tab 的，浏览器多进程化的最大的好处就是，单个 Tab 的卡死、崩溃不会影响其它 Tab。</p>
+<p>我们在浏览器程序内新建一个 Tab 时，就会启动一个新的渲染进程，Chrome 支持四种不同的进程模型模型：</p>
+<ul>
+<li>Process-per-site-instance。这种进程模型会为每一个同一个域的实例都会创建一个Renderer进程。</li>
+<li>Process-per-site。这种进程模型会为不同一个域创建独立的进程，同一域的不同实例共享同一个进程。</li>
+<li>Process-per-tab。这种进程模型会为每个标签页创建一个 Renderer 进程。</li>
+<li>Single process。这种进程模型不为页面创建任何独立的进程，所有渲染工作都在browser进程中（这种模式是实验性质的，不推荐使用）。</li>
+</ul>
+<p>Chromium默认采用 Process-per-site-instance 方式，不过我们可以在浏览器启动时传递一个命令行开关，用来指定浏览器的进程模型。</p>
+<p>其次，是<strong>加载速度的问题</strong>。由于整个程序只存在一个进程，浏览器的 JS 代码和插件逻辑和页面渲染是运行在同一个进程中的，如果存在一些计算量很大的操作，这些计算量大的线程会抢占大量资源，从而导致其他的渲染逻辑无法正常执行。这会严重影响页面的加载速度，甚至造成崩溃。在多进程架构下，将插件提取为单独的进程，不会存在插件卡顿和崩溃影响整个浏览器的情况。</p>
+<p>最后还有<strong>安全性的考虑</strong>。由于 JS 脚本和插件的存在，很容易利用浏览器的系统漏洞，进而获得整个计算机的权限，从而造成安全问题。而多进程架构很容易就可以实现沙箱控制。</p>
+<p>虽然采用多进程模型就可以解决上述几个问题，但是多进程模型也不是银弹，它同样也会引发一些问题。</p>
+<p>比如性能的问题，由于基础的指令无法共享，多进程会带来很大程度的资源浪费，这也是我们很多同学吐槽的“Chrome 非常吃内存”这个问题。由于每个 Tab 和插件都是一个独立的进程，所以在打开多个 Tab 或者插件的情况下，我们会看到系统的内存会疯狂飙升。</p>
+<p>这其实是设计上存在的问题，随着时间的发展，硬件性能瓶颈的突破也会推动软件架构发展。现在计算机内存越来越大，没有过去那么宝贵了，所以不同的选择，都是有利有弊。</p>
+<h3 id="chrome-有哪些进程">Chrome 有哪些进程</h3>
+<p>现在，我们知道了浏览器采用的是多进程模型，那么具体有哪些常见进程呢？我们结合后面这张图来看看。</p>
+<p><img alt="图片" src="assets/cf617a8336c7b58312daeb87fa47ebc2.jpg"/></p>
+<p>图中的方框表示具体的进程，连线表示进程间进行的通信，没有连线则表示不会发生进程通信。比如多个渲染进程之间不会进行通信，它们会通过主进程交互， NPAPI插件也不会和 GPU 进行交互，因为它太过于古老，所以没有 GPU 的接口实现。</p>
+<p>图中我们可以看到以下几种进程：</p>
+<ul>
+<li>浏览器进程：主要负责用户交互、子进程管理和文件储存等功能；</li>
+<li>网络进程：浏览器主进程和渲染进程通过他来向操作系统申请端口以及与操作系统的协议栈进程通信；</li>
+<li>渲染进程：主要职责是把从网络下载的HTML、JavaScript、CSS、图片等资源解析为可以显示和交互的页面；</li>
+<li>插件进程：主要负责单个插件功能的运行；</li>
+<li>GPU 进程：主要负责3D效果的实现以及UI的绘制。</li>
+</ul>
+<p>这里我们着重了解一下渲染进程（renderer）内的主要线程。渲染进程内部是多线程的，在内核控制下各线程相互配合以保持同步。那么渲染进程内部具体有哪些线程呢？一共有八类：</p>
+<ul>
+<li>GUI 线程：负责渲染浏览器中的页面，并解析 HTML，CSS；</li>
+<li>JS 线程：负责处理 JavaScript 脚本程序；</li>
+<li>事件触发线程：归属于浏览器而不是 JS 引擎，用来控制事件循环；</li>
+<li>定时触发器线程：浏览器的定时任务，如 setInterval 与 setTimeout事件，也包括浏览器内部的一些定时任务。</li>
+<li>IO 线程：用来和其他进程进行 IPC 通信，接受发送消息；</li>
+<li>异步http请求线程：处理所有的异步请求，如果有回调函数，就放入异步事件队列，由事件触发线程处理；</li>
+<li>WebWorker 线程：每声明一个 WebWorker 就会新建一个 WebWorker 线程处理；</li>
+<li>合成线程：在GUI渲染后执行，将GUI渲染线程生成的产物转换为位图。</li>
+</ul>
+<h2 id="重点回顾">重点回顾</h2>
+<p>这节课告一段落，我给你做个总结吧。</p>
+<p>今天我们先简单分析了WebKit和Chromium的架构，它们俩在浏览器里是非常经典的设计。</p>
+<p>然后，我们讨论了 Chrome 浏览器里，采用的模型是多进程，还是单进程多线程。Chrome 浏览器使用了多进程模型解决了一些历史问题，它内部有负责统领全局的浏览器主进程、负责网络交互的网络进程、负责页面渲染的渲染进程、负责插件运行的独立插件进程以及负责3D效果的 GPU 进程。</p>
+<p>这里重点说说渲染进程，它主要负责单个 Tab 内的页面渲染逻辑，在渲染进程内又是多线程的，在浏览器内核控制下各线程相互配合以保持同步，高效协作。</p>
+<p>在各个进程和线程的配合下，浏览器会进行一系列的动作完成渲染，我们称之为<strong>渲染流水线</strong>，就是从接受网络请求开始，到将其处理成可展示的图形和用户进行交互的过程。那这个过程具体如何运转呢？我们下节课再继续讨论。</p>
+<p>这节课导图如下所示，供你复习回顾：</p>
+<p><img alt="" src="assets/faa20092b9145f99e383a82debb909d1.jpg"/></p>
+<h2 id="思考题">思考题</h2>
+<p>浏览器的多进程模型下，进程之间是如何通信的呢？</p>
+<p>期待你在留言区说说自己的思考。也推荐你把这节课分享给更多同事、朋友。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#066a6a6a3f323737363146616b676f6a2865696b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93591bc96d7f0820',t:'MTc0NTUzNDQ5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

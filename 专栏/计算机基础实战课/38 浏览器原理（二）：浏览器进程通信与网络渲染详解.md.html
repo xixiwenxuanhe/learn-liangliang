@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="38 浏览器原理（二）：浏览器进程通信与网络渲染详解" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>38 浏览器原理（二）：浏览器进程通信与网络渲染详解 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e7%bb%83%e5%a5%bd%e5%9f%ba%e6%9c%ac%e5%8a%9f%ef%bc%8c%e4%bc%98%e7%a7%80%e5%b7%a5%e7%a8%8b%e5%b8%88%e6%88%90%e9%95%bf%e7%ac%ac%e4%b8%80%e6%ad%a5.md.html" id="00 开篇词 练好基本功，优秀工程师成长第一步.md.html">00 开篇词 练好基本功，优秀工程师成长第一步.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/01%20CISC%20&amp;%20RISC%ef%bc%9a%e4%bb%8e%e4%bd%95%e8%80%8c%e6%9d%a5%ef%bc%8c%e4%bd%95%e8%87%b3%e4%ba%8e%e6%ad%a4.md.html" id="01 CISC &amp; RISC：从何而来，何至于此.md.html">01 CISC &amp; RISC：从何而来，何至于此.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/02%20RISC%e7%89%b9%e6%80%a7%e4%b8%8e%e5%8f%91%e5%b1%95%ef%bc%9aRISC-V%e5%87%ad%e4%bb%80%e4%b9%88%e6%88%90%e4%b8%ba%e2%80%9c%e5%8d%8a%e5%af%bc%e4%bd%93%e8%a1%8c%e4%b8%9a%e7%9a%84Linux%e2%80%9d%ef%bc%9f.md.html" id="02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html">02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/03%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e5%bc%80%e5%90%af%e6%89%8b%e5%86%99CPU%e4%b9%8b%e6%97%85.md.html" id="03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html">03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/04%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%ba%8c%ef%bc%89_%20%e4%bb%a3%e7%a0%81%e6%98%af%e6%80%8e%e4%b9%88%e7%94%9f%e6%88%90%e5%85%b7%e4%bd%93%e7%94%b5%e8%b7%af%e7%9a%84%ef%bc%9f.md.html" id="04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html">04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/05%20%e6%8c%87%e4%bb%a4%e6%9e%b6%e6%9e%84%ef%bc%9aRISC-V%e5%9c%a8CPU%e8%ae%be%e8%ae%a1%e4%b8%8a%e5%88%b0%e5%ba%95%e6%9c%89%e5%93%aa%e4%ba%9b%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html">05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%8f%96%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0.md.html" id="06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html">06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/07%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e8%af%91%e7%a0%81%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="07 手写CPU（二）：如何实现指令译码模块？.md.html">07 手写CPU（二）：如何实现指令译码模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/08%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e6%89%a7%e8%a1%8c%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="08 手写CPU（三）：如何实现指令执行模块？.md.html">08 手写CPU（三）：如何实现指令执行模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/09%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0CPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e8%ae%bf%e5%ad%98%e9%98%b6%e6%ae%b5%ef%bc%9f.md.html" id="09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html">09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/10%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9aCPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e5%86%99%e5%9b%9e%e6%a8%a1%e5%9d%97%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html">10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/11%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e6%88%91%e4%bb%ac%e7%9a%84CPU%e8%b7%91%e8%b5%b7%e6%9d%a5%ef%bc%9f.md.html" id="11 手写CPU（六）：如何让我们的CPU跑起来？.md.html">11 手写CPU（六）：如何让我们的CPU跑起来？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/12%20QEMU%ef%bc%9a%e6%94%af%e6%8c%81RISC-V%e7%9a%84QEMU%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%ef%bc%9f.md.html" id="12 QEMU：支持RISC-V的QEMU如何构建？.md.html">12 QEMU：支持RISC-V的QEMU如何构建？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%b0%8f%e8%af%95%e7%89%9b%e5%88%80%ef%bc%9a%e8%b7%91%e9%80%9aRISC-V%e5%b9%b3%e5%8f%b0%e7%9a%84Hello%20World%e7%a8%8b%e5%ba%8f.md.html" id="13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html">13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b5%b0%e8%bf%9bC%e8%af%ad%e8%a8%80%ef%bc%9a%e9%ab%98%e7%ba%a7%e8%af%ad%e8%a8%80%e6%80%8e%e6%a0%b7%e6%8a%bd%e8%b1%a1%e6%89%a7%e8%a1%8c%e9%80%bb%e8%be%91%ef%bc%9f.md.html" id="14 走进C语言：高级语言怎样抽象执行逻辑？.md.html">14 走进C语言：高级语言怎样抽象执行逻辑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/15%20C%e4%b8%8e%e6%b1%87%e7%bc%96%ef%bc%9a%e6%8f%ad%e7%a7%98C%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e2%80%9c%e6%90%ac%e7%a0%96%e2%80%9d%e6%97%a5%e5%b8%b8.md.html" id="15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html">15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/16%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="16 RISC-V指令精讲（一）：算术指令实现与调试.md.html">16 RISC-V指令精讲（一）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/17%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="17 RISC-V指令精讲（二）：算术指令实现与调试.md.html">17 RISC-V指令精讲（二）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/18%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html">18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/19%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html">19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/20%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9a%e5%8e%9f%e5%ad%90%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="20 RISC-V指令精讲（五）：原子指令实现与调试.md.html">20 RISC-V指令精讲（五）：原子指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/21%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%8a%a0%e8%bd%bd%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="21 RISC-V指令精讲（六）：加载指令实现与调试.md.html">21 RISC-V指令精讲（六）：加载指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/22%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%83%ef%bc%89%ef%bc%9a%e8%ae%bf%e5%ad%98%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="22 RISC-V指令精讲（七）：访存指令实现与调试.md.html">22 RISC-V指令精讲（七）：访存指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/23%20%e5%86%85%e5%ad%98%e5%9c%b0%e5%9d%80%e7%a9%ba%e9%97%b4%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e5%9c%b0%e5%9d%80%e7%9a%84%e4%b8%89%e7%a7%8d%e4%ba%a7%e7%94%9f%e6%96%b9%e5%bc%8f.md.html" id="23 内存地址空间：程序中地址的三种产生方式.md.html">23 内存地址空间：程序中地址的三种产生方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/24%20%e8%99%9a%e5%ae%9e%e7%bb%93%e5%90%88%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%e5%92%8c%e7%89%a9%e7%90%86%e5%86%85%e5%ad%98.md.html" id="24 虚实结合：虚拟内存和物理内存.md.html">24 虚实结合：虚拟内存和物理内存.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/25%20%e5%a0%86&amp;%e6%a0%88%ef%bc%9a%e5%a0%86%e4%b8%8e%e6%a0%88%e7%9a%84%e5%8c%ba%e5%88%ab%e5%92%8c%e5%ba%94%e7%94%a8.md.html" id="25 堆&amp;栈：堆与栈的区别和应用.md.html">25 堆&amp;栈：堆与栈的区别和应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/26%20%e5%bb%b6%e8%bf%9f%e5%88%86%e9%85%8d%ef%bc%9a%e6%8f%90%e9%ab%98%e5%86%85%e5%ad%98%e5%88%a9%e7%94%a8%e7%8e%87%e7%9a%84%e4%b8%89%e7%a7%8d%e6%9c%ba%e5%88%b6.md.html" id="26 延迟分配：提高内存利用率的三种机制.md.html">26 延迟分配：提高内存利用率的三种机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/27%20%e5%ba%94%e7%94%a8%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e7%9a%84%e5%ba%94%e7%94%a8%e4%b8%8e%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86.md.html" id="27 应用内存管理：Linux的应用与内存管理.md.html">27 应用内存管理：Linux的应用与内存管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/28%20%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6%ef%bc%9a%e5%ba%94%e7%94%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%83%bd%e5%b9%b6%e8%a1%8c%e6%89%a7%e8%a1%8c%ef%bc%9f.md.html" id="28 进程调度：应用为什么能并行执行？.md.html">28 进程调度：应用为什么能并行执行？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/29%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="29 应用间通信（一）：详解Linux进程IPC.md.html">29 应用间通信（一）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/30%20%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="30  应用间通信（二）：详解Linux进程IPC.md.html">30  应用间通信（二）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/31%20%e5%a4%96%e8%ae%be%e9%80%9a%e4%bf%a1%ef%bc%9aIO%20Cache%e4%b8%8eIO%e8%b0%83%e5%ba%a6.md.html" id="31 外设通信：IO Cache与IO调度.md.html">31 外设通信：IO Cache与IO调度.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/32%20IO%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%a4%9a%e4%b8%aa%e5%a4%96%e8%ae%be%ef%bc%9f.md.html" id="32 IO管理：Linux如何管理多个外设？.md.html">32 IO管理：Linux如何管理多个外设？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/33%20lotop%e4%b8%8elostat%e5%91%bd%e4%bb%a4%ef%bc%9a%e8%81%8a%e8%81%8a%e5%91%bd%e4%bb%a4%e8%83%8c%e5%90%8e%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%8e%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86.md.html" id="33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html">33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/34%20%e6%96%87%e4%bb%b6%e4%bb%93%e5%ba%93%ef%bc%9a%e5%88%9d%e8%af%86%e6%96%87%e4%bb%b6%e4%b8%8e%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f.md.html" id="34 文件仓库：初识文件与文件系统.md.html">34 文件仓库：初识文件与文件系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/35%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 Linux文件系统（一）：Linux如何存放文件？.md.html">35 Linux文件系统（一）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/36%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="36 Linux文件系统（二）：Linux如何存放文件？.md.html">36 Linux文件系统（二）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/37%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e5%a4%9a%e8%bf%9b%e7%a8%8b%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html">37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/38%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e8%bf%9b%e7%a8%8b%e9%80%9a%e4%bf%a1%e4%b8%8e%e7%bd%91%e7%bb%9c%e6%b8%b2%e6%9f%93%e8%af%a6%e8%a7%a3.md.html" id="38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html">38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/39%20%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%ef%bc%9aV8%20%e6%89%a7%e8%a1%8c%20JS%20%e4%bb%a3%e7%a0%81%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b.md.html" id="39 源码解读：V8 执行 JS 代码的全过程.md.html">39 源码解读：V8 执行 JS 代码的全过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/40%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html">40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/41%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html">41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/42%20%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%ef%bc%9a%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%e5%b7%a5%e5%85%b7eBPF%e5%92%8c%e8%b0%83%e4%bc%98%e6%96%b9%e6%b3%95.md.html" id="42 性能调优：性能调优工具eBPF和调优方法.md.html">42 性能调优：性能调优工具eBPF和调优方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%85%88%e7%9d%b9%e4%b8%ba%e5%bf%ab%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e9%a1%b9%e7%9b%ae%e6%95%88%e6%9e%9c%e6%bc%94%e7%a4%ba.md.html" id="先睹为快：迷你CPU项目效果演示.md.html">先睹为快：迷你CPU项目效果演示.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e4%ba%91%e8%ae%a1%e7%ae%97%e5%9f%ba%e7%a1%80%ef%bc%9a%e8%87%aa%e5%b7%b1%e5%8a%a8%e6%89%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e6%ac%beIAAS%e8%99%9a%e6%8b%9f%e5%8c%96%e5%b9%b3%e5%8f%b0.md.html" id="加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html">加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html">加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html">加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e8%b0%88%e8%b0%88%e5%ae%b9%e5%99%a8%e4%ba%91%e4%b8%8e%e5%92%8cCaaS%e5%b9%b3%e5%8f%b0.md.html" id="加餐04 谈谈容器云与和CaaS平台.md.html">加餐04 谈谈容器云与和CaaS平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9005%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%be%ae%e6%9c%8d%e5%8a%a1%e4%b8%8e%e6%99%ba%e8%83%bdSaaS.md.html" id="加餐05 分布式微服务与智能SaaS.md.html">加餐05 分布式微服务与智能SaaS.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9201%20%e7%9f%a5%e8%af%86%e6%8c%91%e6%88%98%e8%b5%9b%ef%bc%9a%e6%a3%80%e9%aa%8c%e4%b8%80%e4%b8%8b%e5%ad%a6%e4%b9%a0%e6%88%90%e6%9e%9c%e5%90%a7%ef%bc%81.md.html" id="国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html">国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9202%20%e6%9d%a5%e8%87%aa%e8%af%be%e4%bb%a3%e8%a1%a8%e7%9a%84%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a.md.html" id="国庆策划02 来自课代表的学习锦囊.md.html">国庆策划02 来自课代表的学习锦囊.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9203%20%e6%8f%ad%e7%a7%98%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%e6%93%8d%e4%bd%9c%e5%92%8c%e6%a0%88%e4%bf%9d%e6%8a%a4%e6%9c%ba%e5%88%b6.md.html" id="国庆策划03 揭秘代码优化操作和栈保护机制.md.html">国庆策划03 揭秘代码优化操作和栈保护机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e6%b8%a9%e6%95%85%e7%9f%a5%e6%96%b0%20%e6%80%9d%e8%80%83%e9%a2%98%e5%8f%82%e8%80%83%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="温故知新 思考题参考答案（一）.md.html">温故知新 思考题参考答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%91%e6%98%af%e6%80%8e%e6%a0%b7%e5%ad%a6%e4%b9%a0Verilog%e7%9a%84%ef%bc%9f.md.html" id="用户故事 我是怎样学习Verilog的？.md.html">用户故事 我是怎样学习Verilog的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%bf%83%e8%8b%a5%e6%9c%89%e6%89%80%e5%90%91%e5%be%80%ef%bc%8c%e4%bd%95%e6%83%a7%e9%81%93%e9%98%bb%e4%b8%94%e9%95%bf.md.html" id="结束语 心若有所向往，何惧道阻且长.md.html">结束语 心若有所向往，何惧道阻且长.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="38 浏览器原理（二）：浏览器进程通信与网络渲染详解" id="title">38 浏览器原理（二）：浏览器进程通信与网络渲染详解</h1>
+<div><p>你好，我是LMOS。</p>
+<p>通过前面的学习，你应该对浏览器内的进程和线程已经有了一个大概的印象，也知道了为了避免一些问题，现代浏览器采用了多进程架构。</p>
+<p>这节课，我们首先要说的是Chrome中的进程通信。这么多的进程，它们之间是如何进行IPC通信的呢？要知道，如果IPC通信设计得不合理，就会引发非常多的问题。</p>
+<h2 id="chrome如何进行进程间的通信">Chrome如何进行进程间的通信</h2>
+<p>[上节课]我们提了一下Chrome进程架构，Chrome有很多类型的进程。这些进程之间需要进行数据交换，其中有一个浏览器主进程，每个页面会使用一个渲染进程，每个插件会使用一个插件进程。除此之外，还有网络进程和GPU进程等功能性进程。</p>
+<p>进程之间需要进程通信，渲染进程和插件进程需要同网络和GPU等进程通信，借助操作系统的功能来完成部分功能。其次，同一类进程（如多个渲染进程）之间不可以直接通信，需要依赖主进程进行调度中转。</p>
+<p>进程与进程之间的通信，也离不开操作系统的支持。在前面讲IPC的时候，我们了解过多种实现方式。这里我们来看看Chrome的源码，Chrome中IPC的具体实现是通过IPC::Channel这个类实现的，具体在 <strong>ipc/ipc_channel.cc</strong> 这个文件中封装了实现的细节。</p>
+<p>但是在查阅代码的过程中，我发现 Chrome 已经不推荐使用IPC::Channel机制进行通信了，Chrome 实现了一种新的 IPC 机制—— Mojo。</p>
+<p>目前IPC::Channel 底层也是基于 Mojo 来实现的，但是上层接口和旧的 Chrome IPC 保持兼容，IPC::Channel 这种方式即将被淘汰，所以这里我们先重点关注 Mojo，后面我们再简单了解一下 Chrome IPC 接口。</p>
+<h3 id="mojo">Mojo</h3>
+<p>Mojo 是一个跨平台 IPC 框架，它源于 Chromium 项目，主要用于进程间的通信，ChromeOS 用的也是Mojo框架。</p>
+<p>Mojo官方文档给出的定义是这样的：</p>
+<blockquote>
+<p>“Mojo是运行时库的集合，这些运行时库提供了与平台无关的通用IPC原语抽象、消息IDL格式以及具有用于多重目标语言的代码生成功能的绑定库，以方便在任意跨进程、进程内边界传递消息。”</p>
+</blockquote>
+<p><img alt="图片" src="assets/5dd83a1fd9eac176c2b3950ce5c9yyff.jpg"/></p>
+<p>在Chromium中，有两个基础模块使用 Mojo，分别是 Services 和 IPC::Channel。</p>
+<p>Services 是一种更高层次的 IPC 机制，底层通过 Mojo 来实现。Chromium 大量使用这种IPC机制来包装各种功能服务，用来取代 IPC::Channel ，比如 device 服务，performance 服务，audio 服务，viz 服务等。</p>
+<p>Mojo 支持在<strong>多个</strong>进程之间互相通信，这一点和其他的IPC有很大的不同，其他IPC大多只支持2个进程之间进行通信。</p>
+<p>这些由Mojo组成的、可以互相通信的进程就形成了一个网络。在这个网络内，任意两个进程都可以进行通信，并且每个进程只能处于一个 Mojo 网络中，每一个进程内部有且只有一个 Node，每一个 Node 可以提供多个 Port，每个 Port 对应一种服务，这点类似 TCP/IP 中的 IP 地址和端口的关系。一个 Node:port 对可以唯一确定一个服务。</p>
+<p>Node 和 Node 之间通过 Channel 来实现通信，在不同平台上 Channel 有不同的实现方式：在Linux上是Domain Socket；在Windows上是Named Pipe；在macOS平台上是 Mach Port。</p>
+<p>在 Port 的上一层，Mojo 封装了3个“应用层协议”，分别为MessagePipe，DataPipe和SharedBuffer（这里你是不是感觉很像网络栈，在 TCP 上封装了 HTTP）。整体结构如下图：</p>
+<p><img alt="图片" src="assets/358aaf70c30a2a45146f8c3a4290a480.jpg"/></p>
+<p>我们在 Chromium 代码中使用 Mojo，是不必做 Mojo 初始化相关工作的，因为这部分Chromium 代码已经做好了。如果我们在 Chromium 之外的工程使用 Mojo，还需要做一些初始化的工作，代码如下：</p>
+<pre><code>int main(int argc, char** argv) {
+  // 初始化CommandLine，DataPipe 依赖它
+  base::CommandLine::Init(argc, argv);
+  // 初始化 mojo
+  mojo::core::Init();
+  // 创建一个线程，用于Mojo内部收发数据
+  base::Thread ipc_thread("ipc!");
+  ipc_thread.StartWithOptions(
+    base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  // 初始化 Mojo 的IPC支持，只有初始化后进程间的Mojo通信才能有效  
+  // 这个对象要保证一直存活，否则IPC通信就会断开  
+  mojo::core::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+  // ...
+}
+</code></pre>
+<p>MessagePipe 用于进程间的双向通信，类似UDP，消息是基于数据报文的，底层使用 Channel通道；SharedBuffer 支持双向块数据传递，底层使用系统 Shared Memory 实现；DataPipe 用于进程间单向块数据传递，类似TCP，消息是基于数据流的，底层使用系统的 Shared Memory实现。</p>
+<p>一个 MessagePipe 中有一对 handle，分别是 handle0 和 handle1，MessagePipe 向其中一个handle写的数据可以从另外一个handle读出来。如果把其中的一个 handle 发送到另外一个进程，这一对 handle 之间依然能够相互收发数据。</p>
+<p>Mojo 提供了多种方法来发送 handle 到其他的进程，其中最简单的是使用 Invitation。要在多个进程间使用 Mojo，必须先通过 Invitation 将这些进程“连接”起来，这需要一个进程发送Invitation，另一个进程接收 Invitation。</p>
+<p>发送Invitation的方法如下：</p>
+<pre><code>// 创建一条系统级的IPC通信通道
+// 在Linux上是 Domain Socket, Windows 是 Named Pipe，macOS是Mach Port，该通道用于支持跨进程的消息通信
+mojo::PlatformChannel channel;
+LOG(INFO) &lt;&lt; "local: "
+          &lt;&lt; channel.local_endpoint().platform_handle().GetFD().get()
+          &lt;&lt; " remote: "
+          &lt;&lt; channel.remote_endpoint().platform_handle().GetFD().get();
+mojo::OutgoingInvitation invitation;
+// 创建1个Ｍessage Pipe用来和其他进程通信
+// 这里的 pipe 就相当于单进程中的pipe.handle0
+// handle1 会被存储在invitation中，随后被发送出去
+// 可以多次调用，以便Attach多个MessagePipe到Invitation中
+mojo::ScopedMessagePipeHandle pipe =
+    invitation.AttachMessagePipe("my raw pipe");
+LOG(INFO) &lt;&lt; "pipe: " &lt;&lt; pipe-&gt;value();
+base::LaunchOptions options;
+base::CommandLine command_line(
+    base::CommandLine::ForCurrentProcess()-&gt;GetProgram());
+// 将PlatformChannel中的RemoteEndpoint的fd作为参数传递给子进程
+// 在posix中，fd会被复制到新的随机的fd，fd号改变
+// 在windows中，fd被复制后会直接进行传递，fd号不变
+channel.PrepareToPassRemoteEndpoint(&amp;options, &amp;command_line);
+// 启动新进程
+base::Process child_process = base::LaunchProcess(command_line, options);
+channel.RemoteProcessLaunchAttempted();
+// 发送Invitation
+mojo::OutgoingInvitation::Send(
+    std::move(invitation), child_process.Handle(),
+    channel.TakeLocalEndpoint(),
+    base::BindRepeating(
+        [](const std::string&amp; error) { LOG(ERROR) &lt;&lt; error; }));
+</code></pre>
+<p>在新进程中接收 Invitation 的方法如下：</p>
+<pre><code>// Accept an invitation.
+mojo::IncomingInvitation invitation = mojo::IncomingInvitation::Accept(
+    mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+        *base::CommandLine::ForCurrentProcess()));
+// 取出 Invitation 中的pipe
+mojo::ScopedMessagePipeHandle pipe =
+    invitation.ExtractMessagePipe("my raw pipe");
+LOG(INFO) &lt;&lt; "pipe: " &lt;&lt; pipe-&gt;value();
+</code></pre>
+<p>上面使用 Mojo 的方法是通过读写原始的 buffer ，还是比较原始的。-
+Chromium 里面使用了更上层的 bindings 接口来进行 IPC 通信。它先定义了一个 mojom 的接口文件，然后生成相关的接口cpp代码。发送方调用cpp代码接口，接收方去实现cpp代码接口。这种用法类似 Protocol Buffers。</p>
+<p>我们不需要显式地去建立进程间的IPC连接，因为这些Chromium代码已经做好了。Chromium的每个进程都有一个Service Manage，它管理着多个Service。每个Server又管理着多个Mojo接口。在Chromium中，我们只需要定义Mojo接口，然后在恰当的地方去注册接口、实现接口即可。</p>
+<h3 id="legacy-ipc">legacy IPC</h3>
+<p>说完Mojo，我还想带你简单看一下 legacy IPC。虽然它已经被废弃掉，但是目前还有不少逻辑仍在使用它，你可以在<a href="https://source.chromium.org/chromium/chromium/src/+/master:ipc/ipc_message_start.h;bpv=1;bpt=0" target="_blank">这里</a>看到目前还在使用它的部分，都是一些非核心的消息。所以，我们还是要大致理解这种用法。</p>
+<p>后面这张图是官方的经典图解：</p>
+<p><img alt="图片" src="assets/c13aaffaf40e8ef853ebea905ca0yy36.jpg" title="图片来源 https://www.chromium.org/developers/design-documents/multi-process-architecture/"/>-
+我们看到：每个Render进程都有一条Legacy IPC 通过 Channel 和 Browser 连接，ResourceDispacher通过 Filter 同 Channel进行连接。IPC 里面有几个重要的概念：</p>
+<ul>
+<li>IPC::Channel：一条数据传输通道，提供了数据的发送和接收接口；</li>
+<li>IPC::Message：在Channel中传输的数据，主要通过宏来定义新的Message；</li>
+<li>IPC::Listener：提供接收消息的回调，创建Channel必须提供一个Listener；</li>
+<li>IPC::Sender：提供发送IPC::Message的Send方法，IPC::Channel就实现了IPC::Sender接口；</li>
+<li>IPC::MessageFilter：也就是Filter，用来对消息进行过滤，类似管道的机制，它所能过滤的消息必须由其他Filter或者Listener传给它；</li>
+<li>IPC::MessageRouter：一个用来处理 Routed Message 的类。</li>
+</ul>
+<p>Legacy IPC的本质就是<strong>通过IPC::Channel接口发送IPC::Message</strong>，IPC::Channel是封装好的类，IPC::Message需要用户自己定义。</p>
+<p>IPC::Message 有两类，一类是路由消息 “routed message”，一类是控制消息 “control message”。</p>
+<p>唯一不一样的就是 routing_id() 不同，每一个 IPC::Message都会有一个 routing_id，控制消息的 routing_id 始终是 MSG_ROUTING_CONTROL ，这是一个常量。除此之外，所有 routing_id 不是这个常量的消息，都是路由消息。</p>
+<h2 id="网页渲染的流程">网页渲染的流程</h2>
+<p>前面我们讲了浏览器的架构，进程/线程模型以及浏览器内的 IPC 通信实现，有了这些铺垫，我们再来理解浏览器内部的进程模型的工作机制，就更容易了。进程通信会伴随着网络渲染的过程，所以，我推荐你从实际的渲染过程来观察，也就是搞明白浏览器是怎么借助计算机进行页面图像渲染的。</p>
+<p>浏览器接收到用户在地址栏输入的URL以后，浏览器的网络进程会利用操作系统内核网络栈进行资源获取。在第一季的网络篇，我们曾经用了一节课的时间讲解[网络数据包是在网络中如何流转的]。如果你想要详细了解，可以去看看。这里我们着重关注浏览器收到响应后的渲染过程。</p>
+<p>在浏览器启动后，浏览器会通过监听系统的某个指定端口号，监听数据的变化。在浏览器收到网络数据包后，会根据返回的 <code>Content-Type</code> 字段决定后续的操作，如果是HTML，那么浏览器则会进入渲染的流程。</p>
+<p>在渲染过程中，主要工作交由渲染进程处理，我们可以简要分为几个部分：建立数据传输管道、构建DOM树、布局阶段、绘制以及合成渲染。下面，我们分别进行讲解。</p>
+<h3 id="建立数据传输管道">建立数据传输管道</h3>
+<p>当网络进程接收到网络上出来的 HTML 数据包的时候，渲染进程不会等网络进程完全接受完数据，才开始渲染流程。为了提高效率，渲染进程会一边接收一边解析。所以，渲染进程在收到主进程准备渲染的消息后，会使用Mojo接口，通过边解析变接收数据的方式，和网络进行IPC通信，建立数据传输的管道，将数据提交到渲染进程。</p>
+<h3 id="构建-dom-树">构建 DOM 树</h3>
+<p>渲染进程收到的是 HTML 的字符串，是一种无法进程结构化操作的数据，于是我们需要将纯文本转为一种容易操作、有结构的数据 —— DOM 树。</p>
+<p>DOM树本质上是一个以 document 为根节点的多叉树，DOM 树是结构化、易操作的，同样浏览器也会提供接口给到开发者，浏览器通过 JS 语言来操作 DOM 树，这样就可以动态修改页面内容了。</p>
+<p>在渲染进程的主线程内部，存在一个叫 <strong>HTML解析器（HTMLParser）</strong>的东西，想要将文本解析为 DOM ，离不开它的帮助。HTML 解析器会将 HTML 的字节流，通过<strong>分词器转为 Token 流</strong>，其中维护了一个栈结构，通过不断的压栈和出栈，生成对应的节点，最终生成 DOM 结构。</p>
+<p>在 DOM 解析的过程中当解析到<script>标签时，它会暂停 HTML 的解析，渲染进程中的 JS 引擎加载、解析和执行 JavaScript 代码完成后，才会继续解析。</p>
+
+<p>在 JS 解析的过程中，JS 是可能进行 CSS 操作的，所以在执行 JS 前还需要解析引用的 CSS 文件，生成 CSSOM 后，才能进行 JS 的解析。CSSOM 是 DOM 树中每个节点的具体样式和规则对应的树形结构，在构建完 CSSOM 后，要先进行 JS 的解析执行，然后再进行 DOM 树的构建。</p>
+
+<h3 id="布局阶段-layout">布局阶段 —— layout</h3>
+
+<p>这时已经构建完 DOM 树和 CSSOM 树，但是还是无法渲染，因为目前渲染引擎拿到的只是一个树形结构，并不知道具体在浏览器中渲染的具体位置。</p>
+
+<p>布局就是寻找元素几何形状的过程，具体就是主线程遍历 DOM 和计算样式，并创建包含 xy 坐标和边界框大小等信息的布局树。</p>
+
+<p>布局树可能类似于 DOM 树的结构，但它只包含与页面上可见内容相关的信息。比如说，布局树构建会剔除掉内容，这些内容虽然在 DOM 树上但是不会显示出来，如属性为：<code>display: none</code>的元素；其次，布局树还会计算出布局树节点的具体坐标位置。</p>
+
+<h3 id="绘制">绘制</h3>
+
+<p>渲染进程拿到布局树已经有具体节点的具体位置，但是还缺少一些东西，就是层级。我们知道，页面是类似 PS 的图层，是有图层上下文顺序的，而且还有一些 3D 的属性，浏览器内核还需要处理这些专图层，并生成一棵对应的图层树（LayerTree）。</p>
+
+<p>有了图层的关系，就可以开始准备绘制了，渲染进程会拆分出多个小的绘制指令，然后组装成一个有序的待绘制列表。</p>
+
+<h3 id="合成渲染">合成渲染</h3>
+
+<p>从硬件层面看，渲染操作是由显卡进行的，于是浏览器将具体的绘制动作，转化成待绘制指令列表。</p>
+
+<p>浏览器渲染进程中的合成线程，会将数据传输到栅格化线程池，从而实现图块的栅格化，最终把生成图块的指令发送给GPU。然后，在GPU中执行生成图块的位图，并保存在GPU的内存中。</p>
+
+<p>此时显示器会根据显示器的刷新率，定期从显卡的内存中读取数据。这样，图像就可以正常显示，被我们看到了。</p>
+
+<p>浏览器渲染的流程比较复杂，其中的细节也比较多，如果要详细分析，还可以拆成一篇超长篇幅，所以这里我们只是了解简单过程。你如果想要了解完整过程，可以阅读拓展材料中的 Chrome 开发者的官方博客。</p>
+
+<h2 id="chromium-的文件结构解析">Chromium 的文件结构解析</h2>
+
+<p>前面课程里，我们通过一些概念和例子简单了解了 WebKit 和 Chromium 的架构，不过这两者是非常庞大的项目，代码量也是非常的巨大，除去其中依赖的第三方库，这两个项目的代码量都是百万级别的，如果直接阅读的话是非常困难的。</p>
+
+<p>但是良好的代码组织结构，很好地帮助了开发者和学习者们。下面我大致介绍一下它们的目录结构及其用处，方便你快速地理解整个项目。</p>
+
+<p>因为里面的一二级目录非常多和深，所以我们把焦点放在核心的部分即可。我们可以通过 <a href="https://github.com/chromium/chromium" target="_blank">GitHub</a> 将 Chromium 的源码下载下来阅读，但是源码非常大，如果你不想下载，可以通过<a href="https://source.chromium.org/chromium/chromium/src" target="_blank">这个链接</a> 访问在线版本。</p>
+
+<pre><code>├── android_webview - 安卓平台webview的 `src/content`  目录所需要的接口
+├── apps - chrome打包 apps 的代码
+├── base - 基础工具库，所有的子工程公用
+├── build  - 公用的编译配置
+├── build_overrides // 
+├── cc - 合成器
+├── chrome - chrome 相关的稳定版本实现比如渲染进程中的某些API 的回调函数和某些功能实现
+  ├── app - 程序入口
+  ├── browser - 主进程
+  ├── renderer - 渲染进程
+  ...
+├── chromecast
+├── chromeos - chromeos 相关
+├── components - content层调用的一些组件模块；
+├── content - 多进程模型和沙盒实现的代码
+  ├── app - contentapi 的部分 app 接口
+  ├── browser - 主进程的实现
+  ├── common - 基础公共库
+  ├── gpu - gpu 进程实现
+  ├── ppapi_plugin - plugin  进程实现
+  ├── public - contentapi 接口
+  ├── renderer - 渲染进程实现
+  ...
+├── courgette
+├── crypto - 加密相关
+├── device - 硬件设备的api抽象层
+├── docs - 文档
+├── gpu - gpu 硬件加速的代码
+├── headless - 无头模式，给 puppeteer 使用
+├── ipc - ipc 通信的实现，包括 mojo 调用和 ChromeIPC
+├── media - 多媒体相关的模块
+├── mojo - mojo 底层实现
+├── native_client_sdk
+├── net - 网络栈相关
+├── pdf - pdf 相关
+├── ppapi - ppapi 代码
+├── printing - 打印相关
+├── sandbox - 沙箱项目，安全用防止利用漏洞攻击操作系统和硬件
+├── services
+├── skia - Android 图形库，直接从 Android 代码树中复制过来的
+├── sql - 本地数据库实现
+├── storage - 本地存储实现
+├── third_party - 三方库
+  ├── Webkit
+  ...
+├── tools
+├── ui - 渲染布局的基础框架
+├── url - url 解析和序列化
+└── v8 - V8 引擎
+</code></pre>
+
+<h2 id="重点回顾">重点回顾</h2>
+
+<p>今天，我们学习了 Chrome 下的多进程之间的协作方式。</p>
+
+<p>老版本的 Chrome 使用 Legacy IPC 进行 IPC 通信，它的本质就是通过 IPC::Channel 接口发送 IPC::Message。而新版本的 Chrome 使用了 Mojo 进行 IPC 通信，Mojo 是源于 Chrome 的 IPC 跨平台框架。Chrome 在不同的操作系统下的 IPC 实现方式有所不同，在Linux上是 Domain Socket，Windows 是 Named Pipe，macOS是Mach Port。</p>
+
+<p>之后，我们通过网页渲染的例子深入了解了，不同进程之间如何协作来进行渲染。最后我给你列举了 Chrome 项目的基本目录结构，如果你对其感兴趣，可以自行下载源码，深入探索。</p>
+
+<p>这节课的导图如下，供你参考：</p>
+
+<p><img src="assets/c7fafe4b20d4e68d0be01421d4c09cb9.jpg" alt="图片" /></p>
+
+<h2 id="扩展阅读">扩展阅读</h2>
+
+<p>浏览器是一个极为庞大的项目，仅仅通过两节课的内容，想要完全了解浏览器的特性是不太可能的。希望这两节课能抛砖引玉，更多的内容需要你自己去进行探索。</p>
+
+<p>这里我为你整理了一些参考资料，如果你能够认真阅读，相信会获得意想不到的收获。</p>
+
+<ol>
+<li><p>首先是 Chromium 官方的<a href="https://www.chromium.org/developers/design-documents/" target="_blank">设计文档</a>，包含了 Chromium and Chromium OS 的设计思维以及对应源码。</p></li>
+
+<li><p>其次是 Chrome 开发者的<a href="https://developer.chrome.com/blog/inside-browser-part1/#which-process-controls-what" target="_blank">官方博客</a>，里面的系列文章详细介绍了 Chrome 渲染页面的工作流程。</p></li>
+
+<li><p>还有Mojo 的<a href="https://chromium.googlesource.com/chromium/src/+/master/mojo/README.md.html" target="_blank">官方文档</a>，从这里你可以了解Mojo 的简单使用以及实现。</p></li>
+
+<li><p>最后就是<a href="https://book.douban.com/subject/25910556" target="_blank">《</a><a href="https://book.douban.com/subject/25910556" target="_blank">WebKit技术内幕</a><a href="https://book.douban.com/subject/25910556" target="_blank">》</a>，这本书详细介绍了WebKit的渲染引擎和 JavaScript 引擎的工作原理</p></li>
+</ol>
+
+<h2 id="思考题">思考题</h2>
+
+<p>为什么JS代码会阻塞页面渲染？从浏览器设计的角度看，浏览器可以做哪些操作来进行优化？在开发前端应用过程中又可以做哪些优化呢？</p>
+
+<p>欢迎你在留言区和我交流讨论。如果这节课对你有启发，别忘了分享给身边更多朋友。</p>
+</div>
+                        </div>
+                        <div>
+                            <div id="prePage" style="float: left">
+
+                            </div>
+                            <div id="nextPage" style="float: right">
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <hr />
+                <p>© 2019 - 2023 <a href="mailto:lll941107@gmail.com" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a
+                        href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+            </div>
+        </div>
+        <a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+    </div>
+</body>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93591beaacec822a',t:'MTc0NTUzNDQ5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></p></div></div></div></div></div></div></div></body></head></html>

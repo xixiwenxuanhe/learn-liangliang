@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="22 RISC-V指令精讲（七）：访存指令实现与调试" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>22 RISC-V指令精讲（七）：访存指令实现与调试 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e7%bb%83%e5%a5%bd%e5%9f%ba%e6%9c%ac%e5%8a%9f%ef%bc%8c%e4%bc%98%e7%a7%80%e5%b7%a5%e7%a8%8b%e5%b8%88%e6%88%90%e9%95%bf%e7%ac%ac%e4%b8%80%e6%ad%a5.md.html" id="00 开篇词 练好基本功，优秀工程师成长第一步.md.html">00 开篇词 练好基本功，优秀工程师成长第一步.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/01%20CISC%20&amp;%20RISC%ef%bc%9a%e4%bb%8e%e4%bd%95%e8%80%8c%e6%9d%a5%ef%bc%8c%e4%bd%95%e8%87%b3%e4%ba%8e%e6%ad%a4.md.html" id="01 CISC &amp; RISC：从何而来，何至于此.md.html">01 CISC &amp; RISC：从何而来，何至于此.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/02%20RISC%e7%89%b9%e6%80%a7%e4%b8%8e%e5%8f%91%e5%b1%95%ef%bc%9aRISC-V%e5%87%ad%e4%bb%80%e4%b9%88%e6%88%90%e4%b8%ba%e2%80%9c%e5%8d%8a%e5%af%bc%e4%bd%93%e8%a1%8c%e4%b8%9a%e7%9a%84Linux%e2%80%9d%ef%bc%9f.md.html" id="02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html">02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/03%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e5%bc%80%e5%90%af%e6%89%8b%e5%86%99CPU%e4%b9%8b%e6%97%85.md.html" id="03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html">03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/04%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%ba%8c%ef%bc%89_%20%e4%bb%a3%e7%a0%81%e6%98%af%e6%80%8e%e4%b9%88%e7%94%9f%e6%88%90%e5%85%b7%e4%bd%93%e7%94%b5%e8%b7%af%e7%9a%84%ef%bc%9f.md.html" id="04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html">04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/05%20%e6%8c%87%e4%bb%a4%e6%9e%b6%e6%9e%84%ef%bc%9aRISC-V%e5%9c%a8CPU%e8%ae%be%e8%ae%a1%e4%b8%8a%e5%88%b0%e5%ba%95%e6%9c%89%e5%93%aa%e4%ba%9b%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html">05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%8f%96%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0.md.html" id="06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html">06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/07%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e8%af%91%e7%a0%81%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="07 手写CPU（二）：如何实现指令译码模块？.md.html">07 手写CPU（二）：如何实现指令译码模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/08%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e6%89%a7%e8%a1%8c%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="08 手写CPU（三）：如何实现指令执行模块？.md.html">08 手写CPU（三）：如何实现指令执行模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/09%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0CPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e8%ae%bf%e5%ad%98%e9%98%b6%e6%ae%b5%ef%bc%9f.md.html" id="09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html">09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/10%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9aCPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e5%86%99%e5%9b%9e%e6%a8%a1%e5%9d%97%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html">10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/11%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e6%88%91%e4%bb%ac%e7%9a%84CPU%e8%b7%91%e8%b5%b7%e6%9d%a5%ef%bc%9f.md.html" id="11 手写CPU（六）：如何让我们的CPU跑起来？.md.html">11 手写CPU（六）：如何让我们的CPU跑起来？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/12%20QEMU%ef%bc%9a%e6%94%af%e6%8c%81RISC-V%e7%9a%84QEMU%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%ef%bc%9f.md.html" id="12 QEMU：支持RISC-V的QEMU如何构建？.md.html">12 QEMU：支持RISC-V的QEMU如何构建？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%b0%8f%e8%af%95%e7%89%9b%e5%88%80%ef%bc%9a%e8%b7%91%e9%80%9aRISC-V%e5%b9%b3%e5%8f%b0%e7%9a%84Hello%20World%e7%a8%8b%e5%ba%8f.md.html" id="13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html">13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b5%b0%e8%bf%9bC%e8%af%ad%e8%a8%80%ef%bc%9a%e9%ab%98%e7%ba%a7%e8%af%ad%e8%a8%80%e6%80%8e%e6%a0%b7%e6%8a%bd%e8%b1%a1%e6%89%a7%e8%a1%8c%e9%80%bb%e8%be%91%ef%bc%9f.md.html" id="14 走进C语言：高级语言怎样抽象执行逻辑？.md.html">14 走进C语言：高级语言怎样抽象执行逻辑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/15%20C%e4%b8%8e%e6%b1%87%e7%bc%96%ef%bc%9a%e6%8f%ad%e7%a7%98C%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e2%80%9c%e6%90%ac%e7%a0%96%e2%80%9d%e6%97%a5%e5%b8%b8.md.html" id="15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html">15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/16%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="16 RISC-V指令精讲（一）：算术指令实现与调试.md.html">16 RISC-V指令精讲（一）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/17%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="17 RISC-V指令精讲（二）：算术指令实现与调试.md.html">17 RISC-V指令精讲（二）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/18%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html">18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/19%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html">19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/20%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9a%e5%8e%9f%e5%ad%90%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="20 RISC-V指令精讲（五）：原子指令实现与调试.md.html">20 RISC-V指令精讲（五）：原子指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/21%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%8a%a0%e8%bd%bd%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="21 RISC-V指令精讲（六）：加载指令实现与调试.md.html">21 RISC-V指令精讲（六）：加载指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/22%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%83%ef%bc%89%ef%bc%9a%e8%ae%bf%e5%ad%98%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="22 RISC-V指令精讲（七）：访存指令实现与调试.md.html">22 RISC-V指令精讲（七）：访存指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/23%20%e5%86%85%e5%ad%98%e5%9c%b0%e5%9d%80%e7%a9%ba%e9%97%b4%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e5%9c%b0%e5%9d%80%e7%9a%84%e4%b8%89%e7%a7%8d%e4%ba%a7%e7%94%9f%e6%96%b9%e5%bc%8f.md.html" id="23 内存地址空间：程序中地址的三种产生方式.md.html">23 内存地址空间：程序中地址的三种产生方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/24%20%e8%99%9a%e5%ae%9e%e7%bb%93%e5%90%88%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%e5%92%8c%e7%89%a9%e7%90%86%e5%86%85%e5%ad%98.md.html" id="24 虚实结合：虚拟内存和物理内存.md.html">24 虚实结合：虚拟内存和物理内存.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/25%20%e5%a0%86&amp;%e6%a0%88%ef%bc%9a%e5%a0%86%e4%b8%8e%e6%a0%88%e7%9a%84%e5%8c%ba%e5%88%ab%e5%92%8c%e5%ba%94%e7%94%a8.md.html" id="25 堆&amp;栈：堆与栈的区别和应用.md.html">25 堆&amp;栈：堆与栈的区别和应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/26%20%e5%bb%b6%e8%bf%9f%e5%88%86%e9%85%8d%ef%bc%9a%e6%8f%90%e9%ab%98%e5%86%85%e5%ad%98%e5%88%a9%e7%94%a8%e7%8e%87%e7%9a%84%e4%b8%89%e7%a7%8d%e6%9c%ba%e5%88%b6.md.html" id="26 延迟分配：提高内存利用率的三种机制.md.html">26 延迟分配：提高内存利用率的三种机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/27%20%e5%ba%94%e7%94%a8%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e7%9a%84%e5%ba%94%e7%94%a8%e4%b8%8e%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86.md.html" id="27 应用内存管理：Linux的应用与内存管理.md.html">27 应用内存管理：Linux的应用与内存管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/28%20%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6%ef%bc%9a%e5%ba%94%e7%94%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%83%bd%e5%b9%b6%e8%a1%8c%e6%89%a7%e8%a1%8c%ef%bc%9f.md.html" id="28 进程调度：应用为什么能并行执行？.md.html">28 进程调度：应用为什么能并行执行？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/29%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="29 应用间通信（一）：详解Linux进程IPC.md.html">29 应用间通信（一）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/30%20%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="30  应用间通信（二）：详解Linux进程IPC.md.html">30  应用间通信（二）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/31%20%e5%a4%96%e8%ae%be%e9%80%9a%e4%bf%a1%ef%bc%9aIO%20Cache%e4%b8%8eIO%e8%b0%83%e5%ba%a6.md.html" id="31 外设通信：IO Cache与IO调度.md.html">31 外设通信：IO Cache与IO调度.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/32%20IO%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%a4%9a%e4%b8%aa%e5%a4%96%e8%ae%be%ef%bc%9f.md.html" id="32 IO管理：Linux如何管理多个外设？.md.html">32 IO管理：Linux如何管理多个外设？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/33%20lotop%e4%b8%8elostat%e5%91%bd%e4%bb%a4%ef%bc%9a%e8%81%8a%e8%81%8a%e5%91%bd%e4%bb%a4%e8%83%8c%e5%90%8e%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%8e%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86.md.html" id="33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html">33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/34%20%e6%96%87%e4%bb%b6%e4%bb%93%e5%ba%93%ef%bc%9a%e5%88%9d%e8%af%86%e6%96%87%e4%bb%b6%e4%b8%8e%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f.md.html" id="34 文件仓库：初识文件与文件系统.md.html">34 文件仓库：初识文件与文件系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/35%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 Linux文件系统（一）：Linux如何存放文件？.md.html">35 Linux文件系统（一）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/36%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="36 Linux文件系统（二）：Linux如何存放文件？.md.html">36 Linux文件系统（二）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/37%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e5%a4%9a%e8%bf%9b%e7%a8%8b%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html">37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/38%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e8%bf%9b%e7%a8%8b%e9%80%9a%e4%bf%a1%e4%b8%8e%e7%bd%91%e7%bb%9c%e6%b8%b2%e6%9f%93%e8%af%a6%e8%a7%a3.md.html" id="38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html">38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/39%20%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%ef%bc%9aV8%20%e6%89%a7%e8%a1%8c%20JS%20%e4%bb%a3%e7%a0%81%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b.md.html" id="39 源码解读：V8 执行 JS 代码的全过程.md.html">39 源码解读：V8 执行 JS 代码的全过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/40%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html">40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/41%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html">41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/42%20%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%ef%bc%9a%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%e5%b7%a5%e5%85%b7eBPF%e5%92%8c%e8%b0%83%e4%bc%98%e6%96%b9%e6%b3%95.md.html" id="42 性能调优：性能调优工具eBPF和调优方法.md.html">42 性能调优：性能调优工具eBPF和调优方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%85%88%e7%9d%b9%e4%b8%ba%e5%bf%ab%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e9%a1%b9%e7%9b%ae%e6%95%88%e6%9e%9c%e6%bc%94%e7%a4%ba.md.html" id="先睹为快：迷你CPU项目效果演示.md.html">先睹为快：迷你CPU项目效果演示.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e4%ba%91%e8%ae%a1%e7%ae%97%e5%9f%ba%e7%a1%80%ef%bc%9a%e8%87%aa%e5%b7%b1%e5%8a%a8%e6%89%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e6%ac%beIAAS%e8%99%9a%e6%8b%9f%e5%8c%96%e5%b9%b3%e5%8f%b0.md.html" id="加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html">加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html">加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html">加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e8%b0%88%e8%b0%88%e5%ae%b9%e5%99%a8%e4%ba%91%e4%b8%8e%e5%92%8cCaaS%e5%b9%b3%e5%8f%b0.md.html" id="加餐04 谈谈容器云与和CaaS平台.md.html">加餐04 谈谈容器云与和CaaS平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9005%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%be%ae%e6%9c%8d%e5%8a%a1%e4%b8%8e%e6%99%ba%e8%83%bdSaaS.md.html" id="加餐05 分布式微服务与智能SaaS.md.html">加餐05 分布式微服务与智能SaaS.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9201%20%e7%9f%a5%e8%af%86%e6%8c%91%e6%88%98%e8%b5%9b%ef%bc%9a%e6%a3%80%e9%aa%8c%e4%b8%80%e4%b8%8b%e5%ad%a6%e4%b9%a0%e6%88%90%e6%9e%9c%e5%90%a7%ef%bc%81.md.html" id="国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html">国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9202%20%e6%9d%a5%e8%87%aa%e8%af%be%e4%bb%a3%e8%a1%a8%e7%9a%84%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a.md.html" id="国庆策划02 来自课代表的学习锦囊.md.html">国庆策划02 来自课代表的学习锦囊.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9203%20%e6%8f%ad%e7%a7%98%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%e6%93%8d%e4%bd%9c%e5%92%8c%e6%a0%88%e4%bf%9d%e6%8a%a4%e6%9c%ba%e5%88%b6.md.html" id="国庆策划03 揭秘代码优化操作和栈保护机制.md.html">国庆策划03 揭秘代码优化操作和栈保护机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e6%b8%a9%e6%95%85%e7%9f%a5%e6%96%b0%20%e6%80%9d%e8%80%83%e9%a2%98%e5%8f%82%e8%80%83%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="温故知新 思考题参考答案（一）.md.html">温故知新 思考题参考答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%91%e6%98%af%e6%80%8e%e6%a0%b7%e5%ad%a6%e4%b9%a0Verilog%e7%9a%84%ef%bc%9f.md.html" id="用户故事 我是怎样学习Verilog的？.md.html">用户故事 我是怎样学习Verilog的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%bf%83%e8%8b%a5%e6%9c%89%e6%89%80%e5%90%91%e5%be%80%ef%bc%8c%e4%bd%95%e6%83%a7%e9%81%93%e9%98%bb%e4%b8%94%e9%95%bf.md.html" id="结束语 心若有所向往，何惧道阻且长.md.html">结束语 心若有所向往，何惧道阻且长.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="22 RISC-V指令精讲（七）：访存指令实现与调试" id="title">22 RISC-V指令精讲（七）：访存指令实现与调试</h1>
+<div><p>你好，我是LMOS。</p>
+<p>上节课我们说了RISC-V是加载储存体系结构的典型，只有加载指令和储存指令才有资格访问内存。</p>
+<p>计算机运算完成的结果，一开始会放在寄存器中，但最终归宿还是内存，此时就需要存储指令发挥作用了。这节课我们就来看看RISC-V提供的存储指令，一共有三条，分别是储存字节指令、储存双字节指令和储存字指令。</p>
+<p>课程的代码你可以从<a href="https://gitee.com/lmos/Geek-time-computer-foundation/tree/master/lesson21~22" target="_blank">这里</a>下载。话不多说，咱们进入正题。</p>
+<h2 id="储存字节指令-sb指令">储存字节指令：sb指令</h2>
+<p>我们先从储存字节指令，即sb指令学起。</p>
+<p>这个指令存储的字节单位是一个字节，也就是8位数据。说得再具体一些，这个指令会把一个通用寄存器里的低[7:0]位，储存到特定地址的内存单元里。而这个特定地址，要由另一个通用寄存器和一个立即数之和来决定。</p>
+<p>储存字节指令的汇编代码，书写形式如下所示：</p>
+<pre><code>sb rs2,imm(rs1)
+#sb 储存字节指令
+#rs2 源寄存器2
+#rs1 源寄存器1
+#imm 立即数（-2048~2047）
+</code></pre>
+<p><strong>上述代码中rs1和rs2可以是任何通用寄存器。立即数imm为12位二进制数据，其范围是-2048~2047。</strong>因为rs1、rs2以及立即数imm的规定，对后面的sh指令和sw指令同样适用，后面我就不重复说了。</p>
+<p>sb指令完成的操作用伪代码描述是这样的：</p>
+<pre><code>（[rs1+imm]）= rs2[7:0]
+</code></pre>
+<p>我来为你解释一下伪代码执行的操作。首先取得rs2寄存器第0位到第7位这8位数据，即一个字节。然后，把这个字节数据储存到rs1+imm为地址的内存单元中。</p>
+<p>接着是代码验证环节，为了方便调试，我们在工程目录下新建一个store.S文件，并在其中用汇编写上sb_ins函数。代码如下所示：</p>
+<pre><code>.text
+.globl sb_ins
+#a0内存地址
+#a1储存的值
+sb_ins:
+    sb a1, 0(a0)       #储存a1低8位到a0+0地址处
+    jr ra              #返回
+</code></pre>
+<p>sb_ins函数我已经帮你写好了，只有两条指令，第一条指令把a1寄存器的低8位数据，储存到a0+0地址处的内存单元中，第二条指令就返回了。</p>
+<p>现在，我们一起用VSCode打开工程目录，把断点打在“sb a1, 0(a0) ”指令处，按下“F5”键调试一下，效果如下图：</p>
+<p><img alt="图片" src="assets/ee3b74d78ce8bbf597f9e9d1998dd216.jpg"/></p>
+<p>图片里对应的是刚刚执行完sb a1，0(a0)指令之后，执行jr ra指令之前的状态。这时候a0寄存器中的值是0x20a80，这是byte变量的地址，a1是0x80，正是十进制数据128。</p>
+<p>我们继续单步调试，返回到main函数中执行printf函数，打印一下byte变量的值，如下图所示：</p>
+<p><img alt="图片" src="assets/8ab29e03646a8b7824e515aa6980b07c.jpg"/></p>
+<p>从图中可以看到，byte变量的初始值为-5。调用sb_ins函数时，我们把byte的地址强制为无符号整数传给sb_ins函数第一个参数，把整数128传给sb_ins函数第二个参数。</p>
+<p>C语言调用规范告诉我们，sb_ins函数会通过a0、a1寄存器传递第一个、第二个参数，之后printf函数输出byte变量的值为128，这证明了sb指令是正常工作的。</p>
+<h2 id="储存双字节指令-sh指令">储存双字节指令：sh指令</h2>
+<p>接下来要说的是储存半字指令，也是储存双字节指令。它可以把一个通用寄存器中的低[15:0]位，一共16位的数据（即两个字节），储存到特定地址的内存单元中，这个地址由另一个通用寄存器与一个立即数之和决定。</p>
+<p>储存半字指令的汇编代码，书写形式是这样的：</p>
+<pre><code>sh rs2,imm(rs1)
+#sh 储存半字指令
+#rs2 源寄存器2
+#rs1 源寄存器1
+#imm 立即数（-2048~2047）
+</code></pre>
+<p>sh指令完成的操作用伪代码描述如下所示：</p>
+<pre><code>（[rs1+imm]）= rs2[15:0]
+</code></pre>
+<p>我来为你解释一下，上面的伪代码执行了怎样的操作。首先取得rs2的第0位到第15位的数据。然后把这两个字节（16位数据）的数据，储存到rs1+imm这个地址的内存单元中。</p>
+<p>好，咱们写个代码来验证一下。在store.S文件中，用汇编写上sh_ins函数。代码如下所示：</p>
+<pre><code>.globl sh_ins
+#a0内存地址
+#a1储存的值
+sh_ins:
+    sh a1, 0(a0)       #储存a1低16位到a0+0地址处
+    jr ra              #返回
+</code></pre>
+<p>与sb_ins函数一样，sh_ins函数只有两条指令，但第一条指令是把a1寄存器的低16位数据，储存到a0+0地址处的内存单元中，第二条指令同样是返回指令。</p>
+<p>现在我们一起用VSCode打开工程目录，在“sh a1, 0(a0) ”指令处打上断点，按“F5”键调试的截图如下所示：</p>
+<p><img alt="图片" src="assets/ca2946638e7a271e917d95037bb3be3e.jpg"/></p>
+<p>图片对应的是刚刚执行完sh a1,0(a0)指令之后，执行jr ra指令之前的状态，a0寄存器中的值是half变量的地址，a1寄存器中的值是0xa5a5。</p>
+<p>我们继续进行单步调试，返回到main函数中执行printf函数，打印一下half变量的值。</p>
+<p><img alt="图片" src="assets/691291f67fa032aebe3eb45a84e043d3.jpg"/></p>
+<p>如上图所示，half变量的初始值为-1。随后调用sh_ins函数，我们把half的地址强制为无符号整数传给sh_ins函数第一个参数，再把整数0xa5a5传给sh_ins函数第二个参数，之后printf函数输出half变量的值为0xa5a5。这证明了sh指令工作正常。</p>
+<h2 id="储存字指令-sw指令">储存字指令：sw指令</h2>
+<p>最后，我们来学习一下储存字指令，就是储存32位四字节指令，也是最常用的储存指令，它是把一个32位的通用寄存器，储存到特定地址的内存单元中，这个地址由另一个通用寄存器与一个立即数之和决定。</p>
+<p>储存字指令的汇编代码书写形式如下所示：</p>
+<pre><code>sw rs2,imm(rs1)
+#sw 储存字指令
+#rs2 源寄存器2
+#rs1 源寄存器1
+#imm 立即数（-2048~2047）
+</code></pre>
+<p>上述代码中rs1和rs2可以是任何通用寄存器。立即数imm为12位二进制数据，其范围是-2048~2047。</p>
+<p>然后我们看看sw指令完成的操作，对应的伪代码描述如下：</p>
+<pre><code>（[rs1+imm]）= rs2
+</code></pre>
+<p>这段伪代码执行的操作就是把rs2的32位数据，即四个字节数据，储存到rs1+imm为地址的内存单元中。</p>
+<p>下面我们一起写代码验证一下，在store.S文件中，用汇编写上sw_ins函数。代码如下：</p>
+<pre><code>.globl sw_ins
+#a0内存地址
+#a1储存的值
+sw_ins:
+    sw a1, 0(a0)       #储存a1到a0+0地址处
+    jr ra              #返回
+</code></pre>
+<p>sw_ins函数只有两条指令，第一条指令是把a1寄存器储存到a0+0地址处的内存单元中，第二条指令同样是返回指令。</p>
+<p>毕竟眼见为实，咱们调试观察一下。用VSCode打开工程目录，在“sw a1, 0(a0) ”指令处打上断点，按下“F5”键调试，如下所示：</p>
+<p><img alt="图片" src="assets/b2d982461bbbe87685e54a2cec3b8e01.jpg"/></p>
+<p>上图是刚刚执行完sw a1,0(a0)指令之后，执行jr ra指令之前的状态。a0寄存器中的值是word变量的地址，a1寄存器中的值是0，执行完这个sw_ins函数后，word变量的值应该变为0了。</p>
+<p>我们继续单步调试，执行返回到main函数中执行printf函数，打印一下word变量的值，如下图所示：</p>
+<p><img alt="图片" src="assets/7f261940269dd4edce593c91d3211f9c.jpg"/></p>
+<p>可以看到图中word变量的初始值为0xfffffffff，随后调用sw_ins函数，我们把word变量的地址强制为无符号整数传给sw_ins函数第一个参数，把整数0传给sw_ins函数第二个参数，之后printf函数输出word变量的值确实为0。这证明了sw指令工作正常。</p>
+<p>我们已经对sb、sh、sw指令进行了调试，了解了它们的功能，现在我们继续一起看看sb_ins、sh_ins、sw_ins函数的二进制数据。</p>
+<p>打开终端，切换到该工程目录下，输入命令：riscv64-unknown-elf-objdump -d ./main.elf &gt; ./main.ins，就会得到main.elf的反汇编数据文件main.ins，我们打开这个文件，就会看到上述这些函数的二进制数据，如下所示：</p>
+<p><img alt="图片" src="assets/45f7c8f9cf9558fb6143318bd89c0abc.jpg"/></p>
+<p>可以看到，在图片里的反汇编代码中不但有伪指令，还有两个字节的压缩指令。编译器为了节约内存，所以会把指令压缩。比如说ret的机器码是0x8082，sw a1,0(a0)机器码是0xc10c，它们只占用16位编码，即二字节。</p>
+<p>截图里五条加载指令的机器码与指令的对应关系，你可以参考后面这张表格。</p>
+<p><img alt="图片" src="assets/4641362093d8794fc2f400d66ce3ec68.jpg"/></p>
+<p>我画了示意图，帮你拆分一下sb、sh、sw指令各位段的数据，这样更容易看清楚它们是如何编码的。如下所示：</p>
+<p><img alt="图片" src="assets/14a4aa40d4bc9691394d02460bec0f82.jpg"/></p>
+<p>对照上图可以看到，sb、sh、sw指令的功能码都不一样，借此就能区分它们。而这些储存指令的操作码都相同，立即数也相同（都是0），这和我们编写的代码有关。</p>
+<p>我还想提示你注意一下sw指令，图片里的情况跟反汇编出来的数据可能不一致，原因是编译器使用了压缩指令。图片里我还原的是sw a1,0(a0)正常的编码。</p>
+<p>你可以手动在sw_ins函数中，插入0x00b52023这个数据进行验证。怎么插入这个数据使之变成一条指令呢？参考[上节课]还原lw指令的讲解，我相信你这次自己也能搞定它。</p>
+<p>关于RISC-V的三条储存指令已经介绍完了，它们可以将字节、双字节、四字节储存到内存中去。实现了保存运算指令运算结果的功能，给高级语言实现各种类型的变量，提供了基础。</p>
+<h2 id="重点回顾">重点回顾</h2>
+<p>今天我们一口气学完了三条储存指令。有了三条储存指令，加上我们上节课学过的五条加载指令，就构成了RISC-V的访存指令。</p>
+<p>RISC-V提供的储存字节指令、储存半字指令和储存字指令。储存指令可以把寄存器的运算结果，或者其他数据储存到特定的内存空间中。储存单位可以是一个字节、两个字节，或者四个字节。有了这些指令，不同大小、位宽的数据处理起来都很方便。</p>
+<p>运算指令的运算结果，要通过储存指令保存到内存中，这也给高级语言实现各种类型的变量，打下了基础。</p>
+<p>我照例用导图梳理了这节课的要点，你可以做个参考。</p>
+<p><img alt="" src="assets/3e11da000389d18458e20039ae4c46d0.jpg"/></p>
+<h2 id="思考题">思考题</h2>
+<p>为什么三条储存指令，不需要处理数据符号问题呢？</p>
+<p>期待你在留言区跟我互动，也可以记录一下自己的收获。如果觉得课程还不错，也别忘了分享给更多朋友。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#c9a5a5a5f0fdf8f8f9fe89aea4a8a0a5e7aaa6a4" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359192beee1d637',t:'MTc0NTUzNDM4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

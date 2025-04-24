@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="15 C与汇编：揭秘C语言编译器的“搬砖”日常" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>15 C与汇编：揭秘C语言编译器的“搬砖”日常 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e7%bb%83%e5%a5%bd%e5%9f%ba%e6%9c%ac%e5%8a%9f%ef%bc%8c%e4%bc%98%e7%a7%80%e5%b7%a5%e7%a8%8b%e5%b8%88%e6%88%90%e9%95%bf%e7%ac%ac%e4%b8%80%e6%ad%a5.md.html" id="00 开篇词 练好基本功，优秀工程师成长第一步.md.html">00 开篇词 练好基本功，优秀工程师成长第一步.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/01%20CISC%20&amp;%20RISC%ef%bc%9a%e4%bb%8e%e4%bd%95%e8%80%8c%e6%9d%a5%ef%bc%8c%e4%bd%95%e8%87%b3%e4%ba%8e%e6%ad%a4.md.html" id="01 CISC &amp; RISC：从何而来，何至于此.md.html">01 CISC &amp; RISC：从何而来，何至于此.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/02%20RISC%e7%89%b9%e6%80%a7%e4%b8%8e%e5%8f%91%e5%b1%95%ef%bc%9aRISC-V%e5%87%ad%e4%bb%80%e4%b9%88%e6%88%90%e4%b8%ba%e2%80%9c%e5%8d%8a%e5%af%bc%e4%bd%93%e8%a1%8c%e4%b8%9a%e7%9a%84Linux%e2%80%9d%ef%bc%9f.md.html" id="02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html">02 RISC特性与发展：RISC-V凭什么成为“半导体行业的Linux”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/03%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e5%bc%80%e5%90%af%e6%89%8b%e5%86%99CPU%e4%b9%8b%e6%97%85.md.html" id="03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html">03 硬件语言筑基（一）：从硬件语言开启手写CPU之旅.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/04%20%e7%a1%ac%e4%bb%b6%e8%af%ad%e8%a8%80%e7%ad%91%e5%9f%ba%ef%bc%88%e4%ba%8c%ef%bc%89_%20%e4%bb%a3%e7%a0%81%e6%98%af%e6%80%8e%e4%b9%88%e7%94%9f%e6%88%90%e5%85%b7%e4%bd%93%e7%94%b5%e8%b7%af%e7%9a%84%ef%bc%9f.md.html" id="04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html">04 硬件语言筑基（二）_ 代码是怎么生成具体电路的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/05%20%e6%8c%87%e4%bb%a4%e6%9e%b6%e6%9e%84%ef%bc%9aRISC-V%e5%9c%a8CPU%e8%ae%be%e8%ae%a1%e4%b8%8a%e5%88%b0%e5%ba%95%e6%9c%89%e5%93%aa%e4%ba%9b%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html">05 指令架构：RISC-V在CPU设计上到底有哪些优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%8f%96%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0.md.html" id="06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html">06 手写CPU（一）：迷你CPU架构设计与取指令实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/07%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e8%af%91%e7%a0%81%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="07 手写CPU（二）：如何实现指令译码模块？.md.html">07 手写CPU（二）：如何实现指令译码模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/08%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%87%e4%bb%a4%e6%89%a7%e8%a1%8c%e6%a8%a1%e5%9d%97%ef%bc%9f.md.html" id="08 手写CPU（三）：如何实现指令执行模块？.md.html">08 手写CPU（三）：如何实现指令执行模块？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/09%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0CPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e8%ae%bf%e5%ad%98%e9%98%b6%e6%ae%b5%ef%bc%9f.md.html" id="09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html">09 手写CPU（四）：如何实现CPU流水线的访存阶段？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/10%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9aCPU%e6%b5%81%e6%b0%b4%e7%ba%bf%e7%9a%84%e5%86%99%e5%9b%9e%e6%a8%a1%e5%9d%97%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html">10 手写CPU（五）：CPU流水线的写回模块如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/11%20%e6%89%8b%e5%86%99CPU%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e6%88%91%e4%bb%ac%e7%9a%84CPU%e8%b7%91%e8%b5%b7%e6%9d%a5%ef%bc%9f.md.html" id="11 手写CPU（六）：如何让我们的CPU跑起来？.md.html">11 手写CPU（六）：如何让我们的CPU跑起来？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/12%20QEMU%ef%bc%9a%e6%94%af%e6%8c%81RISC-V%e7%9a%84QEMU%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%ef%bc%9f.md.html" id="12 QEMU：支持RISC-V的QEMU如何构建？.md.html">12 QEMU：支持RISC-V的QEMU如何构建？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%b0%8f%e8%af%95%e7%89%9b%e5%88%80%ef%bc%9a%e8%b7%91%e9%80%9aRISC-V%e5%b9%b3%e5%8f%b0%e7%9a%84Hello%20World%e7%a8%8b%e5%ba%8f.md.html" id="13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html">13 小试牛刀：跑通RISC-V平台的Hello World程序.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b5%b0%e8%bf%9bC%e8%af%ad%e8%a8%80%ef%bc%9a%e9%ab%98%e7%ba%a7%e8%af%ad%e8%a8%80%e6%80%8e%e6%a0%b7%e6%8a%bd%e8%b1%a1%e6%89%a7%e8%a1%8c%e9%80%bb%e8%be%91%ef%bc%9f.md.html" id="14 走进C语言：高级语言怎样抽象执行逻辑？.md.html">14 走进C语言：高级语言怎样抽象执行逻辑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/15%20C%e4%b8%8e%e6%b1%87%e7%bc%96%ef%bc%9a%e6%8f%ad%e7%a7%98C%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e2%80%9c%e6%90%ac%e7%a0%96%e2%80%9d%e6%97%a5%e5%b8%b8.md.html" id="15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html">15 C与汇编：揭秘C语言编译器的“搬砖”日常.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/16%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="16 RISC-V指令精讲（一）：算术指令实现与调试.md.html">16 RISC-V指令精讲（一）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/17%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%ae%97%e6%9c%af%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="17 RISC-V指令精讲（二）：算术指令实现与调试.md.html">17 RISC-V指令精讲（二）：算术指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/18%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html">18 RISC-V指令精讲（三）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/19%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e8%b7%b3%e8%bd%ac%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html">19 RISC-V指令精讲（四）：跳转指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/20%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%ba%94%ef%bc%89%ef%bc%9a%e5%8e%9f%e5%ad%90%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="20 RISC-V指令精讲（五）：原子指令实现与调试.md.html">20 RISC-V指令精讲（五）：原子指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/21%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e5%85%ad%ef%bc%89%ef%bc%9a%e5%8a%a0%e8%bd%bd%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="21 RISC-V指令精讲（六）：加载指令实现与调试.md.html">21 RISC-V指令精讲（六）：加载指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/22%20RISC-V%e6%8c%87%e4%bb%a4%e7%b2%be%e8%ae%b2%ef%bc%88%e4%b8%83%ef%bc%89%ef%bc%9a%e8%ae%bf%e5%ad%98%e6%8c%87%e4%bb%a4%e5%ae%9e%e7%8e%b0%e4%b8%8e%e8%b0%83%e8%af%95.md.html" id="22 RISC-V指令精讲（七）：访存指令实现与调试.md.html">22 RISC-V指令精讲（七）：访存指令实现与调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/23%20%e5%86%85%e5%ad%98%e5%9c%b0%e5%9d%80%e7%a9%ba%e9%97%b4%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e5%9c%b0%e5%9d%80%e7%9a%84%e4%b8%89%e7%a7%8d%e4%ba%a7%e7%94%9f%e6%96%b9%e5%bc%8f.md.html" id="23 内存地址空间：程序中地址的三种产生方式.md.html">23 内存地址空间：程序中地址的三种产生方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/24%20%e8%99%9a%e5%ae%9e%e7%bb%93%e5%90%88%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%e5%92%8c%e7%89%a9%e7%90%86%e5%86%85%e5%ad%98.md.html" id="24 虚实结合：虚拟内存和物理内存.md.html">24 虚实结合：虚拟内存和物理内存.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/25%20%e5%a0%86&amp;%e6%a0%88%ef%bc%9a%e5%a0%86%e4%b8%8e%e6%a0%88%e7%9a%84%e5%8c%ba%e5%88%ab%e5%92%8c%e5%ba%94%e7%94%a8.md.html" id="25 堆&amp;栈：堆与栈的区别和应用.md.html">25 堆&amp;栈：堆与栈的区别和应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/26%20%e5%bb%b6%e8%bf%9f%e5%88%86%e9%85%8d%ef%bc%9a%e6%8f%90%e9%ab%98%e5%86%85%e5%ad%98%e5%88%a9%e7%94%a8%e7%8e%87%e7%9a%84%e4%b8%89%e7%a7%8d%e6%9c%ba%e5%88%b6.md.html" id="26 延迟分配：提高内存利用率的三种机制.md.html">26 延迟分配：提高内存利用率的三种机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/27%20%e5%ba%94%e7%94%a8%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e7%9a%84%e5%ba%94%e7%94%a8%e4%b8%8e%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86.md.html" id="27 应用内存管理：Linux的应用与内存管理.md.html">27 应用内存管理：Linux的应用与内存管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/28%20%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6%ef%bc%9a%e5%ba%94%e7%94%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%83%bd%e5%b9%b6%e8%a1%8c%e6%89%a7%e8%a1%8c%ef%bc%9f.md.html" id="28 进程调度：应用为什么能并行执行？.md.html">28 进程调度：应用为什么能并行执行？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/29%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="29 应用间通信（一）：详解Linux进程IPC.md.html">29 应用间通信（一）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/30%20%20%e5%ba%94%e7%94%a8%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%a6%e8%a7%a3Linux%e8%bf%9b%e7%a8%8bIPC.md.html" id="30  应用间通信（二）：详解Linux进程IPC.md.html">30  应用间通信（二）：详解Linux进程IPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/31%20%e5%a4%96%e8%ae%be%e9%80%9a%e4%bf%a1%ef%bc%9aIO%20Cache%e4%b8%8eIO%e8%b0%83%e5%ba%a6.md.html" id="31 外设通信：IO Cache与IO调度.md.html">31 外设通信：IO Cache与IO调度.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/32%20IO%e7%ae%a1%e7%90%86%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%a4%9a%e4%b8%aa%e5%a4%96%e8%ae%be%ef%bc%9f.md.html" id="32 IO管理：Linux如何管理多个外设？.md.html">32 IO管理：Linux如何管理多个外设？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/33%20lotop%e4%b8%8elostat%e5%91%bd%e4%bb%a4%ef%bc%9a%e8%81%8a%e8%81%8a%e5%91%bd%e4%bb%a4%e8%83%8c%e5%90%8e%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%8e%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86.md.html" id="33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html">33 lotop与lostat命令：聊聊命令背后的故事与工作原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/34%20%e6%96%87%e4%bb%b6%e4%bb%93%e5%ba%93%ef%bc%9a%e5%88%9d%e8%af%86%e6%96%87%e4%bb%b6%e4%b8%8e%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f.md.html" id="34 文件仓库：初识文件与文件系统.md.html">34 文件仓库：初识文件与文件系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/35%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 Linux文件系统（一）：Linux如何存放文件？.md.html">35 Linux文件系统（一）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/36%20Linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ad%98%e6%94%be%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="36 Linux文件系统（二）：Linux如何存放文件？.md.html">36 Linux文件系统（二）：Linux如何存放文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/37%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e7%94%a8%e5%a4%9a%e8%bf%9b%e7%a8%8b%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html">37 浏览器原理（一）：浏览器为什么要用多进程模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/38%20%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8e%9f%e7%90%86%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%b5%8f%e8%a7%88%e5%99%a8%e8%bf%9b%e7%a8%8b%e9%80%9a%e4%bf%a1%e4%b8%8e%e7%bd%91%e7%bb%9c%e6%b8%b2%e6%9f%93%e8%af%a6%e8%a7%a3.md.html" id="38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html">38 浏览器原理（二）：浏览器进程通信与网络渲染详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/39%20%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%ef%bc%9aV8%20%e6%89%a7%e8%a1%8c%20JS%20%e4%bb%a3%e7%a0%81%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b.md.html" id="39 源码解读：V8 执行 JS 代码的全过程.md.html">39 源码解读：V8 执行 JS 代码的全过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/40%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html">40 内功心法（一）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/41%20%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%86%85%e6%a0%b8%e5%92%8c%e5%90%8e%e7%ab%af%e9%80%9a%e7%94%a8%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e6%83%b3%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html">41 内功心法（二）：内核和后端通用的设计思想有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/42%20%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%ef%bc%9a%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%e5%b7%a5%e5%85%b7eBPF%e5%92%8c%e8%b0%83%e4%bc%98%e6%96%b9%e6%b3%95.md.html" id="42 性能调优：性能调优工具eBPF和调优方法.md.html">42 性能调优：性能调优工具eBPF和调优方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%85%88%e7%9d%b9%e4%b8%ba%e5%bf%ab%ef%bc%9a%e8%bf%b7%e4%bd%a0CPU%e9%a1%b9%e7%9b%ae%e6%95%88%e6%9e%9c%e6%bc%94%e7%a4%ba.md.html" id="先睹为快：迷你CPU项目效果演示.md.html">先睹为快：迷你CPU项目效果演示.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e4%ba%91%e8%ae%a1%e7%ae%97%e5%9f%ba%e7%a1%80%ef%bc%9a%e8%87%aa%e5%b7%b1%e5%8a%a8%e6%89%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e6%ac%beIAAS%e8%99%9a%e6%8b%9f%e5%8c%96%e5%b9%b3%e5%8f%b0.md.html" id="加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html">加餐01 云计算基础：自己动手搭建一款IAAS虚拟化平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html">加餐02 学习攻略（一）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e5%ad%a6%e4%b9%a0%e6%94%bb%e7%95%a5%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae&amp;%e4%ba%91%e8%ae%a1%e7%ae%97%ef%bc%8c%e7%a9%b6%e7%ab%9f%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%9f.md.html" id="加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html">加餐03 学习攻略（二）：大数据&amp;云计算，究竟怎么学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e8%b0%88%e8%b0%88%e5%ae%b9%e5%99%a8%e4%ba%91%e4%b8%8e%e5%92%8cCaaS%e5%b9%b3%e5%8f%b0.md.html" id="加餐04 谈谈容器云与和CaaS平台.md.html">加餐04 谈谈容器云与和CaaS平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%9005%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%be%ae%e6%9c%8d%e5%8a%a1%e4%b8%8e%e6%99%ba%e8%83%bdSaaS.md.html" id="加餐05 分布式微服务与智能SaaS.md.html">加餐05 分布式微服务与智能SaaS.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9201%20%e7%9f%a5%e8%af%86%e6%8c%91%e6%88%98%e8%b5%9b%ef%bc%9a%e6%a3%80%e9%aa%8c%e4%b8%80%e4%b8%8b%e5%ad%a6%e4%b9%a0%e6%88%90%e6%9e%9c%e5%90%a7%ef%bc%81.md.html" id="国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html">国庆策划01 知识挑战赛：检验一下学习成果吧！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9202%20%e6%9d%a5%e8%87%aa%e8%af%be%e4%bb%a3%e8%a1%a8%e7%9a%84%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a.md.html" id="国庆策划02 来自课代表的学习锦囊.md.html">国庆策划02 来自课代表的学习锦囊.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e5%9b%bd%e5%ba%86%e7%ad%96%e5%88%9203%20%e6%8f%ad%e7%a7%98%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%e6%93%8d%e4%bd%9c%e5%92%8c%e6%a0%88%e4%bf%9d%e6%8a%a4%e6%9c%ba%e5%88%b6.md.html" id="国庆策划03 揭秘代码优化操作和栈保护机制.md.html">国庆策划03 揭秘代码优化操作和栈保护机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e6%b8%a9%e6%95%85%e7%9f%a5%e6%96%b0%20%e6%80%9d%e8%80%83%e9%a2%98%e5%8f%82%e8%80%83%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="温故知新 思考题参考答案（一）.md.html">温故知新 思考题参考答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%91%e6%98%af%e6%80%8e%e6%a0%b7%e5%ad%a6%e4%b9%a0Verilog%e7%9a%84%ef%bc%9f.md.html" id="用户故事 我是怎样学习Verilog的？.md.html">用户故事 我是怎样学习Verilog的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%bf%83%e8%8b%a5%e6%9c%89%e6%89%80%e5%90%91%e5%be%80%ef%bc%8c%e4%bd%95%e6%83%a7%e9%81%93%e9%98%bb%e4%b8%94%e9%95%bf.md.html" id="结束语 心若有所向往，何惧道阻且长.md.html">结束语 心若有所向往，何惧道阻且长.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="15 C与汇编：揭秘C语言编译器的“搬砖”日常" id="title">15 C与汇编：揭秘C语言编译器的“搬砖”日常</h1>
+<div><p>你好，我是LMOS。</p>
+<p>通过上一节课的学习，我们已经清楚了C语言可以把程序抽象成一个函数，这样的函数又抽象成表达式和流程控制，表达式又能进一步抽象成各种类型的变量和各种运算符。并且我们还搞懂了<strong>变量就是数据，运算符就是操作，而变量的运算结合起来就能对数据施加操作。</strong>这样拆分下来，是不是C语言就没那么神秘了？</p>
+<p>今天，让我们就来继续揭秘C语言编译器的日常工作，搞清楚各种类型变量、各种运算符、流程控制以及由它们组成的函数，是如何对应到机器指令的（代码从<a href="https://gitee.com/lmos/Geek-time-computer-foundation/tree/master/lesson15" target="_blank">这里</a>下载）。</p>
+<p>此外，我还会带你了解函数间的调用规范，这能让我们在以后写代码时，清楚自己的每行代码都会被编译器转化为什么样的机器指令。</p>
+<h3 id="c变量">C变量</h3>
+<p>现在，我们从最基本的C语言的变量开始说起。</p>
+<p>C语言是如何把各种类型的变量转换成对应的汇编语言呢？高级语言更容易被工程师理解，而汇编语言这样的低级语言，则更容易被机器解读。这是<strong>因为汇编语言里的大部分内容都跟机器语言一一对应，你可以这样理解，汇编语言就是把机器语言符号化。</strong></p>
+<p>我举个例子让你加深理解，机器对应的加法指令是一段很长的二进制数据，在汇编语言中，这个指令就对应着“add”这个指令。无论是机器指令还是寄存器，经过汇编语言“翻译”出来都是符号。</p>
+<p>汇编器会将汇编源代码生成二进制程序文件。在程序二进制文件里有很多段。其中text段和data段在文件里占用位置空间，text段存放了程序指令的二进制数据，data段放着各种已经初始化的数据。二进制文件里还有个<strong>更特殊的bss段</strong>，它不占用文件的位置空间，而是在文件头里记录bss段的大小。</p>
+<p>一旦text、data段加载到内存中运行，就会占用内存空间，自然也就对应到实际的内存。至于bss段，操作台会根据文件头里记录的大小给它分配内存空间，并初始为0。</p>
+<p>有了这些基础，我们就可以写代码来进行验证了，如下所示：</p>
+<pre><code>//定义整型变量
+int i = 5;
+//定义字符变量
+char chars = 'a';
+//定义结构体
+struct data
+{
+    int a;
+    char c;
+};
+//定义结构体变量并初始化
+struct data d = {10, 'b'};
+</code></pre>
+<p>我们在代码中定义了三个不同类型的变量。在GCC编译器后面加上-save-temps 选项，就能留下GCC编译器各个步骤生成的临时文件，方便我们查看GCC逐步处理的结果。</p>
+<p>我已经为你写好了makefile文件，你用VSCode打开项目代码，按下F5就会生成相应的临时文件xxxx.i、xxxx.s、xxxx.bin。</p>
+<p>其中，xxxx.i是gcc编译器生成的预处理文件，xxxx.s是gcc编译器生成的汇编文件，xxxx.o是gcc编译器生成的可链接的目标文件，xxxx.bin是去除了ELF文件格式数据的纯二进制文件，这是我用objcopy工具生成的，这个文件可以方便我们后续观察。</p>
+<p>下面我们打开项目代码中的variable.s文件，如下所示：</p>
+<pre><code>	.globl	i				 #导出全局标号i
+	.section	.sdata,"aw"  #创建sdata段，属性动态分配可读写
+	.size	i, 4			 #占用4字节大小
+i:							 #标号i
+	.word	5			     #定义一个字，初始化为5
+
+	.globl	chars			 #导出全局标号chars
+	.size	chars, 1		 #占用1字节大小
+chars:						 #标号chars
+	.byte	97				 #定义一个字节，初始化为97，正是‘a’字符的ascii码
+
+	.globl	d				 #导出全局标号d
+	.size	d, 8			 #占用8字节大小
+d:							 #标号d
+	.word	10				 #定义一个字，初始化为10
+	.byte	98				 #定义一个字节，初始化为98，正是‘b’字符的ascii码
+	.zero	3				 #填充3个字节，数据为0
+</code></pre>
+<p>上面的汇编代码和注释已经写得很清楚了，C语言的变量名变成了汇编语言中的标号，根据每个变量的大小，用多个汇编代码中定义数据的操作符，比如.byte、.word，进行定义初始化。</p>
+<p>C语言结构体中的字段则要用多个.byte、.word操作符的组合实现变量定义，汇编器会根据.byte、.word来分配变量的内存空间，标号就是对应的地址。这个变量的内存空间，当程序处于非运行状态时就反映在程序文件中；一旦程序加载到内存中运行，其中的变量就会加载到内存里，对应在相应的内存地址上。</p>
+<p>上述代码仍然是可读的文本代码，下面我们看看汇编器生成的二进制文件variable.bin，如下所示。</p>
+<p><img alt="图片" src="assets/bbe780751034318ec3dbf7099109620c.jpg"/></p>
+<p>从这张文件截图里，我们能清楚地看到，二进制文件variable.bin一共有16字节，第5到第7个字节和第13到第15个字节为填充字节，这是为了让地址可以按32位对齐。我们可以看到i变量占用4个字节空间，chars变量占用1个字节空间，d结构体变量占用8个字节，里面有两个成员变量a和c。</p>
+<p>截图中反映的情况，相当于从0开始分配地址空间，当然后面链接器会重新分配地址空间的，这里i变量地址为0，chars变量地址为4，d变量地址为8。</p>
+<p>现在我们总结一下，C语言转化成汇编语言时发生了什么样的变化：<strong>C语言的变量名成了汇编语言的标号，C语言的变量对应的空间变成了汇编语言.byte、.word之类的定义数据操作符。最终，汇编器会根据.byte、.word分配内存空间。</strong>这些对应关系，我们通过对二进制文件的分析已经再清楚不过了。</p>
+<h3 id="c语言表达式">C语言表达式</h3>
+<p>下面，我们来看看C语言表达式，了解C语言是怎么把各种表达式转换成对应的汇编语言的。</p>
+<p>我先说明一下，这里本来应该介绍运算符的，但是C语言的运算符不能独立存在，必须要与变量结合起来形成表达式，所以这里我把运算符归纳到表达式里一起给你讲解，你学起来也更清晰。</p>
+<p>我们先来写一个表达式，如下所示：</p>
+<pre><code>int add()
+{
+    //定义三个局部整形变量
+    int a, b, c; 
+    //赋值表达式
+    a = 125;
+    b = 100;
+    //运算表达式
+    c = a + b;
+    //返回表达式
+    return c;
+}
+</code></pre>
+<p>代码注释我为你标注了表达式的类型，至于代码的含义任何一个C语言初学者都能明白，就不过多讲解了。</p>
+<p>接下来，我们直接看GCC编译器生成的汇编代码。GCC在编译代码时我加了“-O0”，这表示让GCC不做代码优化，如下所示：</p>
+<pre><code>add:
+	addi	sp,sp,-32
+	sw	s0,28(sp)
+	addi	s0,sp,32
+	li	a5,125
+	sw	a5,-20(s0)
+	li	a5,100
+	sw	a5,-24(s0)
+	lw	a4,-20(s0)
+	lw	a5,-24(s0)
+	add	a5,a4,a5
+	sw	a5,-28(s0)
+	lw	a5,-28(s0)
+	mv	a0,a5
+	lw	s0,28(sp)
+	addi	sp,sp,32
+	jr	ra
+</code></pre>
+<p>上述的汇编代码你看不懂也没关系，且听我分段给你拆解。它们分别是：在栈中分配变量的内存空间、给变量赋值、进行运算、处理返回值、回收栈中分配的空间、返回。</p>
+<p>我们首先看看C语言中的“int a,b,c;”，这是三个局部变量。在C语言中局部变量是放在栈中的，栈在后面的课程里我再介绍。这里就是给a、b、c这三个变量在栈中分配变量的内存空间，对应的代码如下所示：</p>
+<pre><code>	# int a,b,c;
+    addi	sp,sp,-32  #把栈指针寄存器减去32，相当于在栈中分配了32字节的空间
+	sw	s0,28(sp)	   #首先把s0寄存器存放在（sp+28）的内存空间中
+	addi	s0,sp,32   #然后把s0寄存器设为原来sp寄存器的值
+</code></pre>
+<p>上述代码通过减去sp寄存器的值，在栈中分配了内存空间。因为栈是由高地址内存空间向低地址内存空间生长的，所以分配栈内存空间是减去一个值。</p>
+<p>接着我们来看看C语言中的“a=125;b=100;”，这两行代码就是给变量赋值，也可以叫做赋值表达式，对应的汇编代码如下所示：</p>
+<pre><code>	# a=125;b=100;
+    li	a5,125			#125加载到a5寄存器中
+	sw	a5,-20(s0)		#把a5寄存器储存到（s0-20）的内存空间中，即栈中
+	li	a5,100			#100加载到a5寄存器中
+	sw	a5,-24(s0)		#把a5寄存器储存到（s0-24）的内存空间中，即栈中
+</code></pre>
+<p>现在我们已经看到了“=”赋值运算，被转化为机器的数据传输指令，即储存、加载和寄存器之间的传输指令。从-20、-24这些地址偏移量，我们可以推导出a，b两个整型变量各占4字节大小的空间。</p>
+<p>然后，我们来看看C语言里“c = a + b;”这一行代码，它就是运算表达式，同时也赋值表达式，但运算表达式的优先级更高，对应的汇编代码如下所示：</p>
+<pre><code>    #c=a+b; 
+    lw	a4,-20(s0)		#把（s0-20）内存空间中的内容加载到a4寄存器中
+	lw	a5,-24(s0)		#把（s0-24）内存空间中的内容加载到a5寄存器中
+	add	a5,a4,a5		#a4寄存器加上a5寄存器的结果送给a5寄存器
+	sw	a5,-28(s0)		#把a5寄存器储存到（s0-28）的内存空间中，即栈中
+</code></pre>
+<p>上述代码中，我们再一次看到，C语言中的加法运算符被转化成了机器的加法指令，运算表达式中的变量放在寄存器中，就成了加法指令的操作数。但是运算结果也被放在寄存器中，而后又被储存到内存中了。</p>
+<p>最后，我们来看看C语言中“return c;”这一行代码，也就是返回表达式。对应的汇编代码如下所示：</p>
+<pre><code>	#return c;
+    lw	a5,-28(s0)		#把（s0-28）内存空间中的内容加载到a5寄存器中
+	mv	a0,a5			#a5寄存器送给a0寄存器，作为返回值
+	lw	s0,28(sp)		#恢复s0寄存器
+	addi	sp,sp,32	#把栈指针寄存器加上32，相当于在栈中回收了32字节的空间
+	jr	ra				#把ra寄存器送给pc寄存器实现返回
+</code></pre>
+<p>从上述代码块可以看到，先把c变量加载到a5寄存器中，又把a5寄存器送给了a0寄存器。</p>
+<p>在语言调用标准中，a0寄存器是作为返回值寄存器使用的，return语句是流程控制语句，它被转换为机器对应的跳转指令，即jr指令。jr指令会把操作数送给pc寄存器，这样就能实现程序的跳转。</p>
+<p>到这里，C语言表达式是怎么变成汇编语言的，我们就弄明白了。</p>
+<h3 id="c语言流程控制">C语言流程控制</h3>
+<p>如果只存在表达式，代码只能从上到下顺序执行，很多算法都无法实现，毕竟顺序执行就是“一条道走到黑”，这显然还不够。如果我们要控制代码的执行顺序，就需要流程控制。</p>
+<p><strong>通过流程控制，C语言就能把程序的分支、循环结构转换成汇编语言。</strong>下面我们以C语言中最常用的for循环为例来理解流程控制。for循环这个例子很有代表性，因为它包括了循环和分支，代码如下所示。</p>
+<pre><code>void flowcontrol()
+{
+    //定义了整型变量i
+    int i;
+    for(i = 0; i &lt; 5; i++)
+    {
+        ;//什么都不做
+    }
+    return;
+}
+</code></pre>
+<p>可以看到上述代码中，for关键字后面的括号中有三个表达式。</p>
+<p>开始第一步先执行的是第一个表达式：i = 0; 接着第二步，执行第二个表达式。如果表达式的运算结果为false，就跳出for循环；然后到了第三步，执行大括号“{}”中的语句，这里是空语句，什么都不做；最后的第四步执行第三个表达式：i++，再回到第二步开始下一次循环。</p>
+<p>下面我们看看这四步对应的汇编程序，如下所示：</p>
+<pre><code>flowcontrol:
+	addi	sp,sp,-32
+	sw	s0,28(sp)
+	addi	s0,sp,32		# int i 定义i变量
+	sw	zero,-20(s0)		# i = 0 第一步 第一个表达式 
+	j	.L2					# 无条件跳转到.L2标号处
+.L3:
+	lw	a5,-20(s0)			# 加载i变量
+	addi	a5,a5,1			# i++ 第四步 第三个表达式 
+	sw	a5,-20(s0)			# 保存i变量
+.L2:
+	lw	a4,-20(s0)			# 加载i变量
+	li	a5,4				# 加载常量4
+	ble	a4,a5,.L3   		# i &lt; 5 第二步 第二个表达式 如果i &lt;= 4就跳转.L3标号，否则就执行后续指令，跳出循环
+	lw	s0,28(sp)			# 恢复s0寄存器
+	addi	sp,sp,32		# 回收栈空间
+	jr	ra					# 返回
+</code></pre>
+<p>有了前面的基础，上面这段代码应该很容易理解。</p>
+<p>你可能有点疑惑，为什么代码的注释中没有看到第三步的内容？这是因为我们写了空语句，编译器没有生成相应的指令。一般CPU会提供多种形式的跳转指令，来实现程序的流程控制，后面课程里我们在专门研究和调试跳转指令，这里你先有个印象就行。</p>
+<p>你不妨试着想象一下，图灵机那个读头在纸带上来回移动的情景。上面的代码中j，jr都是无条件的跳转指令，ble是带比较的条件分支指令，比较的结果为真，则跳转到相应的地址上继续执行；否则就会执行后面的下一条指令。</p>
+<p>现在已经很清楚了，C语言正是用了这些跳转、条件分支指令，才实现了如if、for、while、goto、return等程序流程控制逻辑。</p>
+<h3 id="c语言函数">C语言函数</h3>
+<p>我们再来看看C语言函数，了解一下C语言是怎么把函数转换成汇编语言的。</p>
+<p>通过前一节课的学习，我们知道了函数是C语言中非常重要的组成部分。我们要用C语言完成一个实际的功能，就需要至少写一个函数，可见函数就是C语言中对一段功能代码的抽象。一个函数就是一个执行过程，有输入参数也有返回结果（根据需要可有可无），可以调用其它函数，也被其它函数调用。</p>
+<p>让我们去写函数验证一下，如下所示：</p>
+<pre><code>//定义funcB
+void funcB()
+{
+    return;
+}
+//定义funcA
+void funcA()
+{
+    //调用funcB
+    funcB();
+    return;
+}
+</code></pre>
+<p>上述代码中定义了funcA、funcB两个函数，函数funcA调用了函数funcB，而函数funcB是个空函数，什么也不做。</p>
+<p>下面我们直接看它们的汇编代码，如下所示：</p>
+<pre><code>funcB:
+	addi	sp,sp,-16
+	sw	s0,12(sp)			#储存s0寄存器到栈中
+	addi	s0,sp,16
+	nop
+	lw	s0,12(sp)			#从栈中加载s0寄存器
+	addi	sp,sp,16
+	jr	ra					#函数返回
+
+funcA:
+	addi	sp,sp,-16
+	sw	ra,12(sp)
+	sw	s0,8(sp)			#储存ra，s0寄存器到栈中
+	addi	s0,sp,16
+	call	funcB			#调用funcB函数
+	nop
+	lw	ra,12(sp)			#从栈中加载ra，s0寄存器
+	lw	s0,8(sp)
+	addi	sp,sp,16
+	jr	ra					#函数返回
+</code></pre>
+<p>从上面的汇编代码可以看出，函数就是从一个标号开始到返回指令的一段汇编程序，并且C语言中的函数名就是标号，对应到汇编程序中就是地址。</p>
+<p>即使是什么也不做的空函数，C语言编译器也会把它翻译成相应的指令，分配栈空间，保存或者恢复相应的寄存器，回收栈空间，这相当于一个标准的代码模板。</p>
+<p>其中的call其实完成了两个动作：一是把call下一条指令的地址保存到ra寄存器中；二是把后面标号地址赋值给pc寄存器，实现程序的跳转。由于被跳转的程序段最后会执行jr ra，即把ra寄存器赋值给pc寄存器，然后再跳转到call指令的下一条指令开始执行，这样就能实现函数的返回。</p>
+<p>总结一下，<strong>C语言编译器把函数名转换成了标号，也就是汇编程序里的某个地址，并且把函数的功能翻译成各种指令。</strong></p>
+<p>这样我们写下一个函数，经过C语言编译器加工，就变成了CPU能够“听懂”的各种运算指令、流程控制指令。之后，CPU就能定位到相应的汇编代码段，在这些代码段之间跳来跳去，实现函数之间的调用。</p>
+<h3 id="c语言调用规范">C语言调用规范</h3>
+<p>现在我们来探讨另一个问题，就是一个函数调用另一个函数的情况，而且这两个函数不是同一种语言所写。</p>
+<p>比如说，在汇编语言中调用C语言，或者反过来在C语言里调用汇编语言。这些情况要怎么办呢？这时候就需要有一种调用约定或者规范。</p>
+<p>这个规范有什么用呢？前面的课程我们说过，CPU中的一些寄存器有特定作用的，自然不能在函数中随便使用。即使用到了也要先在栈里保存起来，然后再恢复。</p>
+<p>这就引发了三个问题：一是需要规定好寄存器的用途；二是明确哪些寄存器需要保存和恢复；第三则是规定函数如何传递参数和返回值，比如用哪些寄存器传递参数和返回值。关于CPU寄存器的规定，你可以回顾一下[第二节课]。</p>
+<p>首先我们看一下，C语言下的数据类型在RISC-V平台下所占据内存的大小，这也是调用规范的一部分，如下表：</p>
+<p><img alt="图片" src="assets/3c76d13f3d73d80a82b99c7c09b14c0c.jpg"/></p>
+<p>下面我们结合实例来理解。我们先来写一段汇编代码和C代码，用汇编代码调用C函数，它们属于不同的文件，这些文件我已经在工程里给你准备好了。</p>
+<p>首先，汇编代码如下：</p>
+<pre><code>.text                   //表明下列代码放在text段中
+.globl	main            //导出main符号，链接器必须要找的到main符号
+main:
+	addi sp,sp,-16
+	sw	 s0,12(sp)      //保存s0寄存器
+	addi s0,sp,16
+	call C_function     //调用C语言编写的C_function函数
+    li	 a0,0           //设置main函数的返回值为0
+	lw	 s0,12(sp)      //恢复s0寄存器
+	addi sp,sp,16
+	jr	 ra             //返回
+</code></pre>
+<p>上述代码放在了main_asm.S文件中，这些代码我都替你手动写好了，你需要从main开始，代码的作用你可以参考一下注释说明。</p>
+<p>这段代码主要处理了栈空间，保存了s0寄存器，然后调用了C语言编写的C_function函数，该函数我放在了main_c.c文件中，如下所示：</p>
+<pre><code>#include "stdio.h"
+void C_function()
+{
+    printf("This is C_function!\n");
+    return;
+}
+</code></pre>
+<p>我们用VSCode打开工程文件夹，按下“F5”键，就会出现后面图里显示的结果。-
+<img alt="图片" src="assets/dbfyy912fb28b6a6b8b553c574936b0e.jpg"/></p>
+<p>我们看到代码运行了，打印出了This is C_function!，而且没有出现任何错误，这说明我们通过汇编代码调用C函数成功了。你可以想一想，这个过程还有什么疏漏么？</p>
+<p>以上代码的功能很简单，很多寄存器没有用到，所以并没有保护和恢复相应的寄存器。在复杂的情况下，调用者函数应该保存和恢复临时寄存器：t0~t6（整数寄存器），ft0~ft11（浮点寄存器）。被调用者函数应该保存和恢复的寄存器：s0~s11（整数寄存器），fs0~fs11（浮点寄存器）。</p>
+<p>现在只剩最后一个问题了，C语言函数有参数和返回值。如果没有相应规范，一个C语言函数就不知道如何给另一个C语言函数传递参数，或者接收它的返回值。</p>
+<p>我们同样用代码来验证一下，如下所示：</p>
+<pre><code>int addtest(int a, int b, int c,int d, int e, int f, int g, int h, int i)
+{
+    return a + b + c + d+ e + f + g + h + i;
+}
+void C_function()
+{
+    int s = 0;
+    s = addtest(1,2,3,4,5,6,7,8,9);
+    printf("This is C_function! s = %d\n", s);
+    return;
+}
+</code></pre>
+<p>这段代码很简单，为了验证参数的传递，我们给addtest函数定义了9个参数，在C_function函数中调用它，并打印出它的返回值。</p>
+<p>我们直接看看它生成的汇编代码，如下所示：</p>
+<pre><code>addtest:
+	addi	sp,sp,-48
+	sw	s0,44(sp)
+	addi	s0,sp,48 #让s0变成原sp的值
+    #依次将a0~a7，8个寄存器放入栈中 
+	sw	a0,-20(s0)
+	sw	a1,-24(s0)
+	sw	a2,-28(s0)
+	sw	a3,-32(s0)
+	sw	a4,-36(s0)
+	sw	a5,-40(s0)
+	sw	a6,-44(s0)
+	sw	a7,-48(s0)
+    #从栈中加载8个整型数据相加
+	lw	a4,-20(s0)
+	lw	a5,-24(s0)
+	add	a4,a4,a5
+	lw	a5,-28(s0)
+	add	a4,a4,a5
+	lw	a5,-32(s0)
+	add	a4,a4,a5
+	lw	a5,-36(s0)
+	add	a4,a4,a5
+	lw	a5,-40(s0)
+	add	a4,a4,a5
+	lw	a5,-44(s0)
+	add	a4,a4,a5
+	lw	a5,-48(s0)
+	add	a4,a4,a5
+    #从栈中加载第9个参数的数据，参考第4行代码 
+	lw	a5,0(s0)
+	add	a5,a4,a5
+    #把累加的结果放入a0寄存器，作为返回值
+	mv	a0,a5
+	lw	s0,44(sp)
+	addi	sp,sp,48 #恢复栈空间
+	jr	ra			 #返回
+
+C_function:
+	addi	sp,sp,-48
+	sw	ra,44(sp)
+	sw	s0,40(sp)
+	addi	s0,sp,48
+	sw	zero,-20(s0)
+	li	a5,9
+	sw	a5,0(sp)     #将9保存到栈顶空间中
+	li	a7,8
+	li	a6,7
+	li	a5,6
+	li	a4,5
+	li	a3,4
+	li	a2,3
+	li	a1,2
+	li	a0,1		 #将1~8，加载到a0~a7，8个寄存器中，作为addtest函数的前8个参数
+	call	addtest  #调用addtest函数
+	sw	a0,-20(s0)   #addtest函数返回值保存到s变量中
+	lw	a1,-20(s0)   #将s变量作为printf函数的第二个参数
+	lui	a5,%hi(.LC0)
+	addi	a0,a5,%lo(.LC0)
+	call	printf
+	nop
+	lw	ra,44(sp)
+	lw	s0,40(sp)
+	addi	sp,sp,48 #恢复栈空间
+	jr	ra			 #返回
+</code></pre>
+<p>根据上面的代码，我们来总结一下，C语言函数用a0~a7这个8个寄存器，传递了一个函数的前8个参数。<strong>注意如果是浮点类型的参数，则使用对应的浮点寄存器fa0~fa7，从第9个参数开始依次存放在栈中,而函数的返回值通常放在a0寄存器中。</strong></p>
+<p>到这里，C语言调用规范我们就搞清楚了。</p>
+<h3 id="重点回顾">重点回顾</h3>
+<p>这节课，我们一起研究了C语言编译器的“搬砖日常”，讨论了C语言跟汇编语言的对应关系。现在我们来回顾一下这节课的重点。</p>
+<p>C语言变量经过编译器的加工，其变量名变成了汇编语言中的标号，也就是地址。变量空间由汇编语言中.byte、.word等操作符分配空间，有的空间存在于二进制文件中，有的空间需要OS加载程序之后再进行分配。</p>
+<p>接着是C语言表达式，C语言表达式由C语言变量和C语言运算符组成，C语言运算符被转换成了对应的CPU运算指令。变量由内存加载到寄存器，变成了指令的操作数，一起完成了运算功能。</p>
+<p>之后我们借助for循环这个例子，发现C语言函数会被编译器“翻译”成一段带有标号的汇编代码，里面包含了流程控制指令（比如跳转指令）和各种运算指令。这些指令能修改PC寄存器，使之能跳转到相应的地址上运行，实现流程控制。</p>
+<p>最后我们讨论了C语言的调用规范。“没有规矩不成方圆”，<strong>调用规范解决了函数之间的调用约束</strong>，比如哪些寄存器由调用者根据需要保存和恢复，哪些寄存器由被调用者根据需要保存和恢复，函数之间如何传递参数，又如何接收函数的返回值等等的问题。</p>
+<p>为了奖励你看到这里，我还准备了一张知识导图，供你复习回顾要点。</p>
+<p><img alt="图片" src="assets/b7f30fb590ceb3a882bca53301ec05ae.jpg"/></p>
+<p>下节课起，我们将会开始汇编指令的深入学习，敬请期待。</p>
+<h3 id="思考题">思考题</h3>
+<p>请问C语言函数如何传递结构体类型的参数呢？</p>
+<p>欢迎你在留言区跟我交流互动，积极参与思考有助于你更深入地学习。如果觉得这节课还不错，别忘了分享给身边的同事。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#86eaeaeabfb2b7b7b6b1c6e1ebe7efeaa8e5e9eb" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93591722ec720823',t:'MTc0NTUzNDMwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
