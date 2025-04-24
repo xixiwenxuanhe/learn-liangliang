@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="21 AbstractFetcherThread：拉取消息分几步？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>21 AbstractFetcherThread：拉取消息分几步？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/00%20%e5%af%bc%e8%af%bb%20%e6%9e%84%e5%bb%baKafka%e5%b7%a5%e7%a8%8b%e5%92%8c%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb%e7%8e%af%e5%a2%83%e3%80%81Scala%e8%af%ad%e8%a8%80%e7%83%ad%e8%ba%ab.md.html" id="00 导读 构建Kafka工程和源码阅读环境、Scala语言热身.md.html">00 导读 构建Kafka工程和源码阅读环境、Scala语言热身.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e9%98%85%e8%af%bb%e6%ba%90%e7%a0%81%ef%bc%8c%e9%80%90%e6%b8%90%e6%88%90%e4%ba%86%e8%81%8c%e4%b8%9a%e8%bf%9b%e9%98%b6%e9%81%93%e8%b7%af%e4%b8%8a%e7%9a%84%e2%80%9c%e5%bf%85%e9%80%89%e9%a1%b9%e2%80%9d.md.html" id="00 开篇词  阅读源码，逐渐成了职业进阶道路上的“必选项”.md.html">00 开篇词  阅读源码，逐渐成了职业进阶道路上的“必选项”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/00%20%e9%87%8d%e7%a3%85%e5%8a%a0%e9%a4%90%20%e5%b8%a6%e4%bd%a0%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8Scala%e8%af%ad%e8%a8%80.md.html" id="00 重磅加餐 带你快速入门Scala语言.md.html">00 重磅加餐 带你快速入门Scala语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/01%20%e6%97%a5%e5%bf%97%e6%ae%b5%ef%bc%9a%e4%bf%9d%e5%ad%98%e6%b6%88%e6%81%af%e6%96%87%e4%bb%b6%e7%9a%84%e5%af%b9%e8%b1%a1%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="01 日志段：保存消息文件的对象是怎么实现的？.md.html">01 日志段：保存消息文件的对象是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/02%20%e6%97%a5%e5%bf%97%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%97%a5%e5%bf%97%e7%a9%b6%e7%ab%9f%e6%98%af%e5%a6%82%e4%bd%95%e5%8a%a0%e8%bd%bd%e6%97%a5%e5%bf%97%e6%ae%b5%e7%9a%84%ef%bc%9f.md.html" id="02 日志（上）：日志究竟是如何加载日志段的？.md.html">02 日志（上）：日志究竟是如何加载日志段的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/03%20%e6%97%a5%e5%bf%97%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82Log%e5%af%b9%e8%b1%a1%e7%9a%84%e5%b8%b8%e8%a7%81%e6%93%8d%e4%bd%9c.md.html" id="03 日志（下）：彻底搞懂Log对象的常见操作.md.html">03 日志（下）：彻底搞懂Log对象的常见操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/04%20%e7%b4%a2%e5%bc%95%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%94%b9%e8%bf%9b%e7%9a%84%e4%ba%8c%e5%88%86%e6%9f%a5%e6%89%be%e7%ae%97%e6%b3%95%e5%9c%a8Kafka%e7%b4%a2%e5%bc%95%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="04 索引（上）：改进的二分查找算法在Kafka索引的应用.md.html">04 索引（上）：改进的二分查找算法在Kafka索引的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/05%20%e7%b4%a2%e5%bc%95%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bd%8d%e7%a7%bb%e7%b4%a2%e5%bc%95%e5%92%8c%e6%97%b6%e9%97%b4%e6%88%b3%e7%b4%a2%e5%bc%95%e7%9a%84%e5%8c%ba%e5%88%ab%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="05 索引（下）：位移索引和时间戳索引的区别是什么？.md.html">05 索引（下）：位移索引和时间戳索引的区别是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/06%20%e8%af%b7%e6%b1%82%e9%80%9a%e9%81%93%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0Kafka%e8%af%b7%e6%b1%82%e9%98%9f%e5%88%97%ef%bc%9f.md.html" id="06 请求通道：如何实现Kafka请求队列？.md.html">06 请求通道：如何实现Kafka请求队列？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/07%20SocketServer%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aKafka%e5%88%b0%e5%ba%95%e6%98%af%e6%80%8e%e4%b9%88%e5%ba%94%e7%94%a8NIO%e5%ae%9e%e7%8e%b0%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%e7%9a%84%ef%bc%9f.md.html" id="07 SocketServer（上）：Kafka到底是怎么应用NIO实现网络通信的？.md.html">07 SocketServer（上）：Kafka到底是怎么应用NIO实现网络通信的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/08%20SocketServer%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e8%af%b7%e6%b1%82%e8%bf%98%e8%a6%81%e5%8c%ba%e5%88%86%e4%bc%98%e5%85%88%e7%ba%a7%ef%bc%9f.md.html" id="08 SocketServer（中）：请求还要区分优先级？.md.html">08 SocketServer（中）：请求还要区分优先级？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/09%20SocketServer%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%af%b7%e6%b1%82%e5%a4%84%e7%90%86%e5%85%a8%e6%b5%81%e7%a8%8b%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90.md.html" id="09 SocketServer（下）：请求处理全流程源码分析.md.html">09 SocketServer（下）：请求处理全流程源码分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/10%20KafkaApis%ef%bc%9aKafka%e6%9c%80%e9%87%8d%e8%a6%81%e7%9a%84%e6%ba%90%e7%a0%81%e5%85%a5%e5%8f%a3%ef%bc%8c%e6%b2%a1%e6%9c%89%e4%b9%8b%e4%b8%80.md.html" id="10 KafkaApis：Kafka最重要的源码入口，没有之一.md.html">10 KafkaApis：Kafka最重要的源码入口，没有之一.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/11%20Controller%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%9aController%e9%83%bd%e4%bf%9d%e5%ad%98%e6%9c%89%e5%93%aa%e4%ba%9b%e4%b8%9c%e8%a5%bf%ef%bc%9f%e6%9c%89%e5%87%a0%e7%a7%8d%e7%8a%b6%e6%80%81%ef%bc%9f.md.html" id="11 Controller元数据：Controller都保存有哪些东西？有几种状态？.md.html">11 Controller元数据：Controller都保存有哪些东西？有几种状态？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/12%20ControllerChannelManager%ef%bc%9aController%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e8%af%b7%e6%b1%82%e5%8f%91%e9%80%81%ef%bc%9f.md.html" id="12 ControllerChannelManager：Controller如何管理请求发送？.md.html">12 ControllerChannelManager：Controller如何管理请求发送？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/13%20ControllerEventManager%ef%bc%9a%e5%8f%98%e8%ba%ab%e5%8d%95%e7%ba%bf%e7%a8%8b%e5%90%8e%e7%9a%84Controller%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e4%ba%8b%e4%bb%b6%ef%bc%9f.md.html" id="13 ControllerEventManager：变身单线程后的Controller如何处理事件？.md.html">13 ControllerEventManager：变身单线程后的Controller如何处理事件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/14%20Controller%e9%80%89%e4%b8%be%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="14 Controller选举是怎么实现的？.md.html">14 Controller选举是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/15%20%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3Controller%e5%9c%a8Kafka%e9%9b%86%e7%be%a4%e4%b8%ad%e7%9a%84%e4%bd%9c%e7%94%a8%ef%bc%9f.md.html" id="15 如何理解Controller在Kafka集群中的作用？.md.html">15 如何理解Controller在Kafka集群中的作用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/16%20TopicDeletionManager%ef%bc%9a%20Topic%e6%98%af%e6%80%8e%e4%b9%88%e8%a2%ab%e5%88%a0%e9%99%a4%e7%9a%84%ef%bc%9f.md.html" id="16 TopicDeletionManager： Topic是怎么被删除的？.md.html">16 TopicDeletionManager： Topic是怎么被删除的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/17%20ReplicaStateMachine%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%89%af%e6%9c%ac%e7%8a%b6%e6%80%81%e6%9c%ba%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="17 ReplicaStateMachine：揭秘副本状态机实现原理.md.html">17 ReplicaStateMachine：揭秘副本状态机实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/18%20PartitionStateMachine%ef%bc%9a%e5%88%86%e5%8c%ba%e7%8a%b6%e6%80%81%e8%bd%ac%e6%8d%a2%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="18 PartitionStateMachine：分区状态转换如何实现？.md.html">18 PartitionStateMachine：分区状态转换如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/19%20TimingWheel%ef%bc%9a%e6%8e%a2%e7%a9%b6Kafka%e5%ae%9a%e6%97%b6%e5%99%a8%e8%83%8c%e5%90%8e%e7%9a%84%e9%ab%98%e6%95%88%e6%97%b6%e9%97%b4%e8%bd%ae%e7%ae%97%e6%b3%95.md.html" id="19 TimingWheel：探究Kafka定时器背后的高效时间轮算法.md.html">19 TimingWheel：探究Kafka定时器背后的高效时间轮算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/20%20DelayedOperation%ef%bc%9aBroker%e6%98%af%e6%80%8e%e4%b9%88%e5%bb%b6%e6%97%b6%e5%a4%84%e7%90%86%e8%af%b7%e6%b1%82%e7%9a%84%ef%bc%9f.md.html" id="20 DelayedOperation：Broker是怎么延时处理请求的？.md.html">20 DelayedOperation：Broker是怎么延时处理请求的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/21%20AbstractFetcherThread%ef%bc%9a%e6%8b%89%e5%8f%96%e6%b6%88%e6%81%af%e5%88%86%e5%87%a0%e6%ad%a5%ef%bc%9f.md.html" id="21 AbstractFetcherThread：拉取消息分几步？.md.html">21 AbstractFetcherThread：拉取消息分几步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/22%20ReplicaFetcherThread%ef%bc%9aFollower%e5%a6%82%e4%bd%95%e6%8b%89%e5%8f%96Leader%e6%b6%88%e6%81%af%ef%bc%9f.md.html" id="22 ReplicaFetcherThread：Follower如何拉取Leader消息？.md.html">22 ReplicaFetcherThread：Follower如何拉取Leader消息？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/23%20ReplicaManager%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%bf%85%e9%a1%bb%e8%a6%81%e6%8e%8c%e6%8f%a1%e7%9a%84%e5%89%af%e6%9c%ac%e7%ae%a1%e7%90%86%e7%b1%bb%e5%ae%9a%e4%b9%89%e5%92%8c%e6%a0%b8%e5%bf%83%e5%ad%97%e6%ae%b5.md.html" id="23 ReplicaManager（上）：必须要掌握的副本管理类定义和核心字段.md.html">23 ReplicaManager（上）：必须要掌握的副本管理类定义和核心字段.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/24%20ReplicaManager%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%89%af%e6%9c%ac%e7%ae%a1%e7%90%86%e5%99%a8%e6%98%af%e5%a6%82%e4%bd%95%e8%af%bb%e5%86%99%e5%89%af%e6%9c%ac%e7%9a%84%ef%bc%9f.md.html" id="24 ReplicaManager（中）：副本管理器是如何读写副本的？.md.html">24 ReplicaManager（中）：副本管理器是如何读写副本的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/25%20ReplicaManager%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%89%af%e6%9c%ac%e7%ae%a1%e7%90%86%e5%99%a8%e6%98%af%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%89%af%e6%9c%ac%e7%9a%84%ef%bc%9f.md.html" id="25 ReplicaManager（下）：副本管理器是如何管理副本的？.md.html">25 ReplicaManager（下）：副本管理器是如何管理副本的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/26%20MetadataCache%ef%bc%9aBroker%e6%98%af%e6%80%8e%e4%b9%88%e5%bc%82%e6%ad%a5%e6%9b%b4%e6%96%b0%e5%85%83%e6%95%b0%e6%8d%ae%e7%bc%93%e5%ad%98%e7%9a%84%ef%bc%9f.md.html" id="26 MetadataCache：Broker是怎么异步更新元数据缓存的？.md.html">26 MetadataCache：Broker是怎么异步更新元数据缓存的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/27%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e9%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="27 消费者组元数据（上）：消费者组都有哪些元数据？.md.html">27 消费者组元数据（上）：消费者组都有哪些元数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/28%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aKafka%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e8%bf%99%e4%ba%9b%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="28 消费者组元数据（下）：Kafka如何管理这些元数据？.md.html">28 消费者组元数据（下）：Kafka如何管理这些元数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/29%20GroupMetadataManager%ef%bc%9a%e7%bb%84%e5%85%83%e6%95%b0%e6%8d%ae%e7%ae%a1%e7%90%86%e5%99%a8%e6%98%af%e4%b8%aa%e4%bb%80%e4%b9%88%e4%b8%9c%e8%a5%bf%ef%bc%9f.md.html" id="29 GroupMetadataManager：组元数据管理器是个什么东西？.md.html">29 GroupMetadataManager：组元数据管理器是个什么东西？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/30%20GroupMetadataManager%ef%bc%9a%e4%bd%8d%e7%a7%bb%e4%b8%bb%e9%a2%98%e4%bf%9d%e5%ad%98%e7%9a%84%e5%8f%aa%e6%98%af%e4%bd%8d%e7%a7%bb%e5%90%97%ef%bc%9f.md.html" id="30 GroupMetadataManager：位移主题保存的只是位移吗？.md.html">30 GroupMetadataManager：位移主题保存的只是位移吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/31%20GroupMetadataManager%ef%bc%9a%e6%9f%a5%e8%af%a2%e4%bd%8d%e7%a7%bb%e6%97%b6%ef%bc%8c%e4%b8%8d%e7%94%a8%e8%af%bb%e5%8f%96%e4%bd%8d%e7%a7%bb%e4%b8%bb%e9%a2%98%ef%bc%9f.md.html" id="31 GroupMetadataManager：查询位移时，不用读取位移主题？.md.html">31 GroupMetadataManager：查询位移时，不用读取位移主题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/32%20GroupCoordinator%ef%bc%9a%e5%9c%a8Rebalance%e4%b8%ad%ef%bc%8cCoordinator%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e6%88%90%e5%91%98%e5%85%a5%e7%bb%84%ef%bc%9f.md.html" id="32 GroupCoordinator：在Rebalance中，Coordinator如何处理成员入组？.md.html">32 GroupCoordinator：在Rebalance中，Coordinator如何处理成员入组？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/33%20GroupCoordinator%ef%bc%9a%e5%9c%a8Rebalance%e4%b8%ad%ef%bc%8c%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e7%bb%84%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="33 GroupCoordinator：在Rebalance中，如何进行组同步？.md.html">33 GroupCoordinator：在Rebalance中，如何进行组同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%b8%80%ef%bc%89%e7%bb%8f%e5%85%b8%e7%9a%84Kafka%e5%ad%a6%e4%b9%a0%e8%b5%84%e6%96%99%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="特别放送（一）经典的Kafka学习资料有哪些？.md.html">特别放送（一）经典的Kafka学习资料有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%b8%89%ef%bc%89%e6%88%91%e6%98%af%e6%80%8e%e4%b9%88%e5%ba%a6%e8%bf%87%e6%97%a5%e5%b8%b8%e4%b8%80%e5%a4%a9%e7%9a%84%ef%bc%9f.md.html" id="特别放送（三）我是怎么度过日常一天的？.md.html">特别放送（三）我是怎么度过日常一天的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%ba%8c%ef%bc%89%e4%b8%80%e7%af%87%e6%96%87%e7%ab%a0%e5%b8%a6%e4%bd%a0%e4%ba%86%e8%a7%a3%e5%8f%82%e4%b8%8e%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e7%9a%84%e5%85%a8%e9%83%a8%e6%b5%81%e7%a8%8b.md.html" id="特别放送（二）一篇文章带你了解参与开源社区的全部流程.md.html">特别放送（二）一篇文章带你了解参与开源社区的全部流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%ba%94%ef%bc%89%20Kafka%20%e7%a4%be%e5%8c%ba%e7%9a%84%e9%87%8d%e7%a3%85%e5%8a%9f%e8%83%bd%ef%bc%9a%e7%a7%bb%e9%99%a4%20ZooKeeper%20%e4%be%9d%e8%b5%96.md.html" id="特别放送（五） Kafka 社区的重磅功能：移除 ZooKeeper 依赖.md.html">特别放送（五） Kafka 社区的重磅功能：移除 ZooKeeper 依赖.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e5%9b%9b%ef%bc%8920%e9%81%93%e7%bb%8f%e5%85%b8%e7%9a%84Kafka%e9%9d%a2%e8%af%95%e9%a2%98%e8%af%a6%e8%a7%a3.md.html" id="特别放送（四）20道经典的Kafka面试题详解.md.html">特别放送（四）20道经典的Kafka面试题详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%ba%90%e7%a0%81%e5%ad%a6%e4%b9%a0%ef%bc%8c%e6%88%91%e4%bb%ac%e6%89%8d%e5%88%9a%e4%b8%8a%e8%b7%af%e5%91%a2.md.html" id="结束语 源码学习，我们才刚上路呢.md.html">结束语 源码学习，我们才刚上路呢.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="21 AbstractFetcherThread：拉取消息分几步？" id="title">21 AbstractFetcherThread：拉取消息分几步？</h1>
+<div><p>你好，我是胡夕。从今天开始，我们正式进入到第5大模块“副本管理模块”源码的学习。</p>
+<p>在Kafka中，副本是最重要的概念之一。为什么这么说呢？在前面的课程中，我曾反复提到过副本机制是Kafka实现数据高可靠性的基础。具体的实现方式就是，同一个分区下的多个副本分散在不同的Broker机器上，它们保存相同的消息数据以实现高可靠性。对于分布式系统而言，一个必须要解决的问题，就是如何确保所有副本上的数据是一致的。</p>
+<p>针对这个问题，最常见的方案当属Leader/Follower备份机制（Leader/Follower Replication）。在Kafka中， 分区的某个副本会被指定为Leader，负责响应客户端的读写请求。其他副本自动成为Follower，被动地同步Leader副本中的数据。</p>
+<p>这里所说的被动同步，是指Follower副本不断地向Leader副本发送读取请求，以获取Leader处写入的最新消息数据。</p>
+<p>那么在接下来的两讲，我们就一起学习下Follower副本是如何通过拉取线程做到这一点的。另外，Follower副本在副本同步的过程中，还可能发生名为截断（Truncation）的操作。我们一并来看下它的实现原理。</p>
+<h2 id="课前案例">课前案例</h2>
+<p>坦率地说，这部分源码非常贴近底层设计架构原理。你可能在想：阅读它对我实际有什么帮助吗？我举一个实际的例子来说明下。</p>
+<p>我们曾经在生产环境中发现，一旦Broker上的副本数过多，Broker节点的内存占用就会非常高。查过HeapDump之后，我们发现根源在于ReplicaFetcherThread文件中的buildFetch方法。这个方法里有这样一句：</p>
+<pre><code>val builder = fetchSessionHandler.newBuilder()
+</code></pre>
+<p>这条语句底层会实例化一个LinkedHashMap。如果分区数很多的话，这个Map会被扩容很多次，因此带来了很多不必要的数据拷贝。这样既增加了内存的Footprint，也浪费了CPU资源。</p>
+<p>你看，通过查询源码，我们定位到了这个问题的根本原因。后来，我们通过将负载转移到其他Broker的方法解决了这个问题。</p>
+<p>其实，Kafka社区也发现了这个Bug，所以当你现在再看这部分源码的时候，就会发现这行语句已经被修正了。它现在长这个样子，你可以体会下和之前有什么不同：</p>
+<pre><code>val builder = fetchSessionHandler.newBuilder(partitionMap.size, false)
+</code></pre>
+<p>你可能也看出来了，修改前后最大的不同，其实在于修改后的这条语句直接传入了FETCH请求中总的分区数，并直接将其传给LinkedHashMap，免得再执行扩容操作了。</p>
+<p>你看，有的时候改进一行源码就能解决实际问题。而且，你千万不要以为修改源码是一件多么神秘的事情，搞懂了原理之后，就可以有针对性地调整代码了，这其实是一件非常愉悦的事情。</p>
+<p>好了，我们说回Follower副本从Leader副本拉取数据这件事儿。不知道你有没有注意到，我在前面的例子提到了一个名字：ReplicaFetcherThread，也就是副本获取线程。没错，Kafka源码就是通过这个线程实现的消息拉取及处理。</p>
+<p>今天这节课，我们先从抽象基类AbstractFetcherThread学起，看看它的类定义和三个重要方法。下节课，我们再继续学习AbstractFetcherThread类的一个重要方法，以及子类ReplicaFetcherThread的源码。这样，我们就能彻底搞明白Follower端同步Leader端消息的原理。</p>
+<h2 id="抽象基类-abstractfetcherthread">抽象基类：AbstractFetcherThread</h2>
+<p>等等，我们不是要学ReplicaFetcherThread吗？为什么要先从它的父类AbstractFetcherThread开始学习呢？</p>
+<p>其实，这里的原因也很简单，那就是因为AbstractFetcherThread类是ReplicaFetcherThread的抽象基类。它里面定义和实现了很多重要的字段和方法，是我们学习ReplicaFetcherThread源码的基础。同时，AbstractFetcherThread类的源码给出了很多子类需要实现的方法。</p>
+<p>因此，我们需要事先了解这个抽象基类，否则便无法顺畅过渡到其子类源码的学习。</p>
+<p>好了，我们来正式认识下AbstractFetcherThread吧。它的源码位于server包下的AbstractFetcherThread.scala文件中。从名字来看，它是一个抽象类，实现的功能是从Broker获取多个分区的消息数据，至于获取之后如何对这些数据进行处理，则交由子类来实现。</p>
+<h3 id="类定义及字段">类定义及字段</h3>
+<p>我们看下AbstractFetcherThread类的定义和一些重要的字段：</p>
+<pre><code>abstract class AbstractFetcherThread(
+  name: String,  // 线程名称
+  clientId: String,  // Client Id，用于日志输出
+  val sourceBroker: BrokerEndPoint,  // 数据源Broker地址
+  failedPartitions: FailedPartitions,  // 处理过程中出现失败的分区
+  fetchBackOffMs: Int = 0,  // 获取操作重试间隔
+  isInterruptible: Boolean = true,  // 线程是否允许被中断
+  val brokerTopicStats: BrokerTopicStats) // Broker端主题监控指标
+  extends ShutdownableThread(name, isInterruptible) {
+  // 定义FetchData类型表示获取的消息数据
+  type FetchData = FetchResponse.PartitionData[Records]
+  // 定义EpochData类型表示Leader Epoch数据
+  type EpochData = OffsetsForLeaderEpochRequest.PartitionData
+  private val partitionStates = new PartitionStates[PartitionFetchState]
+  ......
+}
+</code></pre>
+<p>我们来看一下AbstractFetcherThread的构造函数接收的几个重要参数的含义。</p>
+<ul>
+<li>name：线程名字。</li>
+<li>sourceBroker：源Broker节点信息。源Broker是指此线程要从哪个Broker上读取数据。</li>
+<li>failedPartitions：线程处理过程报错的分区集合。</li>
+<li>fetchBackOffMs：当获取分区数据出错后的等待重试间隔，默认是Broker端参数replica.fetch.backoff.ms值。</li>
+<li>brokerTopicStats：Broker端主题的各类监控指标，常见的有MessagesInPerSec、BytesInPerSec等。</li>
+</ul>
+<p>这些字段中比较重要的是<strong>sourceBroker</strong>，因为它决定Follower副本从哪个Broker拉取数据，也就是Leader副本所在的Broker是哪台。</p>
+<p>除了构造函数的这几个字段外，AbstractFetcherThread类还定义了两个type类型。用关键字type定义一个类型，属于Scala比较高阶的语法特性。从某种程度上，你可以把它当成一个快捷方式，比如FetchData这句：</p>
+<pre><code>type FetchData = FetchResponse.PartitionData[Records]
+</code></pre>
+<p>这行语句类似于一个快捷方式：以后凡是源码中需要用到FetchResponse.PartitionData[Records]的地方，都可以简单地使用FetchData替换掉，非常简洁方便。自定义类型EpochData，也是同样的用法。</p>
+<p>FetchData定义里的PartitionData类型，是客户端clients工程中FetchResponse类定义的嵌套类。FetchResponse类封装的是FETCH请求的Response对象，而里面的PartitionData类是一个POJO类，保存的是Response中单个分区数据拉取的各项数据，包括从该分区的Leader副本拉取回来的消息、该分区的高水位值和日志起始位移值等。</p>
+<p>我们看下它的代码：</p>
+<pre><code>public static final class PartitionData&lt;T extends BaseRecords&gt; {
+    public final Errors error;           // 错误码
+    public final long highWatermark;     // 高水位值
+    public final long lastStableOffset;  // 最新LSO值 
+    public final long logStartOffset;    // 最新Log Start Offset值
+    // 期望的Read Replica
+    // KAFKA 2.4之后支持部分Follower副本可以对外提供读服务
+    public final Optional&lt;Integer&gt; preferredReadReplica;
+    // 该分区对应的已终止事务列表
+    public final List&lt;AbortedTransaction&gt; abortedTransactions;
+    // 消息集合，最重要的字段！
+    public final T records;
+    // 构造函数......
+}
+</code></pre>
+<p>PartitionData这个类定义的字段中，除了我们已经非常熟悉的highWatermark和logStartOffset等字段外，还有一些属于比较高阶的用法：</p>
+<ul>
+<li>preferredReadReplica，用于指定可对外提供读服务的Follower副本；</li>
+<li>abortedTransactions，用于保存该分区当前已终止事务列表；</li>
+<li>lastStableOffset是最新的LSO值，属于Kafka事务的概念。</li>
+</ul>
+<p>关于这几个字段，你只要了解它们的基本作用就可以了。实际上，在PartitionData这个类中，最需要你重点关注的是<strong>records字段</strong>。因为它保存实际的消息集合，而这是我们最关心的数据。</p>
+<p>说到这里，如果你去查看EpochData的定义，能发现它也是PartitionData类型。但，你一定要注意的是，EpochData的PartitionData是OffsetsForLeaderEpochRequest的PartitionData类型。</p>
+<p>事实上，<strong>在Kafka源码中，有很多名为PartitionData的嵌套类</strong>。很多请求类型中的数据都是按分区层级进行分组的，因此源码很自然地在这些请求类中创建了同名的嵌套类。我们在查看源码时，一定要注意区分PartitionData嵌套类是定义在哪类请求中的，不同类型请求中的PartitionData类字段是完全不同的。</p>
+<h3 id="分区读取状态类">分区读取状态类</h3>
+<p>好了，我们把视线拉回到AbstractFetcherThread类。在这个类的构造函数中，我们看到它还封装了一个名为<strong>PartitionStates[PartitionFetchState]</strong>类型的字段。</p>
+<p>是不是看上去有些复杂？不过没关系，我们分开来看，先看它泛型的参数类型PartitionFetchState类。直观上理解，它是表征分区读取状态的，保存的是分区的已读取位移值和对应的副本状态。</p>
+<p>注意这里的状态有两个，一个是分区读取状态，一个是副本读取状态。副本读取状态由ReplicaState接口表示，如下所示：</p>
+<pre><code>sealed trait ReplicaState
+// 截断中
+case object Truncating extends ReplicaState
+// 获取中
+case object Fetching extends ReplicaState
+</code></pre>
+<p>可见，副本读取状态有截断中和获取中两个：当副本执行截断操作时，副本状态被设置成Truncating；当副本被读取时，副本状态被设置成Fetching。</p>
+<p>而分区读取状态有3个，分别是：</p>
+<ul>
+<li>可获取，表明副本获取线程当前能够读取数据。</li>
+<li>截断中，表明分区副本正在执行截断操作（比如该副本刚刚成为Follower副本）。</li>
+<li>被推迟，表明副本获取线程获取数据时出现错误，需要等待一段时间后重试。</li>
+</ul>
+<p>值得注意的是，分区读取状态中的可获取、截断中与副本读取状态的获取中、截断中两个状态并非严格对应的。换句话说，副本读取状态处于获取中，并不一定表示分区读取状态就是可获取状态。对于分区而言，它是否能够被获取的条件要比副本严格一些。</p>
+<p>接下来，我们就来看看这3类分区获取状态的源码定义：</p>
+<pre><code>case class PartitionFetchState(fetchOffset: Long,
+  lag: Option[Long],
+  currentLeaderEpoch: Int,
+  delay: Option[DelayedItem],
+  state: ReplicaState) {
+  // 分区可获取的条件是副本处于Fetching且未被推迟执行
+  def isReadyForFetch: Boolean = state == Fetching &amp;&amp; !isDelayed
+  // 副本处于ISR的条件：没有lag
+  def isReplicaInSync: Boolean = lag.isDefined &amp;&amp; lag.get &lt;= 0
+  // 分区处于截断中状态的条件：副本处于Truncating状态且未被推迟执行
+  def isTruncating: Boolean = state == Truncating &amp;&amp; !isDelayed
+  // 分区被推迟获取数据的条件：存在未过期的延迟任务
+  def isDelayed: Boolean = 
+    delay.exists(_.getDelay(TimeUnit.MILLISECONDS) &gt; 0)
+  ......
+}
+</code></pre>
+<p>这段源码中有4个方法，你只要重点了解isReadyForFetch和isTruncating这两个方法即可。因为副本获取线程做的事情就是这两件：日志截断和消息获取。</p>
+<p>至于isReplicaInSync，它被用于副本限流，出镜率不高。而isDelayed，是用于判断是否需要推迟获取对应分区的消息。源码会不断地调整那些不需要推迟的分区的读取顺序，以保证读取的公平性。</p>
+<p>这个公平性，其实就是在partitionStates字段的类型PartitionStates类中实现的。这个类是在clients工程中定义的。它本质上会接收一组要读取的主题分区，然后以轮询的方式依次读取这些分区以确保公平性。</p>
+<p>鉴于咱们这门儿课聚焦于Broker端源码，因此，这里我只是简单和你说下这个类的实现原理。如果你想要深入理解这部分内容，可以翻开clients端工程的源码，自行去探索下这部分的源码。</p>
+<pre><code>public class PartitionStates&lt;S&gt; {
+    private final LinkedHashMap&lt;TopicPartition, S&gt; map = new LinkedHashMap&lt;&gt;();
+    ......
+    public void updateAndMoveToEnd(TopicPartition topicPartition, S state) {
+      map.remove(topicPartition);
+      map.put(topicPartition, state);
+      updateSize();
+    }
+    ......
+}
+</code></pre>
+<p>前面说过了，PartitionStates类用轮询的方式来处理要读取的多个分区。那具体是怎么实现的呢？简单来说，就是依靠LinkedHashMap数据结构来保存所有主题分区。LinkedHashMap中的元素有明确的迭代顺序，通常就是元素被插入的顺序。</p>
+<p>假设Kafka要读取5个分区上的消息：A、B、C、D和E。如果插入顺序就是ABCDE，那么自然首先读取分区A。一旦A被读取之后，为了确保各个分区都有同等机会被读取到，代码需要将A插入到分区列表的最后一位，这就是updateAndMoveToEnd方法要做的事情。</p>
+<p>具体来说，就是把A从map中移除掉，然后再插回去，这样A自然就处于列表的最后一位了。大体上，PartitionStates类就是做这个用的。</p>
+<h3 id="重要方法">重要方法</h3>
+<p>说完了AbstractFetcherThread类的定义，我们再看下它提供的一些重要方法。</p>
+<p>这个类总共封装了近40个方法，那接下来我就按照这些方法对于你使用Kafka、解决Kafka问题的重要程度，精选出4个方法做重点讲解，分别是processPartitionData、truncate、buildFetch和doWork。这4个方法涵盖了拉取线程所做的最重要的3件事儿：构建FETCH请求、执行截断操作、处理拉取后的结果。而doWork方法，其实是串联起了前面的这3个方法。</p>
+<p>好了，我们一个一个来看看吧。</p>
+<p><strong>首先是它最重要的方法processPartitionData</strong>，用于处理读取回来的消息集合。它是一个抽象方法，因此需要子类实现它的逻辑。具体到Follower副本而言， 是由ReplicaFetcherThread类实现的。以下是它的方法签名：</p>
+<pre><code>protected def processPartitionData(
+  topicPartition: TopicPartition,  // 读取哪个分区的数据
+  fetchOffset: Long,               // 读取到的最新位移值
+  partitionData: FetchData         // 读取到的分区消息数据
+): Option[LogAppendInfo]           // 写入已读取消息数据前的元数据
+</code></pre>
+<p>我们需要重点关注的字段是，该方法的返回值Option[LogAppendInfo]：</p>
+<ul>
+<li>对于Follower副本读消息写入日志而言，你可以忽略这里的Option，因为它肯定会返回具体的LogAppendInfo实例，而不会是None。</li>
+<li>至于LogAppendInfo类，我们在“日志模块”中已经介绍过了。它封装了很多消息数据被写入到日志前的重要元数据信息，比如首条消息的位移值、最后一条消息位移值、最大时间戳等。</li>
+</ul>
+<p>除了processPartitionData方法，<strong>另一个重要的方法是truncate方法</strong>，其签名代码如下：</p>
+<pre><code>protected def truncate(
+  topicPartition: TopicPartition, // 要对哪个分区下副本执行截断操作
+  truncationState: OffsetTruncationState  // Offset + 截断状态
+): Unit
+</code></pre>
+<p>这里的OffsetTruncationState类封装了一个位移值和一个截断完成与否的布尔值状态。它的主要作用是，告诉Kafka要把指定分区下副本截断到哪个位移值。</p>
+<p><strong>第3个重要的方法是buildFetch方法</strong>。代码如下：</p>
+<pre><code>protected def buildFetch(
+  // 一组要读取的分区列表
+  // 分区是否可读取取决于PartitionFetchState中的状态
+  partitionMap: Map[TopicPartition, PartitionFetchState]): 
+// 封装FetchRequest.Builder对象
+ResultWithPartitions[Option[ReplicaFetch]]
+</code></pre>
+<p>buildFetch方法的返回值看似很复杂，但其实如果你阅读源码的话，就会发现buildFetch的本质就是，为指定分区构建对应的FetchRequest.Builder对象，而该对象是构建FetchRequest的核心组件。Kafka中任何类型的消息读取，都是通过给指定Broker发送FetchRequest请求来完成的。</p>
+<p><strong>第4个重要的方法是doWork</strong>。虽然它的代码行数不多，但却<strong>是串联前面3个方法的主要入口方法，也是AbstractFetcherThread</strong>类的核心方法。因此，我们要多花点时间，弄明白这些方法是怎么组合在一起共同工作的。我会在下节课和你详细拆解这里面的代码原理。</p>
+<h2 id="总结">总结</h2>
+<p>今天，我们主要学习了Kafka的副本同步机制和副本管理器组件。目前，Kafka副本之间的消息同步是依靠ReplicaFetcherThread线程完成的。我们重点阅读了它的抽象基类AbstractFetcherThread线程类的代码。作为拉取线程的公共基类，AbstractFetcherThread类定义了很多重要方法。</p>
+<p>我们来回顾一下这节课的重点。</p>
+<ul>
+<li>AbstractFetcherThread类：拉取线程的抽象基类。它定义了公共方法来处理所有拉取线程都要实现的逻辑，如执行截断操作，获取消息等。</li>
+<li>拉取线程逻辑：循环执行截断操作和获取数据操作。</li>
+<li>分区读取状态：当前，源码定义了3类分区读取状态。拉取线程只能拉取处于可读取状态的分区的数据。</li>
+</ul>
+<p><img alt="" src="assets/750998c099f3d3575f6ba4c418bfce8d.jpg"/></p>
+<p>下节课，我会带你一起对照着doWork方法的代码，把拉取线程的完整执行逻辑串联一遍，这样的话，我们就能彻底掌握Follower副本拉取线程的工作原理了。在这个过程中，我们还会陆续接触到ReplicaFetcherThread类源码的3个重要方法的代码。你需要理解它们的实现机制以及doWork是怎么把它们组织在一起的。</p>
+<h2 id="课后讨论">课后讨论</h2>
+<p>请简单描述一下handlePartitionsWithErrors方法的实现原理。</p>
+<p>欢迎在留言区写下你的思考和答案，跟我交流讨论，也欢迎你把今天的内容分享给你的朋友。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#412d2d2d78757070717601262c20282d6f222e2c" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358af3d6c3972e9',t:'MTc0NTUzMDA0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

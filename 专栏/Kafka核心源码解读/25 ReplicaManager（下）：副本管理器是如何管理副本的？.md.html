@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="25 ReplicaManager（下）：副本管理器是如何管理副本的？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>25 ReplicaManager（下）：副本管理器是如何管理副本的？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/00%20%e5%af%bc%e8%af%bb%20%e6%9e%84%e5%bb%baKafka%e5%b7%a5%e7%a8%8b%e5%92%8c%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb%e7%8e%af%e5%a2%83%e3%80%81Scala%e8%af%ad%e8%a8%80%e7%83%ad%e8%ba%ab.md.html" id="00 导读 构建Kafka工程和源码阅读环境、Scala语言热身.md.html">00 导读 构建Kafka工程和源码阅读环境、Scala语言热身.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e9%98%85%e8%af%bb%e6%ba%90%e7%a0%81%ef%bc%8c%e9%80%90%e6%b8%90%e6%88%90%e4%ba%86%e8%81%8c%e4%b8%9a%e8%bf%9b%e9%98%b6%e9%81%93%e8%b7%af%e4%b8%8a%e7%9a%84%e2%80%9c%e5%bf%85%e9%80%89%e9%a1%b9%e2%80%9d.md.html" id="00 开篇词  阅读源码，逐渐成了职业进阶道路上的“必选项”.md.html">00 开篇词  阅读源码，逐渐成了职业进阶道路上的“必选项”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/00%20%e9%87%8d%e7%a3%85%e5%8a%a0%e9%a4%90%20%e5%b8%a6%e4%bd%a0%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8Scala%e8%af%ad%e8%a8%80.md.html" id="00 重磅加餐 带你快速入门Scala语言.md.html">00 重磅加餐 带你快速入门Scala语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/01%20%e6%97%a5%e5%bf%97%e6%ae%b5%ef%bc%9a%e4%bf%9d%e5%ad%98%e6%b6%88%e6%81%af%e6%96%87%e4%bb%b6%e7%9a%84%e5%af%b9%e8%b1%a1%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="01 日志段：保存消息文件的对象是怎么实现的？.md.html">01 日志段：保存消息文件的对象是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/02%20%e6%97%a5%e5%bf%97%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%97%a5%e5%bf%97%e7%a9%b6%e7%ab%9f%e6%98%af%e5%a6%82%e4%bd%95%e5%8a%a0%e8%bd%bd%e6%97%a5%e5%bf%97%e6%ae%b5%e7%9a%84%ef%bc%9f.md.html" id="02 日志（上）：日志究竟是如何加载日志段的？.md.html">02 日志（上）：日志究竟是如何加载日志段的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/03%20%e6%97%a5%e5%bf%97%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82Log%e5%af%b9%e8%b1%a1%e7%9a%84%e5%b8%b8%e8%a7%81%e6%93%8d%e4%bd%9c.md.html" id="03 日志（下）：彻底搞懂Log对象的常见操作.md.html">03 日志（下）：彻底搞懂Log对象的常见操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/04%20%e7%b4%a2%e5%bc%95%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%94%b9%e8%bf%9b%e7%9a%84%e4%ba%8c%e5%88%86%e6%9f%a5%e6%89%be%e7%ae%97%e6%b3%95%e5%9c%a8Kafka%e7%b4%a2%e5%bc%95%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="04 索引（上）：改进的二分查找算法在Kafka索引的应用.md.html">04 索引（上）：改进的二分查找算法在Kafka索引的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/05%20%e7%b4%a2%e5%bc%95%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bd%8d%e7%a7%bb%e7%b4%a2%e5%bc%95%e5%92%8c%e6%97%b6%e9%97%b4%e6%88%b3%e7%b4%a2%e5%bc%95%e7%9a%84%e5%8c%ba%e5%88%ab%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="05 索引（下）：位移索引和时间戳索引的区别是什么？.md.html">05 索引（下）：位移索引和时间戳索引的区别是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/06%20%e8%af%b7%e6%b1%82%e9%80%9a%e9%81%93%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0Kafka%e8%af%b7%e6%b1%82%e9%98%9f%e5%88%97%ef%bc%9f.md.html" id="06 请求通道：如何实现Kafka请求队列？.md.html">06 请求通道：如何实现Kafka请求队列？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/07%20SocketServer%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aKafka%e5%88%b0%e5%ba%95%e6%98%af%e6%80%8e%e4%b9%88%e5%ba%94%e7%94%a8NIO%e5%ae%9e%e7%8e%b0%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%e7%9a%84%ef%bc%9f.md.html" id="07 SocketServer（上）：Kafka到底是怎么应用NIO实现网络通信的？.md.html">07 SocketServer（上）：Kafka到底是怎么应用NIO实现网络通信的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/08%20SocketServer%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e8%af%b7%e6%b1%82%e8%bf%98%e8%a6%81%e5%8c%ba%e5%88%86%e4%bc%98%e5%85%88%e7%ba%a7%ef%bc%9f.md.html" id="08 SocketServer（中）：请求还要区分优先级？.md.html">08 SocketServer（中）：请求还要区分优先级？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/09%20SocketServer%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%af%b7%e6%b1%82%e5%a4%84%e7%90%86%e5%85%a8%e6%b5%81%e7%a8%8b%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90.md.html" id="09 SocketServer（下）：请求处理全流程源码分析.md.html">09 SocketServer（下）：请求处理全流程源码分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/10%20KafkaApis%ef%bc%9aKafka%e6%9c%80%e9%87%8d%e8%a6%81%e7%9a%84%e6%ba%90%e7%a0%81%e5%85%a5%e5%8f%a3%ef%bc%8c%e6%b2%a1%e6%9c%89%e4%b9%8b%e4%b8%80.md.html" id="10 KafkaApis：Kafka最重要的源码入口，没有之一.md.html">10 KafkaApis：Kafka最重要的源码入口，没有之一.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/11%20Controller%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%9aController%e9%83%bd%e4%bf%9d%e5%ad%98%e6%9c%89%e5%93%aa%e4%ba%9b%e4%b8%9c%e8%a5%bf%ef%bc%9f%e6%9c%89%e5%87%a0%e7%a7%8d%e7%8a%b6%e6%80%81%ef%bc%9f.md.html" id="11 Controller元数据：Controller都保存有哪些东西？有几种状态？.md.html">11 Controller元数据：Controller都保存有哪些东西？有几种状态？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/12%20ControllerChannelManager%ef%bc%9aController%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e8%af%b7%e6%b1%82%e5%8f%91%e9%80%81%ef%bc%9f.md.html" id="12 ControllerChannelManager：Controller如何管理请求发送？.md.html">12 ControllerChannelManager：Controller如何管理请求发送？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/13%20ControllerEventManager%ef%bc%9a%e5%8f%98%e8%ba%ab%e5%8d%95%e7%ba%bf%e7%a8%8b%e5%90%8e%e7%9a%84Controller%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e4%ba%8b%e4%bb%b6%ef%bc%9f.md.html" id="13 ControllerEventManager：变身单线程后的Controller如何处理事件？.md.html">13 ControllerEventManager：变身单线程后的Controller如何处理事件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/14%20Controller%e9%80%89%e4%b8%be%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="14 Controller选举是怎么实现的？.md.html">14 Controller选举是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/15%20%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3Controller%e5%9c%a8Kafka%e9%9b%86%e7%be%a4%e4%b8%ad%e7%9a%84%e4%bd%9c%e7%94%a8%ef%bc%9f.md.html" id="15 如何理解Controller在Kafka集群中的作用？.md.html">15 如何理解Controller在Kafka集群中的作用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/16%20TopicDeletionManager%ef%bc%9a%20Topic%e6%98%af%e6%80%8e%e4%b9%88%e8%a2%ab%e5%88%a0%e9%99%a4%e7%9a%84%ef%bc%9f.md.html" id="16 TopicDeletionManager： Topic是怎么被删除的？.md.html">16 TopicDeletionManager： Topic是怎么被删除的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/17%20ReplicaStateMachine%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%89%af%e6%9c%ac%e7%8a%b6%e6%80%81%e6%9c%ba%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="17 ReplicaStateMachine：揭秘副本状态机实现原理.md.html">17 ReplicaStateMachine：揭秘副本状态机实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/18%20PartitionStateMachine%ef%bc%9a%e5%88%86%e5%8c%ba%e7%8a%b6%e6%80%81%e8%bd%ac%e6%8d%a2%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="18 PartitionStateMachine：分区状态转换如何实现？.md.html">18 PartitionStateMachine：分区状态转换如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/19%20TimingWheel%ef%bc%9a%e6%8e%a2%e7%a9%b6Kafka%e5%ae%9a%e6%97%b6%e5%99%a8%e8%83%8c%e5%90%8e%e7%9a%84%e9%ab%98%e6%95%88%e6%97%b6%e9%97%b4%e8%bd%ae%e7%ae%97%e6%b3%95.md.html" id="19 TimingWheel：探究Kafka定时器背后的高效时间轮算法.md.html">19 TimingWheel：探究Kafka定时器背后的高效时间轮算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/20%20DelayedOperation%ef%bc%9aBroker%e6%98%af%e6%80%8e%e4%b9%88%e5%bb%b6%e6%97%b6%e5%a4%84%e7%90%86%e8%af%b7%e6%b1%82%e7%9a%84%ef%bc%9f.md.html" id="20 DelayedOperation：Broker是怎么延时处理请求的？.md.html">20 DelayedOperation：Broker是怎么延时处理请求的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/21%20AbstractFetcherThread%ef%bc%9a%e6%8b%89%e5%8f%96%e6%b6%88%e6%81%af%e5%88%86%e5%87%a0%e6%ad%a5%ef%bc%9f.md.html" id="21 AbstractFetcherThread：拉取消息分几步？.md.html">21 AbstractFetcherThread：拉取消息分几步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/22%20ReplicaFetcherThread%ef%bc%9aFollower%e5%a6%82%e4%bd%95%e6%8b%89%e5%8f%96Leader%e6%b6%88%e6%81%af%ef%bc%9f.md.html" id="22 ReplicaFetcherThread：Follower如何拉取Leader消息？.md.html">22 ReplicaFetcherThread：Follower如何拉取Leader消息？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/23%20ReplicaManager%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%bf%85%e9%a1%bb%e8%a6%81%e6%8e%8c%e6%8f%a1%e7%9a%84%e5%89%af%e6%9c%ac%e7%ae%a1%e7%90%86%e7%b1%bb%e5%ae%9a%e4%b9%89%e5%92%8c%e6%a0%b8%e5%bf%83%e5%ad%97%e6%ae%b5.md.html" id="23 ReplicaManager（上）：必须要掌握的副本管理类定义和核心字段.md.html">23 ReplicaManager（上）：必须要掌握的副本管理类定义和核心字段.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/24%20ReplicaManager%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%89%af%e6%9c%ac%e7%ae%a1%e7%90%86%e5%99%a8%e6%98%af%e5%a6%82%e4%bd%95%e8%af%bb%e5%86%99%e5%89%af%e6%9c%ac%e7%9a%84%ef%bc%9f.md.html" id="24 ReplicaManager（中）：副本管理器是如何读写副本的？.md.html">24 ReplicaManager（中）：副本管理器是如何读写副本的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/25%20ReplicaManager%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%89%af%e6%9c%ac%e7%ae%a1%e7%90%86%e5%99%a8%e6%98%af%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%89%af%e6%9c%ac%e7%9a%84%ef%bc%9f.md.html" id="25 ReplicaManager（下）：副本管理器是如何管理副本的？.md.html">25 ReplicaManager（下）：副本管理器是如何管理副本的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/26%20MetadataCache%ef%bc%9aBroker%e6%98%af%e6%80%8e%e4%b9%88%e5%bc%82%e6%ad%a5%e6%9b%b4%e6%96%b0%e5%85%83%e6%95%b0%e6%8d%ae%e7%bc%93%e5%ad%98%e7%9a%84%ef%bc%9f.md.html" id="26 MetadataCache：Broker是怎么异步更新元数据缓存的？.md.html">26 MetadataCache：Broker是怎么异步更新元数据缓存的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/27%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e9%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="27 消费者组元数据（上）：消费者组都有哪些元数据？.md.html">27 消费者组元数据（上）：消费者组都有哪些元数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/28%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aKafka%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e8%bf%99%e4%ba%9b%e5%85%83%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="28 消费者组元数据（下）：Kafka如何管理这些元数据？.md.html">28 消费者组元数据（下）：Kafka如何管理这些元数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/29%20GroupMetadataManager%ef%bc%9a%e7%bb%84%e5%85%83%e6%95%b0%e6%8d%ae%e7%ae%a1%e7%90%86%e5%99%a8%e6%98%af%e4%b8%aa%e4%bb%80%e4%b9%88%e4%b8%9c%e8%a5%bf%ef%bc%9f.md.html" id="29 GroupMetadataManager：组元数据管理器是个什么东西？.md.html">29 GroupMetadataManager：组元数据管理器是个什么东西？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/30%20GroupMetadataManager%ef%bc%9a%e4%bd%8d%e7%a7%bb%e4%b8%bb%e9%a2%98%e4%bf%9d%e5%ad%98%e7%9a%84%e5%8f%aa%e6%98%af%e4%bd%8d%e7%a7%bb%e5%90%97%ef%bc%9f.md.html" id="30 GroupMetadataManager：位移主题保存的只是位移吗？.md.html">30 GroupMetadataManager：位移主题保存的只是位移吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/31%20GroupMetadataManager%ef%bc%9a%e6%9f%a5%e8%af%a2%e4%bd%8d%e7%a7%bb%e6%97%b6%ef%bc%8c%e4%b8%8d%e7%94%a8%e8%af%bb%e5%8f%96%e4%bd%8d%e7%a7%bb%e4%b8%bb%e9%a2%98%ef%bc%9f.md.html" id="31 GroupMetadataManager：查询位移时，不用读取位移主题？.md.html">31 GroupMetadataManager：查询位移时，不用读取位移主题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/32%20GroupCoordinator%ef%bc%9a%e5%9c%a8Rebalance%e4%b8%ad%ef%bc%8cCoordinator%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e6%88%90%e5%91%98%e5%85%a5%e7%bb%84%ef%bc%9f.md.html" id="32 GroupCoordinator：在Rebalance中，Coordinator如何处理成员入组？.md.html">32 GroupCoordinator：在Rebalance中，Coordinator如何处理成员入组？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/33%20GroupCoordinator%ef%bc%9a%e5%9c%a8Rebalance%e4%b8%ad%ef%bc%8c%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e7%bb%84%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="33 GroupCoordinator：在Rebalance中，如何进行组同步？.md.html">33 GroupCoordinator：在Rebalance中，如何进行组同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%b8%80%ef%bc%89%e7%bb%8f%e5%85%b8%e7%9a%84Kafka%e5%ad%a6%e4%b9%a0%e8%b5%84%e6%96%99%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="特别放送（一）经典的Kafka学习资料有哪些？.md.html">特别放送（一）经典的Kafka学习资料有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%b8%89%ef%bc%89%e6%88%91%e6%98%af%e6%80%8e%e4%b9%88%e5%ba%a6%e8%bf%87%e6%97%a5%e5%b8%b8%e4%b8%80%e5%a4%a9%e7%9a%84%ef%bc%9f.md.html" id="特别放送（三）我是怎么度过日常一天的？.md.html">特别放送（三）我是怎么度过日常一天的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%ba%8c%ef%bc%89%e4%b8%80%e7%af%87%e6%96%87%e7%ab%a0%e5%b8%a6%e4%bd%a0%e4%ba%86%e8%a7%a3%e5%8f%82%e4%b8%8e%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e7%9a%84%e5%85%a8%e9%83%a8%e6%b5%81%e7%a8%8b.md.html" id="特别放送（二）一篇文章带你了解参与开源社区的全部流程.md.html">特别放送（二）一篇文章带你了解参与开源社区的全部流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%ba%94%ef%bc%89%20Kafka%20%e7%a4%be%e5%8c%ba%e7%9a%84%e9%87%8d%e7%a3%85%e5%8a%9f%e8%83%bd%ef%bc%9a%e7%a7%bb%e9%99%a4%20ZooKeeper%20%e4%be%9d%e8%b5%96.md.html" id="特别放送（五） Kafka 社区的重磅功能：移除 ZooKeeper 依赖.md.html">特别放送（五） Kafka 社区的重磅功能：移除 ZooKeeper 依赖.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e5%9b%9b%ef%bc%8920%e9%81%93%e7%bb%8f%e5%85%b8%e7%9a%84Kafka%e9%9d%a2%e8%af%95%e9%a2%98%e8%af%a6%e8%a7%a3.md.html" id="特别放送（四）20道经典的Kafka面试题详解.md.html">特别放送（四）20道经典的Kafka面试题详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%ba%90%e7%a0%81%e5%ad%a6%e4%b9%a0%ef%bc%8c%e6%88%91%e4%bb%ac%e6%89%8d%e5%88%9a%e4%b8%8a%e8%b7%af%e5%91%a2.md.html" id="结束语 源码学习，我们才刚上路呢.md.html">结束语 源码学习，我们才刚上路呢.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="25 ReplicaManager（下）：副本管理器是如何管理副本的？" id="title">25 ReplicaManager（下）：副本管理器是如何管理副本的？</h1>
+<div><p>你好，我是胡夕。</p>
+<p>上节课我们学习了ReplicaManager类源码中副本管理器是如何执行副本读写操作的。现在我们知道了，这个副本读写操作主要是通过appendRecords和fetchMessages这两个方法实现的，而这两个方法其实在底层分别调用了Log的append和read方法，也就是我们在[第3节课]中学到的日志消息写入和日志消息读取方法。</p>
+<p>今天，我们继续学习ReplicaManager类源码，看看副本管理器是如何管理副本的。这里的副本，涵盖了广义副本对象的方方面面，包括副本和分区对象、副本位移值和ISR管理等。因此，本节课我们结合着源码，具体学习下这几个方面。</p>
+<h2 id="分区及副本管理">分区及副本管理</h2>
+<p>除了对副本进行读写之外，副本管理器还有一个重要的功能，就是管理副本和对应的分区。ReplicaManager管理它们的方式，是通过字段allPartitions来实现的。</p>
+<p>所以，我想先带你复习下[第23节课]中的allPartitions的代码。不过，这次为了强调它作为容器的属性，我们要把注意力放在它是对象池这个特点上，即allPartitions把所有分区对象汇集在一起，统一放入到一个对象池进行管理。</p>
+<pre><code>private val allPartitions = new Pool[TopicPartition, HostedPartition](
+  valueFactory = Some(tp =&gt; HostedPartition.Online(Partition(tp, time, this)))
+)
+</code></pre>
+<p>从代码可以看到，每个ReplicaManager实例都维护了所在Broker上保存的所有分区对象，而每个分区对象Partition下面又定义了一组副本对象Replica。通过这样的层级关系，副本管理器实现了对于分区的直接管理和对副本对象的间接管理。应该这样说，<strong>ReplicaManager通过直接操作分区对象来间接管理下属的副本对象</strong>。</p>
+<p>对于一个Broker而言，它管理下辖的分区和副本对象的主要方式，就是要确定在它保存的这些副本中，哪些是Leader副本、哪些是Follower副本。</p>
+<p>这些划分可不是一成不变的，而是随着时间的推移不断变化的。比如说，这个时刻Broker是分区A的Leader副本、分区B的Follower副本，但在接下来的某个时刻，Broker很可能变成分区A的Follower副本、分区B的Leader副本。</p>
+<p>而这些变更是通过Controller给Broker发送LeaderAndIsrRequest请求来实现的。当Broker端收到这类请求后，会调用副本管理器的becomeLeaderOrFollower方法来处理，并依次执行“成为Leader副本”和“成为Follower副本”的逻辑，令当前Broker互换分区A、B副本的角色。</p>
+<h3 id="becomeleaderorfollower方法">becomeLeaderOrFollower方法</h3>
+<p>这里我们又提到了LeaderAndIsrRequest请求。其实，我们在学习Controller和控制类请求的时候就多次提到过它，在[第12讲]中也详细学习过它的作用了。因为隔的时间比较长了，我怕你忘记了，所以这里我们再回顾下。</p>
+<p>简单来说，它就是告诉接收该请求的Broker：在我传给你的这些分区中，哪些分区的Leader副本在你这里；哪些分区的Follower副本在你这里。</p>
+<p>becomeLeaderOrFollower方法，就是具体处理LeaderAndIsrRequest请求的地方，同时也是副本管理器添加分区的地方。下面我们就完整地学习下这个方法的源码。由于这部分代码很长，我将会分为3个部分向你介绍，分别是处理Controller Epoch事宜、执行成为Leader和Follower的逻辑以及构造Response。</p>
+<p>我们先看becomeLeaderOrFollower方法的第1大部分，<strong>处理Controller Epoch及其他相关准备工作</strong>的流程图：</p>
+<p><img alt="" src="assets/20298371601540a21da0ec5b1a6b1896.jpg"/></p>
+<p>因为becomeLeaderOrFollower方法的开头是一段仅用于调试的日志输出，不是很重要，因此，我直接从if语句开始讲起。第一部分的主体代码如下：</p>
+<pre><code>// 如果LeaderAndIsrRequest携带的Controller Epoch
+// 小于当前Controller的Epoch值
+if (leaderAndIsrRequest.controllerEpoch &lt; controllerEpoch) {
+  stateChangeLogger.warn(s"Ignoring LeaderAndIsr request from controller $controllerId with " +
+    s"correlation id $correlationId since its controller epoch ${leaderAndIsrRequest.controllerEpoch} is old. " +
+    s"Latest known controller epoch is $controllerEpoch")
+  // 说明Controller已经易主，抛出相应异常
+  leaderAndIsrRequest.getErrorResponse(0, Errors.STALE_CONTROLLER_EPOCH.exception)
+} else {
+  val responseMap = new mutable.HashMap[TopicPartition, Errors]
+  // 更新当前Controller Epoch值
+  controllerEpoch = leaderAndIsrRequest.controllerEpoch
+  val partitionStates = new mutable.HashMap[Partition, LeaderAndIsrPartitionState]()
+  // 遍历LeaderAndIsrRequest请求中的所有分区
+  requestPartitionStates.foreach { partitionState =&gt;
+    val topicPartition = new TopicPartition(partitionState.topicName, partitionState.partitionIndex)
+    // 从allPartitions中获取对应分区对象
+    val partitionOpt = getPartition(topicPartition) match {
+      // 如果是Offline状态
+      case HostedPartition.Offline =&gt;
+        stateChangeLogger.warn(s"Ignoring LeaderAndIsr request from " +
+          s"controller $controllerId with correlation id $correlationId " +
+          s"epoch $controllerEpoch for partition $topicPartition as the local replica for the " +
+          "partition is in an offline log directory")
+        // 添加对象异常到Response，并设置分区对象变量partitionOpt=None
+        responseMap.put(topicPartition, Errors.KAFKA_STORAGE_ERROR)
+        None
+      // 如果是Online状态，直接赋值partitionOpt即可
+      case HostedPartition.Online(partition) =&gt;
+        Some(partition)
+      // 如果是None状态，则表示没有找到分区对象
+      // 那么创建新的分区对象将，新创建的分区对象加入到allPartitions统一管理
+      // 然后赋值partitionOpt字段
+      case HostedPartition.None =&gt;
+        val partition = Partition(topicPartition, time, this)
+        allPartitions.putIfNotExists(topicPartition, HostedPartition.Online(partition))
+        Some(partition)
+    }
+    // 检查分区的Leader Epoch值
+    ......
+  }
+</code></pre>
+<p>现在，我们一起来学习下这部分内容的核心逻辑。</p>
+<p>首先，比较LeaderAndIsrRequest携带的Controller Epoch值和当前Controller Epoch值。如果发现前者小于后者，说明Controller已经变更到别的Broker上了，需要构造一个STALE_CONTROLLER_EPOCH异常并封装进Response返回。否则，代码进入else分支。</p>
+<p>然后，becomeLeaderOrFollower方法会更新当前缓存的Controller Epoch值，再提取出LeaderAndIsrRequest请求中涉及到的分区，之后依次遍历这些分区，并执行下面的两步逻辑。</p>
+<p>第1步，从allPartitions中取出对应的分区对象。在第23节课，我们学习了分区有3种状态，即在线（Online）、离线（Offline）和不存在（None），这里代码就需要分别应对这3种情况：</p>
+<ul>
+<li>如果是Online状态的分区，直接将其赋值给partitionOpt字段即可；</li>
+<li>如果是Offline状态的分区，说明该分区副本所在的Kafka日志路径出现I/O故障时（比如磁盘满了），需要构造对应的KAFKA_STORAGE_ERROR异常并封装进Response，同时令partitionOpt字段为None；</li>
+<li>如果是None状态的分区，则创建新分区对象，然后将其加入到allPartitions中，进行统一管理，并赋值给partitionOpt字段。</li>
+</ul>
+<p>第2步，检查partitionOpt字段表示的分区的Leader Epoch。检查的原则是要确保请求中携带的Leader Epoch值要大于当前缓存的Leader Epoch，否则就说明是过期Controller发送的请求，就直接忽略它，不做处理。</p>
+<p>总之呢，becomeLeaderOrFollower方法的第一部分代码，主要做的事情就是创建新分区、更新Controller Epoch和校验分区Leader Epoch。我们在[第3讲]说到过Leader Epoch机制，因为是比较高阶的用法，你可以不用重点掌握，这不会影响到我们学习副本管理。不过，如果你想深入了解的话，推荐你课下自行阅读下LeaderEpochFileCache.scala的源码。</p>
+<p>当为所有分区都执行完这两个步骤之后，<strong>becomeLeaderOrFollower方法进入到第2部分，开始执行Broker成为Leader副本和Follower副本的逻辑</strong>：</p>
+<pre><code>// 确定Broker上副本是哪些分区的Leader副本
+val partitionsToBeLeader = partitionStates.filter { case (_, partitionState) =&gt;
+  partitionState.leader == localBrokerId
+}
+// 确定Broker上副本是哪些分区的Follower副本
+val partitionsToBeFollower = partitionStates.filter { case (k, _) =&gt; !partitionsToBeLeader.contains(k) }
+
+val highWatermarkCheckpoints = new LazyOffsetCheckpoints(this.highWatermarkCheckpoints)
+val partitionsBecomeLeader = if (partitionsToBeLeader.nonEmpty)
+  // 调用makeLeaders方法为partitionsToBeLeader所有分区
+  // 执行"成为Leader副本"的逻辑
+  makeLeaders(controllerId, controllerEpoch, partitionsToBeLeader, correlationId, responseMap,
+    highWatermarkCheckpoints)
+else
+  Set.empty[Partition]
+val partitionsBecomeFollower = if (partitionsToBeFollower.nonEmpty)
+  // 调用makeFollowers方法为令partitionsToBeFollower所有分区
+  // 执行"成为Follower副本"的逻辑
+  makeFollowers(controllerId, controllerEpoch, partitionsToBeFollower, correlationId, responseMap,
+    highWatermarkCheckpoints)
+else
+  Set.empty[Partition]
+val leaderTopicSet = leaderPartitionsIterator.map(_.topic).toSet
+val followerTopicSet = partitionsBecomeFollower.map(_.topic).toSet
+// 对于当前Broker成为Follower副本的主题
+// 移除它们之前的Leader副本监控指标
+followerTopicSet.diff(leaderTopicSet).foreach(brokerTopicStats.removeOldLeaderMetrics)
+// 对于当前Broker成为Leader副本的主题
+// 移除它们之前的Follower副本监控指
+leaderTopicSet.diff(followerTopicSet).foreach(brokerTopicStats.removeOldFollowerMetrics)
+// 如果有分区的本地日志为空，说明底层的日志路径不可用
+// 标记该分区为Offline状态
+leaderAndIsrRequest.partitionStates.forEach { partitionState =&gt;
+  val topicPartition = new TopicPartition(partitionState.topicName, partitionState.partitionIndex)
+  if (localLog(topicPartition).isEmpty)
+    markPartitionOffline(topicPartition)
+}
+</code></pre>
+<p><strong>首先</strong>，这部分代码需要先确定两个分区集合，一个是把该Broker当成Leader的所有分区；一个是把该Broker当成Follower的所有分区。判断的依据，主要是看LeaderAndIsrRequest请求中分区的Leader信息，是不是和本Broker的ID相同。如果相同，则表明该Broker是这个分区的Leader；否则，表示当前Broker是这个分区的Follower。</p>
+<p>一旦确定了这两个分区集合，<strong>接着</strong>，代码就会分别为它们调用makeLeaders和makeFollowers方法，正式让Leader和Follower角色生效。之后，对于那些当前Broker成为Follower副本的主题，代码需要移除它们之前的Leader副本监控指标，以防出现系统资源泄露的问题。同样地，对于那些当前Broker成为Leader副本的主题，代码要移除它们之前的Follower副本监控指标。</p>
+<p><strong>最后</strong>，如果有分区的本地日志为空，说明底层的日志路径不可用，那么标记该分区为Offline状态。所谓的标记为Offline状态，主要是两步：第1步是更新allPartitions中分区的状态；第2步是移除对应分区的监控指标。</p>
+<p>小结一下，becomeLeaderOrFollower方法第2大部分的主要功能是，调用makeLeaders和makeFollowers方法，令Broker在不同分区上的Leader或Follower角色生效。关于这两个方法的实现细节，一会儿我再详细说。</p>
+<p>现在，让我们看看<strong>第3大部分的代码，构造Response对象</strong>。这部分代码是becomeLeaderOrFollower方法的收尾操作。</p>
+<pre><code>// 启动高水位检查点专属线程
+// 定期将Broker上所有非Offline分区的高水位值写入到检查点文件
+startHighWatermarkCheckPointThread()
+// 添加日志路径数据迁移线程
+maybeAddLogDirFetchers(partitionStates.keySet, highWatermarkCheckpoints)
+// 关闭空闲副本拉取线程
+replicaFetcherManager.shutdownIdleFetcherThreads()
+// 关闭空闲日志路径数据迁移线程
+replicaAlterLogDirsManager.shutdownIdleFetcherThreads()
+// 执行Leader变更之后的回调逻辑
+onLeadershipChange(partitionsBecomeLeader, partitionsBecomeFollower)
+// 构造LeaderAndIsrRequest请求的Response并返回
+val responsePartitions = responseMap.iterator.map { case (tp, error) =&gt;
+  new LeaderAndIsrPartitionError()
+    .setTopicName(tp.topic)
+    .setPartitionIndex(tp.partition)
+    .setErrorCode(error.code)
+}.toBuffer
+new LeaderAndIsrResponse(new LeaderAndIsrResponseData()
+  .setErrorCode(Errors.NONE.code)
+  .setPartitionErrors(responsePartitions.asJava))
+</code></pre>
+<p>我们来分析下这部分代码的执行逻辑吧。</p>
+<p>首先，这部分开始时会启动一个专属线程来执行高水位值持久化，定期地将Broker上所有非Offline分区的高水位值写入检查点文件。这个线程是个后台线程，默认每5秒执行一次。</p>
+<p>同时，代码还会添加日志路径数据迁移线程。这个线程的主要作用是，将路径A上面的数据搬移到路径B上。这个功能是Kafka支持JBOD（Just a Bunch of Disks）的重要前提。</p>
+<p>之后，becomeLeaderOrFollower方法会关闭空闲副本拉取线程和空闲日志路径数据迁移线程。判断空闲与否的主要条件是，分区Leader/Follower角色调整之后，是否存在不再使用的拉取线程了。代码要确保及时关闭那些不再被使用的线程对象。</p>
+<p>再之后是执行LeaderAndIsrRequest请求的回调处理逻辑。这里的回调逻辑，实际上只是对Kafka两个内部主题（<strong>consumer_offsets和</strong>transaction_state）有用，其他主题一概不适用。所以通常情况下，你可以无视这里的回调逻辑。</p>
+<p>等这些都做完之后，代码开始执行这部分最后，也是最重要的任务：构造LeaderAndIsrRequest请求的Response，然后将新创建的Response返回。至此，这部分方法的逻辑结束。</p>
+<p>纵观becomeLeaderOrFollower方法的这3大部分，becomeLeaderOrFollower方法最重要的职责，在我看来就是调用makeLeaders和makeFollowers方法，为各自的分区列表执行相应的角色确认工作。</p>
+<p>接下来，我们就分别看看这两个方法是如何实现这种角色确认的。</p>
+<h3 id="makeleaders方法">makeLeaders方法</h3>
+<p>makeLeaders方法的作用是，让当前Broker成为给定一组分区的Leader，也就是让当前Broker下该分区的副本成为Leader副本。这个方法主要有3步：</p>
+<ol>
+<li>停掉这些分区对应的获取线程；</li>
+<li>更新Broker缓存中的分区元数据信息；</li>
+<li>将指定分区添加到Leader分区集合。</li>
+</ol>
+<p>我们结合代码分析下这些都是如何实现的。首先，我们看下makeLeaders的方法签名：</p>
+<pre><code>// controllerId：Controller所在Broker的ID
+// controllEpoch：Controller Epoch值，可以认为是Controller版本号
+// partitionStates：LeaderAndIsrRequest请求中携带的分区信息
+// correlationId：请求的Correlation字段，只用于日志调试
+// responseMap：按照主题分区分组的异常错误集合
+// highWatermarkCheckpoints：操作磁盘上高水位检查点文件的工具类
+private def makeLeaders(controllerId: Int,
+  controllerEpoch: Int,
+  partitionStates: Map[Partition, LeaderAndIsrPartitionState],
+  correlationId: Int,
+  responseMap: mutable.Map[TopicPartition, Errors],
+  highWatermarkCheckpoints: OffsetCheckpoints): Set[Partition] = {
+  ......
+}
+</code></pre>
+<p>可以看出，makeLeaders方法接收6个参数，并返回一个分区对象集合。这个集合就是当前Broker是Leader的所有分区。在这6个参数中，以下3个参数比较关键，我们看下它们的含义。</p>
+<ul>
+<li>controllerId：Controller所在Broker的ID。该字段只是用于日志输出，无其他实际用途。</li>
+<li>controllerEpoch：Controller Epoch值，可以认为是Controller版本号。该字段用于日志输出使用，无其他实际用途。</li>
+<li>partitionStates：LeaderAndIsrRequest请求中携带的分区信息，包括每个分区的Leader是谁、ISR都有哪些等数据。</li>
+</ul>
+<p>好了，现在我们继续学习makeLeaders的代码。我把这个方法的关键步骤放在了注释里，并省去了一些日志输出相关的代码。</p>
+<pre><code>......
+// 使用Errors.NONE初始化ResponseMap
+partitionStates.keys.foreach { partition =&gt;
+  ......
+  responseMap.put(partition.topicPartition, Errors.NONE)
+}
+val partitionsToMakeLeaders = mutable.Set[Partition]()
+try {
+  // 停止消息拉取
+  replicaFetcherManager.removeFetcherForPartitions(
+    partitionStates.keySet.map(_.topicPartition))
+  stateChangeLogger.info(s"Stopped fetchers as part of LeaderAndIsr request correlationId $correlationId from " +
+    s"controller $controllerId epoch $controllerEpoch as part of the become-leader transition for " +
+    s"${partitionStates.size} partitions")
+  // 更新指定分区的Leader分区信息
+  partitionStates.foreach { case (partition, partitionState) =&gt;
+    try {
+      if (partition.makeLeader(partitionState, highWatermarkCheckpoints))
+        partitionsToMakeLeaders += partition
+      else
+        ......
+    } catch {
+      case e: KafkaStorageException =&gt;
+        ......
+        // 把KAFKA_SOTRAGE_ERRROR异常封装到Response中
+        responseMap.put(partition.topicPartition, Errors.KAFKA_STORAGE_ERROR)
+    }
+  }
+} catch {
+  case e: Throwable =&gt;
+    ......
+}
+......
+partitionsToMakeLeaders
+</code></pre>
+<p>我把主要的执行流程，梳理为了一张流程图：</p>
+<p><img alt="" src="assets/053b8eb9c4bb0342398ce9650b37aa25.png"/></p>
+<p>结合着图，我再带着你学习下这个方法的执行逻辑。</p>
+<p>首先，将给定的一组分区的状态全部初始化成Errors.None。</p>
+<p>然后，停止为这些分区服务的所有拉取线程。毕竟该Broker现在是这些分区的Leader副本了，不再是Follower副本了，所以没有必要再使用拉取线程了。</p>
+<p>最后，makeLeaders方法调用Partition的makeLeader方法，去更新给定一组分区的Leader分区信息，而这些是由Partition类中的makeLeader方法完成的。该方法保存分区的Leader和ISR信息，同时创建必要的日志对象、重设远端Follower副本的LEO值。</p>
+<p>那远端Follower副本，是什么意思呢？远端Follower副本，是指保存在Leader副本本地内存中的一组Follower副本集合，在代码中用字段remoteReplicas来表征。</p>
+<p>ReplicaManager在处理FETCH请求时，会更新remoteReplicas中副本对象的LEO值。同时，Leader副本会将自己更新后的LEO值与remoteReplicas中副本的LEO值进行比较，来决定是否“抬高”高水位值。</p>
+<p>而Partition类中的makeLeader方法的一个重要步骤，就是要重设这组远端Follower副本对象的LEO值。</p>
+<p>makeLeaders方法执行完Partition.makeLeader后，如果当前Broker成功地成为了该分区的Leader副本，就返回True，表示新Leader配置成功，否则，就表示处理失败。倘若成功设置了Leader，那么，就把该分区加入到已成功设置Leader的分区列表中，并返回该列表。</p>
+<p>至此，方法结束。我再来小结下，makeLeaders的作用是令当前Broker成为给定分区的Leader副本。接下来，我们再看看与makeLeaders方法功能相反的makeFollowers方法。</p>
+<h3 id="makefollowers方法">makeFollowers方法</h3>
+<p>makeFollowers方法的作用是，将当前Broker配置成指定分区的Follower副本。我们还是先看下方法签名：</p>
+<pre><code>// controllerId：Controller所在Broker的Id
+// controllerEpoch：Controller Epoch值
+// partitionStates：当前Broker是Follower副本的所有分区的详细信息
+// correlationId：连接请求与响应的关联字段
+// responseMap：封装LeaderAndIsrRequest请求处理结果的字段
+// highWatermarkCheckpoints：操作高水位检查点文件的工具类
+private def makeFollowers(
+  controllerId: Int,
+  controllerEpoch: Int,
+  partitionStates: Map[Partition, LeaderAndIsrPartitionState],
+  correlationId: Int,
+  responseMap: mutable.Map[TopicPartition, Errors],
+  highWatermarkCheckpoints: OffsetCheckpoints) : Set[Partition] = {
+  ......
+}
+</code></pre>
+<p>你看，makeFollowers方法的参数列表与makeLeaders方法，是一模一样的。这里我也就不再展开了。</p>
+<p>其中比较重要的字段，就是partitionStates和responseMap。基本上，你可以认为partitionStates是makeFollowers方法的输入，responseMap是输出。</p>
+<p>因为整个makeFollowers方法的代码很长，所以我接下来会先用一张图解释下它的核心逻辑，让你先有个全局观；然后，我再按照功能划分带你学习每一部分的代码。</p>
+<p><img alt="" src="assets/b2dee2575c773afedcf6ee7ce00c7b88.jpg"/></p>
+<p>总体来看，makeFollowers方法分为两大步：</p>
+<ul>
+<li>第1步，遍历partitionStates中的所有分区，然后执行“成为Follower”的操作；</li>
+<li>第2步，执行其他动作，主要包括重建Fetcher线程、完成延时请求等。</li>
+</ul>
+<p>首先，<strong>我们学习第1步遍历partitionStates所有分区的代码</strong>：</p>
+<pre><code>// 第一部分：遍历partitionStates所有分区
+......
+partitionStates.foreach { case (partition, partitionState) =&gt;
+  ......
+  // 将所有分区的处理结果的状态初始化为Errors.NONE
+  responseMap.put(partition.topicPartition, Errors.NONE)
+}
+val partitionsToMakeFollower: mutable.Set[Partition] = mutable.Set()
+try {
+  // 遍历partitionStates所有分区
+  partitionStates.foreach { case (partition, partitionState) =&gt;
+    // 拿到分区的Leader Broker ID
+    val newLeaderBrokerId = partitionState.leader
+    try {
+      // 在元数据缓存中找到Leader Broke对象
+      metadataCache.getAliveBrokers.find(_.id == newLeaderBrokerId) match {
+        // 如果Leader确实存在
+        case Some(_) =&gt;
+          // 执行makeFollower方法，将当前Broker配置成该分区的Follower副本
+          if (partition.makeFollower(partitionState, highWatermarkCheckpoints))
+            // 如果配置成功，将该分区加入到结果返回集中
+            partitionsToMakeFollower += partition
+          else // 如果失败，打印错误日志
+            ......
+        // 如果Leader不存在
+        case None =&gt;
+          ......
+          // 依然创建出分区Follower副本的日志对象
+          partition.createLogIfNotExists(isNew = partitionState.isNew, isFutureReplica = false,
+            highWatermarkCheckpoints)
+      }
+    } catch {
+      case e: KafkaStorageException =&gt;
+        ......
+    }
+  }
+</code></pre>
+<p>在这部分代码中，我们可以把它的执行逻辑划分为两大步骤。</p>
+<p>第1步，将结果返回集合中所有分区的处理结果状态初始化为Errors.NONE；第2步，遍历partitionStates中的所有分区，依次为每个分区执行以下逻辑：</p>
+<ul>
+<li>从分区的详细信息中获取分区的Leader Broker ID；</li>
+<li>拿着上一步获取的Broker ID，去Broker元数据缓存中找到Leader Broker对象；</li>
+<li>如果Leader对象存在，则执行Partition类的makeFollower方法将当前Broker配置成该分区的Follower副本。如果makeFollower方法执行成功，就说明当前Broker被成功配置为指定分区的Follower副本，那么将该分区加入到结果返回集中。</li>
+<li>如果Leader对象不存在，依然创建出分区Follower副本的日志对象。</li>
+</ul>
+<p>说到Partition的makeFollower方法的执行逻辑，主要是包括以下4步：</p>
+<ol>
+<li>更新Controller Epoch值；</li>
+<li>保存副本列表（Assigned Replicas，AR）和清空ISR；</li>
+<li>创建日志对象；</li>
+<li>重设Leader副本的Broker ID。</li>
+</ol>
+<p>接下来，<strong>我们看下makeFollowers方法的第2步，执行其他动作的代码</strong>：</p>
+<pre><code>// 第二部分：执行其他动作
+// 移除现有Fetcher线程
+replicaFetcherManager.removeFetcherForPartitions(
+  partitionsToMakeFollower.map(_.topicPartition))
+......
+// 尝试完成延迟请求
+partitionsToMakeFollower.foreach { partition =&gt;
+  completeDelayedFetchOrProduceRequests(partition.topicPartition)
+}
+if (isShuttingDown.get()) {
+  .....
+} else {
+  // 为需要将当前Broker设置为Follower副本的分区
+  // 确定Leader Broker和起始读取位移值fetchOffset
+  val partitionsToMakeFollowerWithLeaderAndOffset = partitionsToMakeFollower.map { partition =&gt;
+  val leader = metadataCache.getAliveBrokers
+    .find(_.id == partition.leaderReplicaIdOpt.get).get
+    .brokerEndPoint(config.interBrokerListenerName)
+  val fetchOffset = partition.localLogOrException.highWatermark
+    partition.topicPartition -&gt; InitialFetchState(leader, 
+      partition.getLeaderEpoch, fetchOffset)
+  }.toMap
+  // 使用上一步确定的Leader Broker和fetchOffset添加新的Fetcher线程
+  replicaFetcherManager.addFetcherForPartitions(
+    partitionsToMakeFollowerWithLeaderAndOffset)
+  }
+} catch {
+  case e: Throwable =&gt;
+    ......
+    throw e
+}
+......
+// 返回需要将当前Broker设置为Follower副本的分区列表
+partitionsToMakeFollower
+</code></pre>
+<p>你看，这部分代码的任务比较简单，逻辑也都是线性递进的，很好理解。我带你简单地梳理一下。</p>
+<p>首先，移除现有Fetcher线程。因为Leader可能已经更换了，所以要读取的Broker以及要读取的位移值都可能随之发生变化。</p>
+<p>然后，为需要将当前Broker设置为Follower副本的分区，确定Leader Broker和起始读取位移值fetchOffset。这些信息都已经在LeaderAndIsrRequest中了。</p>
+<p>接下来，使用上一步确定的Leader Broker和fetchOffset添加新的Fetcher线程。</p>
+<p>最后，返回需要将当前Broker设置为Follower副本的分区列表。</p>
+<p>至此，副本管理器管理分区和副本的主要方法实现，我们就都学完啦。可以看出，这些代码实现的大部分，都是围绕着如何处理LeaderAndIsrRequest请求数据展开的。比如，makeLeaders拿到请求数据后，会为分区设置Leader和ISR；makeFollowers拿到数据后，会为分区更换Fetcher线程以及清空ISR。</p>
+<p>LeaderAndIsrRequest请求是Kafka定义的最重要的控制类请求。搞懂它是如何被处理的，对于你弄明白Kafka的副本机制是大有裨益的。</p>
+<h2 id="isr管理">ISR管理</h2>
+<p>除了读写副本、管理分区和副本的功能之外，副本管理器还有一个重要的功能，那就是管理ISR。这里的管理主要体现在两个方法：</p>
+<ul>
+<li>一个是maybeShrinkIsr方法，作用是阶段性地查看ISR中的副本集合是否需要收缩；</li>
+<li>另一个是maybePropagateIsrChanges方法，作用是定期向集群Broker传播ISR的变更。</li>
+</ul>
+<p>首先，我们看下ISR的收缩操作。</p>
+<h3 id="maybeshrinkisr方法">maybeShrinkIsr方法</h3>
+<p>收缩是指，把ISR副本集合中那些与Leader差距过大的副本移除的过程。所谓的差距过大，就是ISR中Follower副本滞后Leader副本的时间，超过了Broker端参数replica.lag.time.max.ms值的1.5倍。</p>
+<p>稍等，为什么是1.5倍呢？你可以看下面的代码：</p>
+<pre><code>def startup(): Unit = {
+  scheduler.schedule("isr-expiration", maybeShrinkIsr _, period = config.replicaLagTimeMaxMs / 2, unit = TimeUnit.MILLISECONDS)
+  ......
+}
+</code></pre>
+<p>我来解释下。ReplicaManager类的startup方法会在被调用时创建一个异步线程，定时查看是否有ISR需要进行收缩。这里的定时频率是replicaLagTimeMaxMs值的一半，而判断Follower副本是否需要被移除ISR的条件是，滞后程度是否超过了replicaLagTimeMaxMs值。</p>
+<p>因此理论上，滞后程度小于1.5倍replicaLagTimeMaxMs值的Follower副本，依然有可能在ISR中，不会被移除。这就是数字“1.5”的由来了。</p>
+<p>接下来，我们看下maybeShrinkIsr方法的源码。</p>
+<pre><code>private def maybeShrinkIsr(): Unit = {
+  trace("Evaluating ISR list of partitions to see which replicas can be removed from the ISR")
+  allPartitions.keys.foreach { topicPartition =&gt;
+    nonOfflinePartition(topicPartition).foreach(_.maybeShrinkIsr())
+  }
+}
+</code></pre>
+<p>可以看出，maybeShrinkIsr方法会遍历该副本管理器上所有分区对象，依次为这些分区中状态为Online的分区，执行Partition类的maybeShrinkIsr方法。这个方法的源码如下：</p>
+<pre><code>def maybeShrinkIsr(): Unit = {
+  // 判断是否需要执行ISR收缩
+  val needsIsrUpdate = inReadLock(leaderIsrUpdateLock) {
+    needsShrinkIsr()
+  }
+  val leaderHWIncremented = needsIsrUpdate &amp;&amp; inWriteLock(leaderIsrUpdateLock) {
+    leaderLogIfLocal match {
+      // 如果是Leader副本
+      case Some(leaderLog) =&gt;
+        // 获取不同步的副本Id列表
+        val outOfSyncReplicaIds = getOutOfSyncReplicas(replicaLagTimeMaxMs)
+        // 如果存在不同步的副本Id列表
+        if (outOfSyncReplicaIds.nonEmpty) {
+          // 计算收缩之后的ISR列表
+          val newInSyncReplicaIds = inSyncReplicaIds -- outOfSyncReplicaIds
+          assert(newInSyncReplicaIds.nonEmpty)
+          info("Shrinking ISR from %s to %s. Leader: (highWatermark: %d, endOffset: %d). Out of sync replicas: %s."
+            .format(inSyncReplicaIds.mkString(","),
+              newInSyncReplicaIds.mkString(","),
+              leaderLog.highWatermark,
+              leaderLog.logEndOffset,
+              outOfSyncReplicaIds.map { replicaId =&gt;
+                s"(brokerId: $replicaId, endOffset: ${getReplicaOrException(replicaId).logEndOffset})"
+              }.mkString(" ")
+            )
+          )
+          // 更新ZooKeeper中分区的ISR数据以及Broker的元数据缓存中的数据
+          shrinkIsr(newInSyncReplicaIds)
+          // 尝试更新Leader副本的高水位值
+          maybeIncrementLeaderHW(leaderLog)
+        } else {
+          false
+        }
+      // 如果不是Leader副本，什么都不做
+      case None =&gt; false
+    }
+  }
+  // 如果Leader副本的高水位值抬升了
+  if (leaderHWIncremented)
+    // 尝试解锁一下延迟请求
+    tryCompleteDelayedRequests()
+}
+</code></pre>
+<p>可以看出，maybeShrinkIsr方法的整个执行流程是：</p>
+<ul>
+<li><strong>第1步</strong>，判断是否需要执行ISR收缩。主要的方法是，调用needShrinkIsr方法来获取与Leader不同步的副本。如果存在这样的副本，说明需要执行ISR收缩。</li>
+<li><strong>第2步</strong>，再次获取与Leader不同步的副本列表，并把它们从当前ISR中剔除出去，然后计算得出最新的ISR列表。</li>
+<li><strong>第3步</strong>，调用shrinkIsr方法去更新ZooKeeper上分区的ISR数据以及Broker上元数据缓存。</li>
+<li><strong>第4步</strong>，尝试更新Leader分区的高水位值。这里有必要检查一下是否可以抬升高水位值的原因在于，如果ISR收缩后只剩下Leader副本一个了，那么高水位值的更新就不再受那么多限制了。</li>
+<li><strong>第5步</strong>，根据上一步的结果，来尝试解锁之前不满足条件的延迟操作。</li>
+</ul>
+<p>我把这个执行过程，梳理到了一张流程图中：</p>
+<p><img alt="" src="assets/0ce6b2e29byyfd4db331e65df6b8bb3e.jpg"/></p>
+<h3 id="maybepropagateisrchanges方法">maybePropagateIsrChanges方法</h3>
+<p>ISR收缩之后，ReplicaManager还需要将这个操作的结果传递给集群的其他Broker，以同步这个操作的结果。这是由ISR通知事件来完成的。</p>
+<p>在ReplicaManager类中，方法maybePropagateIsrChanges专门负责创建ISR通知事件。这也是由一个异步线程定期完成的，代码如下：</p>
+<pre><code>scheduler.schedule("isr-change-propagation", maybePropagateIsrChanges _, period = 2500L, unit = TimeUnit.MILLISECONDS)
+</code></pre>
+<p>接下来，我们看下maybePropagateIsrChanges方法的代码：</p>
+<pre><code>def maybePropagateIsrChanges(): Unit = {
+  val now = System.currentTimeMillis()
+  isrChangeSet synchronized {
+    // ISR变更传播的条件，需要同时满足：
+    // 1. 存在尚未被传播的ISR变更
+    // 2. 最近5秒没有任何ISR变更，或者自上次ISR变更已经有超过1分钟的时间
+    if (isrChangeSet.nonEmpty &amp;&amp;
+      (lastIsrChangeMs.get() + ReplicaManager.IsrChangePropagationBlackOut &lt; now ||
+        lastIsrPropagationMs.get() + ReplicaManager.IsrChangePropagationInterval &lt; now)) {
+      // 创建ZooKeeper相应的Znode节点
+      zkClient.propagateIsrChanges(isrChangeSet)
+      // 清空isrChangeSet集合
+      isrChangeSet.clear()
+      // 更新最近ISR变更时间戳
+      lastIsrPropagationMs.set(now)
+    }
+  }
+}
+</code></pre>
+<p>可以看到，maybePropagateIsrChanges方法的逻辑也比较简单。我来概括下其执行逻辑。</p>
+<p>首先，确定ISR变更传播的条件。这里需要同时满足两点：</p>
+<ul>
+<li>一是， 存在尚未被传播的ISR变更；</li>
+<li>二是， 最近5秒没有任何ISR变更，或者自上次ISR变更已经有超过1分钟的时间。</li>
+</ul>
+<p>一旦满足了这两个条件，代码会创建ZooKeeper相应的Znode节点；然后，清空isrChangeSet集合；最后，更新最近ISR变更时间戳。</p>
+<h2 id="总结">总结</h2>
+<p>今天，我们重点学习了ReplicaManager类的分区和副本管理功能，以及ISR管理。我们再完整地梳理下ReplicaManager类的核心功能和方法。</p>
+<ul>
+<li>分区/副本管理。ReplicaManager类的核心功能是，应对Broker端接收的LeaderAndIsrRequest请求，并将请求中的分区信息抽取出来，让所在Broker执行相应的动作。</li>
+<li>becomeLeaderOrFollower方法。它是应对LeaderAndIsrRequest请求的入口方法。它会将请求中的分区划分成两组，分别调用makeLeaders和makeFollowers方法。</li>
+<li>makeLeaders方法。它的作用是让Broker成为指定分区Leader副本。</li>
+<li>makeFollowers方法。它的作用是让Broker成为指定分区Follower副本的方法。</li>
+<li>ISR管理。ReplicaManager类提供了ISR收缩和定期传播ISR变更通知的功能。</li>
+</ul>
+<p><img alt="" src="assets/b63ecd5619213340df68f0771607f6f2.jpg"/></p>
+<p>掌握了这些核心知识点，你差不多也就掌握了绝大部分的副本管理器功能，比如说Broker如何成为分区的Leader副本和Follower副本，以及ISR是如何被管理的。</p>
+<p>你可能也发现了，有些非核心小功能我们今天并没有展开，比如Broker上的元数据缓存是怎么回事。下一节课，我将带你深入到这个缓存当中，去看看它到底是什么。</p>
+<h2 id="课后讨论">课后讨论</h2>
+<p>maybePropagateIsrChanges源码中，有个isrChangeSet字段。你知道它是在哪里被更新的吗？</p>
+<p>欢迎在留言区写下你的思考和答案，跟我交流讨论，也欢迎你把今天的内容分享给你的朋友。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#09656565303d3838393e496e64686065276a6664" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358afa7d8a8fc33',t:'MTc0NTUzMDA2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
