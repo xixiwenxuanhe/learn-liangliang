@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="28 JVM 问题排查分析下篇（案例实战）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>28 JVM 问题排查分析下篇（案例实战） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/01%20%e9%98%85%e8%af%bb%e6%ad%a4%e4%b8%93%e6%a0%8f%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="01 阅读此专栏的正确姿势.md.html">01 阅读此专栏的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/02%20%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%ef%bc%9a%e5%8d%83%e9%87%8c%e4%b9%8b%e8%a1%8c%ef%bc%8c%e5%a7%8b%e4%ba%8e%e8%b6%b3%e4%b8%8b.md.html" id="02 环境准备：千里之行，始于足下.md.html">02 环境准备：千里之行，始于足下.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/03%20%e5%b8%b8%e7%94%a8%e6%80%a7%e8%83%bd%e6%8c%87%e6%a0%87%ef%bc%9a%e6%b2%a1%e6%9c%89%e9%87%8f%e5%8c%96%ef%bc%8c%e5%b0%b1%e6%b2%a1%e6%9c%89%e6%94%b9%e8%bf%9b.md.html" id="03 常用性能指标：没有量化，就没有改进.md.html">03 常用性能指标：没有量化，就没有改进.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/04%20JVM%20%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86%ef%bc%9a%e4%b8%8d%e7%a7%af%e8%b7%ac%e6%ad%a5%ef%bc%8c%e6%97%a0%e4%bb%a5%e8%87%b3%e5%8d%83%e9%87%8c.md.html" id="04 JVM 基础知识：不积跬步，无以至千里.md.html">04 JVM 基础知识：不积跬步，无以至千里.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/05%20Java%20%e5%ad%97%e8%8a%82%e7%a0%81%e6%8a%80%e6%9c%af%ef%bc%9a%e4%b8%8d%e7%a7%af%e7%bb%86%e6%b5%81%ef%bc%8c%e6%97%a0%e4%bb%a5%e6%88%90%e6%b1%9f%e6%b2%b3.md.html" id="05 Java 字节码技术：不积细流，无以成江河.md.html">05 Java 字节码技术：不积细流，无以成江河.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/06%20Java%20%e7%b1%bb%e5%8a%a0%e8%bd%bd%e5%99%a8%ef%bc%9a%e5%b1%b1%e4%b8%8d%e8%be%9e%e5%9c%9f%ef%bc%8c%e6%95%85%e8%83%bd%e6%88%90%e5%85%b6%e9%ab%98.md.html" id="06 Java 类加载器：山不辞土，故能成其高.md.html">06 Java 类加载器：山不辞土，故能成其高.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/07%20Java%20%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b%ef%bc%9a%e6%b5%b7%e4%b8%8d%e8%be%9e%e6%b0%b4%ef%bc%8c%e6%95%85%e8%83%bd%e6%88%90%e5%85%b6%e6%b7%b1.md.html" id="07 Java 内存模型：海不辞水，故能成其深.md.html">07 Java 内存模型：海不辞水，故能成其深.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/08%20JVM%20%e5%90%af%e5%8a%a8%e5%8f%82%e6%95%b0%e8%af%a6%e8%a7%a3%ef%bc%9a%e5%8d%9a%e8%a7%82%e8%80%8c%e7%ba%a6%e5%8f%96%e3%80%81%e5%8e%9a%e7%a7%af%e8%80%8c%e8%96%84%e5%8f%91.md.html" id="08 JVM 启动参数详解：博观而约取、厚积而薄发.md.html">08 JVM 启动参数详解：博观而约取、厚积而薄发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/09%20JDK%20%e5%86%85%e7%bd%ae%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%b7%a5%e5%85%b7%ef%bc%9a%e5%b7%a5%e6%ac%b2%e5%96%84%e5%85%b6%e4%ba%8b%ef%bc%8c%e5%bf%85%e5%85%88%e5%88%a9%e5%85%b6%e5%99%a8.md.html" id="09 JDK 内置命令行工具：工欲善其事，必先利其器.md.html">09 JDK 内置命令行工具：工欲善其事，必先利其器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/10%20JDK%20%e5%86%85%e7%bd%ae%e5%9b%be%e5%bd%a2%e7%95%8c%e9%9d%a2%e5%b7%a5%e5%85%b7%ef%bc%9a%e6%b5%b7%e9%98%94%e5%87%ad%e9%b1%bc%e8%b7%83%ef%bc%8c%e5%a4%a9%e9%ab%98%e4%bb%bb%e9%b8%9f%e9%a3%9e.md.html" id="10 JDK 内置图形界面工具：海阔凭鱼跃，天高任鸟飞.md.html">10 JDK 内置图形界面工具：海阔凭鱼跃，天高任鸟飞.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/11%20JDWP%20%e7%ae%80%e4%bb%8b%ef%bc%9a%e5%8d%81%e6%ad%a5%e6%9d%80%e4%b8%80%e4%ba%ba%ef%bc%8c%e5%8d%83%e9%87%8c%e4%b8%8d%e7%95%99%e8%a1%8c.md.html" id="11 JDWP 简介：十步杀一人，千里不留行.md.html">11 JDWP 简介：十步杀一人，千里不留行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/12%20JMX%20%e4%b8%8e%e7%9b%b8%e5%85%b3%e5%b7%a5%e5%85%b7%ef%bc%9a%e5%b1%b1%e9%ab%98%e6%9c%88%e5%b0%8f%ef%bc%8c%e6%b0%b4%e8%90%bd%e7%9f%b3%e5%87%ba.md.html" id="12 JMX 与相关工具：山高月小，水落石出.md.html">12 JMX 与相关工具：山高月小，水落石出.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/13%20%e5%b8%b8%e8%a7%81%e7%9a%84%20GC%20%e7%ae%97%e6%b3%95%ef%bc%88GC%20%e7%9a%84%e8%83%8c%e6%99%af%e4%b8%8e%e5%8e%9f%e7%90%86%ef%bc%89.md.html" id="13 常见的 GC 算法（GC 的背景与原理）.md.html">13 常见的 GC 算法（GC 的背景与原理）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/14%20%e5%b8%b8%e8%a7%81%e7%9a%84%20GC%20%e7%ae%97%e6%b3%95%ef%bc%88ParallelCMSG1%ef%bc%89.md.html" id="14 常见的 GC 算法（ParallelCMSG1）.md.html">14 常见的 GC 算法（ParallelCMSG1）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/15%20Java11%20ZGC%20%e5%92%8c%20Java12%20Shenandoah%20%e4%bb%8b%e7%bb%8d%ef%bc%9a%e8%8b%9f%e6%97%a5%e6%96%b0%e3%80%81%e6%97%a5%e6%97%a5%e6%96%b0%e3%80%81%e5%8f%88%e6%97%a5%e6%96%b0.md.html" id="15 Java11 ZGC 和 Java12 Shenandoah 介绍：苟日新、日日新、又日新.md.html">15 Java11 ZGC 和 Java12 Shenandoah 介绍：苟日新、日日新、又日新.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/16%20Oracle%20GraalVM%20%e4%bb%8b%e7%bb%8d%ef%bc%9a%e4%bc%9a%e5%bd%93%e5%87%8c%e7%bb%9d%e9%a1%b6%e3%80%81%e4%b8%80%e8%a7%88%e4%bc%97%e5%b1%b1%e5%b0%8f.md.html" id="16 Oracle GraalVM 介绍：会当凌绝顶、一览众山小.md.html">16 Oracle GraalVM 介绍：会当凌绝顶、一览众山小.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/17%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%9f%ba%e7%a1%80%e9%85%8d%e7%bd%ae%ef%bc%89.md.html" id="17 GC 日志解读与分析（基础配置）.md.html">17 GC 日志解读与分析（基础配置）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/18%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%ae%9e%e4%be%8b%e5%88%86%e6%9e%90%e4%b8%8a%e7%af%87%ef%bc%89.md.html" id="18 GC 日志解读与分析（实例分析上篇）.md.html">18 GC 日志解读与分析（实例分析上篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/19%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%ae%9e%e4%be%8b%e5%88%86%e6%9e%90%e4%b8%ad%e7%af%87%ef%bc%89.md.html" id="19 GC 日志解读与分析（实例分析中篇）.md.html">19 GC 日志解读与分析（实例分析中篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/20%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%ae%9e%e4%be%8b%e5%88%86%e6%9e%90%e4%b8%8b%e7%af%87%ef%bc%89.md.html" id="20 GC 日志解读与分析（实例分析下篇）.md.html">20 GC 日志解读与分析（实例分析下篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/21%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e7%95%aa%e5%a4%96%e7%af%87%e5%8f%af%e8%a7%86%e5%8c%96%e5%b7%a5%e5%85%b7%ef%bc%89.md.html" id="21 GC 日志解读与分析（番外篇可视化工具）.md.html">21 GC 日志解读与分析（番外篇可视化工具）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/22%20JVM%20%e7%9a%84%e7%ba%bf%e7%a8%8b%e5%a0%86%e6%a0%88%e7%ad%89%e6%95%b0%e6%8d%ae%e5%88%86%e6%9e%90%ef%bc%9a%e6%93%8d%e5%8d%83%e6%9b%b2%e8%80%8c%e5%90%8e%e6%99%93%e5%a3%b0%e3%80%81%e8%a7%82%e5%8d%83%e5%89%91%e8%80%8c%e5%90%8e%e8%af%86%e5%99%a8.md.html" id="22 JVM 的线程堆栈等数据分析：操千曲而后晓声、观千剑而后识器.md.html">22 JVM 的线程堆栈等数据分析：操千曲而后晓声、观千剑而后识器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/23%20%e5%86%85%e5%ad%98%e5%88%86%e6%9e%90%e4%b8%8e%e7%9b%b8%e5%85%b3%e5%b7%a5%e5%85%b7%e4%b8%8a%e7%af%87%ef%bc%88%e5%86%85%e5%ad%98%e5%b8%83%e5%b1%80%e4%b8%8e%e5%88%86%e6%9e%90%e5%b7%a5%e5%85%b7%ef%bc%89.md.html" id="23 内存分析与相关工具上篇（内存布局与分析工具）.md.html">23 内存分析与相关工具上篇（内存布局与分析工具）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/24%20%e5%86%85%e5%ad%98%e5%88%86%e6%9e%90%e4%b8%8e%e7%9b%b8%e5%85%b3%e5%b7%a5%e5%85%b7%e4%b8%8b%e7%af%87%ef%bc%88%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%e5%88%86%e6%9e%90%ef%bc%89.md.html" id="24 内存分析与相关工具下篇（常见问题分析）.md.html">24 内存分析与相关工具下篇（常见问题分析）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/25%20FastThread%20%e7%9b%b8%e5%85%b3%e7%9a%84%e5%b7%a5%e5%85%b7%e4%bb%8b%e7%bb%8d%ef%bc%9a%e6%ac%b2%e7%a9%b7%e5%8d%83%e9%87%8c%e7%9b%ae%ef%bc%8c%e6%9b%b4%e4%b8%8a%e4%b8%80%e5%b1%82%e6%a5%bc.md.html" id="25 FastThread 相关的工具介绍：欲穷千里目，更上一层楼.md.html">25 FastThread 相关的工具介绍：欲穷千里目，更上一层楼.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/26%20%e9%9d%a2%e4%b8%b4%e5%a4%8d%e6%9d%82%e9%97%ae%e9%a2%98%e6%97%b6%e7%9a%84%e5%87%a0%e4%b8%aa%e9%ab%98%e7%ba%a7%e5%b7%a5%e5%85%b7%ef%bc%9a%e5%ae%83%e5%b1%b1%e4%b9%8b%e7%9f%b3%ef%bc%8c%e5%8f%af%e4%bb%a5%e6%94%bb%e7%8e%89.md.html" id="26 面临复杂问题时的几个高级工具：它山之石，可以攻玉.md.html">26 面临复杂问题时的几个高级工具：它山之石，可以攻玉.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/27%20JVM%20%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e5%88%86%e6%9e%90%e4%b8%8a%e7%af%87%ef%bc%88%e8%b0%83%e4%bc%98%e7%bb%8f%e9%aa%8c%ef%bc%89.md.html" id="27 JVM 问题排查分析上篇（调优经验）.md.html">27 JVM 问题排查分析上篇（调优经验）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/28%20JVM%20%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e5%88%86%e6%9e%90%e4%b8%8b%e7%af%87%ef%bc%88%e6%a1%88%e4%be%8b%e5%ae%9e%e6%88%98%ef%bc%89.md.html" id="28 JVM 问题排查分析下篇（案例实战）.md.html">28 JVM 问题排查分析下篇（案例实战）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/29%20GC%20%e7%96%91%e9%9a%be%e6%83%85%e5%86%b5%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%e7%af%87%ef%bc%89.md.html" id="29 GC 疑难情况问题排查与分析（上篇）.md.html">29 GC 疑难情况问题排查与分析（上篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/30%20GC%20%e7%96%91%e9%9a%be%e6%83%85%e5%86%b5%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%e7%af%87%ef%bc%89.md.html" id="30 GC 疑难情况问题排查与分析（下篇）.md.html">30 GC 疑难情况问题排查与分析（下篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/31%20JVM%20%e7%9b%b8%e5%85%b3%e7%9a%84%e5%b8%b8%e8%a7%81%e9%9d%a2%e8%af%95%e9%97%ae%e9%a2%98%e6%b1%87%e6%80%bb%ef%bc%9a%e8%bf%90%e7%ad%b9%e7%ad%96%e5%b8%b7%e5%b8%90%e4%b9%8b%e4%b8%ad%ef%bc%8c%e5%86%b3%e8%83%9c%e4%ba%8e%e5%8d%83%e9%87%8c%e4%b9%8b%e5%a4%96.md.html" id="31 JVM 相关的常见面试问题汇总：运筹策帷帐之中，决胜于千里之外.md.html">31 JVM 相关的常见面试问题汇总：运筹策帷帐之中，决胜于千里之外.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/32%20%e5%ba%94%e5%af%b9%e5%ae%b9%e5%99%a8%e6%97%b6%e4%bb%a3%e9%9d%a2%e4%b8%b4%e7%9a%84%e6%8c%91%e6%88%98%ef%bc%9a%e9%95%bf%e9%a3%8e%e7%a0%b4%e6%b5%aa%e4%bc%9a%e6%9c%89%e6%97%b6%e3%80%81%e7%9b%b4%e6%8c%82%e4%ba%91%e5%b8%86%e6%b5%8e%e6%b2%a7%e6%b5%b7.md.html" id="32 应对容器时代面临的挑战：长风破浪会有时、直挂云帆济沧海.md.html">32 应对容器时代面临的挑战：长风破浪会有时、直挂云帆济沧海.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="28 JVM 问题排查分析下篇（案例实战）" id="title">28 JVM 问题排查分析下篇（案例实战）</h1>
+<div><h3 id="gc-问题排查实战案例">GC 问题排查实战案例</h3>
+<p>这一部分，我们来看一个实际的案例。</p>
+<p>假设我们有一个提供高并发请求的服务，系统使用 Spring Boot 框架，指标采集使用 MicroMeter，监控数据上报给 Datadog 服务。</p>
+<p>当然，Micrometer支 持将数据上报给各种监控系统，例如：AppOptics、Atlas、Datadog、Dynatrace、Elastic、Ganglia、Graphite、Humio、Influx、Instana、JMX、KairosDB、New Relic、Prometh eus、SignalFx、Stackdriver、StatsD、Wavefront 等等。</p>
+<p>有关MicroMeter的信息可参考：</p>
+<blockquote>
+<p><a href="https://micrometer.io/docs" target="_blank">https://micrometer.io/docs</a></p>
+</blockquote>
+<h4 id="问题现象描述"><strong>问题现象描述</strong></h4>
+<p>最近一段时间，通过监控指标发现，有一个服务节点的最大 GC 暂停时间经常会达到 400ms 以上。</p>
+<p>如下图所示：</p>
+<p><img alt="85083641.png" src="assets/a2020390-7ba6-11ea-9687-397b36d0cdab"/></p>
+<p>从图中可以看到，GC 暂停时间的峰值达到了 546ms，这里展示的时间点是 2020 年 02 月 04 日 09:20:00 左右。</p>
+<p>客户表示这种情况必须解决，因为服务调用的超时时间为 1s，要求最大 GC 暂停时间不超过 200ms，平均暂停时间达到 100ms 以内，对客户的交易策略产生了极大的影响。</p>
+<h4 id="cpu-负载"><strong>CPU 负载</strong></h4>
+<p>CPU 的使用情况如下图所示：</p>
+<p><img alt="58517646.png" src="assets/333d8e90-7b4a-11ea-99ef-3bc3936801ae"/></p>
+<p>从图中可以看到：系统负载为 4.92，CPU使用率 7% 左右，其实这个图中隐含了一些重要的线索，但我们此时并没有发现什么问题。</p>
+<h4 id="gc-内存使用情况"><strong>GC 内存使用情况</strong></h4>
+<p>然后我们排查了这段时间的内存使用情况：</p>
+<p><img alt="85674124.png" src="assets/b2ee4a10-7ba6-11ea-8a35-fda221135a5a"/></p>
+<p>从图中可以看到，大约 09:25 左右 old_gen 使用量大幅下跌，确实是发生了 FullGC。</p>
+<p>但 09:20 前后，老年代空间的使用量在缓慢上升，并没有下降，也就是说引发最大暂停时间的这个点并没有发生 FullGC。</p>
+<p>当然，这些是事后复盘分析得出的结论。当时对监控所反馈的信息并不是特别信任，怀疑就是触发了 FullGC 导致的长时间 GC 暂停。</p>
+<blockquote>
+<p>为什么有怀疑呢，因为 Datadog 这个监控系统，默认 10s 上报一次数据。有可能在这 10s 内发生些什么事情但是被漏报了（当然，这是不可能的，如果上报失败会在日志系统中打印相关的错误）。</p>
+</blockquote>
+<p>再分析上面这个图，可以看到老年代对应的内存池是 “ps_old_gen”，通过前面的学习，我们知道，ps 代表的是 ParallelGC 垃圾收集器。</p>
+<h4 id="jvm-启动参数"><strong>JVM 启动参数</strong></h4>
+<p>查看 JVM 的启动参数，发现是这样的：</p>
+<pre><code>-Xmx4g -Xms4g
+
+</code></pre>
+<p>我们使用的是 JDK 8，启动参数中没有指定 GC，确定这个服务使用了默认的并行垃圾收集器。</p>
+<p>于是怀疑问题出在这款垃圾收集器上面，因为很多情况下 ParallelGC 为了最大的系统处理能力，即吞吐量，而牺牲掉了单次的暂停时间，导致暂停时间会比较长。</p>
+<h4 id="使用-g1-垃圾收集器"><strong>使用 G1 垃圾收集器</strong></h4>
+<p>怎么办呢？准备换成 G1，毕竟现在新版本的 JDK 8 中 G1 很稳定，而且性能不错。</p>
+<p>然后换成了下面的启动参数：</p>
+<pre><code># 这个参数有问题，启动失败
+-Xmx4g -Xms4g -XX:+UseG1GC -XX:MaxGCPauseMills=50ms
+
+</code></pre>
+<p>结果启动失败，忙中出错，参数名和参数值都写错了。</p>
+<p>修正如下：</p>
+<pre><code>-Xmx4g -Xms4g -XX:+UseG1GC -XX:MaxGCPauseMillis=50
+
+</code></pre>
+<p>接着服务启动成功，等待健康检测自动切换为新的服务节点，继续查看指标。</p>
+<p><img alt="55932616.png" src="assets/36b1d380-7ba7-11ea-a711-0f902cb8434c"/></p>
+<p>看看暂停时间，每个节点的 GC 暂停时间都降下来了，基本上在 50ms 以内，比较符合我们的预期。</p>
+<p>嗯！事情到此结束了？远远没有。</p>
+<h4 id="彩蛋-惊喜"><strong>“彩蛋”惊喜</strong></h4>
+<p>过了一段时间，我们发现了个下面这个惊喜（也许是惊吓），如下图所示：</p>
+<p><img alt="50244521.png" src="assets/3f7a8390-7ba7-11ea-b2e6-fdc2f968c34f"/></p>
+<p>中奖了，运行一段时间后，最大 GC 暂停时间达到了 1300ms。</p>
+<p>情况似乎更恶劣了。</p>
+<p>继续观察，发现不是个别现象：</p>
+<p><img alt="84108207.png" src="assets/46a51400-7ba7-11ea-8dae-453849991cc6"/></p>
+<p>内心是懵的，觉得可能是指标算错了，比如把 10s 内的暂停时间全部加到了一起。</p>
+<h4 id="注册-gc-事件监听"><strong>注册 GC 事件监听</strong></h4>
+<p>于是想了个办法，通过 JMX 注册 GC 事件监听，把相关的信息直接打印出来。</p>
+<p>关键代码如下所示：</p>
+<pre><code class="language-java">// 每个内存池都注册监听
+for (GarbageCollectorMXBean mbean 
+     : ManagementFactory.getGarbageCollectorMXBeans()) {
+    if (!(mbean instanceof NotificationEmitter)) {
+        continue; // 假如不支持监听...
+    }
+    final NotificationEmitter emitter = (NotificationEmitter) mbean;
+    // 添加监听
+    final NotificationListener listener = getNewListener(mbean);
+    emitter.addNotificationListener(listener, null, null);
+}
+
+</code></pre>
+<p>通过这种方式，我们可以在程序中监听 GC 事件，并将相关信息汇总或者输出到日志。 具体的实现代码在后面的章节《应对容器时代面临的挑战》中给出。</p>
+<p>再启动一次，运行一段时间后，看到下面这样的日志信息：</p>
+<pre><code class="language-json">{
+"duration":1869,
+"maxPauseMillis":1869,
+"promotedBytes":"139MB",
+"gcCause":"G1 Evacuation Pause",
+"collectionTime":27281,
+"gcAction":"end of minor GC",
+"afterUsage":
+ {
+  "G1 Old Gen":"1745MB",
+  "Code Cache":"53MB",
+  "G1 Survivor Space":"254MB",
+  "Compressed Class Space":"9MB",
+  "Metaspace":"81MB",
+  "G1 Eden Space":"0"
+ },
+"gcId":326,
+"collectionCount":326,
+"gcName":"G1 Young Generation",
+"type":"jvm.gc.pause"
+}
+
+</code></pre>
+<p>情况确实有点不妙。</p>
+<p>这次实锤了，不是 FullGC，而是年轻代 GC，而且暂停时间达到了 1869ms。 一点道理都不讲，我认为这种情况不合理，而且观察 CPU 使用量也不高。</p>
+<p>找了一大堆资料，试图证明这个 1869ms 不是暂停时间，而只是 GC 事件的结束时间减去开始时间。</p>
+<h4 id="打印-gc-日志"><strong>打印 GC 日志</strong></h4>
+<p>既然这些手段不靠谱，那就只有祭出我们的终极手段：打印 GC 日志。</p>
+<p>修改启动参数如下：</p>
+<pre><code class="language-shell">-Xmx4g -Xms4g -XX:+UseG1GC -XX:MaxGCPauseMillis=50 
+-Xloggc:gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps
+
+</code></pre>
+<p>重新启动，希望这次能排查出问题的原因。</p>
+<p><img alt="84324884.png" src="assets/5431dbd0-7ba7-11ea-b2e6-fdc2f968c34f"/></p>
+<p>运行一段时间，又发现了超长的暂停时间。</p>
+<h4 id="分析-gc-日志"><strong>分析 GC 日志</strong></h4>
+<p>因为不涉及敏感数据，那么我们把 GC 日志下载到本地进行分析。</p>
+<p>定位到这次暂停时间超长的 GC 事件，关键的信息如下所示：</p>
+<pre><code class="language-c">Java HotSpot(TM) 64-Bit Server VM (25.162-b12) for linux-amd64 JRE (1.8.0_162-b12),
+ built on Dec 19 2017 21:15:48 by "java_re" with gcc 4.3.0 20080428 (Red Hat 4.3.0-8)
+Memory: 4k page, physical 144145548k(58207948k free), swap 0k(0k free)
+CommandLine flags: 
+ -XX:InitialHeapSize=4294967296 -XX:MaxGCPauseMillis=50 -XX:MaxHeapSize=4294967296 
+ -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps 
+ -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseG1GC 
+
+2020-02-24T18:02:31.853+0800: 2411.124: [GC pause (G1 Evacuation Pause) (young), 1.8683418 secs]
+   [Parallel Time: 1861.0 ms, GC Workers: 48]
+      [GC Worker Start (ms): Min: 2411124.3, Avg: 2411125.4, Max: 2411126.2, Diff: 1.9]
+      [Ext Root Scanning (ms): Min: 0.0, Avg: 0.3, Max: 2.7, Diff: 2.7, Sum: 16.8]
+      [Update RS (ms): Min: 0.0, Avg: 3.6, Max: 6.8, Diff: 6.8, Sum: 172.9]
+         [Processed Buffers: Min: 0, Avg: 2.3, Max: 8, Diff: 8, Sum: 111]
+      [Scan RS (ms): Min: 0.0, Avg: 0.2, Max: 0.5, Diff: 0.5, Sum: 7.7]
+      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.1, Diff: 0.1, Sum: 0.3]
+      [Object Copy (ms): Min: 1851.6, Avg: 1854.6, Max: 1857.4, Diff: 5.8, Sum: 89020.4]
+      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.6]
+         [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 48]
+      [GC Worker Other (ms): Min: 0.0, Avg: 0.3, Max: 0.7, Diff: 0.6, Sum: 14.7]
+      [GC Worker Total (ms): Min: 1858.0, Avg: 1859.0, Max: 1860.3, Diff: 2.3, Sum: 89233.3]
+      [GC Worker End (ms): Min: 2412984.1, Avg: 2412984.4, Max: 2412984.6, Diff: 0.5]
+   [Code Root Fixup: 0.0 ms]
+   [Code Root Purge: 0.0 ms]
+   [Clear CT: 1.5 ms]
+   [Other: 5.8 ms]
+      [Choose CSet: 0.0 ms]
+      [Ref Proc: 1.7 ms]
+      [Ref Enq: 0.0 ms]
+      [Redirty Cards: 1.1 ms]
+      [Humongous Register: 0.1 ms]
+      [Humongous Reclaim: 0.0 ms]
+      [Free CSet: 2.3 ms]
+   [Eden: 2024.0M(2024.0M)-&gt;0.0B(2048.0K) 
+    Survivors: 2048.0K-&gt;254.0M 
+    Heap: 3633.6M(4096.0M)-&gt;1999.3M(4096.0M)]
+ [Times: user=1.67 sys=14.00, real=1.87 secs] 
+
+</code></pre>
+<p>前后的 GC 事件都很正常，也没发现 FullGC 或者并发标记周期，但找到了几个可疑的点。</p>
+<ul>
+<li><code>physical 144145548k(58207948k free)</code>：JVM 启动时，物理内存 137GB，空闲内存 55GB。</li>
+<li><code>[Parallel Time: 1861.0 ms, GC Workers: 48]</code>：垃圾收集器工作线程 48 个。</li>
+</ul>
+<p>我们前面的课程中学习了怎样分析 GC 日志，一起来回顾一下。</p>
+<ul>
+<li><code>user=1.67</code>：用户线程耗时 1.67s；</li>
+<li><code>sys=14.00</code>：系统调用和系统等待时间 14s；</li>
+<li><code>real=1.87 secs</code>：实际暂停时间 1.87s；</li>
+<li>GC 之前，年轻代使用量 2GB，堆内存使用量 3.6GB，存活区 2MB，可推断出老年代使用量 1.6GB；</li>
+<li>GC 之后，年轻代使用量为 0，堆内存使用量 2GB，存活区 254MB，那么老年代大约 1.8GB，那么“内存提升量为 200MB 左右”。</li>
+</ul>
+<p>这样分析之后，可以得出结论：</p>
+<ul>
+<li>年轻代转移暂停，复制了 400MB 左右的对象，却消耗了 1.8s，系统调用和系统等待的时间达到了 14s。</li>
+<li>JVM 看到的物理内存 137GB。</li>
+<li>推算出 JVM 看到的 CPU 内核数量 72个，因为 GC 工作线程 <code>72* 5/8 ~= 48</code> 个。</li>
+</ul>
+<p>看到这么多的 GC 工作线程我就开始警惕了，毕竟堆内存才指定了 4GB。</p>
+<p>按照一般的 CPU 和内存资源配比，常见的比例差不多是 4 核 4GB、4 核 8GB 这样的。</p>
+<p>看看对应的 CPU 负载监控信息：</p>
+<p><img alt="4600411.png" src="assets/880bc8d0-7ba7-11ea-8940-6df1558f5aa2"/></p>
+<p>通过和运维同学的沟通，得到这个节点的配置被限制为 4 核 8GB。</p>
+<p>这样一来，GC 暂停时间过长的原因就定位到了：</p>
+<ul>
+<li>K8S 的资源隔离和 JVM 未协调好，导致 JVM 看见了 72 个 CPU 内核，默认的并行 GC 线程设置为 <code>72* 5/8 ~= 48 个</code>，但是 K8S 限制了这个 Pod 只能使用 4 个 CPU 内核的计算量，致使 GC 发生时，48 个线程在 4 个 CPU 核心上发生资源竞争，导致大量的上下文切换。</li>
+</ul>
+<p>处置措施为：</p>
+<ul>
+<li>限制 GC 的并行线程数量</li>
+</ul>
+<p>事实证明，打印 GC 日志确实是一个很有用的排查分析方法。</p>
+<h4 id="限制-gc-的并行线程数量"><strong>限制 GC 的并行线程数量</strong></h4>
+<p>下面是新的启动参数配置：</p>
+<pre><code> -Xmx4g -Xms4g
+ -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:ParallelGCThreads=4
+ -Xloggc:gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps
+
+</code></pre>
+<p>这里指定了 <code>-XX:ParallelGCThreads=4</code>，为什么这么配呢？我们看看这个参数的说明。</p>
+<pre><code>-XX:ParallelGCThreads=n
+
+</code></pre>
+<p>设置 STW 阶段的并行 worker 线程数量。 如果逻辑处理器小于等于 8 个，则默认值 n 等于逻辑处理器的数量。</p>
+<p>如果逻辑处理器大于 8 个，则默认值 n 大约等于处理器数量的 5/8。在大多数情况下都是个比较合理的值。如果是高配置的 SPARC 系统，则默认值 n 大约等于逻辑处理器数量的 5/16。</p>
+<pre><code>-XX:ConcGCThreads=n
+
+</code></pre>
+<p>设置并发标记的 GC 线程数量。默认值大约是 ParallelGCThreads 的四分之一。</p>
+<p>一般来说不用指定并发标记的 GC 线程数量，只用指定并行的即可。</p>
+<p>重新启动之后，看看 GC 暂停时间指标：</p>
+<p><img alt="81569009.png" src="assets/95b9fb50-7ba7-11ea-9687-397b36d0cdab"/></p>
+<p>红色箭头所指示的点就是重启的时间点，可以发现，暂停时间基本上都处于 50ms 范围内。</p>
+<p>后续的监控发现，这个参数确实解决了问题。</p>
+<p>那么还有没有其他的办法呢？请关注后续的章节《应对容器时代面临的挑战》。</p>
+<h4 id="小结"><strong>小结</strong></h4>
+<p>通过这个案例，我们可以看到，JVM 问题排查和性能调优主要基于监控数据来进行。</p>
+<p>还是那句话：没有量化，就没有改进。</p>
+<p>简单汇总一下这里使用到的手段：</p>
+<ul>
+<li>指标监控</li>
+<li>指定 JVM 启动内存</li>
+<li>指定垃圾收集器</li>
+<li>打印和分析 GC 日志</li>
+</ul>
+<p>GC 和内存是最常见的 JVM 调优场景，还记得课程开始时我们介绍的 GC 的性能维度吗？</p>
+<ul>
+<li>延迟，GC 中影响延迟的主要因素就是暂停时间。</li>
+<li>吞吐量，主要看业务线程消耗的 CPU 资源百分比，GC 占用的部分包括：GC 暂停时间，以及高负载情况下并发 GC 消耗的 CPU 资源。</li>
+<li>系统容量，主要说的是硬件配置，以及服务能力。</li>
+</ul>
+<p>只要这些方面的指标都能够满足，各种资源占用也保持在合理范围内，就达成了我们的预期。</p>
+<h3 id="参考">参考</h3>
+<ul>
+<li><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/tooldescr007.html" target="_blank">Native Memory Tracking（NMT，Native 内存跟踪）排查文档</a></li>
+<li><a href="https://docs.oracle.com/cd/E40972_01/doc.70/e40973/cnf_jvmgc.htm#autoId1" target="_blank">生产环境 GC 参数调优</a></li>
+<li><a href="https://plumbr.io/blog/monitoring/why-is-troubleshooting-so-hard" target="_blank">https://plumbr.io/blog/monitoring/why-is-troubleshooting-so-hard</a></li>
+<li><a href="https://mp.weixin.qq.com/s/wjQhl5y1bmPGsOKY4CHuEw" target="_blank">Linux 的性能调优的思路</a></li>
+<li><a href="https://linuxtools-rst.readthedocs.io/zh_CN/latest/index.html" target="_blank">Linux 工具快速教程</a></li>
+</ul>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#0e626262373a3f3f3e394e69636f6762206d6163" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93582819da5dc932',t:'MTc0NTUyNDUwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

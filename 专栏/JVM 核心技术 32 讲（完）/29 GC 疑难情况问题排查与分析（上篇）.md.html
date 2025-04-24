@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="29 GC 疑难情况问题排查与分析（上篇）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>29 GC 疑难情况问题排查与分析（上篇） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/01%20%e9%98%85%e8%af%bb%e6%ad%a4%e4%b8%93%e6%a0%8f%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="01 阅读此专栏的正确姿势.md.html">01 阅读此专栏的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/02%20%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%ef%bc%9a%e5%8d%83%e9%87%8c%e4%b9%8b%e8%a1%8c%ef%bc%8c%e5%a7%8b%e4%ba%8e%e8%b6%b3%e4%b8%8b.md.html" id="02 环境准备：千里之行，始于足下.md.html">02 环境准备：千里之行，始于足下.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/03%20%e5%b8%b8%e7%94%a8%e6%80%a7%e8%83%bd%e6%8c%87%e6%a0%87%ef%bc%9a%e6%b2%a1%e6%9c%89%e9%87%8f%e5%8c%96%ef%bc%8c%e5%b0%b1%e6%b2%a1%e6%9c%89%e6%94%b9%e8%bf%9b.md.html" id="03 常用性能指标：没有量化，就没有改进.md.html">03 常用性能指标：没有量化，就没有改进.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/04%20JVM%20%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86%ef%bc%9a%e4%b8%8d%e7%a7%af%e8%b7%ac%e6%ad%a5%ef%bc%8c%e6%97%a0%e4%bb%a5%e8%87%b3%e5%8d%83%e9%87%8c.md.html" id="04 JVM 基础知识：不积跬步，无以至千里.md.html">04 JVM 基础知识：不积跬步，无以至千里.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/05%20Java%20%e5%ad%97%e8%8a%82%e7%a0%81%e6%8a%80%e6%9c%af%ef%bc%9a%e4%b8%8d%e7%a7%af%e7%bb%86%e6%b5%81%ef%bc%8c%e6%97%a0%e4%bb%a5%e6%88%90%e6%b1%9f%e6%b2%b3.md.html" id="05 Java 字节码技术：不积细流，无以成江河.md.html">05 Java 字节码技术：不积细流，无以成江河.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/06%20Java%20%e7%b1%bb%e5%8a%a0%e8%bd%bd%e5%99%a8%ef%bc%9a%e5%b1%b1%e4%b8%8d%e8%be%9e%e5%9c%9f%ef%bc%8c%e6%95%85%e8%83%bd%e6%88%90%e5%85%b6%e9%ab%98.md.html" id="06 Java 类加载器：山不辞土，故能成其高.md.html">06 Java 类加载器：山不辞土，故能成其高.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/07%20Java%20%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b%ef%bc%9a%e6%b5%b7%e4%b8%8d%e8%be%9e%e6%b0%b4%ef%bc%8c%e6%95%85%e8%83%bd%e6%88%90%e5%85%b6%e6%b7%b1.md.html" id="07 Java 内存模型：海不辞水，故能成其深.md.html">07 Java 内存模型：海不辞水，故能成其深.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/08%20JVM%20%e5%90%af%e5%8a%a8%e5%8f%82%e6%95%b0%e8%af%a6%e8%a7%a3%ef%bc%9a%e5%8d%9a%e8%a7%82%e8%80%8c%e7%ba%a6%e5%8f%96%e3%80%81%e5%8e%9a%e7%a7%af%e8%80%8c%e8%96%84%e5%8f%91.md.html" id="08 JVM 启动参数详解：博观而约取、厚积而薄发.md.html">08 JVM 启动参数详解：博观而约取、厚积而薄发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/09%20JDK%20%e5%86%85%e7%bd%ae%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%b7%a5%e5%85%b7%ef%bc%9a%e5%b7%a5%e6%ac%b2%e5%96%84%e5%85%b6%e4%ba%8b%ef%bc%8c%e5%bf%85%e5%85%88%e5%88%a9%e5%85%b6%e5%99%a8.md.html" id="09 JDK 内置命令行工具：工欲善其事，必先利其器.md.html">09 JDK 内置命令行工具：工欲善其事，必先利其器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/10%20JDK%20%e5%86%85%e7%bd%ae%e5%9b%be%e5%bd%a2%e7%95%8c%e9%9d%a2%e5%b7%a5%e5%85%b7%ef%bc%9a%e6%b5%b7%e9%98%94%e5%87%ad%e9%b1%bc%e8%b7%83%ef%bc%8c%e5%a4%a9%e9%ab%98%e4%bb%bb%e9%b8%9f%e9%a3%9e.md.html" id="10 JDK 内置图形界面工具：海阔凭鱼跃，天高任鸟飞.md.html">10 JDK 内置图形界面工具：海阔凭鱼跃，天高任鸟飞.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/11%20JDWP%20%e7%ae%80%e4%bb%8b%ef%bc%9a%e5%8d%81%e6%ad%a5%e6%9d%80%e4%b8%80%e4%ba%ba%ef%bc%8c%e5%8d%83%e9%87%8c%e4%b8%8d%e7%95%99%e8%a1%8c.md.html" id="11 JDWP 简介：十步杀一人，千里不留行.md.html">11 JDWP 简介：十步杀一人，千里不留行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/12%20JMX%20%e4%b8%8e%e7%9b%b8%e5%85%b3%e5%b7%a5%e5%85%b7%ef%bc%9a%e5%b1%b1%e9%ab%98%e6%9c%88%e5%b0%8f%ef%bc%8c%e6%b0%b4%e8%90%bd%e7%9f%b3%e5%87%ba.md.html" id="12 JMX 与相关工具：山高月小，水落石出.md.html">12 JMX 与相关工具：山高月小，水落石出.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/13%20%e5%b8%b8%e8%a7%81%e7%9a%84%20GC%20%e7%ae%97%e6%b3%95%ef%bc%88GC%20%e7%9a%84%e8%83%8c%e6%99%af%e4%b8%8e%e5%8e%9f%e7%90%86%ef%bc%89.md.html" id="13 常见的 GC 算法（GC 的背景与原理）.md.html">13 常见的 GC 算法（GC 的背景与原理）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/14%20%e5%b8%b8%e8%a7%81%e7%9a%84%20GC%20%e7%ae%97%e6%b3%95%ef%bc%88ParallelCMSG1%ef%bc%89.md.html" id="14 常见的 GC 算法（ParallelCMSG1）.md.html">14 常见的 GC 算法（ParallelCMSG1）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/15%20Java11%20ZGC%20%e5%92%8c%20Java12%20Shenandoah%20%e4%bb%8b%e7%bb%8d%ef%bc%9a%e8%8b%9f%e6%97%a5%e6%96%b0%e3%80%81%e6%97%a5%e6%97%a5%e6%96%b0%e3%80%81%e5%8f%88%e6%97%a5%e6%96%b0.md.html" id="15 Java11 ZGC 和 Java12 Shenandoah 介绍：苟日新、日日新、又日新.md.html">15 Java11 ZGC 和 Java12 Shenandoah 介绍：苟日新、日日新、又日新.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/16%20Oracle%20GraalVM%20%e4%bb%8b%e7%bb%8d%ef%bc%9a%e4%bc%9a%e5%bd%93%e5%87%8c%e7%bb%9d%e9%a1%b6%e3%80%81%e4%b8%80%e8%a7%88%e4%bc%97%e5%b1%b1%e5%b0%8f.md.html" id="16 Oracle GraalVM 介绍：会当凌绝顶、一览众山小.md.html">16 Oracle GraalVM 介绍：会当凌绝顶、一览众山小.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/17%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%9f%ba%e7%a1%80%e9%85%8d%e7%bd%ae%ef%bc%89.md.html" id="17 GC 日志解读与分析（基础配置）.md.html">17 GC 日志解读与分析（基础配置）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/18%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%ae%9e%e4%be%8b%e5%88%86%e6%9e%90%e4%b8%8a%e7%af%87%ef%bc%89.md.html" id="18 GC 日志解读与分析（实例分析上篇）.md.html">18 GC 日志解读与分析（实例分析上篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/19%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%ae%9e%e4%be%8b%e5%88%86%e6%9e%90%e4%b8%ad%e7%af%87%ef%bc%89.md.html" id="19 GC 日志解读与分析（实例分析中篇）.md.html">19 GC 日志解读与分析（实例分析中篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/20%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e5%ae%9e%e4%be%8b%e5%88%86%e6%9e%90%e4%b8%8b%e7%af%87%ef%bc%89.md.html" id="20 GC 日志解读与分析（实例分析下篇）.md.html">20 GC 日志解读与分析（实例分析下篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/21%20GC%20%e6%97%a5%e5%bf%97%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e7%95%aa%e5%a4%96%e7%af%87%e5%8f%af%e8%a7%86%e5%8c%96%e5%b7%a5%e5%85%b7%ef%bc%89.md.html" id="21 GC 日志解读与分析（番外篇可视化工具）.md.html">21 GC 日志解读与分析（番外篇可视化工具）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/22%20JVM%20%e7%9a%84%e7%ba%bf%e7%a8%8b%e5%a0%86%e6%a0%88%e7%ad%89%e6%95%b0%e6%8d%ae%e5%88%86%e6%9e%90%ef%bc%9a%e6%93%8d%e5%8d%83%e6%9b%b2%e8%80%8c%e5%90%8e%e6%99%93%e5%a3%b0%e3%80%81%e8%a7%82%e5%8d%83%e5%89%91%e8%80%8c%e5%90%8e%e8%af%86%e5%99%a8.md.html" id="22 JVM 的线程堆栈等数据分析：操千曲而后晓声、观千剑而后识器.md.html">22 JVM 的线程堆栈等数据分析：操千曲而后晓声、观千剑而后识器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/23%20%e5%86%85%e5%ad%98%e5%88%86%e6%9e%90%e4%b8%8e%e7%9b%b8%e5%85%b3%e5%b7%a5%e5%85%b7%e4%b8%8a%e7%af%87%ef%bc%88%e5%86%85%e5%ad%98%e5%b8%83%e5%b1%80%e4%b8%8e%e5%88%86%e6%9e%90%e5%b7%a5%e5%85%b7%ef%bc%89.md.html" id="23 内存分析与相关工具上篇（内存布局与分析工具）.md.html">23 内存分析与相关工具上篇（内存布局与分析工具）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/24%20%e5%86%85%e5%ad%98%e5%88%86%e6%9e%90%e4%b8%8e%e7%9b%b8%e5%85%b3%e5%b7%a5%e5%85%b7%e4%b8%8b%e7%af%87%ef%bc%88%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%e5%88%86%e6%9e%90%ef%bc%89.md.html" id="24 内存分析与相关工具下篇（常见问题分析）.md.html">24 内存分析与相关工具下篇（常见问题分析）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/25%20FastThread%20%e7%9b%b8%e5%85%b3%e7%9a%84%e5%b7%a5%e5%85%b7%e4%bb%8b%e7%bb%8d%ef%bc%9a%e6%ac%b2%e7%a9%b7%e5%8d%83%e9%87%8c%e7%9b%ae%ef%bc%8c%e6%9b%b4%e4%b8%8a%e4%b8%80%e5%b1%82%e6%a5%bc.md.html" id="25 FastThread 相关的工具介绍：欲穷千里目，更上一层楼.md.html">25 FastThread 相关的工具介绍：欲穷千里目，更上一层楼.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/26%20%e9%9d%a2%e4%b8%b4%e5%a4%8d%e6%9d%82%e9%97%ae%e9%a2%98%e6%97%b6%e7%9a%84%e5%87%a0%e4%b8%aa%e9%ab%98%e7%ba%a7%e5%b7%a5%e5%85%b7%ef%bc%9a%e5%ae%83%e5%b1%b1%e4%b9%8b%e7%9f%b3%ef%bc%8c%e5%8f%af%e4%bb%a5%e6%94%bb%e7%8e%89.md.html" id="26 面临复杂问题时的几个高级工具：它山之石，可以攻玉.md.html">26 面临复杂问题时的几个高级工具：它山之石，可以攻玉.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/27%20JVM%20%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e5%88%86%e6%9e%90%e4%b8%8a%e7%af%87%ef%bc%88%e8%b0%83%e4%bc%98%e7%bb%8f%e9%aa%8c%ef%bc%89.md.html" id="27 JVM 问题排查分析上篇（调优经验）.md.html">27 JVM 问题排查分析上篇（调优经验）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/28%20JVM%20%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e5%88%86%e6%9e%90%e4%b8%8b%e7%af%87%ef%bc%88%e6%a1%88%e4%be%8b%e5%ae%9e%e6%88%98%ef%bc%89.md.html" id="28 JVM 问题排查分析下篇（案例实战）.md.html">28 JVM 问题排查分析下篇（案例实战）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/29%20GC%20%e7%96%91%e9%9a%be%e6%83%85%e5%86%b5%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%e7%af%87%ef%bc%89.md.html" id="29 GC 疑难情况问题排查与分析（上篇）.md.html">29 GC 疑难情况问题排查与分析（上篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/30%20GC%20%e7%96%91%e9%9a%be%e6%83%85%e5%86%b5%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e4%b8%8e%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%e7%af%87%ef%bc%89.md.html" id="30 GC 疑难情况问题排查与分析（下篇）.md.html">30 GC 疑难情况问题排查与分析（下篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/31%20JVM%20%e7%9b%b8%e5%85%b3%e7%9a%84%e5%b8%b8%e8%a7%81%e9%9d%a2%e8%af%95%e9%97%ae%e9%a2%98%e6%b1%87%e6%80%bb%ef%bc%9a%e8%bf%90%e7%ad%b9%e7%ad%96%e5%b8%b7%e5%b8%90%e4%b9%8b%e4%b8%ad%ef%bc%8c%e5%86%b3%e8%83%9c%e4%ba%8e%e5%8d%83%e9%87%8c%e4%b9%8b%e5%a4%96.md.html" id="31 JVM 相关的常见面试问题汇总：运筹策帷帐之中，决胜于千里之外.md.html">31 JVM 相关的常见面试问题汇总：运筹策帷帐之中，决胜于千里之外.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JVM%20%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%2032%20%e8%ae%b2%ef%bc%88%e5%ae%8c%ef%bc%89/32%20%e5%ba%94%e5%af%b9%e5%ae%b9%e5%99%a8%e6%97%b6%e4%bb%a3%e9%9d%a2%e4%b8%b4%e7%9a%84%e6%8c%91%e6%88%98%ef%bc%9a%e9%95%bf%e9%a3%8e%e7%a0%b4%e6%b5%aa%e4%bc%9a%e6%9c%89%e6%97%b6%e3%80%81%e7%9b%b4%e6%8c%82%e4%ba%91%e5%b8%86%e6%b5%8e%e6%b2%a7%e6%b5%b7.md.html" id="32 应对容器时代面临的挑战：长风破浪会有时、直挂云帆济沧海.md.html">32 应对容器时代面临的挑战：长风破浪会有时、直挂云帆济沧海.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="29 GC 疑难情况问题排查与分析（上篇）" id="title">29 GC 疑难情况问题排查与分析（上篇）</h1>
+<div><p>本章介绍导致 GC 性能问题的典型情况。相关示例都来源于生产环境，为演示需要做了一定程度的精简。</p>
+<blockquote>
+<p><strong>名词说明</strong>：Allocation Rate，翻译为“分配速率”，而不是分配率。因为不是百分比，而是单位时间内分配的量。同理，Promotion Rate 翻译为“提升速率”。</p>
+</blockquote>
+<h3 id="高分配速率-high-allocation-rate">高分配速率（High Allocation Rate）</h3>
+<p>分配速率（Allocation Rate）表示单位时间内分配的内存量。通常使用 MB/sec 作为单位，也可以使用 PB/year 等。分配速率过高就会严重影响程序的性能，在 JVM 中可能会导致巨大的 GC 开销。</p>
+<h4 id="如何测量分配速率"><strong>如何测量分配速率？</strong></h4>
+<p>通过指定 JVM 参数：<code>-XX:+PrintGCDetails -XX:+PrintGCTimeStamps</code>，通过 GC 日志来计算分配速率。GC 日志如下所示：</p>
+<pre><code>    0.291: [GC (Allocation Failure)
+            [PSYoungGen: 33280K-&gt;5088K(38400K)]
+            33280K-&gt;24360K(125952K), 0.0365286 secs]
+        [Times: user=0.11 sys=0.02, real=0.04 secs]
+    0.446: [GC (Allocation Failure)
+            [PSYoungGen: 38368K-&gt;5120K(71680K)]
+            57640K-&gt;46240K(159232K), 0.0456796 secs]
+        [Times: user=0.15 sys=0.02, real=0.04 secs]
+    0.829: [GC (Allocation Failure)
+            [PSYoungGen: 71680K-&gt;5120K(71680K)]
+            112800K-&gt;81912K(159232K), 0.0861795 secs]
+        [Times: user=0.23 sys=0.03, real=0.09 secs]
+
+</code></pre>
+<p>具体就是计算上一次垃圾收集之后，与下一次 GC 开始之前的年轻代使用量，两者的差值除以时间，就是分配速率。通过上面的日志，可以计算出以下信息：</p>
+<ul>
+<li>JVM 启动之后 291ms，共创建了 33280KB 的对象。第一次 Minor GC（小型 GC）完成后，年轻代中还有 5088KB 的对象存活。</li>
+<li>在启动之后 446ms，年轻代的使用量增加到 38368KB，触发第二次 GC，完成后年轻代的使用量减少到 5120KB。</li>
+<li>在启动之后 829ms，年轻代的使用量为 71680KB，GC 后变为 5120KB。</li>
+</ul>
+<p>可以通过年轻代的使用量来计算分配速率，如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th align="left">Event</th>
+<th align="left">Time</th>
+<th align="left">Young before</th>
+<th align="left">Young after</th>
+<th align="left">Allocated during</th>
+<th align="left">Allocation rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">1st GC</td>
+<td align="left">291ms</td>
+<td align="left">33,280KB</td>
+<td align="left">5,088KB</td>
+<td align="left">33,280KB</td>
+<td align="left">114MB/sec</td>
+</tr>
+<tr>
+<td align="left">2nd GC</td>
+<td align="left">446ms</td>
+<td align="left">38,368KB</td>
+<td align="left">5,120KB</td>
+<td align="left">33,280KB</td>
+<td align="left">215MB/sec</td>
+</tr>
+<tr>
+<td align="left">3rd GC</td>
+<td align="left">829ms</td>
+<td align="left">71,680KB</td>
+<td align="left">5,120KB</td>
+<td align="left">66,560KB</td>
+<td align="left">174MB/sec</td>
+</tr>
+<tr>
+<td align="left">Total</td>
+<td align="left">829ms</td>
+<td align="left">N/A</td>
+<td align="left">N/A</td>
+<td align="left">133,120KB</td>
+<td align="left">161MB/sec</td>
+</tr>
+</tbody>
+</table>
+<p>通过这些信息可以知道，在此期间，该程序的内存分配速率为 16MB/sec。</p>
+<h4 id="分配速率的意义"><strong>分配速率的意义</strong></h4>
+<p>分配速率的变化，会增加或降低 GC 暂停的频率，从而影响吞吐量。但只有年轻代的 <a href="http://blog.csdn.net/renfufei/article/details/54144385#t9" target="_blank">Minor GC</a> 受分配速率的影响，老年代 GC 的频率和持续时间一般不受 <strong>分配速率</strong>（Allocation Rate）的直接影响（想想为什么？），而是受到 <strong>提升速率</strong>（Promotion Rate）的影响，请参见下文。</p>
+<p>现在我们只关心 <a href="http://blog.csdn.net/renfufei/article/details/54144385#t9" target="_blank">Minor GC</a> 暂停，查看年轻代的 3 个内存池。因为对象在 <a href="http://blog.csdn.net/renfufei/article/details/54144385#t3" target="_blank">Eden 区</a>分配，所以我们一起来看 Eden 区的大小和分配速率的关系。看看增加 Eden 区的容量，能不能减少 Minor GC 暂停次数，从而使程序能够维持更高的分配速率。</p>
+<p>经过我们的实验，通过参数 <code>-XX:NewSize</code>、<code>-XX:MaxNewSize</code> 以及 <code>-XX:SurvivorRatio</code> 设置不同的 Eden 空间，运行同一程序时，可以发现：</p>
+<ul>
+<li>Eden 空间为 100MB 时，分配速率低于 100MB/秒。</li>
+<li>将 Eden 区增大为 1GB，分配速率也随之增长，大约等于 200MB/秒。</li>
+</ul>
+<p>为什么会这样？</p>
+<p>因为减少 GC 暂停，就等价于减少了任务线程的停顿，就可以做更多工作，也就创建了更多对象，所以对同一应用来说，分配速率越高越好。</p>
+<p>在得出“Eden 区越大越好”这个结论前，我们注意到：分配速率可能会、也可能不会影响程序的实际吞吐量。</p>
+<p>总而言之，吞吐量和分配速率有一定关系，因为分配速率会影响 Minor GC 暂停，但对于总体吞吐量的影响，还要考虑 Major GC 暂停等。</p>
+<h4 id="示例"><strong>示例</strong></h4>
+<p>参考 <a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/gc/Boxing.java" target="_blank">Demo 程序</a>。假设系统连接了一个外部的数字传感器。应用通过专有线程，不断地获取传感器的值（此处使用随机数模拟），其他线程会调用 processSensorValue() 方法，传入传感器的值来执行某些操作。</p>
+<pre><code>    public class BoxingFailure {
+      private static volatile Double sensorValue;
+
+      private static void readSensor() {
+        while(true) sensorValue = Math.random();
+      }
+
+      private static void processSensorValue(Double value) {
+        if(value != null) {
+          //...
+        }
+      }
+    }
+
+</code></pre>
+<p>如同类名所示，这个 Demo 是模拟 boxing 的。为了 null 值判断，使用的是包装类型 Double。程序基于传感器的最新值进行计算，但从传感器取值是一个耗时的操作，所以采用了异步方式：一个线程不断获取新值，计算线程则直接使用暂存的最新值，从而避免同步等待。</p>
+<p><a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/gc/Boxing.java" target="_blank">Demo 程序</a>在运行的过程中，由于分配速率太大而受到 GC 的影响。下面将确认问题，并给出解决办法。</p>
+<h4 id="高分配速率对-jvm-的影响"><strong>高分配速率对 JVM 的影响</strong></h4>
+<p>首先，我们应该检查程序的吞吐量是否降低。如果创建了过多的临时对象，Minor GC 的次数就会增加。如果并发较大，则 GC 可能会严重影响吞吐量。</p>
+<p>遇到这种情况时，GC 日志将会像下面这样，当然这是上面的<a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/gc/Boxing.java" target="_blank">示例程序</a> 产生的 GC 日志。</p>
+<p>JVM 启动参数为：<code>-XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xmx32m</code>。</p>
+<pre><code>    2.808: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0003076 secs]
+    2.819: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0003079 secs]
+    2.830: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0002968 secs]
+    2.842: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0003374 secs]
+    2.853: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0004672 secs]
+    2.864: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0003371 secs]
+    2.875: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0003214 secs]
+    2.886: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0003374 secs]
+    2.896: [GC (Allocation Failure)
+            [PSYoungGen: 9760K-&gt;32K(10240K)], 0.0003588 secs]
+
+</code></pre>
+<p>很显然 Minor GC 的频率太高了。这说明创建了大量的对象。另外，年轻代在 GC 之后的使用量又很低，也没有 Full GC 发生。种种迹象表明，GC 对吞吐量造成了严重的影响。</p>
+<h4 id="解决方案"><strong>解决方案</strong></h4>
+<p>在某些情况下，只要增加年轻代的大小，即可降低分配速率过高所造成的影响。增加年轻代空间并不会降低分配速率，但是会减少 GC 的频率。如果每次 GC 后只有少量对象存活，Minor GC 的暂停时间就不会明显增加。</p>
+<p>运行 <a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/gc/Boxing.java" target="_blank">示例程序</a> 时，增加堆内存大小（同时也就增大了年轻代的大小），使用的 JVM 参数为：<code>-Xmx64m</code>。</p>
+<pre><code>    2.808: [GC (Allocation Failure)
+            [PSYoungGen: 20512K-&gt;32K(20992K)], 0.0003748 secs]
+    2.831: [GC (Allocation Failure)
+            [PSYoungGen: 20512K-&gt;32K(20992K)], 0.0004538 secs]
+    2.855: [GC (Allocation Failure)
+            [PSYoungGen: 20512K-&gt;32K(20992K)], 0.0003355 secs]
+    2.879: [GC (Allocation Failure)
+            [PSYoungGen: 20512K-&gt;32K(20992K)], 0.0005592 secs]
+
+</code></pre>
+<p>但有时候增加堆内存的大小，并不能解决问题。</p>
+<p>通过前面学到的知识，我们可以通过分配分析器找出大部分垃圾产生的位置。实际上，在此示例中 99% 的对象属于 Double 包装类，在readSensor 方法中创建。</p>
+<p>最简单的优化，将创建的 Double 对象替换为原生类型 double，而针对 null 值的检测，可以使用 <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/Double.html#NaN" target="_blank">Double.NaN</a> 来进行。</p>
+<p>由于原生类型不算是对象，也就不会产生垃圾，导致 GC 事件。</p>
+<p>优化之后，不在堆中分配新对象，而是直接覆盖一个属性域即可。对示例程序进行<a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/gc/FixedBoxing.java" target="_blank">简单的改造</a>（<a href="https://gist.github.com/gvsmirnov/0270f0f15f9498e3b655" target="_blank">查看 diff</a>）后，GC 暂停基本上完全消除。</p>
+<p>有时候 JVM 也很智能，会使用逃逸分析技术（Escape Analysis Technique）来避免过度分配。</p>
+<p>简单来说，JIT 编译器可以通过分析得知，方法创建的某些对象永远都不会“逃出”此方法的作用域。这时候就不需要在堆上分配这些对象，也就不会产生垃圾，所以 JIT 编译器的一种优化手段就是：消除堆上内存分配（请参考<a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/jit/EscapeAnalysis.java" target="_blank">基准测试</a>）。</p>
+<h3 id="过早提升-premature-promotion">过早提升（Premature Promotion）</h3>
+<p><strong>提升速率</strong>（Promotion Rate）用于衡量单位时间内从年轻代提升到老年代的数据量。一般使用 MB/sec 作为单位，和“分配速率”类似。</p>
+<p>JVM 会将长时间存活的对象从年轻代提升到老年代。根据分代假设，可能存在一种情况，老年代中不仅有存活时间长的对象，也可能有存活时间短的对象。这就是过早提升：对象存活时间还不够长的时候就被提升到了老年代。</p>
+<p>Major GC 不是为频繁回收而设计的，但 Major GC 现在也要清理这些生命短暂的对象，就会导致 GC 暂停时间过长。这会严重影响系统的吞吐量。</p>
+<h4 id="如何测量提升速率"><strong>如何测量提升速率</strong></h4>
+<p>可以指定 JVM 参数 <code>-XX:+PrintGCDetails -XX:+PrintGCTimeStamps</code>，通过 GC 日志来测量提升速率。JVM 记录的 GC 暂停信息如下所示：</p>
+<pre><code>    0.291: [GC (Allocation Failure)
+            [PSYoungGen: 33280K-&gt;5088K(38400K)]
+            33280K-&gt;24360K(125952K), 0.0365286 secs]
+        [Times: user=0.11 sys=0.02, real=0.04 secs]
+    0.446: [GC (Allocation Failure)
+            [PSYoungGen: 38368K-&gt;5120K(71680K)]
+            57640K-&gt;46240K(159232K), 0.0456796 secs]
+        [Times: user=0.15 sys=0.02, real=0.04 secs]
+    0.829: [GC (Allocation Failure)
+            [PSYoungGen: 71680K-&gt;5120K(71680K)]
+            112800K-&gt;81912K(159232K), 0.0861795 secs]
+        [Times: user=0.23 sys=0.03, real=0.09 secs]
+
+</code></pre>
+<p>从上面的日志可以得知：GC 之前和之后的年轻代使用量以及堆内存使用量。这样就可以通过差值算出老年代的使用量。GC 日志中的信息可以表述为：</p>
+<table>
+<thead>
+<tr>
+<th align="left">Event</th>
+<th align="left">Time</th>
+<th align="left">Young decreased</th>
+<th align="left">Total decreased</th>
+<th align="left">Promoted</th>
+<th align="left">Promotion rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">（事件）</td>
+<td align="left">（耗时）</td>
+<td align="left">（年轻代减少）</td>
+<td align="left">（整个堆内存减少）</td>
+<td align="left">（提升量）</td>
+<td align="left">（提升速率）</td>
+</tr>
+<tr>
+<td align="left">1st GC</td>
+<td align="left">291ms</td>
+<td align="left">28192K</td>
+<td align="left">8920K</td>
+<td align="left">19272K</td>
+<td align="left">66.2 MB/sec</td>
+</tr>
+<tr>
+<td align="left">2nd GC</td>
+<td align="left">446ms</td>
+<td align="left">33248K</td>
+<td align="left">11400K</td>
+<td align="left">21848K</td>
+<td align="left">140.95 MB/sec</td>
+</tr>
+<tr>
+<td align="left">3rd GC</td>
+<td align="left">829ms</td>
+<td align="left">66560K</td>
+<td align="left">30888K</td>
+<td align="left">35672K</td>
+<td align="left">93.14 MB/sec</td>
+</tr>
+<tr>
+<td align="left">Total</td>
+<td align="left">829ms</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">76792K</td>
+<td align="left">92.63 MB/sec</td>
+</tr>
+</tbody>
+</table>
+<p>根据这些信息，就可以计算出观测周期内的提升速率：平均提升速率为 92MB/秒，峰值为 140.95MB/秒。</p>
+<p>请注意，<strong>只能根据 Minor GC 计算提升速率</strong>。Full GC 的日志不能用于计算提升速率，因为 Major GC 会清理掉老年代中的一部分对象。</p>
+<h4 id="提升速率的意义"><strong>提升速率的意义</strong></h4>
+<p>和分配速率一样，提升速率也会影响 GC 暂停的频率。但分配速率主要影响 <a href="http://blog.csdn.net/renfufei/article/details/54144385#t8" target="_blank">minor GC</a>，而提升速率则影响 <a href="http://blog.csdn.net/renfufei/article/details/54144385#t8" target="_blank">major GC</a> 的频率。有大量的对象提升，自然很快将老年代填满。老年代填充的越快，则 Major GC 事件的频率就会越高。</p>
+<p><img alt="how-java-garbage-collection-works" src="assets/a7aac9d0-7e76-11ea-b43f-a740880350b3"/></p>
+<p>前面章节提到过，Full GC 通常需要更多的时间，因为需要处理更多的对象，还要执行碎片整理等额外的复杂过程。</p>
+<h4 id="示例-1"><strong>示例</strong></h4>
+<p>让我们看一个<a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/gc/PrematurePromotion.java" target="_blank">过早提升的示例</a>。这个程序创建/获取大量的对象/数据，并暂存到集合之中，达到一定数量后进行批处理：</p>
+<pre><code>    public class PrematurePromotion {
+
+       private static final Collection&lt;byte[]&gt; accumulatedChunks
+                    = new ArrayList&lt;&gt;();
+
+       private static void onNewChunk(byte[] bytes) {
+           accumulatedChunks.add(bytes);
+
+           if(accumulatedChunks.size() &gt; MAX_CHUNKS) {
+               processBatch(accumulatedChunks);
+               accumulatedChunks.clear();
+           }
+       }
+    }
+
+</code></pre>
+<p>此 <a href="https://github.com/gvsmirnov/java-perv/blob/master/labs-8/src/main/java/ru/gvsmirnov/perv/labs/gc/PrematurePromotion.java" target="_blank">Demo 程序</a> 受到过早提升的影响。下面将进行验证并给出解决办法。</p>
+<h4 id="过早提升的影响"><strong>过早提升的影响</strong></h4>
+<p>一般来说过早提升的症状表现为以下形式：</p>
+<ul>
+<li>短时间内频繁地执行 Full GC</li>
+<li>每次 Full GC 后老年代的使用率都很低，在 10~20% 或以下</li>
+<li>提升速率接近于分配速率</li>
+</ul>
+<p>要演示这种情况稍微有点麻烦，所以我们使用特殊手段，让对象提升到老年代的年龄比默认情况小很多。指定 GC 参数 <code>-Xmx24m -XX:NewSize=16m -XX:MaxTenuringThreshold=1</code>，运行程序之后，可以看到下面的 GC 日志：</p>
+<pre><code>    2.176: [Full GC (Ergonomics)
+            [PSYoungGen: 9216K-&gt;0K(10752K)]
+            [ParOldGen: 10020K-&gt;9042K(12288K)]
+            19236K-&gt;9042K(23040K), 0.0036840 secs]
+    2.394: [Full GC (Ergonomics)
+            [PSYoungGen: 9216K-&gt;0K(10752K)]
+            [ParOldGen: 9042K-&gt;8064K(12288K)]
+            18258K-&gt;8064K(23040K), 0.0032855 secs]
+    2.611: [Full GC (Ergonomics)
+            [PSYoungGen: 9216K-&gt;0K(10752K)]
+            [ParOldGen: 8064K-&gt;7085K(12288K)]
+            17280K-&gt;7085K(23040K), 0.0031675 secs]
+    2.817: [Full GC (Ergonomics)
+            [PSYoungGen: 9216K-&gt;0K(10752K)]
+            [ParOldGen: 7085K-&gt;6107K(12288K)]
+            16301K-&gt;6107K(23040K), 0.0030652 secs]
+
+</code></pre>
+<p>乍一看似乎不是过早提升的问题，每次 GC 之后老年代的使用率似乎在减少。但反过来想，要是没有对象提升或者提升率很小，也就不会看到这么多的 Full GC 了。</p>
+<p>简单解释一下这里的 GC 行为：有很多对象提升到老年代，同时老年代中也有很多对象被回收了，这就造成了老年代使用量减少的假象。但事实是大量的对象不断地被提升到老年代，并触发 Full GC。</p>
+<h4 id="解决方案-1"><strong>解决方案</strong></h4>
+<p>简单来说，要解决这类问题，需要让年轻代存放得下暂存的数据。有两种简单的方法：</p>
+<p>一是增加年轻代的大小，设置 JVM 启动参数，类似这样：<code>-Xmx64m -XX:NewSize=32m</code>，程序在执行时，Full GC 的次数自然会减少很多，只会对 Minor GC 的持续时间产生影响：</p>
+<pre><code>    2.251: [GC (Allocation Failure)
+            [PSYoungGen: 28672K-&gt;3872K(28672K)]
+            37126K-&gt;12358K(61440K), 0.0008543 secs]
+    2.776: [GC (Allocation Failure)
+            [PSYoungGen: 28448K-&gt;4096K(28672K)]
+            36934K-&gt;16974K(61440K), 0.0033022 secs]
+
+</code></pre>
+<p>二是减少每次批处理的数量，也能得到类似的结果。</p>
+<p>至于选用哪个方案，要根据业务需求决定。</p>
+<p>在某些情况下，业务逻辑不允许减少批处理的数量，那就只能增加堆内存，或者重新指定年轻代的大小。</p>
+<p>如果都不可行，就只能优化数据结构，减少内存消耗。但总体目标依然是一致的——让临时数据能够在年轻代存放得下。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#80ecececb9b4b1b1b0b7c0e7ede1e9ecaee3efed" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358284f3ddf1ff8',t:'MTc0NTUyNDUxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
