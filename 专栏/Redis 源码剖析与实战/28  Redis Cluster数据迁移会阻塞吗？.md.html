@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="28  Redis Cluster数据迁移会阻塞吗？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>28  Redis Cluster数据迁移会阻塞吗？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/00%20%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e9%98%85%e8%af%bbRedis%e6%ba%90%e7%a0%81%e8%83%bd%e7%bb%99%e4%bd%a0%e5%b8%a6%e6%9d%a5%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="00  开篇词  阅读Redis源码能给你带来什么？.md.html">00  开篇词  阅读Redis源码能给你带来什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/01%20%20%e5%b8%a6%e4%bd%a0%e5%bf%ab%e9%80%9f%e6%94%bb%e7%95%a5Redis%e6%ba%90%e7%a0%81%e7%9a%84%e6%95%b4%e4%bd%93%e6%9e%b6%e6%9e%84.md.html" id="01  带你快速攻略Redis源码的整体架构.md.html">01  带你快速攻略Redis源码的整体架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/02%20%20%e9%94%ae%e5%80%bc%e5%af%b9%e4%b8%ad%e5%ad%97%e7%ac%a6%e4%b8%b2%e7%9a%84%e5%ae%9e%e7%8e%b0%ef%bc%8c%e7%94%a8char%e8%bf%98%e6%98%af%e7%bb%93%e6%9e%84%e4%bd%93%ef%bc%9f.md.html" id="02  键值对中字符串的实现，用char还是结构体？.md.html">02  键值对中字符串的实现，用char还是结构体？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/03%20%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%80%a7%e8%83%bd%e4%bc%98%e5%bc%82%e7%9a%84Hash%e8%a1%a8%ef%bc%9f.md.html" id="03  如何实现一个性能优异的Hash表？.md.html">03  如何实现一个性能优异的Hash表？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/04%20%20%e5%86%85%e5%ad%98%e5%8f%8b%e5%a5%bd%e7%9a%84%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e8%af%a5%e5%a6%82%e4%bd%95%e7%bb%86%e5%8c%96%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="04  内存友好的数据结构该如何细化设计？.md.html">04  内存友好的数据结构该如何细化设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/05%20%20%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e4%b8%ba%e4%bd%95%e8%83%bd%e5%90%8c%e6%97%b6%e6%94%af%e6%8c%81%e7%82%b9%e6%9f%a5%e8%af%a2%e5%92%8c%e8%8c%83%e5%9b%b4%e6%9f%a5%e8%af%a2%ef%bc%9f.md.html" id="05  有序集合为何能同时支持点查询和范围查询？.md.html">05  有序集合为何能同时支持点查询和范围查询？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/06%20%20%e4%bb%8eziplist%e5%88%b0quicklist%ef%bc%8c%e5%86%8d%e5%88%b0listpack%e7%9a%84%e5%90%af%e5%8f%91.md.html" id="06  从ziplist到quicklist，再到listpack的启发.md.html">06  从ziplist到quicklist，再到listpack的启发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/07%20%20%e4%b8%ba%e4%bb%80%e4%b9%88Stream%e4%bd%bf%e7%94%a8%e4%ba%86Radix%20Tree%ef%bc%9f.md.html" id="07  为什么Stream使用了Radix Tree？.md.html">07  为什么Stream使用了Radix Tree？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/08%20%20Redis%20server%e5%90%af%e5%8a%a8%e5%90%8e%e4%bc%9a%e5%81%9a%e5%93%aa%e4%ba%9b%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="08  Redis server启动后会做哪些操作？.md.html">08  Redis server启动后会做哪些操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/09%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bd%95%e6%97%b6%e4%bd%bf%e7%94%a8select%e3%80%81poll%e3%80%81epoll%ef%bc%9f.md.html" id="09  Redis事件驱动框架（上）：何时使用select、poll、epoll？.md.html">09  Redis事件驱动框架（上）：何时使用select、poll、epoll？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/10%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aRedis%e5%ae%9e%e7%8e%b0%e4%ba%86Reactor%e6%a8%a1%e5%9e%8b%e5%90%97%ef%bc%9f.md.html" id="10  Redis事件驱动框架（中）：Redis实现了Reactor模型吗？.md.html">10  Redis事件驱动框架（中）：Redis实现了Reactor模型吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/11%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRedis%e6%9c%89%e5%93%aa%e4%ba%9b%e4%ba%8b%e4%bb%b6%ef%bc%9f.md.html" id="11  Redis事件驱动框架（下）：Redis有哪些事件？.md.html">11  Redis事件驱动框架（下）：Redis有哪些事件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/12%20%20Redis%e7%9c%9f%e7%9a%84%e6%98%af%e5%8d%95%e7%ba%bf%e7%a8%8b%e5%90%97%ef%bc%9f.md.html" id="12  Redis真的是单线程吗？.md.html">12  Redis真的是单线程吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/13%20%20Redis%206.0%e5%a4%9aIO%e7%ba%bf%e7%a8%8b%e7%9a%84%e6%95%88%e7%8e%87%e6%8f%90%e9%ab%98%e4%ba%86%e5%90%97%ef%bc%9f.md.html" id="13  Redis 6.0多IO线程的效率提高了吗？.md.html">13  Redis 6.0多IO线程的效率提高了吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/14%20%20%e4%bb%8e%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0%e7%9c%8b%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%e7%9a%84%e5%8e%9f%e5%ad%90%e6%80%a7%e4%bf%9d%e8%af%81.md.html" id="14  从代码实现看分布式锁的原子性保证.md.html">14  从代码实现看分布式锁的原子性保证.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/15%20%20%e4%b8%ba%e4%bb%80%e4%b9%88LRU%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86%e5%92%8c%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0%e4%b8%8d%e4%b8%80%e6%a0%b7%ef%bc%9f.md.html" id="15  为什么LRU算法原理和代码实现不一样？.md.html">15  为什么LRU算法原理和代码实现不一样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/16%20%20LFU%e7%ae%97%e6%b3%95%e5%92%8c%e5%85%b6%e4%bb%96%e7%ae%97%e6%b3%95%e7%9b%b8%e6%af%94%e6%9c%89%e4%bc%98%e5%8a%bf%e5%90%97%ef%bc%9f.md.html" id="16  LFU算法和其他算法相比有优势吗？.md.html">16  LFU算法和其他算法相比有优势吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/17%20%20Lazy%20Free%e4%bc%9a%e5%bd%b1%e5%93%8d%e7%bc%93%e5%ad%98%e6%9b%bf%e6%8d%a2%e5%90%97%ef%bc%9f.md.html" id="17  Lazy Free会影响缓存替换吗？.md.html">17  Lazy Free会影响缓存替换吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/18%20%20%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%e5%92%8c%e8%a7%a3%e8%af%bbRDB%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="18  如何生成和解读RDB文件？.md.html">18  如何生成和解读RDB文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/19%20%20AOF%e9%87%8d%e5%86%99%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%a7%a6%e5%8f%91%e6%97%b6%e6%9c%ba%e4%b8%8e%e9%87%8d%e5%86%99%e7%9a%84%e5%bd%b1%e5%93%8d.md.html" id="19  AOF重写（上）：触发时机与重写的影响.md.html">19  AOF重写（上）：触发时机与重写的影响.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/20%20%20AOF%e9%87%8d%e5%86%99%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e9%87%8d%e5%86%99%e6%97%b6%e7%9a%84%e6%96%b0%e5%86%99%e6%93%8d%e4%bd%9c%e8%ae%b0%e5%bd%95%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="20  AOF重写（下）：重写时的新写操作记录在哪里？.md.html">20  AOF重写（下）：重写时的新写操作记录在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/21%20%20%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%ef%bc%9a%e5%9f%ba%e4%ba%8e%e7%8a%b6%e6%80%81%e6%9c%ba%e7%9a%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0.md.html" id="21  主从复制：基于状态机的设计与实现.md.html">21  主从复制：基于状态机的设计与实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/22%20%20%e5%93%a8%e5%85%b5%e4%b9%9f%e5%92%8cRedis%e5%ae%9e%e4%be%8b%e4%b8%80%e6%a0%b7%e5%88%9d%e5%a7%8b%e5%8c%96%e5%90%97%ef%bc%9f.md.html" id="22  哨兵也和Redis实例一样初始化吗？.md.html">22  哨兵也和Redis实例一样初始化吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/23%20%20%e4%bb%8e%e5%93%a8%e5%85%b5Leader%e9%80%89%e4%b8%be%e5%ad%a6%e4%b9%a0Raft%e5%8d%8f%e8%ae%ae%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="23  从哨兵Leader选举学习Raft协议实现（上）.md.html">23  从哨兵Leader选举学习Raft协议实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/24%20%20%e4%bb%8e%e5%93%a8%e5%85%b5Leader%e9%80%89%e4%b8%be%e5%ad%a6%e4%b9%a0Raft%e5%8d%8f%e8%ae%ae%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="24  从哨兵Leader选举学习Raft协议实现（下）.md.html">24  从哨兵Leader选举学习Raft协议实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/25%20%20PubSub%e5%9c%a8%e4%b8%bb%e4%bb%8e%e6%95%85%e9%9a%9c%e5%88%87%e6%8d%a2%e6%97%b6%e6%98%af%e5%a6%82%e4%bd%95%e5%8f%91%e6%8c%a5%e4%bd%9c%e7%94%a8%e7%9a%84%ef%bc%9f.md.html" id="25  PubSub在主从故障切换时是如何发挥作用的？.md.html">25  PubSub在主从故障切换时是如何发挥作用的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/26%20%20%e4%bb%8ePing-Pong%e6%b6%88%e6%81%af%e5%ad%a6%e4%b9%a0Gossip%e5%8d%8f%e8%ae%ae%e7%9a%84%e5%ae%9e%e7%8e%b0.md.html" id="26  从Ping-Pong消息学习Gossip协议的实现.md.html">26  从Ping-Pong消息学习Gossip协议的实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/27%20%20%e4%bb%8eMOVED%e3%80%81ASK%e7%9c%8b%e9%9b%86%e7%be%a4%e8%8a%82%e7%82%b9%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%91%bd%e4%bb%a4%ef%bc%9f.md.html" id="27  从MOVED、ASK看集群节点如何处理命令？.md.html">27  从MOVED、ASK看集群节点如何处理命令？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/28%20%20Redis%20Cluster%e6%95%b0%e6%8d%ae%e8%bf%81%e7%a7%bb%e4%bc%9a%e9%98%bb%e5%a1%9e%e5%90%97%ef%bc%9f.md.html" id="28  Redis Cluster数据迁移会阻塞吗？.md.html">28  Redis Cluster数据迁移会阻塞吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/29%20%20%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%ae%9e%e7%8e%b0%e5%be%aa%e7%8e%af%e7%bc%93%e5%86%b2%e5%8c%ba%ef%bc%9f.md.html" id="29  如何正确实现循环缓冲区？.md.html">29  如何正确实现循环缓冲区？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/30%20%20%e5%a6%82%e4%bd%95%e5%9c%a8%e7%b3%bb%e7%bb%9f%e4%b8%ad%e5%ae%9e%e7%8e%b0%e5%bb%b6%e8%bf%9f%e7%9b%91%e6%8e%a7%ef%bc%9f.md.html" id="30  如何在系统中实现延迟监控？.md.html">30  如何在系统中实现延迟监控？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/31%20%20%e4%bb%8eModule%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%ad%a6%e4%b9%a0%e5%8a%a8%e6%80%81%e6%89%a9%e5%b1%95%e5%8a%9f%e8%83%bd.md.html" id="31  从Module的实现学习动态扩展功能.md.html">31  从Module的实现学习动态扩展功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/32%20%20%e5%a6%82%e4%bd%95%e5%9c%a8%e4%b8%80%e4%b8%aa%e7%b3%bb%e7%bb%9f%e4%b8%ad%e5%ae%9e%e7%8e%b0%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%ef%bc%9f.md.html" id="32  如何在一个系统中实现单元测试？.md.html">32  如何在一个系统中实现单元测试？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%20Redis%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb%ef%bc%8c%e8%ae%a9%e6%88%91%e4%bb%ac%e4%bb%8e%e6%96%b0%e5%bc%80%e5%a7%8b.md.html" id="结束语  Redis源码阅读，让我们从新开始.md.html">结束语  Redis源码阅读，让我们从新开始.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="28  Redis Cluster数据迁移会阻塞吗？" id="title">28  Redis Cluster数据迁移会阻塞吗？</h1>
+<div><p>上节课，我给你介绍了 Redis Cluster 节点处理命令的过程。现在你知道，在这个过程中，节点会调用 <strong>getNodeByQuery 函数</strong>检查访问的 key 所属的节点，如果收到命令的节点并不是 key 所属的节点，那么当前节点就会生成 CLUSTER_REDIR_MOVED 或者 CLUSTER_REDIR_ASK 的报错信息，并给客户端返回 MOVED 或 ASK 命令。</p>
+<p>其实，这两个报错信息就对应了 Redis Cluster 的数据迁移。数据迁移是分布式存储集群经常会遇到的一个问题，当集群节点承担的负载压力不均衡时，或者有新节点加入或是已有节点下线时，那么，数据就需要在不同的节点间进行迁移。所以，<strong>如何设计和实现数据迁移也是在集群开发过程中，我们需要考虑的地方。</strong></p>
+<p>那么今天这节课，我就来介绍下 Redis Cluster 是如何实现数据迁移的。从源码层面掌握这部分内容，可以帮助你了解数据迁移对集群节点正常处理命令的影响，这样你就可以选择合适时机进行迁移。而且，掌握 Redis 的数据迁移实现，也能为你自己开发集群提供一个不错的参考示例。</p>
+<p>好了，接下来，我们就先来看下和数据迁移相关的主要数据结构。这些数据结构比较重要，它们记录了数据迁移的状态信息。</p>
+<h2 id="记录数据迁移的数据结构">记录数据迁移的数据结构</h2>
+<p>首先你要知道，Redis Cluster 是先把键值对映射到哈希槽（slots）中，然后通过给不同集群节点分配 slots 这样的方法，来完成数据在集群节点间的分配的。关于这部分的知识，你也可以去看看第一季的【第 9 讲】。</p>
+<p>那么，在源码实现层面，Redis Cluster 的每个集群节点都对应了一个 <strong>clusterNode 的结构体</strong>（在<a href="https://github.com/redis/redis/tree/5.0/src/cluster.h" target="_blank">cluster.h</a>文件中）。这个结构体中包含了一个 char 类型的数组，用来记录当前节点在负责哪些 slots。</p>
+<p>这个数组的定义如下所示，它的长度是宏定义 CLUSTER_SLOTS 除以 8，而 CLUSTER_SLOTS 宏定义的值是 16384，表示的是 Redis Cluster 的 slots 总个数。这个值除以 8 之后，就意味着数组每个元素的每一位表示 1 个 slot。如果数组元素某一位的值是 1，那么就表明当前节点负责这一位对应的 slot。</p>
+<pre><code class="language-c">typedef struct clusterNode {
+   …
+   unsigned char slots[CLUSTER_SLOTS/8]
+   …
+}
+</code></pre>
+<p>但是，如果只是用 clusterNodes 中的 slots 数组，并不能记录数据迁入迁出的情况，所以，Redis Cluster 针对整个集群设计了 <strong>clusterState 结构体</strong>（在 cluster.h 文件中）。这个结构体中包含了三个 clusterNode 类型的数组和一个 rax 类型的字典树。这三个数组的大小，都是集群 slots 的总个数 16384，如下所示：</p>
+<pre><code class="language-c">typedef struct clusterState {
+   ...  
+   clusterNode *migrating_slots_to[CLUSTER_SLOTS];
+   clusterNode *importing_slots_from[CLUSTER_SLOTS];
+   clusterNode *slots[CLUSTER_SLOTS];
+   rax *slots_to_keys;
+   ...
+}
+</code></pre>
+<p>这几个结构主要是被用来记录数据迁入迁出的情况，它们的含义如下。</p>
+<ul>
+<li><strong>migrating_slots_to 数组</strong>：表示当前节点负责的 slot 正在迁往哪个节点。比如，migrating_slots_to[K] = node1，这就表示当前节点负责的 slot K，正在迁往 node1。</li>
+<li><strong>importing_slots_from 数组</strong>：表示当前节点正在从哪个节点迁入某个 slot。比如，importing_slots_from[L] = node3，这就表示当前节点正从 node3 迁入 slot L。</li>
+<li><strong>slots 数组</strong>：表示 16384 个 slot 分别是由哪个节点负责的。比如，slots[M] = node2，这就表示 slot M 是由 node2 负责的。</li>
+<li><strong>slots_to_keys 字典树</strong>：用来记录 slot 和 key 的对应关系，可以通过它快速找到 slot 上有哪些 keys。</li>
+</ul>
+<p>好了，知道了用来记录数据迁入迁出情况的数据结构之后，我们就来学习数据迁移的具体过程。</p>
+<h2 id="数据迁移过程的设计与实现">数据迁移过程的设计与实现</h2>
+<p>Redis Cluster 迁移数据的整个过程可以分成五个大步骤，分别是：</p>
+<ul>
+<li>标记迁入、迁出节点；</li>
+<li>获取迁出的 keys；</li>
+<li>源节点实际迁移数据；</li>
+<li>目的节点处理迁移数据；</li>
+<li>标记迁移结果。</li>
+</ul>
+<p>下面，我们就分别来看下这五个步骤的源码实现。</p>
+<h3 id="标记迁入-迁出节点">标记迁入、迁出节点</h3>
+<p>在 Redis Cluster 中迁移数据时，我们需要先使用 CLUSTER SETSLOT 命令，在待迁入数据的目的节点上标记待迁出数据的源节点，使用的命令如下所示：</p>
+<pre><code class="language-c">CLUSTER  SETSLOT  &lt;slot&gt;  IMPORTING  &lt;node&gt; //&lt;slot&gt;表示要迁入的哈希槽，&lt;node&gt;表示当前负责&lt;slot&gt;的节点
+</code></pre>
+<p>然后，我们需要使用 CLUSTER SETSLOT 命令，在待迁出数据的源节点上标记将要迁入数据的目的节点，使用的命令如下所示：</p>
+<pre><code class="language-c">CLUSTER  SETSLOT  &lt;slot&gt;  MIGRATING  &lt;node&gt; //&lt;slot&gt;表示要迁出的哈希槽，&lt;node&gt;表示&lt;slot&gt;要迁往的目的节点
+</code></pre>
+<p>为了便于你理解，我来举个例子。假设 slot 3 在节点 A 上，现在我们要把 slot 3 从节点 A 上迁移到节点 B 上，那么，此时节点 A 就是待迁出数据的源节点，而节点 B 就是待迁入数据的目的节点。我们要先在节点 B 上执行如下命令，用来标记源节点。</p>
+<pre><code class="language-c">CLUSTER  SETSLOT  slot3  IMPORTING  nodeA
+</code></pre>
+<p>然后，我们在节点 A 上执行如下命令，用来标记目的节点。</p>
+<pre><code class="language-c">CLUSTER  SETSLOT  slot3  MIGRATING  nodeB
+</code></pre>
+<p>对于 CLUSTER 命令来说，它的处理函数是 <strong>clusterCommand</strong>（在<a href="https://github.com/redis/redis/tree/5.0/src/cluster.c" target="_blank">cluster.c</a>文件中）。在这个函数中，它会根据 CLUSTER 命令携带的不同选项，执行不同的代码分支。因此，对于刚才介绍的标记 slot 迁入、迁出的 SETSLOT 选项，它们在 clusterCommand 函数中对应的代码分支如下所示：</p>
+<pre><code class="language-c">void clusterCommand(client *c) {
+…
+//处理SETSLOT选项
+else if (!strcasecmp(c-&gt;argv[1]-&gt;ptr,"setslot") &amp;&amp; c-&gt;argc &gt;= 4) {
+   …
+   //处理migrating标记
+   if (!strcasecmp(c-&gt;argv[3]-&gt;ptr,"migrating") &amp;&amp; c-&gt;argc == 5) {
+  ...
+   }//处理importing标记
+   else if (!strcasecmp(c-&gt;argv[3]-&gt;ptr,"importing") &amp;&amp; c-&gt;argc == 5) {
+  …
+   }
+}
+</code></pre>
+<p>这里，我们来看一下处理 migrating 和 importing 标记的具体逻辑。其实，clusterCommand 函数对这两个标记的处理逻辑基本都是分成三步。</p>
+<p><strong>第一步</strong>，对于数据迁出来说，该函数会判断迁出的 slot 是否在当前节点；而对于数据迁入来说，该函数会判断迁入的 slot 是否在当前节点。如果迁出的 slot 不在当前节点，或者迁入的 slot 已在当前节点，那么 clusterCommand 函数就<strong>返回报错信息</strong>了。这是因为，在这两种情况下节点无法执行 slot 迁移。</p>
+<p><strong>第二步</strong>，如果迁出的 slot 在当前节点，或者迁入的 slot 不在当前节点，那么，clusterCommand 函数就会<strong>调用 clusterLookupNode 函数</strong>（在 cluster.c 文件中），来查询 CLUSTER SETSLOT 命令中包含的。这主要是依赖于 clusterLookupNode 函数根据输入的节点 ID，在全局变量 server 的 cluster-&gt;nodes 数组中，查找并返回对应节点。</p>
+<p><strong>第三步</strong>，clusterCommand 函数会把 migrating_slots_to 数组中迁出 slot，或者 importing_slots_from 数组中迁入 slot 对应的节点，设置为 clusterLookupNode 函数查找的结果。</p>
+<p>我也画了两张图，分别展示了 clusterCommand 函数处理 CLUSTER SETSLOT 命令的 migrating 和 importing 标记的基本逻辑，你可以再看下。</p>
+<p><img alt="" src="assets/f2e684ceb12727da52786f6479390ff0-20221014000504-u9na8ah.jpg"/></p>
+<p>处理migrating标记</p>
+<p><img alt="" src="assets/6af04dbe699ee54b11fe3640a51cb0cc-20221014000504-0u8xdp4.jpg"/></p>
+<p>处理importing标记</p>
+<p>这样一来，当在 Redis Cluster 中标记完迁入和迁出的节点后，我们就可以使用 CLUSTER GETKEYSINSLOT 命令，来获取要迁出的 keys 了。下面我们来看下这步操作的实现。</p>
+<h3 id="获取待迁出的-keys">获取待迁出的 keys</h3>
+<p>我们用来获取待迁出的 keys 的具体命令如下所示，其中表示要迁移的 slot，而表示要迁移的 key 的数量。</p>
+<pre><code class="language-c">CLUSTER  GETKEYSINSLOT  &lt;slot&gt;  &lt;count&gt;
+</code></pre>
+<p>因为这里我们用的还是 CLUSTER 命令，所以，获取待迁出 keys 的命令处理也还是在 <strong>clusterCommand 函数</strong>中，对应了 GETKEYSINSLOT 选项的代码分支，如下所示：</p>
+<pre><code class="language-c">void clusterCommand(client *c) {
+…
+//处理GETKEYSINSLOT选项
+else if (!strcasecmp(c-&gt;argv[1]-&gt;ptr,"getkeysinslot") &amp;&amp; c-&gt;argc == 4) {...}
+...
+</code></pre>
+<p>这个代码分支的处理逻辑也比较简单，它主要可以分成三步。</p>
+<p><strong>首先</strong>，这个代码分支会<strong>调用 getLongLongFromObjectOrReply 函数</strong>（在<a href="https://github.com/redis/redis/tree/5.0/src/object.c" target="_blank">object.c</a>文件中），从 CLUSTER GETKEYSINSLOT 命令中获取和参数，这里的参数会被赋值给 maxkeys 变量，如下所示：</p>
+<pre><code class="language-c">//解析获取slot参数
+if (getLongLongFromObjectOrReply(c,c-&gt;argv[2],&amp;slot,NULL) != C_OK)
+      return;
+//解析获取count参数，赋值给maxkeys
+if (getLongLongFromObjectOrReply(c,c-&gt;argv[3],&amp;maxkeys,NULL)!= C_OK)
+      return;
+</code></pre>
+<p><strong>然后</strong>，clusterCommand 函数会<strong>调用 countKeysInSlot 函数</strong>（在<a href="https://github.com/redis/redis/tree/5.0/src/db.c" target="_blank">db.c</a>文件中），获取待迁移 slot 中实际的 key 的数量。如果刚才从命令中获取的 key 的迁移数量 maxkeys，大于实际的 key 数量，那么 maxkeys 的值会被更新为实际的 key 数量。紧接着，clusterCommand 函数会给这些 key 分配空间。</p>
+<pre><code class="language-c">unsigned int keys_in_slot = countKeysInSlot(slot);  //获取迁移slot中实际的key数量
+if (maxkeys &gt; keys_in_slot) maxkeys = keys_in_slot; //如果实际的key数量小于maxkeys，将maxkeys更新为时间的key数量
+keys = zmalloc(sizeof(robj*)*maxkeys); //给key分配空间
+</code></pre>
+<p><strong>最后</strong>，这个代码分支会<strong>调用 getKeysInSlot 函数</strong>（在 db.c 文件中），从迁移 slot 中获取实际的 key，并将这些 key 返回给客户端，如下所示：</p>
+<pre><code class="language-c">numkeys = getKeysInSlot(slot, keys, maxkeys); //获取实际的key
+addReplyMultiBulkLen(c,numkeys); //将key返回给客户端
+for (j = 0; j &lt; numkeys; j++) {
+     addReplyBulk(c,keys[j]);
+     decrRefCount(keys[j]);
+}
+</code></pre>
+<p>好了，到这里，客户端就通过 CLUSTER  GETKEYSINSLOT 命令，获得了一定数量的要迁移的 key。接下来，我们就要开始执行实际的迁移操作了，我们来具体看下。</p>
+<h3 id="源节点实际迁移数据">源节点实际迁移数据</h3>
+<p>在实际迁移数据时，我们需要在待迁出数据的源节点上<strong>执行 MIGRATE 命令</strong>。其实，MIGRATE 命令既支持迁移单个 key，也支持一次迁移多个 key，它们的基本处理流程是相同的，都是在 <strong>migrateCommand 函数</strong>中实现的。</p>
+<p>这里，我以一次迁移多个 key 的 MIGRATE 命令为例，这个命令的选项中包含了目的节点的 IP、端口号、数据库编号，以及要迁移的多个 key、迁移超时时间，它的格式如下所示：</p>
+<pre><code class="language-c">MIGRATE host port "" dbid timeout [COPY | REPLACE] KEYS key1 key2 ... keyN 
+</code></pre>
+<p>从这个命令中，你也可以看到，它还包括了 COPY 或 REPLACE 选项，这两个选项的含义如下。</p>
+<ul>
+<li><strong>COPY</strong>：如果目的节点已经存在待迁移的 key，则报错；如果目的节点不存在待迁移的 key，那么就正常迁移，并在迁移后，删除源节点上的 key。</li>
+<li><strong>REPLACE</strong>：无论目的节点是否存在待迁移的 key，都会正常执行迁移，并覆盖已经存在的 key。</li>
+</ul>
+<p>好，了解了 MIGRATE 命令的含义后，我们就来看下 migrateCommand 函数的基本处理流程，这个函数的执行过程主要可以分成四步。</p>
+<p><strong>第一步，命令参数检查</strong></p>
+<p>migrateCommand 函数首先会检查 MIGRATE 命令携带的参数，比如是否有 COPY 或 REPLACE 标记、dbid 和 timeout 是否能正常读取等。在这一步，migrateCommand 函数如果检查到 timeout 值小于等于 0 了，它就会把 timeout 值设置为 1000 毫秒，用于迁移过程中的超时判断。</p>
+<p><strong>第二步，读取要迁移的 key 和 value</strong></p>
+<p>检查完命令参数后，migrateCommand 函数会分配两个数组 ov 和 kv，它们的初始大小等于 MIGRATE 命令中要迁移的 key 的数量。然后，migrateCommand 函数会调用 lookupKeyRead 函数（在 db.c 文件中），逐一检查要迁移的 key 是否存在。这是因为有的 key 在迁移时可能正好过期了，所以就不用迁移这些 key 了。这一步的最后，migrateCommand 函数会根据实际存在的 key 数量，来设置要迁移的 key 数量。</p>
+<p>下面的代码展示了这一步的基本逻辑，你可以看下。</p>
+<pre><code class="language-c">ov = zrealloc(ov,sizeof(robj*)*num_keys);  //分配ov数组，保存要迁移的value
+kv = zrealloc(kv,sizeof(robj*)*num_keys); //分配kv数组，保存要迁移的key
+...
+for (j = 0; j &lt; num_keys; j++) {
+    //逐一检查要迁移的key是否存在
+   if ((ov[oi] = lookupKeyRead(c-&gt;db,c-&gt;argv[first_key+j])) != NULL) {
+            kv[oi] = c-&gt;argv[first_key+j]; //只记录存在的key
+            oi++;
+   }
+}
+num_keys = oi;  //要迁移的key数量等于实际存在的key数量
+</code></pre>
+<p><strong>第三步，填充迁移用的命令、key 和 value</strong></p>
+<p>接下来，migrateCommand 函数就开始为迁移数据做准备了。这一步骤中的操作主要包括：</p>
+<ul>
+<li>调用 migrateGetSocket 函数（在 cluster.c 文件中），和目的节点建立连接；</li>
+<li>调用 rioInitWithBuffer 函数初始化一块缓冲区，然后调用 rioWriteBulkString、rioWriteBulkLongLong 等函数（在<a href="https://github.com/redis/redis/tree/5.0/src/rio.c" target="_blank">rio.c</a>文件中），往这个缓冲区中填充要发送给目的节点的命令、key 和 value。</li>
+</ul>
+<p>下面的代码也展示了在这一步中主要填充的命令、key 和 value，你可以看下。</p>
+<pre><code class="language-c">rioInitWithBuffer(&amp;cmd,sdsempty()); //初始化buffer
+...  //往buffer中填充SELECT命令
+//针对每一个要迁移的key，往buffer中填充命令、key和value
+for (j = 0; j &lt; num_keys; j++) {
+    //在集群模式下，填充RESTORE-ASKING命令，用来发给目的节点
+   if (server.cluster_enabled)
+      serverAssertWithInfo(c,NULL, rioWriteBulkString(&amp;cmd,"RESTORE-ASKING",14));
+   ...
+   //填充key
+   serverAssertWithInfo(c,NULL,rioWriteBulkString(&amp;cmd,kv[j]-&gt;ptr,
+                sdslen(kv[j]-&gt;ptr)));
+   //填充TTL
+   serverAssertWithInfo(c,NULL,rioWriteBulkLongLong(&amp;cmd,ttl));
+   //调用createDumpPayload函数序列化value
+   createDumpPayload(&amp;payload,ov[j],kv[j]);
+   //填充value
+   serverAssertWithInfo(c,NULL, rioWriteBulkString(&amp;cmd,payload.io.buffer.ptr,
+   ...
+}
+</code></pre>
+<p>这里，你需要注意的是，migrateCommand 函数会调用 createDumpPayload 函数（在 cluster.c 文件中）将迁移 key 的 value 序列化，以便于传输。在序列化的结果中，<strong>createDumpPayload 函数会增加 RDB 版本号和 CRC 校验和</strong>。等目的节点收到迁移数据后，也会检查这两部分内容，我稍后还会给你介绍。</p>
+<p>当在缓冲区中填充完要发送给目的节点的命令、key 和 value 后，migrateCommand 函数就开始发送这个缓冲区中的内容了。</p>
+<p><strong>第四步，发送迁移用的命令和数据，并读取返回结果</strong></p>
+<p>migrateCommand 函数会调用 syncWrite 函数（在<a href="https://github.com/redis/redis/tree/5.0/src/syncio.c" target="_blank">syncio.c</a>文件中），把缓冲区中的内容按照 64KB 的粒度发送给目的节点，如下所示：</p>
+<pre><code class="language-c">while ((towrite = sdslen(buf)-pos) &gt; 0) {
+   towrite = (towrite &gt; (64*1024) ? (64*1024) : towrite);
+   nwritten = syncWrite(cs-&gt;fd,buf+pos,towrite,timeout);
+   ...
+   pos += nwritten;
+}
+</code></pre>
+<p>然后，针对发送给目的节点的每个键值对，migrateCommand 函数会调用 syncReadLine 函数（在 syncio.c 文件中），读取目的节点的返回结果。如果返回结果中有报错信息，那么它就会进行相应的处理。这部分的逻辑并不复杂，但是针对各种出错情况的处理会比较多，你可以进一步阅读源码来进行学习。</p>
+<pre><code class="language-c">//针对迁移的每个键值对，调用syncReadLine函数读取目的节点返回结果
+for (j = 0; j &lt; num_keys; j++) {
+   if (syncReadLine(cs-&gt;fd, buf2, sizeof(buf2), timeout) &lt;= 0) { ...}
+   ... //处理目的节点返回的结果
+}
+</code></pre>
+<p>好了，到这里，你就了解了 MIGRATE 命令的执行基本过程，我把它执行过程的四大步骤也画在了下面的这张图中，你可以再回顾下。</p>
+<p><img alt="" src="assets/61caafdf1f4d5a5f6432b9182e549dec-20221014000504-ubvi9q9.jpg"/></p>
+<p>其实在迁移数据的过程中，<strong>目的节点对迁移命令的处理也是迁移过程的一个重要环节</strong>。所以，下面我们就来看下，目的节点在收到 RESTORE-ASKING 命令后的处理过程。</p>
+<h3 id="目的节点处理迁移数据">目的节点处理迁移数据</h3>
+<p>目的节点在收到源节点发送的 RESTORE-ASKING 命令后，这个命令的实际处理函数是 <strong>restoreCommand</strong>（在 cluster.c 文件中）。这个函数的处理逻辑并不复杂，主要可以分成三步。</p>
+<p><strong>首先</strong>，它会解析收到的命令参数，包括是否覆盖数据的标记 replace、key 过期时间标记 ttl、key 的 LRU 标记 idletime、key 的 LFU 标记 freq。接着，它就会根据这些标记执行一系列检查。</p>
+<p>这其中就包括，如果检测到没有 replace 标记的话，它会调用 lookupKeyWrite 函数（在 db.c 文件中），检查目的节点数据库中是否有迁移的 key，如果已经存在待迁移 key 的话，它就会返回报错信息，如下所示。此外，它还会检查 TTL 值是否小于 0。</p>
+<pre><code class="language-c">//如果没有replace标记，并且数据库中存在待迁移的key 
+if (!replace &amp;&amp; lookupKeyWrite(c-&gt;db,c-&gt;argv[1]) != NULL) {
+        addReply(c,shared.busykeyerr); //返回报错信息
+        return;
+ }
+</code></pre>
+<p><strong>然后</strong>，restoreCommand 函数会检查迁移 key 的 value 的序列化结果，就像我刚才介绍的，migrateCommand 函数在实际迁移 value 时，会把 value 序列化后再传输。而序列化后的结果中包含了 RDB 版本和 CRC 校验和，restoreCommand 函数会<strong>调用 verifyDumpPayload 函数</strong>（在 cluster.c 文件中），检测 RDB 版本和 CRC 校验和。如果这两部分内容不正确，它就会返回报错信息。</p>
+<pre><code class="language-c">//检查value序列化结果中的RDB版本和CRC校验和
+if (verifyDumpPayload(c-&gt;argv[3]-&gt;ptr,sdslen(c-&gt;argv[3]-&gt;ptr)) == C_ERR)
+{
+        addReplyError(c,"DUMP payload version or checksum are wrong");
+        return;
+}
+</code></pre>
+<p>紧接着，restoreCommand 函数会调用 rdbLoadObjectType 函数和 rdbLoadObject 函数（在<a href="https://github.com/redis/redis/tree/5.0/src/rdb.c" target="_blank">rdb.c</a>文件中），从序列化结果中解析出实际的 value 类型和 value 实际值。</p>
+<p><strong>最后</strong>，restoreCommand 函数会调用 dbAdd 函数，把解析得到 key 和 value 写入目的节点的数据库中。这里，你要注意的是，<strong>如果迁移命令中带有 REPLACE 标记</strong>，那么，restoreCommand 函数会先调用 dbDelete 函数，删除在目的节点数据库中已经存在的迁移 key，然后再调用 dbAdd 函数写入迁移 key。此外，restoreCommand 函数还会设置迁移 key 的过期时间，以及 LRU 或 LFU 信息，并最终返回成功信息。</p>
+<p>下面的代码展示了 restoreCommand 函数最后一步的处理逻辑，你可以看下。</p>
+<pre><code class="language-c">//如果有REPLACE标记，在目的节点数据库中删除已存在的迁移key
+if (replace) dbDelete(c-&gt;db,c-&gt;argv[1]);
+
+//将迁移key及value写入目的节点数据库
+dbAdd(c-&gt;db,c-&gt;argv[1],obj);
+if (ttl) {  //设置TTL时间
+        if (!absttl) ttl+=mstime();
+        setExpire(c,c-&gt;db,c-&gt;argv[1],ttl);
+}
+objectSetLRUOrLFU(obj,lfu_freq,lru_idle,lru_clock); //设置LRU或LFU信息
+...
+addReply(c,shared.ok);  //返回成功信息
+</code></pre>
+<p>我在这里也画了一张图，展示了目的节点处理迁移数据的基本过程，你可以再整体看下。</p>
+<p><img alt="" src="assets/198d0629f86c440d9afee8678302252a-20221014000504-o15t2u9.jpg"/></p>
+<p>好了，到这里，你就了解了源节点发送迁移数据，以及目的节点接收迁移数据的基本过程实现了。最后，当迁移 slot 中的 key 全部完成迁移后，我们还需要执行 CLUSTER SETSLOT 命令，来标记迁移的最终结果，下面我们来看下。</p>
+<h3 id="标记迁移结果">标记迁移结果</h3>
+<p>在数据迁移完成后，我们需要先在目的节点上<strong>执行 CLUSTER SETSLOT 命令</strong>，向目的节点标记迁移 slot 的最终所属节点，如下所示。然后，我们需要在源节点上执行相同的命令，用来向源节点标记迁移 slot 的最终所属节点。</p>
+<pre><code class="language-c">CLUSTER SETSLOT &lt;slot&gt; NODE &lt;node&gt;
+</code></pre>
+<p>因为这个命令还是 CLUSTER 命令，所以它的处理仍然在 <strong>clusterCommand 函数</strong>中实现的。这个命令的选项是 SETSLOT，并带有 NODE 标记，所以它对应的代码分支如下所示：</p>
+<pre><code class="language-c">void clusterCommand(client *c) {
+   ... 
+   //处理SETSLOT选项
+   else if (!strcasecmp(c-&gt;argv[1]-&gt;ptr,"setslot") &amp;&amp; c-&gt;argc &gt;= 4) {
+      ...
+      //处理NODE标记
+      else if (!strcasecmp(c-&gt;argv[3]-&gt;ptr,"node") &amp;&amp; c-&gt;argc == 5) { ...}
+      ...
+   }
+   ...
+}
+</code></pre>
+<p>在刚才介绍的处理 NODE 标记的代码分支中，主要的工作是清除节点上 migrating_slots_to 数组和 importing_slots_from 数组中的标记。</p>
+<p><strong>对于 migrating_slots_to 数组来说</strong>，在源节点上，这个数组中迁移 slot 所对应的元素，记录了目的节点。那么，在源节点上执行迁移结果标记命令时，处理 NODE 标记的代码分支，就会调用 <strong>countKeysInSlot 函数</strong>（在 db.c 文件中）检查迁移 slot 中是否还有 key。如果没有 key 了，那么 migrating_slots_to 数组中迁移 slot 所对应的元素会被置为 NULL，也就是取消了源节点上的迁出标记。</p>
+<pre><code class="language-c">if (countKeysInSlot(slot) == 0 &amp;&amp; server.cluster-&gt;migrating_slots_to[slot]) //如果有迁出标记， 并且迁移slot中已经没有key
+    server.cluster-&gt;migrating_slots_to[slot] = NULL; //将迁出标记置为NULL
+</code></pre>
+<p><strong>而对于 importing_slots_from 数组来说</strong>，在目的节点上，这个数组中迁移 slot 所对应的元素记录了源节点。那么，在目的节点上执行迁移结果标记命令时，处理 NODE 标记的代码分支会<strong>检查命令参数中的</strong><strong>是否就是目的节点自身</strong>。如果是的话，importing_slots_from 数组中迁移 slot 所对应的元素会被置为 NULL，这就是取消了目的节点上的迁入标记。</p>
+<pre><code class="language-c">//如果命令参数中的节点是当前节点，并且有迁入标记
+ if (n == myself &amp;&amp; server.cluster-&gt;importing_slots_from[slot]) {
+    ...
+   server.cluster-&gt;importing_slots_from[slot] = NULL; //取消迁入标记
+}
+</code></pre>
+<p>最后，处理 NODE 标记的代码分支，会调用 clusterDelSlot 和 clusterAddSlot 函数（在 cluster.c 文件中），分别更新 slot 迁移前和迁移后所属节点的 slots 数组，你可以去进一步阅读这两个函数的代码进行了解。</p>
+<p>到这里，Redis Cluster 中数据迁移的整个过程也就完成了。</p>
+<h2 id="小结">小结</h2>
+<p>在今天的课程中，我给你介绍了 Redis Cluster 数据迁移过程的代码实现，你要掌握以下两个要点。</p>
+<p><strong>首先是记录集群状态的数据结构 clusterState。</strong>这个结构中是使用了 migrating_slots_to 和 importing_slots_from 两个数组，来记录数据迁出迁入情况，使用了 slots 数组记录每个 slot 所属的节点，以及使用 slots_to_keys 字典树记录 slots 中的 keys。你需要掌握这几个数据结构的含义，因为在你阅读集群源码时，这几个结构是会频繁使用到的。</p>
+<p><strong>然后是数据迁移过程的五大步骤。</strong>分别是：</p>
+<ul>
+<li>标记迁入、迁出节点；</li>
+<li>获取待迁出的 keys；</li>
+<li>源节点实际迁移数据；</li>
+<li>目的节点处理迁移数据；</li>
+<li>标记迁移结果。</li>
+</ul>
+<p>这五个步骤对应了 CLUSTER 命令的不同选项、MIGRATE 命令以及 RESTORE 命令，所以，它们的实现逻辑就主要对应在 clusterCommand、migrateCommand 和 restoreCommand 函数中。如果你想了解数据迁移的更多细节，你可以从这几个函数入手进一步学习。</p>
+<p>最后，我也想再<strong>提醒你两个关键点</strong>。</p>
+<p>一是，Redis Cluster 在执行数据迁移时，会调用 syncWrite 和 syncReadLine 函数，向目的节点同步发送迁移数据，以及同步读取回复结果。而这个同步写和同步读的过程，会阻塞源节点正常处理请求。所以，你在迁移数据时要<strong>控制迁移的 key 数量和 key 大小</strong>，避免一次性迁移过多的 key 或是过大的 key，而导致 Redis 阻塞。</p>
+<p>二是，我们在实际应用中，会用到 <strong>redis-cli 工具</strong>，或者是 Ruby 开发的 Redis Cluster 集群<strong>运维工具 redis-trib</strong>，来执行数据迁移。这些工具最终也会调用这节课中，我们介绍的命令来完成数据的实际迁移。所以，学习今天课程的内容，对于你在实际应用中，从代码层面排查 redis-cli、redis-trib 这些工具的问题也是有所帮助的。</p>
+<h2 id="每课一问">每课一问</h2>
+<p>在维护 Redis Cluster 集群状态的数据结构 clusterState 中，有一个字典树 slots_to_keys。当在数据库中插入 key 时它会被更新，你能在 Redis 源码文件 db.c 中，找到更新 slots_to_keys 字典树的相关函数调用吗？</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#a0cccccc999491919097e0c7cdc1c9cc8ec3cfcd" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93589d5839951ffa',t:'MTc0NTUyOTMxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

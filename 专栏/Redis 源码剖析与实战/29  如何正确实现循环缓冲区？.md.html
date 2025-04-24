@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="29  如何正确实现循环缓冲区？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>29  如何正确实现循环缓冲区？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/00%20%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e9%98%85%e8%af%bbRedis%e6%ba%90%e7%a0%81%e8%83%bd%e7%bb%99%e4%bd%a0%e5%b8%a6%e6%9d%a5%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="00  开篇词  阅读Redis源码能给你带来什么？.md.html">00  开篇词  阅读Redis源码能给你带来什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/01%20%20%e5%b8%a6%e4%bd%a0%e5%bf%ab%e9%80%9f%e6%94%bb%e7%95%a5Redis%e6%ba%90%e7%a0%81%e7%9a%84%e6%95%b4%e4%bd%93%e6%9e%b6%e6%9e%84.md.html" id="01  带你快速攻略Redis源码的整体架构.md.html">01  带你快速攻略Redis源码的整体架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/02%20%20%e9%94%ae%e5%80%bc%e5%af%b9%e4%b8%ad%e5%ad%97%e7%ac%a6%e4%b8%b2%e7%9a%84%e5%ae%9e%e7%8e%b0%ef%bc%8c%e7%94%a8char%e8%bf%98%e6%98%af%e7%bb%93%e6%9e%84%e4%bd%93%ef%bc%9f.md.html" id="02  键值对中字符串的实现，用char还是结构体？.md.html">02  键值对中字符串的实现，用char还是结构体？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/03%20%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%80%a7%e8%83%bd%e4%bc%98%e5%bc%82%e7%9a%84Hash%e8%a1%a8%ef%bc%9f.md.html" id="03  如何实现一个性能优异的Hash表？.md.html">03  如何实现一个性能优异的Hash表？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/04%20%20%e5%86%85%e5%ad%98%e5%8f%8b%e5%a5%bd%e7%9a%84%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e8%af%a5%e5%a6%82%e4%bd%95%e7%bb%86%e5%8c%96%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="04  内存友好的数据结构该如何细化设计？.md.html">04  内存友好的数据结构该如何细化设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/05%20%20%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e4%b8%ba%e4%bd%95%e8%83%bd%e5%90%8c%e6%97%b6%e6%94%af%e6%8c%81%e7%82%b9%e6%9f%a5%e8%af%a2%e5%92%8c%e8%8c%83%e5%9b%b4%e6%9f%a5%e8%af%a2%ef%bc%9f.md.html" id="05  有序集合为何能同时支持点查询和范围查询？.md.html">05  有序集合为何能同时支持点查询和范围查询？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/06%20%20%e4%bb%8eziplist%e5%88%b0quicklist%ef%bc%8c%e5%86%8d%e5%88%b0listpack%e7%9a%84%e5%90%af%e5%8f%91.md.html" id="06  从ziplist到quicklist，再到listpack的启发.md.html">06  从ziplist到quicklist，再到listpack的启发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/07%20%20%e4%b8%ba%e4%bb%80%e4%b9%88Stream%e4%bd%bf%e7%94%a8%e4%ba%86Radix%20Tree%ef%bc%9f.md.html" id="07  为什么Stream使用了Radix Tree？.md.html">07  为什么Stream使用了Radix Tree？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/08%20%20Redis%20server%e5%90%af%e5%8a%a8%e5%90%8e%e4%bc%9a%e5%81%9a%e5%93%aa%e4%ba%9b%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="08  Redis server启动后会做哪些操作？.md.html">08  Redis server启动后会做哪些操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/09%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bd%95%e6%97%b6%e4%bd%bf%e7%94%a8select%e3%80%81poll%e3%80%81epoll%ef%bc%9f.md.html" id="09  Redis事件驱动框架（上）：何时使用select、poll、epoll？.md.html">09  Redis事件驱动框架（上）：何时使用select、poll、epoll？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/10%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aRedis%e5%ae%9e%e7%8e%b0%e4%ba%86Reactor%e6%a8%a1%e5%9e%8b%e5%90%97%ef%bc%9f.md.html" id="10  Redis事件驱动框架（中）：Redis实现了Reactor模型吗？.md.html">10  Redis事件驱动框架（中）：Redis实现了Reactor模型吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/11%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRedis%e6%9c%89%e5%93%aa%e4%ba%9b%e4%ba%8b%e4%bb%b6%ef%bc%9f.md.html" id="11  Redis事件驱动框架（下）：Redis有哪些事件？.md.html">11  Redis事件驱动框架（下）：Redis有哪些事件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/12%20%20Redis%e7%9c%9f%e7%9a%84%e6%98%af%e5%8d%95%e7%ba%bf%e7%a8%8b%e5%90%97%ef%bc%9f.md.html" id="12  Redis真的是单线程吗？.md.html">12  Redis真的是单线程吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/13%20%20Redis%206.0%e5%a4%9aIO%e7%ba%bf%e7%a8%8b%e7%9a%84%e6%95%88%e7%8e%87%e6%8f%90%e9%ab%98%e4%ba%86%e5%90%97%ef%bc%9f.md.html" id="13  Redis 6.0多IO线程的效率提高了吗？.md.html">13  Redis 6.0多IO线程的效率提高了吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/14%20%20%e4%bb%8e%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0%e7%9c%8b%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%e7%9a%84%e5%8e%9f%e5%ad%90%e6%80%a7%e4%bf%9d%e8%af%81.md.html" id="14  从代码实现看分布式锁的原子性保证.md.html">14  从代码实现看分布式锁的原子性保证.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/15%20%20%e4%b8%ba%e4%bb%80%e4%b9%88LRU%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86%e5%92%8c%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0%e4%b8%8d%e4%b8%80%e6%a0%b7%ef%bc%9f.md.html" id="15  为什么LRU算法原理和代码实现不一样？.md.html">15  为什么LRU算法原理和代码实现不一样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/16%20%20LFU%e7%ae%97%e6%b3%95%e5%92%8c%e5%85%b6%e4%bb%96%e7%ae%97%e6%b3%95%e7%9b%b8%e6%af%94%e6%9c%89%e4%bc%98%e5%8a%bf%e5%90%97%ef%bc%9f.md.html" id="16  LFU算法和其他算法相比有优势吗？.md.html">16  LFU算法和其他算法相比有优势吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/17%20%20Lazy%20Free%e4%bc%9a%e5%bd%b1%e5%93%8d%e7%bc%93%e5%ad%98%e6%9b%bf%e6%8d%a2%e5%90%97%ef%bc%9f.md.html" id="17  Lazy Free会影响缓存替换吗？.md.html">17  Lazy Free会影响缓存替换吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/18%20%20%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%e5%92%8c%e8%a7%a3%e8%af%bbRDB%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="18  如何生成和解读RDB文件？.md.html">18  如何生成和解读RDB文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/19%20%20AOF%e9%87%8d%e5%86%99%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%a7%a6%e5%8f%91%e6%97%b6%e6%9c%ba%e4%b8%8e%e9%87%8d%e5%86%99%e7%9a%84%e5%bd%b1%e5%93%8d.md.html" id="19  AOF重写（上）：触发时机与重写的影响.md.html">19  AOF重写（上）：触发时机与重写的影响.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/20%20%20AOF%e9%87%8d%e5%86%99%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e9%87%8d%e5%86%99%e6%97%b6%e7%9a%84%e6%96%b0%e5%86%99%e6%93%8d%e4%bd%9c%e8%ae%b0%e5%bd%95%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="20  AOF重写（下）：重写时的新写操作记录在哪里？.md.html">20  AOF重写（下）：重写时的新写操作记录在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/21%20%20%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%ef%bc%9a%e5%9f%ba%e4%ba%8e%e7%8a%b6%e6%80%81%e6%9c%ba%e7%9a%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0.md.html" id="21  主从复制：基于状态机的设计与实现.md.html">21  主从复制：基于状态机的设计与实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/22%20%20%e5%93%a8%e5%85%b5%e4%b9%9f%e5%92%8cRedis%e5%ae%9e%e4%be%8b%e4%b8%80%e6%a0%b7%e5%88%9d%e5%a7%8b%e5%8c%96%e5%90%97%ef%bc%9f.md.html" id="22  哨兵也和Redis实例一样初始化吗？.md.html">22  哨兵也和Redis实例一样初始化吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/23%20%20%e4%bb%8e%e5%93%a8%e5%85%b5Leader%e9%80%89%e4%b8%be%e5%ad%a6%e4%b9%a0Raft%e5%8d%8f%e8%ae%ae%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="23  从哨兵Leader选举学习Raft协议实现（上）.md.html">23  从哨兵Leader选举学习Raft协议实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/24%20%20%e4%bb%8e%e5%93%a8%e5%85%b5Leader%e9%80%89%e4%b8%be%e5%ad%a6%e4%b9%a0Raft%e5%8d%8f%e8%ae%ae%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="24  从哨兵Leader选举学习Raft协议实现（下）.md.html">24  从哨兵Leader选举学习Raft协议实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/25%20%20PubSub%e5%9c%a8%e4%b8%bb%e4%bb%8e%e6%95%85%e9%9a%9c%e5%88%87%e6%8d%a2%e6%97%b6%e6%98%af%e5%a6%82%e4%bd%95%e5%8f%91%e6%8c%a5%e4%bd%9c%e7%94%a8%e7%9a%84%ef%bc%9f.md.html" id="25  PubSub在主从故障切换时是如何发挥作用的？.md.html">25  PubSub在主从故障切换时是如何发挥作用的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/26%20%20%e4%bb%8ePing-Pong%e6%b6%88%e6%81%af%e5%ad%a6%e4%b9%a0Gossip%e5%8d%8f%e8%ae%ae%e7%9a%84%e5%ae%9e%e7%8e%b0.md.html" id="26  从Ping-Pong消息学习Gossip协议的实现.md.html">26  从Ping-Pong消息学习Gossip协议的实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/27%20%20%e4%bb%8eMOVED%e3%80%81ASK%e7%9c%8b%e9%9b%86%e7%be%a4%e8%8a%82%e7%82%b9%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%91%bd%e4%bb%a4%ef%bc%9f.md.html" id="27  从MOVED、ASK看集群节点如何处理命令？.md.html">27  从MOVED、ASK看集群节点如何处理命令？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/28%20%20Redis%20Cluster%e6%95%b0%e6%8d%ae%e8%bf%81%e7%a7%bb%e4%bc%9a%e9%98%bb%e5%a1%9e%e5%90%97%ef%bc%9f.md.html" id="28  Redis Cluster数据迁移会阻塞吗？.md.html">28  Redis Cluster数据迁移会阻塞吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/29%20%20%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%ae%9e%e7%8e%b0%e5%be%aa%e7%8e%af%e7%bc%93%e5%86%b2%e5%8c%ba%ef%bc%9f.md.html" id="29  如何正确实现循环缓冲区？.md.html">29  如何正确实现循环缓冲区？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/30%20%20%e5%a6%82%e4%bd%95%e5%9c%a8%e7%b3%bb%e7%bb%9f%e4%b8%ad%e5%ae%9e%e7%8e%b0%e5%bb%b6%e8%bf%9f%e7%9b%91%e6%8e%a7%ef%bc%9f.md.html" id="30  如何在系统中实现延迟监控？.md.html">30  如何在系统中实现延迟监控？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/31%20%20%e4%bb%8eModule%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%ad%a6%e4%b9%a0%e5%8a%a8%e6%80%81%e6%89%a9%e5%b1%95%e5%8a%9f%e8%83%bd.md.html" id="31  从Module的实现学习动态扩展功能.md.html">31  从Module的实现学习动态扩展功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/32%20%20%e5%a6%82%e4%bd%95%e5%9c%a8%e4%b8%80%e4%b8%aa%e7%b3%bb%e7%bb%9f%e4%b8%ad%e5%ae%9e%e7%8e%b0%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%ef%bc%9f.md.html" id="32  如何在一个系统中实现单元测试？.md.html">32  如何在一个系统中实现单元测试？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%20Redis%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb%ef%bc%8c%e8%ae%a9%e6%88%91%e4%bb%ac%e4%bb%8e%e6%96%b0%e5%bc%80%e5%a7%8b.md.html" id="结束语  Redis源码阅读，让我们从新开始.md.html">结束语  Redis源码阅读，让我们从新开始.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="29  如何正确实现循环缓冲区？" id="title">29  如何正确实现循环缓冲区？</h1>
+<div><p>从今天开始，我们就进入了这门课程的最后一个模块，也就是“编程技巧模块”。Redis 作为一个广泛使用的系统，除了它自身的功能实现和性能优化值得我们学习以外，它源码中的编程技巧也同样值得我们去了解和掌握。</p>
+<p>在这个模块中，我会带你学习 Redis 在循环缓冲区、监控、功能扩展模块等方面的设计与实现，这些功能的开发对于后端系统软件来说都是非常重要的。</p>
+<p>那么，今天这节课，我先带你来学习 <strong>Redis 中循环缓冲区的实现</strong>。</p>
+<p>我们在开发后端数据系统时，都会面临数据同步的问题，在应对这个问题时，缓冲区的设计与实现是一定要考虑的。而循环缓冲区是缓冲区开发的一个常用技巧，所以，学习这节课的内容，可以让我们掌握如何实现循环缓冲区，尤其是实现难点的解决方法，从而可以给我们自己开发数据同步提供一个参考实现。</p>
+<p>好了，下面我们先来看下循环缓冲区是如何工作的，有了这部分知识后，我们就能更好地理解和掌握 Redis 的代码实现了。</p>
+<h2 id="循环缓冲区如何工作">循环缓冲区如何工作？</h2>
+<p>在后端数据系统中，为了保证数据的可靠性，我们通常会采用主从集群的方式，在主节点和从节点之间同步数据。一般来说，主节点会先和从节点进行一次全量同步，把某个时刻的所有数据传输给从节点。</p>
+<p>然后，主节点会持续将收到的命令发送给从节点。在这个发送的过程中，如果从节点和主节点网络断连了，主节点需要将发送给从节点的命令缓存起来。这样一来，当从节点恢复和主节点的网络连接后，主节点可以把缓存着的命令再发给从节点。在这种场景下，我们就需要用到缓冲区来暂存主节点收到的命令。</p>
+<p>那么，在后端系统中设计缓冲区时，直接面临的一个问题就是，<strong>缓冲区空间不够用时该怎么办？</strong></p>
+<p>我们比较容易想到的实现方案是，当缓冲区不够用时，系统再动态分配缓冲区。但是动态分配缓冲区会<strong>有一定的开销</strong>，而且如果一旦空间不够用了，就动态分配缓冲区，这也会造成缓冲区空间持续增长，<strong>占用过多内存资源</strong>。</p>
+<p>而实际上，缓冲区中的数据在发送给从节点后，其实可以删除掉，这样就有新空间可以用了。这也就是说，缓冲区空间是可以复用的，如下图所示：</p>
+<p><img alt="" src="assets/27278ea3db0f74afb4ca7e576e9837d9-20221014000527-tydax7u.jpg"/></p>
+<p>那么，循环缓冲区的实现就是使用了复用缓冲区的设计思想，它的空间可以循环写入。从工作原理来说，它有两个特点：</p>
+<ul>
+<li><strong>循环缓冲区有一个写指针，表示主节点在缓冲区中的当前写入位置。</strong>如果写指针已经指向了缓冲区末尾，那么此时主节点再写入数据，写指针就会重新指向缓冲区头部，从头部开始再次写入数据，这样就可以复用缓冲区空间了。</li>
+<li><strong>循环缓冲区有一个或多个读指针，表示不同从节点在缓冲区中的当前读取位置。</strong>表示不同从节点在缓冲区中的当前读取位置。当读指针指向缓冲区末尾时，从节点也会把读指针重新指向缓冲区头部，从缓冲区头部开始继续读取数据。</li>
+</ul>
+<p>下图展示了循环缓冲区的写指针工作机制，你可以看下，读指针的工作机制和这个也是类似的。</p>
+<p><img alt="" src="assets/d1e86c89cb18540e9dae23b6496d6b78-20221014000527-7942p1o.jpg"/></p>
+<p>好了，了解了循环缓冲区的工作原理后，我们就来看下 Redis 中是如何实现循环缓冲区的。</p>
+<h2 id="redis-中如何实现循环缓冲区">Redis 中如何实现循环缓冲区？</h2>
+<p>在 Redis 的主从复制代码实现中，循环缓冲区就是被用来暂存主节点收到的命令的。</p>
+<p>不过，在了解它的具体实现前，我们要知道，在 Redis 主从复制中，主节点会累积记录它收到的要进行复制的命令总长度，这个总长度我们称之为<strong>全局范围内的复制偏移量</strong>（简称全局复制偏移量）。</p>
+<p>在源码中，它对应了全局变量 server 的 master_repl_offset 成员变量。而从节点从主节点读取命令时，也会记录它读到的累积命令的位置，这个位置称之为<strong>全局范围内的读取偏移量</strong>（简称全局读取位置）。</p>
+<p>为了便于你理解，我来给你举个例子。假设主节点收到三条命令，每条命令长度都是 16 字节，那么此时，全局复制偏移量是 48。假设一个从节点从主节点上读了一条命令，此时，该从节点的全局读取位置就是 16。</p>
+<p>因为全局复制偏移量和全局读取位置在接下来介绍的循环缓冲区实现中会反复用到，所以你要了解它们的含义。</p>
+<p>好了，下面我们来看循环缓冲区本身的数据结构。</p>
+<h3 id="循环缓冲区的数据结构和初始化">循环缓冲区的数据结构和初始化</h3>
+<p>在 Redis 全局变量 server 对应的结构体 redisServer 中，包含了循环缓冲区的数据结构，如下所示：</p>
+<pre><code class="language-c">struct redisServer {
+…
+char *repl_backlog;             //基于字符数组的循环缓冲区
+long long repl_backlog_size;    //循环缓冲区总长度
+long long repl_backlog_histlen; //循环缓冲区中当前累积的数据的长度
+long long repl_backlog_idx;     //循环缓冲区的写指针位置
+long long repl_backlog_off;   //循环缓冲区最早保存的数据的首字节在全局范围内的偏移
+…
+}
+</code></pre>
+<p>从代码中你可以看到，循环缓冲区本身被设计为了一个<strong>字符类型的数组 repl_backlog</strong>，然后 Redis 设计了以下的变量来描述循环缓冲区的状态，包括：</p>
+<ul>
+<li><strong>repl_backlog_size</strong>：这个变量值记录的是循环缓冲区本身的总长度。这个值也对应了 redis.conf 配置文件中的 repl-backlog-size 配置项。</li>
+<li><strong>repl_backlog_histlen</strong>：这个变量值记录的是循环缓冲区中目前累积的数据的长度，这个值不会超过缓冲区的总长度。</li>
+<li><strong>repl_backlog_idx</strong>：这个变量值记录的是循环缓冲区接下来写数据时应该写入的位置，而它就对应了刚才向你介绍的循环缓冲区的写指针。</li>
+<li><strong>repl_backlog_off</strong>：这个变量值记录的是循环缓冲区中最早保存的数据的首字节，在全局范围内的偏移值。这里你需要注意的是，因为循环缓冲区会被重复使用，所以一旦缓冲区写满后，又开始从头写数据时，缓冲区中的旧数据会被覆盖。因此，这个值就记录了仍然保存在缓冲区中，又是最早写入的数据的首字节，在全局范围内的偏移量。</li>
+</ul>
+<p>这几个变量在循环缓冲区的读写过程中会被反复使用，所以你需要掌握它们的含义，这样可以帮助你更好地理解循环缓冲区的实现。</p>
+<p>接下来，我们来看下循环缓冲区的创建和读写过程。因为循环缓冲区是在主从节点复制过程中使用的，所以，它对应的相关操作函数也是在<a href="https://github.com/redis/redis/tree/5.0/src/replication.c" target="_blank">replication.c</a>文件中实现的。</p>
+<p>我们先来看下，循环缓冲区的<strong>创建函数 createReplicationBacklog</strong>，这个函数的操作逻辑比较简单，就是从配置文件中读取循环缓冲区配置项 repl-backlog-size 的大小，然后根据这个配置项值给循环缓冲区分配空间。</p>
+<p>紧接着，这个函数会把 repl_backlog_histlen 初始化为 0，表示当前没有数据写入。同时，把 repl_backlog_idx 初始化为 0，表示当前可以从缓冲区头开始写入数据。此外，createReplicationBacklog 函数还会把 repl_backlog_off，设置为 master_repl_offset 加 1 的值。</p>
+<p>这部分的初始化代码如下所示：</p>
+<pre><code class="language-c">void createReplicationBacklog(void) {
+    serverAssert(server.repl_backlog == NULL);
+    server.repl_backlog = zmalloc(server.repl_backlog_size);
+    server.repl_backlog_histlen = 0;
+    server.repl_backlog_idx = 0;
+    server.repl_backlog_off = server.master_repl_offset+1;
+}
+</code></pre>
+<p>这里你也需要注意的是，Redis 是在 syncCommand 函数中，<strong>调用 createReplicationBacklog 函数来创建循环缓冲区</strong>的，这部分代码如下所示：</p>
+<pre><code class="language-c">void syncCommand(client *c) {
+…
+if (listLength(server.slaves) == 1 &amp;&amp; server.repl_backlog == NULL) {
+   …
+   createReplicationBacklog();
+}
+…}
+</code></pre>
+<p>从代码中，你可以看到，Redis 创建循环缓冲区的条件是当前还没有循环缓冲区，以及当前的从节点只有 1 个。这也就是说，当一个主节点有多个从节点时，这些从节点其实会共享使用一个循环缓冲区，而这样<strong>设计的目的</strong>，主要是避免给每个从节点开辟一块缓冲区，造成内存资源浪费。</p>
+<p>好了，了解了循环缓冲区的数据结构和初始化操作后，我们再来分别看下它的读写操作。</p>
+<h3 id="循环缓冲区的写操作">循环缓冲区的写操作</h3>
+<p>我们先来了解循环缓冲区的写操作，这是由 <strong>feedReplicationBacklog 函数</strong>实现的。这个函数的原型如下所示：</p>
+<pre><code class="language-c">void feedReplicationBacklog(void *ptr, size_t len)
+</code></pre>
+<p>feedReplicationBacklog 函数的参数是一个<strong>指针 ptr</strong>，它指向了要写入缓冲区的数据，以及一个<strong>整数 len</strong>，它表示要写的数据长度。</p>
+<p>循环缓冲区的写操作过程可以分成三个步骤。</p>
+<p><strong>第一步</strong>，feedReplicationBacklog 函数会更新全局变量 server 的 master_repl_offset 值，在当前值的基础上加上要写入的数据长度 len，如下所示：</p>
+<pre><code class="language-c">server.master_repl_offset += len;
+</code></pre>
+<p><strong>第二步</strong>，feedReplicationBacklog 函数会根据参数 len 执行一个循环流程，这个流程会循环执行，直到把要写入的数据都写进循环缓冲区。而这个循环流程执行的操作又可以分成三小步。</p>
+<ul>
+<li><strong>首先，计算本轮循环能写入的数据长度。</strong></li>
+</ul>
+<p>feedReplicationBacklog 函数会计算循环缓冲区当前的剩余空间长度 thislen。如果剩余空间长度大于要写入数据的长度，那么，它会把 thislen 设置为实际要写入的数据长度。这部分代码如下所示：</p>
+<pre><code class="language-c">while(len) {
+  size_t thislen = server.repl_backlog_size - server.repl_backlog_idx;
+  if (thislen &gt; len) thislen = len;
+   …
+}
+</code></pre>
+<ul>
+<li><strong>其次，实际写入数据。</strong></li>
+</ul>
+<p>根据第一步计算得到的 thislen 变量值，调用 memcpy 函数，将要写入的数据写到循环缓冲区中，写入的位置是 repl_backlog_idx 指向的位置，而写入的长度就是 thislen。这步操作的代码如下所示：</p>
+<pre><code class="language-c">memcpy(server.repl_backlog+server.repl_backlog_idx,p,thislen);
+</code></pre>
+<p>结合前两小步的操作，你可以看到，feedReplicationBacklog 函数在写入数据时，如果实际写入长度小于缓冲区剩余长度，那么就按实际写入长度写数据。否则，它就按剩余空间长度写入数据。这也就是说，feedReplicationBacklog 函数每一轮都会尽量多写数据，不过每轮循环最多写入的数据长度也就是缓冲区的总长度。</p>
+<p>好了，到这里，循环缓冲区中就写入了一次数据，接下来就是这轮循环中的最后第三小步。</p>
+<ul>
+<li><strong>最后，更新循环缓冲区等状态信息。</strong></li>
+</ul>
+<p>feedReplicationBacklog 函数在每轮循环的最后，会更新循环缓冲区的状态信息，包括</p>
+<p>repl_backlog_idx 和 repl_backlog_histlen。</p>
+<p>对于 repl_backlog_idx 来说，它会增加刚才写入的数据长度 thislen。不过因为缓冲区总长度 repl_backlog_size 的大小固定，所以，如果 repl_backlog_idx 的值等于 repl_backlog_size 的值了，那么，repl_backlog_idx 的值会被置为 0。这其实就表明，此时循环缓冲区已经写满了。那么，写指针会指向循环缓冲区的头部，从头开始再次写入。这部分的代码逻辑如下所示：</p>
+<pre><code class="language-c">while(len) {
+   ...
+  server.repl_backlog_idx += thislen;
+  if (server.repl_backlog_idx == server.repl_backlog_size)
+       server.repl_backlog_idx = 0;
+  ...  
+}
+</code></pre>
+<p>而对于 repl_backlog_histlen 来说，在每轮循环的最后，它都会加上刚刚写入的数据长度 thislen。此外，feedReplicationBacklog 函数还会更新待写入数据的剩余长度，以及待写入数据的指针位置。这几步操作的代码如下所示：</p>
+<pre><code class="language-c">len -= thislen;  //更新剩余要写入的数据长度
+p += thislen;    //更新要写入循环缓冲区的数据指针位置
+server.repl_backlog_histlen += thislen;  //更新repl_backlog_histlen
+</code></pre>
+<p>好了，到这里，feedReplicationBacklog 函数就完成了写入数据的一轮循环，那么，等到待写入数据都写完后，循环流程就会结束。</p>
+<p>接下来，就是写操作过程的<strong>第三步</strong>，也是最后一步了。在这一步中，feedReplicationBacklog 函数会检查 repl_backlog_histlen 的值，是否大于循环缓冲区总长度。如果大于的话，它会将 repl_backlog_histlen 的值设置为循环缓冲区总长度。这也就是说，一旦循环缓冲区被写满后，repl_backlog_histlen 的值就会维持在循环缓冲区的总长度。</p>
+<p>紧接着，repl_backlog_off 值会被更新为全局复制偏移量，减去 repl_backlog_histlen 的值，再加 1。</p>
+<p>下面的代码展示了第三步的操作，你可以看下。</p>
+<pre><code class="language-c">//如果repl_backlog_histlen的值大于循环缓冲区总长度，那么将该值设置为循环缓冲区总长度
+if (server.repl_backlog_histlen &gt; server.repl_backlog_size)
+   server.repl_backlog_histlen = server.repl_backlog_size;
+server.repl_backlog_off = server.master_repl_offset - server.repl_backlog_histlen + 1;
+</code></pre>
+<p>为了便于你理解刚才介绍的循环缓冲区写入过程，这里我也来给你举个例子。下面我会用表格展示数据写入过程中各状态值的变化，并辅以示意图说明。</p>
+<p>首先，我们假设循环缓冲区总长度为 8，也就是 repl_backlog_size 值为 8，以及全局复制偏移量 master_repl_offset 初始值为 0（这个值在代码中会随机生成）。按照刚才介绍的循环缓冲区初始化操作，repl_backlog_idx、repl_backlog_histlen 的初始值为 0，而 repl_backlog_off 初始值为 1，如下图所示：</p>
+<p><img alt="" src="assets/991e1b4c813ca456dd54e16d079d4690-20221014000527-jxzd16g.jpg"/></p>
+<p>假设第一次写入长度为 5 的数据“abcde”（len=5），此时，全局复制偏移量等于初始值 0 加上写入的数据长度 5，结果为 5，也就是 master_repl_offset 等于 5。</p>
+<p>那么，按照 feedReplicationBacklog 函数的执行逻辑，循环缓冲区的各状态值如下表所示：</p>
+<p><img alt="" src="assets/de2b3a9de0e8e8400ae076278d8f6986-20221014000527-skbu7di.jpg"/></p>
+<p>下图也展示了写入长度为 5 的数据后，循环缓冲区中的内容以及全局范围内两个偏移量的值。</p>
+<p><img alt="" src="assets/29f456yy9cc5ddc96f4acf156568fc1b-20221014000527-fixjfjx.jpg"/></p>
+<p>然后，假设第二次写入长度为 16 的数据“fghijklmnopqrstu”（len=16），此时，全局复制偏移量等于上一次的值 5，加上本次写入的数据长度 16，结果为 21，也就是 master_repl_offset 等于 21。</p>
+<p>因为缓冲区总长度为 8，目前已经写入 5 个字符，那么要再写入 16 个字符，按照 feedReplicationBacklog 函数的执行逻辑，就需要执行一个循环流程来写入数据，而每轮循环写入缓冲区的数据长度是缓冲区当前的剩余长度，最大为缓冲区总长度。</p>
+<p>所以，当要再写入 16 个字符时，feedReplicationBacklog 函数<strong>需要执行三轮循环</strong>，第一轮循环写入 3 个字符，第二轮循环写入 8 个字符，第三轮循环写入 5 个字符。这个写入过程中，循环缓冲区各状态信息如下面的三张表所示，你可以仔细看下。</p>
+<p>第一轮循环写入“fgh”3 个字符，缓冲区各状态信息如下表所示：</p>
+<p><img alt="" src="assets/36715bcbfd624de950aefcf8ec4dc3d4-20221014000527-zhuy97a.jpg"/></p>
+<p>此时，循环缓冲区中的内容，以及全局范围内两个偏移量的值，如下图所示：</p>
+<p><img alt="" src="assets/536fe9069dbd07b76b8d36e08f4d8074-20221014000527-rxbeyxc.jpg"/></p>
+<p>紧接着第二轮循环写入“ijklmnop”8 个字符，缓冲区各状态信息如下表所示：</p>
+<p><img alt="" src="assets/0b2efc0fcc47f87b7817ebe4bbd452b1-20221014000527-kaxa7bl.jpg"/></p>
+<p>此时，循环缓冲区中的内容，以及全局范围内两个偏移量的值，如下图所示：</p>
+<p><img alt="" src="assets/9d298cf61128da29e0690a8c0986b1fb-20221014000527-ud4ce1s.jpg"/></p>
+<p>最后，第三轮循环写入“qrstu”5 个字符，缓冲区各状态信息如下表所示：</p>
+<p><img alt="" src="assets/ef56d5a6e4c550db7bab20841aaa6f60-20221014000527-lzn1e2w.jpg"/></p>
+<p>三轮循环结束后，因为 repl_backlog_histlen 已经大于缓冲区总长度了，所以它会被更新为缓冲区总长度 8，而 repl_backlog_off 会被更新为 14。此时，循环缓冲区中的内容，以及全局范围内两个偏移量的值，如下图所示：</p>
+<p><img alt="" src="assets/a328153f7049c5f20fbfdb2edf77yy4b-20221014000527-fmozlxw.jpg"/></p>
+<p>好了，到这里，你就了解了循环缓冲区的写入过程。接下来，我们再来看下循环缓冲区的读取过程。</p>
+<h3 id="循环缓冲区的读操作">循环缓冲区的读操作</h3>
+<p>在 Redis 中，当从节点和主节点在断连后再次建立连接时，从节点会发送 <strong>PSYNC 命令</strong>给主节点，而这个命令中就<strong>包含了从节点的全局读取偏移量 offset</strong>，如下所示：</p>
+<pre><code class="language-c">PSYNC &lt;runid&gt; &lt;offset&gt;
+</code></pre>
+<p>主节点收到 PSYNC 命令后，会在 masterTryPartialResynchronization 函数中处理这个命令，其中，就包含了<strong>调用 addReplyReplicationBacklog 函数，读取循环缓冲区中的数据</strong>。所以，我们可以从 addReplyReplicationBacklog 函数的实现中，了解循环缓冲区的读操作。</p>
+<p>addReplyReplicationBacklog 函数的执行逻辑可以分成三步。</p>
+<p><strong>首先</strong>，它会把从节点发送的全局读取位置 offset，减去 repl_backlog_off 的值，从而得到从节点读数据时要跳过的数据长度 skip，如下所示：</p>
+<pre><code class="language-c">skip = offset - server.repl_backlog_off;
+</code></pre>
+<p>就像刚才给你介绍的，repl_backlog_off 表示仍在缓冲区中的最早保存的数据的首字节，在全局范围内的偏移量。而从节点的全局读取位置和 repl_backlog_off 不一定一致，所以两者相减，就是从节点要跳过的数据长度。</p>
+<p><strong>然后</strong>，addReplyReplicationBacklog 函数要计算缓冲区中，最早保存的数据的首字节对应在缓冲区中的位置。这个位置很重要，因为有了它，从节点才能把全局读取位置转换到缓冲区中的读取位置。这个位置的计算代码如下所示：</p>
+<pre><code class="language-c">j = (server.repl_backlog_idx + (server.repl_backlog_size-server.repl_backlog_histlen)) % server.repl_backlog_size;
+</code></pre>
+<p>其实，这里我们可以分成两种情况来理解这段计算代码。</p>
+<p><strong>一是，缓冲区还没有写满。</strong>此时，repl_backlog_histlen 就等于 repl_backlog_idx，所以代码的计算相当于 repl_backlog_size 对它自己取模，结果为 0。这也就是说，当缓冲区还没写满时，缓冲区中最早保存的数据的首字节，就是在缓冲区头，这也是因为缓冲区没有被覆盖重写。你可以看看下面的图。</p>
+<p><img alt="" src="assets/3bd9d114a90212050a609271785f7e5c-20221014000527-cy020sh.jpg"/></p>
+<p><strong>二是，缓冲区已经写满过，并且已从头再次写入数据。</strong>此时，repl_backlog_histlen 就等于缓冲区总长度 repl_backlog_size。所以，代码的计算相当于 repl_backlog_idx 对 repl_backlog_size 取模，结果就是 repl_backlog_idx。</p>
+<p>这也好理解，repl_backlog_idx 指向了下一次写入的数据位置，当缓冲区写满过，这个位置上是有数据的，而这个数据正是缓冲区中最早保存数据的首字节。一旦再次写入时，这个位置就会被覆盖重写了，你可以看看下图。</p>
+<p><img alt="" src="assets/fdc78822a1dd8ef05289f164762c097a-20221014000528-ikcuojt.jpg"/></p>
+<p>当计算得到缓冲区中最早保存数据的首字节，在缓冲区中的对应位置后，addReplyReplicationBacklog 函数就会在此基础上，增加从节点要跳过的数据长度，得到一个新的位置值。因为这个位置值可能超越缓冲区长度边界，所以它要对 repl_backlog_size 取模。这样一来，就得到了从节点的全局读取位置在缓冲区中的对应位置了。</p>
+<pre><code class="language-c">j = (j + skip) % server.repl_backlog_size;
+</code></pre>
+<p>好了，到这里，我们就已经知道从节点要在缓冲区的哪个位置开始读取数据了。</p>
+<p><strong>最后</strong>，addReplyReplicationBacklog 函数会计算实际要读取的数据长度 len，这是用缓冲区中数据的实际长度减去要跳过的数据长度，如下所示：</p>
+<pre><code class="language-c">len = server.repl_backlog_histlen - skip;
+</code></pre>
+<p>紧接着，addReplyReplicationBacklog 函数会执行一个循环流程来实际读取数据。之所以要设计一个循环流程来读取数据，是因为在循环缓冲区中，从节点可能从读取起始位置一直读到缓冲区尾后，还没有读完，还要再从缓冲区头继续读取。这就要分成两次来读取了。</p>
+<p>下面的代码展示了这个循环流程。</p>
+<pre><code class="language-c">while(len) {
+   long long thislen = ((server.repl_backlog_size - j) &lt; len) ?
+            (server.repl_backlog_size - j) : len;
+   ...
+   addReplySds(c,sdsnewlen(server.repl_backlog + j, thislen)); //实际读取并返回数据
+   len -= thislen;
+   j = 0;
+}
+</code></pre>
+<p>你可以看到，当读取起始位置（j）到缓冲区尾（repl_backlog_size）的长度，小于要读取的长度（len），那么就表明从节点还要从头继续读数据。此时，函数就先从读取起始位置一直读到缓冲区末尾（server.repl_backlog_size - j）。</p>
+<p>而当读取起始位置到缓冲区尾的长度（repl_backlog_size-j）大于要读取的长度（len）时，函数就直接读取要读的长度（len）就行。</p>
+<p>在这个过程中，addReplyReplicationBacklog 函数会<strong>调用 addReplySds 函数，来返回读取的数据</strong>。</p>
+<p>好了，到这里，整个循环缓冲区的读写过程就介绍完了。你也可以从这个过程中看到，要理解循环缓冲区的读写，重点是要理解缓冲区长度、下次写入位置、最早保存数据在全局和缓冲区中对应位置，以及从节点全局读取位置对应的缓冲区位置等状态信息的计算。</p>
+<h2 id="小结">小结</h2>
+<p>今天这节课的内容就到这里，我们来总结下。</p>
+<p>在今天的课程中，我给你介绍了循环缓冲区的工作原理，以及 Redis 在主从复制中实现的循环缓冲区。那么从工作原理上来看，循环缓冲区似乎并不复杂，当缓冲区写满后，程序就会重新从头开始写入数据；而当程序已经读到缓冲区尾时，也会继续从头读取数据。</p>
+<p>但是，我也想再提醒你注意下，在实现循环缓冲区时会面临的<strong>两个难点</strong>。</p>
+<p>一是，累积要发送的数据长度可能会大于缓冲区长度，因此旧数据会被覆盖。在写入数据时，我们如何知道，仍在缓冲区中且是最早保存的数据的首字节，在全局范围内对应的位置。而这也是从节点能读取到的最早数据了。Redis 源码使用 repl_backlog_off 变量来记录这个位置，你需要掌握这个值的计算和使用。</p>
+<p>二是，在读取数据时，我们如何知道从节点发送的全局读取位置在循环缓冲区中的对应位置。因为只有有了这个位置的值，程序才能实际从缓冲区中读取数据。Redis 源码在 addReplyReplicationBacklog 函数中，是分两步来计算这个位置值的。</p>
+<p>它先是计算缓冲区中最早保存的数据的首字节，在缓冲区中的位置；然后，它在这个位置的基础上，会加上从节点要跳过的数据长度，这就得到了从节点全局读取位置。在缓冲区中的对应位置了。</p>
+<p>实际上，循环缓冲区在数据同步、收发等场景中使用非常广泛，我希望你能理解和掌握 Redis 源码对循环缓冲区的实现，尤其是上面这两个难点的实现方法，这样，当你自己实现循环缓冲区时就比较容易了。</p>
+<h2 id="每课一问">每课一问</h2>
+<p>在 addReplyReplicationBacklog 函数中，它会计算从节点在全局范围内要跳过的数据长度，如下所示：</p>
+<pre><code class="language-c">skip = offset - server.repl_backlog_off;
+</code></pre>
+<p>然后，它会根据这个跳过长度计算实际要读取的数据长度，如下所示：</p>
+<pre><code class="language-c">len = server.repl_backlog_histlen - skip;
+</code></pre>
+<p>请你阅读 addReplyReplicationBacklog 函数和调用它的 masterTryPartialResynchronization 函数，你觉得这里的 skip 会大于 repl_backlog_histlen 吗？</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#f5999999ccc1c4c4c5c2b59298949c99db969a98" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93589d73da31430e',t:'MTc0NTUyOTMxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

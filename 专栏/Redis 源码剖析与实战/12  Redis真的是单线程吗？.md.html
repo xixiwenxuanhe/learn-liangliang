@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="12  Redis真的是单线程吗？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>12  Redis真的是单线程吗？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/00%20%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e9%98%85%e8%af%bbRedis%e6%ba%90%e7%a0%81%e8%83%bd%e7%bb%99%e4%bd%a0%e5%b8%a6%e6%9d%a5%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="00  开篇词  阅读Redis源码能给你带来什么？.md.html">00  开篇词  阅读Redis源码能给你带来什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/01%20%20%e5%b8%a6%e4%bd%a0%e5%bf%ab%e9%80%9f%e6%94%bb%e7%95%a5Redis%e6%ba%90%e7%a0%81%e7%9a%84%e6%95%b4%e4%bd%93%e6%9e%b6%e6%9e%84.md.html" id="01  带你快速攻略Redis源码的整体架构.md.html">01  带你快速攻略Redis源码的整体架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/02%20%20%e9%94%ae%e5%80%bc%e5%af%b9%e4%b8%ad%e5%ad%97%e7%ac%a6%e4%b8%b2%e7%9a%84%e5%ae%9e%e7%8e%b0%ef%bc%8c%e7%94%a8char%e8%bf%98%e6%98%af%e7%bb%93%e6%9e%84%e4%bd%93%ef%bc%9f.md.html" id="02  键值对中字符串的实现，用char还是结构体？.md.html">02  键值对中字符串的实现，用char还是结构体？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/03%20%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%80%a7%e8%83%bd%e4%bc%98%e5%bc%82%e7%9a%84Hash%e8%a1%a8%ef%bc%9f.md.html" id="03  如何实现一个性能优异的Hash表？.md.html">03  如何实现一个性能优异的Hash表？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/04%20%20%e5%86%85%e5%ad%98%e5%8f%8b%e5%a5%bd%e7%9a%84%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e8%af%a5%e5%a6%82%e4%bd%95%e7%bb%86%e5%8c%96%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="04  内存友好的数据结构该如何细化设计？.md.html">04  内存友好的数据结构该如何细化设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/05%20%20%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e4%b8%ba%e4%bd%95%e8%83%bd%e5%90%8c%e6%97%b6%e6%94%af%e6%8c%81%e7%82%b9%e6%9f%a5%e8%af%a2%e5%92%8c%e8%8c%83%e5%9b%b4%e6%9f%a5%e8%af%a2%ef%bc%9f.md.html" id="05  有序集合为何能同时支持点查询和范围查询？.md.html">05  有序集合为何能同时支持点查询和范围查询？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/06%20%20%e4%bb%8eziplist%e5%88%b0quicklist%ef%bc%8c%e5%86%8d%e5%88%b0listpack%e7%9a%84%e5%90%af%e5%8f%91.md.html" id="06  从ziplist到quicklist，再到listpack的启发.md.html">06  从ziplist到quicklist，再到listpack的启发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/07%20%20%e4%b8%ba%e4%bb%80%e4%b9%88Stream%e4%bd%bf%e7%94%a8%e4%ba%86Radix%20Tree%ef%bc%9f.md.html" id="07  为什么Stream使用了Radix Tree？.md.html">07  为什么Stream使用了Radix Tree？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/08%20%20Redis%20server%e5%90%af%e5%8a%a8%e5%90%8e%e4%bc%9a%e5%81%9a%e5%93%aa%e4%ba%9b%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="08  Redis server启动后会做哪些操作？.md.html">08  Redis server启动后会做哪些操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/09%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bd%95%e6%97%b6%e4%bd%bf%e7%94%a8select%e3%80%81poll%e3%80%81epoll%ef%bc%9f.md.html" id="09  Redis事件驱动框架（上）：何时使用select、poll、epoll？.md.html">09  Redis事件驱动框架（上）：何时使用select、poll、epoll？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/10%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aRedis%e5%ae%9e%e7%8e%b0%e4%ba%86Reactor%e6%a8%a1%e5%9e%8b%e5%90%97%ef%bc%9f.md.html" id="10  Redis事件驱动框架（中）：Redis实现了Reactor模型吗？.md.html">10  Redis事件驱动框架（中）：Redis实现了Reactor模型吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/11%20%20Redis%e4%ba%8b%e4%bb%b6%e9%a9%b1%e5%8a%a8%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRedis%e6%9c%89%e5%93%aa%e4%ba%9b%e4%ba%8b%e4%bb%b6%ef%bc%9f.md.html" id="11  Redis事件驱动框架（下）：Redis有哪些事件？.md.html">11  Redis事件驱动框架（下）：Redis有哪些事件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/12%20%20Redis%e7%9c%9f%e7%9a%84%e6%98%af%e5%8d%95%e7%ba%bf%e7%a8%8b%e5%90%97%ef%bc%9f.md.html" id="12  Redis真的是单线程吗？.md.html">12  Redis真的是单线程吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/13%20%20Redis%206.0%e5%a4%9aIO%e7%ba%bf%e7%a8%8b%e7%9a%84%e6%95%88%e7%8e%87%e6%8f%90%e9%ab%98%e4%ba%86%e5%90%97%ef%bc%9f.md.html" id="13  Redis 6.0多IO线程的效率提高了吗？.md.html">13  Redis 6.0多IO线程的效率提高了吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/14%20%20%e4%bb%8e%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0%e7%9c%8b%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%e7%9a%84%e5%8e%9f%e5%ad%90%e6%80%a7%e4%bf%9d%e8%af%81.md.html" id="14  从代码实现看分布式锁的原子性保证.md.html">14  从代码实现看分布式锁的原子性保证.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/15%20%20%e4%b8%ba%e4%bb%80%e4%b9%88LRU%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86%e5%92%8c%e4%bb%a3%e7%a0%81%e5%ae%9e%e7%8e%b0%e4%b8%8d%e4%b8%80%e6%a0%b7%ef%bc%9f.md.html" id="15  为什么LRU算法原理和代码实现不一样？.md.html">15  为什么LRU算法原理和代码实现不一样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/16%20%20LFU%e7%ae%97%e6%b3%95%e5%92%8c%e5%85%b6%e4%bb%96%e7%ae%97%e6%b3%95%e7%9b%b8%e6%af%94%e6%9c%89%e4%bc%98%e5%8a%bf%e5%90%97%ef%bc%9f.md.html" id="16  LFU算法和其他算法相比有优势吗？.md.html">16  LFU算法和其他算法相比有优势吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/17%20%20Lazy%20Free%e4%bc%9a%e5%bd%b1%e5%93%8d%e7%bc%93%e5%ad%98%e6%9b%bf%e6%8d%a2%e5%90%97%ef%bc%9f.md.html" id="17  Lazy Free会影响缓存替换吗？.md.html">17  Lazy Free会影响缓存替换吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/18%20%20%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%e5%92%8c%e8%a7%a3%e8%af%bbRDB%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="18  如何生成和解读RDB文件？.md.html">18  如何生成和解读RDB文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/19%20%20AOF%e9%87%8d%e5%86%99%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%a7%a6%e5%8f%91%e6%97%b6%e6%9c%ba%e4%b8%8e%e9%87%8d%e5%86%99%e7%9a%84%e5%bd%b1%e5%93%8d.md.html" id="19  AOF重写（上）：触发时机与重写的影响.md.html">19  AOF重写（上）：触发时机与重写的影响.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/20%20%20AOF%e9%87%8d%e5%86%99%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e9%87%8d%e5%86%99%e6%97%b6%e7%9a%84%e6%96%b0%e5%86%99%e6%93%8d%e4%bd%9c%e8%ae%b0%e5%bd%95%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="20  AOF重写（下）：重写时的新写操作记录在哪里？.md.html">20  AOF重写（下）：重写时的新写操作记录在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/21%20%20%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%ef%bc%9a%e5%9f%ba%e4%ba%8e%e7%8a%b6%e6%80%81%e6%9c%ba%e7%9a%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0.md.html" id="21  主从复制：基于状态机的设计与实现.md.html">21  主从复制：基于状态机的设计与实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/22%20%20%e5%93%a8%e5%85%b5%e4%b9%9f%e5%92%8cRedis%e5%ae%9e%e4%be%8b%e4%b8%80%e6%a0%b7%e5%88%9d%e5%a7%8b%e5%8c%96%e5%90%97%ef%bc%9f.md.html" id="22  哨兵也和Redis实例一样初始化吗？.md.html">22  哨兵也和Redis实例一样初始化吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/23%20%20%e4%bb%8e%e5%93%a8%e5%85%b5Leader%e9%80%89%e4%b8%be%e5%ad%a6%e4%b9%a0Raft%e5%8d%8f%e8%ae%ae%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="23  从哨兵Leader选举学习Raft协议实现（上）.md.html">23  从哨兵Leader选举学习Raft协议实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/24%20%20%e4%bb%8e%e5%93%a8%e5%85%b5Leader%e9%80%89%e4%b8%be%e5%ad%a6%e4%b9%a0Raft%e5%8d%8f%e8%ae%ae%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="24  从哨兵Leader选举学习Raft协议实现（下）.md.html">24  从哨兵Leader选举学习Raft协议实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/25%20%20PubSub%e5%9c%a8%e4%b8%bb%e4%bb%8e%e6%95%85%e9%9a%9c%e5%88%87%e6%8d%a2%e6%97%b6%e6%98%af%e5%a6%82%e4%bd%95%e5%8f%91%e6%8c%a5%e4%bd%9c%e7%94%a8%e7%9a%84%ef%bc%9f.md.html" id="25  PubSub在主从故障切换时是如何发挥作用的？.md.html">25  PubSub在主从故障切换时是如何发挥作用的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/26%20%20%e4%bb%8ePing-Pong%e6%b6%88%e6%81%af%e5%ad%a6%e4%b9%a0Gossip%e5%8d%8f%e8%ae%ae%e7%9a%84%e5%ae%9e%e7%8e%b0.md.html" id="26  从Ping-Pong消息学习Gossip协议的实现.md.html">26  从Ping-Pong消息学习Gossip协议的实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/27%20%20%e4%bb%8eMOVED%e3%80%81ASK%e7%9c%8b%e9%9b%86%e7%be%a4%e8%8a%82%e7%82%b9%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%91%bd%e4%bb%a4%ef%bc%9f.md.html" id="27  从MOVED、ASK看集群节点如何处理命令？.md.html">27  从MOVED、ASK看集群节点如何处理命令？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/28%20%20Redis%20Cluster%e6%95%b0%e6%8d%ae%e8%bf%81%e7%a7%bb%e4%bc%9a%e9%98%bb%e5%a1%9e%e5%90%97%ef%bc%9f.md.html" id="28  Redis Cluster数据迁移会阻塞吗？.md.html">28  Redis Cluster数据迁移会阻塞吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/29%20%20%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%ae%9e%e7%8e%b0%e5%be%aa%e7%8e%af%e7%bc%93%e5%86%b2%e5%8c%ba%ef%bc%9f.md.html" id="29  如何正确实现循环缓冲区？.md.html">29  如何正确实现循环缓冲区？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/30%20%20%e5%a6%82%e4%bd%95%e5%9c%a8%e7%b3%bb%e7%bb%9f%e4%b8%ad%e5%ae%9e%e7%8e%b0%e5%bb%b6%e8%bf%9f%e7%9b%91%e6%8e%a7%ef%bc%9f.md.html" id="30  如何在系统中实现延迟监控？.md.html">30  如何在系统中实现延迟监控？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/31%20%20%e4%bb%8eModule%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%ad%a6%e4%b9%a0%e5%8a%a8%e6%80%81%e6%89%a9%e5%b1%95%e5%8a%9f%e8%83%bd.md.html" id="31  从Module的实现学习动态扩展功能.md.html">31  从Module的实现学习动态扩展功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/32%20%20%e5%a6%82%e4%bd%95%e5%9c%a8%e4%b8%80%e4%b8%aa%e7%b3%bb%e7%bb%9f%e4%b8%ad%e5%ae%9e%e7%8e%b0%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%ef%bc%9f.md.html" id="32  如何在一个系统中实现单元测试？.md.html">32  如何在一个系统中实现单元测试？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%ba%90%e7%a0%81%e5%89%96%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%20Redis%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb%ef%bc%8c%e8%ae%a9%e6%88%91%e4%bb%ac%e4%bb%8e%e6%96%b0%e5%bc%80%e5%a7%8b.md.html" id="结束语  Redis源码阅读，让我们从新开始.md.html">结束语  Redis源码阅读，让我们从新开始.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="12  Redis真的是单线程吗？" id="title">12  Redis真的是单线程吗？</h1>
+<div><p>今天这节课，我们来聊聊 Redis 的执行模型。</p>
+<p>所谓的执行模型，就是指 Redis 运行时使用的进程、子进程和线程的个数，以及它们各自负责的工作任务。</p>
+<p>你在实际使用 Redis 的时候，可能经常会听到类似“Redis 是单线程”“Redis 的主 IO 线程”，“Redis 包含多线程”等不同说法。我也听到不少同学提出困惑和疑问：<strong>Redis 到底是不是一个单线程的程序？</strong></p>
+<p>其实，彻底理解这个问题，有助于指导我们保持 Redis 高性能、低延迟的特性。如果说 Redis 就是单线程程序，那么，我们就需要避免所有容易引起线程阻塞的操作；而如果说 Redis 不只是单线程，还有其他线程在工作，那么，我们就需要了解多线程各自负责什么任务，负责请求解析和数据读写的线程有几个，有哪些操作是后台线程在完成，而不会影响请求解析和数据读写的。</p>
+<p>所以，今天这节课，我就从 Redis server 启动后运行的进程开始，带你一边学习 Redis 源码中子进程和线程的创建方式，一边掌握 Redis server 运行时涉及到的进程、子进程和线程情况。</p>
+<p>下面，我们先来看 Redis server 启动时的进程运行。</p>
+<h2 id="从-shell-命令执行到-redis-进程创建">从 shell 命令执行到 Redis 进程创建</h2>
+<p>我们在启动 Redis 实例时，可以在 shell 命令行环境中，执行 redis-server 这个可执行文件，如下所示：</p>
+<pre><code class="language-c">./redis-server  /etc/redis/redis.conf
+</code></pre>
+<p>shell 运行这个命令后，它实际会调用 fork 系统调用函数，来新建一个进程。因为 shell 本身是一个进程，所以，这个通过 fork 新创建的进程就被称为是 shell 进程的子进程，而 shell 进程被称为父进程。关于 fork 函数的具体用法，我一会儿还会给你具体介绍。</p>
+<p>紧接着，shell 进程会调用 execve 系统调用函数，将子进程执行的主体替换成 Redis 的可执行文件。而 Redis 可执行文件的入口函数就是 main 函数，这样一来，子进程就会开始执行 Redis server 的 main 函数了。</p>
+<p>下面的代码显示了 execve 系统调用函数原型。其中，filename 是要运行的程序的文件名，argv[]和 envp[]分别是要运行程序的参数和环境变量。</p>
+<pre><code class="language-c">int execve(const char *filename, char *const argv[], char *const envp[]))
+</code></pre>
+<p>下图显示了从 shell 执行命令到创建 Redis 进程的过程，你可以看下。</p>
+<p><img alt="" src="assets/d7ec5ef2698cyyd1973a6afbb0c7dfb5-20221013235228-vhx8ahu.jpg"/></p>
+<p>当我们用刚才介绍的 shell 命令运行 Redis server 后，我们会看到 Redis server 启动后的日志输出会打印到终端屏幕上，如下所示：</p>
+<pre><code class="language-c">37807:M 19 Aug 2021 07:29:36.372 # Server initialized
+37807:M 19 Aug 2021 07:29:36.372 * DB loaded from disk: 0.000 seconds
+37807:M 19 Aug 2021 07:29:36.372 * Ready to accept connections
+</code></pre>
+<p>这是因为 shell 进程调用 fork 函数创建的子进程，会从父进程中继承一些属性，比如父进程打开的文件描述符。对于 shell 进程来说，它打开的文件描述符包括 0 和 1，这两个描述符分别代表了标准输入和标准输出。而 execve 函数只是把子进程的执行内容替换成 Redis 可执行文件，子进程从 shell 父进程继承到的标准输入和标准输出保持不变。</p>
+<p>所以，Redis 运行时通过 serverLog 函数打印的日志信息，就会默认输出到终端屏幕上了，也就是 shell 进程的标准输出。</p>
+<p>而一旦 Redis 进程创建开始运行后，它就会从 main 函数开始执行。我们在【第 8 讲】中已经学习了 main 函数的主要执行过程，所以我们会发现，它会调用不同的函数来执行相关功能。比如，main 函数调用 initServerConfig 函数初始化 Redis server 的运行参数，调用 loadServerConfig 函数解析配置文件参数。当 main 函数调用这些函数时，这些函数仍然是由原来的进程执行的。所以，在这种情况下，Redis 仍然是单个进程在运行。</p>
+<p>不过，在 main 函数完成参数解析后，会根据两个配置参数 daemonize 和 supervised，来设置变量 background 的值。它们的含义分别是：</p>
+<ul>
+<li>参数 daemonize 表示，是否要设置 Redis 以守护进程方式运行；</li>
+<li>参数 supervised 表示，是否使用 upstart 或是 systemd 这两种守护进程的管理程序来管理 Redis。</li>
+</ul>
+<p>那么，我们来进一步了解下守护进程。守护进程是在系统后台运行的进程，独立于 shell 终端，不再需要用户在 shell 中进行输入了。一般来说，守护进程用于执行周期性任务或是等待相应事件发生再进行处理。Redis server 本身就是在启动后，等待客户端输入，再进行处理。所以对于 Redis 这类服务器程序来说，我们通常会让它以守护进程方式运行。</p>
+<p>好了，如果设置了 Redis 以守护进程方式执行，那么守护进程具体是怎么创建的呢？这就和 main 函数调用的 daemonize 函数相关了。daemonize 函数就是用来将 Redis 进程转换为守护进程来运行。</p>
+<p>下面的代码显示了 main 函数根据变量 background 值，来判断是否执行 daemonize 函数的逻辑，你可以看下。</p>
+<pre><code class="language-c">//如果配置参数daemonize为1，supervised值为0，那么设置background值为1，否则，设置其为0。
+int main(int argc, char **argv) {
+…
+int background = server.daemonize &amp;&amp; !server.supervised;
+//如果background值为1，调用daemonize函数。
+if (background) daemonize();
+…
+}
+</code></pre>
+<p>也就是说，如果 background 的值为 1，就表示 Redis 被设置为以守护进程方式运行，因此 main 函数就会调用 daemonize 函数。</p>
+<p>那么，接下来，我们就来学习下 daemonize 函数是如何将 Redis 转为守护进程运行的。</p>
+<h2 id="从-daemonize-函数的执行学习守护进程的创建">从 daemonize 函数的执行学习守护进程的创建</h2>
+<p>我们首先来看 daemonize 函数的部分执行内容，如下所示。我们可以看到，daemonize 函数调用了 fork 函数，并根据 fork 函数返回值有不同的分支代码。</p>
+<pre><code class="language-c">void daemonize(void) {
+…
+if (fork() != 0) exit(0); //fork成功执行或失败，则父进程退出
+setsid(); //创建新的session
+…
+}
+</code></pre>
+<p>从刚才的介绍中，我们已经知道，当我们在一个程序的函数中调用 fork 函数时，fork 函数会创建一个子进程。而原本这个程序对应的进程，就称为这个子进程的父进程。那么，fork 函数执行后的不同分支和父、子进程是什么关系呢？这就和 fork 函数的使用有关了。</p>
+<p>实际上，fork 函数的使用是比较有意思的，我们可以根据 fork 函数的不同返回值，来编写相应的分支代码，这些分支代码就对应了父进程和子进程各自要执行的逻辑。</p>
+<p>为了便于你理解，我给你举个例子。我写了一段示例代码，这段代码的 main 函数会调用 fork 函数，并进一步根据 fork 函数的返回值是小于 0、等于 0，还是大于 0，来执行不同的分支。注意，fork 函数的不同返回值，其实代表了不同的含义，具体来说：</p>
+<ul>
+<li>当返回值小于 0 时，此时表明 fork 函数执行有误；</li>
+<li>当返回值等于 0 时，此时，返回值对应的代码分支就会在子进程中运行；</li>
+<li>当返回值大于 0 时，此时，返回值对应的代码分支仍然会在父进程中运行。</li>
+</ul>
+<p>这段示例代码如下：</p>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+ 
+int main(int argc, char *argv[]) {
+  printf("hello main\n");
+    int rv = fork(); //fork函数的返回值
+    //返回值小于0，表示fork执行错误
+    if (rv &lt; 0) {
+        fprintf(stderr, "fork failed\n");
+  }
+  //返回值等于0，对应子进程执行
+    else if (rv == 0) {
+        printf("I am child process %d\n", getpid());
+  }
+  //返回值大于0，对应父进程执行
+    else {
+        printf("I am parent process of (%d), %d\n", rc, getpid());
+    }
+    return 0;
+}
+</code></pre>
+<p>在这段代码中，我根据 fork 函数的返回值，分别写了三个分支代码，其中返回值等于 0 对应的代码分支，是子进程执行的代码。子进程会打印字符串“I am child process”，并打印子进程的进程号。而返回值大于 0 对应的代码分支，是父进程的代码。父进程会打印字符串“I am parent process of”，并打印它所创建的子进程进程号和它自身的进程号。</p>
+<p>那么，如果你把这段代码编译后执行，你可以看到类似如下的结果，父进程打印了它的进程号 62794，而子进程则打印了它的进程号 62795。这表明刚才示例代码中的不同分支的确是由父、子进程来执行的。这也就是说，我们可以在 fork 函数执行后，使用不同分支，让父、子进程执行不同内容。</p>
+<pre><code class="language-c">hello main
+I am parent process of (62795), 62794
+I am child process 62795
+</code></pre>
+<p>好了，了解了 fork 函数创建子进程的知识后，我们再来看下刚才介绍的 daemonize 函数。</p>
+<p>现在我们已经知道，daemonize 函数调用 fork 函数后，可以根据 fork 函数返回值设置不同代码分支，对应父、子进程执行内容。其实，daemonize 函数也的确设置了两个代码分支。</p>
+<ul>
+<li><strong>分支一</strong></li>
+</ul>
+<p>这个分支对应 fork 函数返回值不为 0，表示 fork 函数成功执行后的父进程执行逻辑或是 fork 函数执行失败的执行逻辑。此时，父进程会调用 exit(0) 函数退出。也就是说，如果 fork 函数成功执行，父进程就退出了。当然，如果 fork 函数执行失败了，那么子进程也没有能成功创建，父进程也就退出执行了。你可以看下下面的代码，展示了这个分支。</p>
+<pre><code class="language-c">void daemonize(void) {
+…
+if (fork() != 0) exit(0); //fork成功执行或失败，则父进程退出
+…
+}
+</code></pre>
+<ul>
+<li><strong>分支二</strong></li>
+</ul>
+<p>这个分支对应 fork 函数返回值为 0，为子进程的执行逻辑。子进程首先会调用 setsid 函数，创建一个新的会话。</p>
+<p>然后，子进程会用 open 函数打开 /dev/null 设备，并把它的标准输入、标准输出和标准错误输出，重新定向到 /dev/null 设备。因为守护进程是在后台运行，它的输入输出是独立于 shell 终端的。所以，为了让 Redis 能以守护进程方式运行，这几步操作的目的就是把当前子进程的输入、输出由原来的 shell 终端，转向 /dev/null 设备，这样一来，就不再依赖于 shell 终端了，满足了守护进程的要求。</p>
+<p>我把 daemonize 函数的代码放在这里，你可以看下。</p>
+<pre><code class="language-c">void daemonize(void) {
+    …
+    setsid(); //为子进程创建新的session
+   
+    //将子进程的标准输入、标准输出、标准错误输出重定向到/dev/null中
+    if ((fd = open("/dev/null", O_RDWR, 0)) != -1) {
+        dup2(fd, STDIN_FILENO);
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+        if (fd &gt; STDERR_FILENO) close(fd);
+    }
+}
+</code></pre>
+<p>好了，到这里，我们就了解了，Redis 的 main 函数会根据配置参数 daemonize 和 supervised，来判断是否以守护进程方式运行 Redis。</p>
+<p>那么，一旦 Redis 要以守护进程方式运行，main 函数会调用 daemonize 函数。daemonize 函数会进一步调用 fork 函数创建子进程，并根据返回值，分别执行父进程和子进程的代码分支。其中，父进程会退出。而子进程会代替原来的父进程，继续执行 main 函数的代码。</p>
+<p>下面的图展示了 daemonize 函数调用 fork 函数后的两个分支的执行逻辑，你可以再回顾下。</p>
+<p><img alt="" src="assets/b9fa1ea3962e18be5ca9973a2feeb111-20221013235228-9ai8r80.jpg"/></p>
+<p>事实上，Redis server 启动后无论是否以守护进程形式运行，都还是一个进程在运行。对于一个进程来说，如果该进程启动后没有创建新的线程，那么这个进程的工作任务默认就是由一个线程来执行的，而这个线程我一般也称它为主线程。</p>
+<p>对于 Redis 来说，它的主要工作，包括接收客户端请求、解析请求和进行数据读写等操作，都没有创建新线程来执行，所以，Redis 主要工作的确是由单线程来执行的，这也是我们常说 Redis 是单线程程序的原因。因为 Redis 主要工作都是 IO 读写操作，所以，我也会把这个单线程称为主 IO 线程。</p>
+<p>但其实，Redis 在 3.0 版本后，除了主 IO 线程外，的确还会启动一些后台线程来处理部分任务，从而避免这些任务对主 IO 线程的影响。那么，这些后台线程是在哪里启动的，又是如何执行的呢？</p>
+<p>这就和 Redis 的<a href="https://github.com/redis/redis/tree/5.0/src/bio.c" target="_blank">bio.c</a>文件相关了。接下来，我们就来从这个文件中学习下 Redis 的后台线程。</p>
+<h2 id="从-bio-c-文件学习-redis-的后台线程">从 bio.c 文件学习 Redis 的后台线程</h2>
+<p>我们先来看下 main 函数在初始化过程最后调用的 InitServerLast 函数。InitServerLast 函数的作用是进一步调用 bioInit 函数，来创建后台线程，让 Redis 把部分任务交给后台线程处理。这个过程如下所示。</p>
+<pre><code class="language-c">void InitServerLast() {
+    bioInit();
+    …
+}
+</code></pre>
+<p>bioInit 函数是在<a href="https://github.com/redis/redis/tree/5.0/src/bio.c" target="_blank">bio.c</a>文件中实现的，它的主要作用调用 pthread_create 函数创建多个后台线程。不过在具体了解 bioInit 函数之前，我们先来看下 bio.c 文件中定义的主要数组，这也是在 bioInit 函数中要进行初始化的。</p>
+<p>bio.c 文件针对要创建的线程，定义了 pthread_t 类型的数组 bio_threads，用来保存创建的线程描述符。此外，bio.c 文件还创建了一个保存互斥锁的数组 bio_mutex，以及两个保存条件变量的数组 bio_newjob_cond 和 bio_step_cond。以下代码展示了这些数组的创建逻辑，你可以看下。</p>
+<pre><code class="language-c">//保存线程描述符的数组
+static pthread_t bio_threads[BIO_NUM_OPS]; 
+//保存互斥锁的数组
+static pthread_mutex_t bio_mutex[BIO_NUM_OPS];
+//保存条件变量的两个数组
+static pthread_cond_t bio_newjob_cond[BIO_NUM_OPS];
+static pthread_cond_t bio_step_cond[BIO_NUM_OPS];
+</code></pre>
+<p>从中你可以注意到，这些数组的大小都是宏定义 BIO_NUM_OPS，这个宏定义是在<a href="https://github.com/redis/redis/blob/5.0/src/bio.h" target="_blank">bio.h</a>文件中定义的，默认值为 3。</p>
+<p>同时在 bio.h 文件中，你还可以看到另外三个宏定义，分别是 BIO_CLOSE_FILE、BIO_AOF_FSYNC 和 BIO_LAZY_FREE。它们的代码如下所示：</p>
+<pre><code class="language-c">#define BIO_CLOSE_FILE    0 /* Deferred close(2) syscall. */
+#define BIO_AOF_FSYNC    1 /* Deferred AOF fsync. */
+#define BIO_LAZY_FREE     2 /* Deferred objects freeing. */
+#define BIO_NUM_OPS       3
+</code></pre>
+<p>其中，BIO_NUM_OPS 表示的是 Redis 后台任务的类型有三种。而 BIO_CLOSE_FILE、BIO_AOF_FSYNC 和 BIO_LAZY_FREE，它们分别表示三种后台任务的操作码，这些操作码可以用来标识不同的任务。</p>
+<ul>
+<li><strong>BIO_CLOSE_FILE</strong>：文件关闭后台任务。</li>
+<li><strong>BIO_AOF_FSYNC</strong>：AOF 日志同步写回后台任务。</li>
+<li><strong>BIO_LAZY_FREE</strong>：惰性删除后台任务。</li>
+</ul>
+<p>实际上，bio.c 文件创建的线程数组、互斥锁数组和条件变量数组，大小都是包含三个元素，也正是对应了这三种任务。</p>
+<h3 id="bioinit-函数-初始化数组">bioInit 函数：初始化数组</h3>
+<p>接下来，我们再来了解下 bio.c 文件中的初始化和线程创建函数 bioInit。我刚才也给你介绍过这个函数，它是 main 函数执行完 server 初始化后，通过 InitServerLast 函数调用的。也就是说，Redis 在完成 server 初始化后，就会创建线程来执行后台任务。</p>
+<p>所以从这里来看，<strong>Redis 在运行时其实已经不止是单个线程（也就是主 IO 线程）在运行了，还会有后台线程在运行</strong>。如果你以后遇到 Redis 是否是单线程的问题时，你就可以给出准确答案了。</p>
+<p>bioInit 函数首先会初始化互斥锁数组和条件变量数组。然后，该函数会调用 listCreate 函数，给 bio_jobs 这个数组的每个元素创建一个列表，同时给 bio_pending 数组的每个元素赋值为 0。这部分代码如下所示：</p>
+<pre><code class="language-c">  for (j = 0; j &lt; BIO_NUM_OPS; j++) {
+        pthread_mutex_init(&amp;bio_mutex[j],NULL);
+        pthread_cond_init(&amp;bio_newjob_cond[j],NULL);
+        pthread_cond_init(&amp;bio_step_cond[j],NULL);
+        bio_jobs[j] = listCreate();
+        bio_pending[j] = 0;
+    }
+</code></pre>
+<p>那么，要想了解给 bio_jobs 数组和 bio_pending 数组元素赋值的作用，我们就需要先搞清楚这两个数组的含义：</p>
+<ul>
+<li><strong>bio_jobs 数组</strong>的元素是 bio_jobs 结构体类型，用来表示后台任务。该结构体的成员变量包括了后台任务的创建时间 time，以及任务的参数。为该数组的每个元素创建一个列表，其实就是为每个后台线程创建一个要处理的任务列表。</li>
+<li><strong>bio_pending 数组</strong>的元素类型是 unsigned long long，用来表示每种任务中，处于等待状态的任务个数。将该数组每个元素初始化为 0，其实就是表示初始时，每种任务都没有待处理的具体任务。</li>
+</ul>
+<p>下面的代码展示了 bio_job 结构体，以及 bio_jobs 和 bio_pending 这两个数组的定义，你也可以看下。</p>
+<pre><code class="language-c">struct bio_job {
+    time_t time; //任务创建时间
+    void *arg1, *arg2, *arg3;  //任务参数
+};
+//以后台线程方式运行的任务列表
+static list *bio_jobs[BIO_NUM_OPS];
+//被阻塞的后台任务数组
+static unsigned long long bio_pending[BIO_NUM_OPS];
+</code></pre>
+<p>好了，到这里，你就了解了 bioInit 函数执行时，会把线程互斥锁、条件变量对应数组初始化为 NULL，同时会给每个后台线程创建一个任务列表（对应 bio_jobs 数组的元素），以及会设置每种任务的待处理个数为 0（对应 bio_pending 数组的元素）。</p>
+<h3 id="bioinit-函数-设置线程属性并创建线程">bioInit 函数：设置线程属性并创建线程</h3>
+<p>在完成了初始化之后，接下来，bioInit 函数会先通过 pthread_attr_t 类型的变量，给线程设置属性。然后，bioInit 函数会调用前面我提到的 pthread_create 函数来创建线程。</p>
+<p>不过，为了能更好地理解 bioInit 函数设置线程属性和创建线程的过程，我们需要先对 pthread_create 函数本身有所了解，该函数的原型如下所示：</p>
+<pre><code class="language-c">int  pthread_create(pthread_t *tidp, const  pthread_attr_t *attr,
+( void *)(*start_routine)( void *), void  *arg);
+</code></pre>
+<p>可以看到，pthread_create 函数一共有 4 个参数，分别是：</p>
+<ul>
+<li>*<strong>tidp</strong>，指向线程数据结构 pthread_t 的指针；</li>
+<li>*<strong>attr</strong>，指向线程属性结构 pthread_attr_t 的指针；</li>
+<li>*<strong>start_routine</strong>，线程所要运行的函数的起始地址，也是指向函数的指针；</li>
+<li>*<strong>arg</strong>，传给运行函数的参数。</li>
+</ul>
+<p>了解了 pthread_create 函数之后，我们来看下 bioInit 函数的具体操作。</p>
+<p>首先，bioInit 函数会调用 pthread_attr_init 函数，初始化线程属性变量 attr，然后调用 pthread_attr_getstacksize 函数，获取线程的栈大小这一属性的当前值，并根据当前栈大小和 REDIS_THREAD_STACK_SIZE 宏定义的大小（默认值为 4MB），来计算最终的栈大小属性值。紧接着，bioInit 函数会调用 pthread_attr_setstacksize 函数，来设置栈大小这一属性值。</p>
+<p>下面的代码展示了线程属性的获取、计算和设置逻辑，你可以看下。</p>
+<pre><code class="language-c">pthread_attr_init(&amp;attr);
+pthread_attr_getstacksize(&amp;attr,&amp;stacksize);
+if (!stacksize) stacksize = 1; /针对Solaris系统做处理
+    while (stacksize &lt; REDIS_THREAD_STACK_SIZE) stacksize *= 2;
+    pthread_attr_setstacksize(&amp;attr, stacksize);
+</code></pre>
+<p>我也画了一张图，展示了线程属性的这一操作过程，你可以看下。</p>
+<p><img alt="" src="assets/0c9a1dd6f5038f05716d916c588d599a-20221013235228-dz63gbd.jpg"/></p>
+<p>在完成线程属性的设置后，接下来，bioInit 函数会通过一个 for 循环，来依次为每种后台任务创建一个线程。循环的次数是由 BIO_NUM_OPS 宏定义决定的，也就是 3 次。相应的，bioInit 函数就会调用 3 次 pthread_create 函数，并创建 3 个线程。bioInit 函数让这 3 个线程执行的函数都是 <strong>bioProcessBackgroundJobs</strong>。</p>
+<p>不过这里要注意一点，就是在这三次线程的创建过程中，传给这个函数的参数分别是 0、1、2。这个创建过程如下所示：</p>
+<pre><code class="language-c">for (j = 0; j &lt; BIO_NUM_OPS; j++) {
+        void *arg = (void*)(unsigned long) j;
+        if (pthread_create(&amp;thread,&amp;attr,bioProcessBackgroundJobs,arg) != 0) {
+            … //报错信息
+        }
+        bio_threads[j] = thread;
+    }
+</code></pre>
+<p>你看了这个代码，可能会有一个小疑问：<strong>为什么创建的 3 个线程，它们所运行的 bioProcessBackgroundJobs 函数接收的参数分别是 0、1、2 呢？</strong></p>
+<p>这就和 bioProcessBackgroundJobs 函数的实现有关了，我们来具体看下。</p>
+<h3 id="bioprocessbackgroundjobs-函数-处理后台任务">bioProcessBackgroundJobs 函数：处理后台任务</h3>
+<p>首先，bioProcessBackgroundJobs 函数会把接收到的参数 arg，转成 unsigned long 类型，并赋值给 type 变量，如下所示：</p>
+<pre><code class="language-c">void *bioProcessBackgroundJobs(void *arg) {
+    …
+  unsigned long type = (unsigned long) arg;
+  …
+}
+</code></pre>
+<p>而 <strong>type 变量表示的就是后台任务的操作码</strong>。这也是我刚才给你介绍的三种后台任务类型 BIO_CLOSE_FILE、BIO_AOF_FSYNC 和 BIO_LAZY_FREE 对应的操作码，它们的取值分别为 0、1、2。</p>
+<p>bioProcessBackgroundJobs 函数的主要执行逻辑是一个 while(1) 的循环。在这个循环中，bioProcessBackgroundJobs 函数会从 bio_jobs 这个数组中取出相应任务，并根据任务类型，调用具体的函数来执行。</p>
+<p>我刚才已经介绍过，bio_jobs 数组的每一个元素是一个队列。而因为 bio_jobs 数组的元素个数，等于后台任务的类型个数（也就是 BIO_NUM_OPS），所以，bio_jobs 数组的每个元素，实际上是对应了某一种后台任务的任务队列。</p>
+<p>在了解了这一点后，我们就容易理解 bioProcessBackgroundJobs 函数中的 while 循环了。因为传给 bioProcessBackgroundJobs 函数的参数，分别是 0、1、2，对应了三种任务类型，所以在这个循环中，bioProcessBackgroundJobs 函数会一直不停地从某一种任务队列中，取出一个任务来执行。</p>
+<p>同时，bioProcessBackgroundJobs 函数会根据传入的任务操作类型调用相应函数，具体来说：</p>
+<ul>
+<li>任务类型是 BIO_CLOSE_FILE，则调用 close 函数；</li>
+<li>任务类型是 BIO_AOF_FSYNC，则调用 redis_fsync 函数；</li>
+<li>任务类型是 BIO_LAZY_FREE，则再根据参数个数等情况，分别调用 lazyfreeFreeObjectFromBioThread、lazyfreeFreeDatabaseFromBioThread 和 lazyfreeFreeSlotsMapFromBioThread 这三个函数。</li>
+</ul>
+<p>最后，当某个任务执行完成后，bioProcessBackgroundJobs 函数会从任务队列中，把这个任务对应的数据结构删除。我把这部分代码放在这里，你可以看下。</p>
+<pre><code class="language-c">while(1) {
+        listNode *ln;
+ 
+        …
+        //从类型为type的任务队列中获取第一个任务
+        ln = listFirst(bio_jobs[type]);
+        job = ln-&gt;value;
+    
+        …
+        //判断当前处理的后台任务类型是哪一种
+        if (type == BIO_CLOSE_FILE) {
+            close((long)job-&gt;arg1);  //如果是关闭文件任务，那就调用close函数
+        } else if (type == BIO_AOF_FSYNC) {
+            redis_fsync((long)job-&gt;arg1); //如果是AOF同步写任务，那就调用redis_fsync函数
+        } else if (type == BIO_LAZY_FREE) {
+            //如果是惰性删除任务，那根据任务的参数分别调用不同的惰性删除函数执行
+            if (job-&gt;arg1)
+                lazyfreeFreeObjectFromBioThread(job-&gt;arg1);
+            else if (job-&gt;arg2 &amp;&amp; job-&gt;arg3)
+                lazyfreeFreeDatabaseFromBioThread(job-&gt;arg2,job-&gt;arg3);
+            else if (job-&gt;arg3)
+                lazyfreeFreeSlotsMapFromBioThread(job-&gt;arg3);
+        } else {
+            serverPanic("Wrong job type in bioProcessBackgroundJobs().");
+        }
+        …
+        //任务执行完成后，调用listDelNode在任务队列中删除该任务
+        listDelNode(bio_jobs[type],ln);
+        //将对应的等待任务个数减一。
+        bio_pending[type]--;
+        …
+    }
+</code></pre>
+<p>所以说，bioInit 函数其实就是创建了 3 个线程，每个线程不停地去查看任务队列中是否有任务，如果有任务，就调用具体函数执行。</p>
+<p>你可以再参考回顾下图所展示的 bioInit 函数和 bioProcessBackgroundJobs 函数的基本处理流程。</p>
+<p><img alt="" src="assets/d8cb6f9f2e410e7680ef0e674b50efc4-20221013235228-g7ivbjm.jpg"/></p>
+<p>不过接下来你或许还会疑惑：既然 bioProcessBackgroundJobs 函数是负责执行任务的，<strong>那么哪个函数负责生成任务呢？</strong></p>
+<p>这就是下面，我要给你介绍的<strong>后台任务创建函数 bioCreateBackgroundJob</strong>。</p>
+<h3 id="biocreatebackgroundjob-函数-创建后台任务">bioCreateBackgroundJob 函数：创建后台任务</h3>
+<p>bioCreateBackgroundJob 函数的原型如下，它会接收 4 个参数，其中，参数 type 表示该后台任务的类型，剩下来的 3 个参数，则对应了后台任务函数的参数，如下所示：</p>
+<pre><code class="language-c">void bioCreateBackgroundJob(int type, void *arg1, void *arg2, void *arg3)
+</code></pre>
+<p>bioCreateBackgroundJob 函数在执行时，会先创建 bio_job，这是后台任务对应的数据结构。然后，后台任务数据结构中的参数，会被设置为 bioCreateBackgroundJob 函数传入的参数 arg1、arg2 和 arg3。</p>
+<p>最后，bioCreateBackgroundJob 函数调用 listAddNodeTail 函数，将刚才创建的任务加入到对应的 bio_jobs 队列中，同时，将 bio_pending 数组的对应值加 1，表示有个任务在等待执行。</p>
+<pre><code class="language-c">{
+    //创建新的任务
+    struct bio_job *job = zmalloc(sizeof(*job));
+    //设置任务数据结构中的参数
+    job-&gt;time = time(NULL);
+    job-&gt;arg1 = arg1;
+    job-&gt;arg2 = arg2;
+    job-&gt;arg3 = arg3;
+    pthread_mutex_lock(&amp;bio_mutex[type]);
+    listAddNodeTail(bio_jobs[type],job);  //将任务加到bio_jobs数组的对应任务列表中
+    bio_pending[type]++; //将对应任务列表上等待处理的任务个数加1
+    pthread_cond_signal(&amp;bio_newjob_cond[type]);
+    pthread_mutex_unlock(&amp;bio_mutex[type]);
+}
+</code></pre>
+<p>好了，这样一来，当 Redis 进程想要启动一个后台任务时，只要调用 bioCreateBackgroundJob 函数，并设置好该任务对应的类型和参数即可。然后，bioCreateBackgroundJob 函数就会把创建好的任务数据结构，放到后台任务对应的队列中。另一方面，bioInit 函数在 Redis server 启动时，创建的线程会不断地轮询后台任务队列，一旦发现有任务可以执行，就会将该任务取出并执行。</p>
+<p>其实，这种设计方式是典型的<strong>生产者 - 消费者模型</strong>。bioCreateBackgroundJob 函数是生产者，负责往每种任务队列中加入要执行的后台任务，而 bioProcessBackgroundJobs 函数是消费者，负责从每种任务队列中取出任务来执行。然后 Redis 创建的后台线程，会调用 bioProcessBackgroundJobs 函数，从而实现一直循环检查任务队列。</p>
+<p>下图展示的就是 bioCreateBackgroundJob 和 bioProcessBackgroundJobs 两者间的生产者 - 消费者模型，你可以看下。</p>
+<p><img alt="" src="assets/f5a7c20b6a826cf79c0675d11ea037ab-20221013235228-oakksw4.jpg"/></p>
+<p>好了，到这里，我们就学习了 Redis 后台线程的创建和运行机制。简单来说，主要是以下三个关键点：</p>
+<ul>
+<li>Redis 是先通过 bioInit 函数初始化和创建后台线程；</li>
+<li>后台线程运行的是 bioProcessBackgroundJobs 函数，这个函数会轮询任务队列，并根据要处理的任务类型，调用相应函数进行处理；</li>
+<li>后台线程要处理的任务是由 bioCreateBackgroundJob 函数来创建的，这些任务创建后会被放到任务队列中，等待 bioProcessBackgroundJobs 函数处理。</li>
+</ul>
+<h2 id="小结">小结</h2>
+<p>今天这节课，我给你介绍了 Redis 的执行模型，并且也从源码的角度出发，通过分析代码，带你了解了 Redis 进程创建、以子进程方式创建的守护进程、以及后台线程和它们负责的工作任务。同时，这也解答了你在面试中可能经常会被问到的问题：<strong>Redis 是单线程程序吗？</strong></p>
+<p>事实上，Redis server 启动后，它的主要工作包括接收客户端请求、解析请求和进行数据读写等操作，是由单线程来执行的，这也是我们常说 Redis 是单线程程序的原因。</p>
+<p>但是，学完这节课你应该也知道，Redis 还启动了 3 个线程来执行文件关闭、AOF 同步写和惰性删除等操作，从这个角度来说，Redis 又不能算单线程程序，它还是有多线程的。而且，在下节课，我会给你介绍 Redis 6.0 中多 IO 线程的实现，从多 IO 线程角度看，Redis 也无法称为是单线程程序了。</p>
+<p>另外学完了这节课之后，你还需要重点注意下，fork 函数使用和生产者 - 消费者模型这两个关键知识点。</p>
+<p><strong>首先是 fork 函数的使用</strong>。fork 函数可以在一个进程运行时，再创建一个子进程。当 Redis 被配置为以守护进程方式运行时，Redis 的 main 函数就是调用 fork 函数，创建子进程，让子进程以守护进程形式执行，并让一开始启动执行的父进程退出。因为，子进程会从父进程那继承代码，所以 main 函数中的执行逻辑就交给了子进程继续执行。</p>
+<p><strong>其次是生产者 - 消费者模型</strong>。Redis 在 bio.c 和 bio.h 文件中创建了后台线程，并实现了后台任务的执行。你要重点关注一下这里使用的生产者 - 消费者执行模型，这也是 bio.c 实现后台任务执行的核心设计思想。而且，当你需要实现异步的任务执行时，生产者 - 消费者模型就是一个很好的解决方案，你可以从 Redis 源码中掌握这个方案的实现思路。</p>
+<h2 id="每课一问">每课一问</h2>
+<p>Redis 后台任务使用 bio_job 结构体来描述，该结构体用了三个指针变量来表示任务参数，如下所示。如果我们创建的任务，所需要的参数大于 3 个，你有什么应对方法来传参么？</p>
+<pre><code class="language-c">struct bio_job {
+    time_t time;
+    void *arg1, *arg2, *arg3;  //传递给任务的参数
+};
+</code></pre>
+<p>欢迎在留言区分享你的答案和思考过程，如果觉得有收获，也欢迎你把今天的内容分享给更多的朋友。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#650909095c5154545552250208040c094b060a08" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93589b6eefe3b964',t:'MTc0NTUyOTIzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
