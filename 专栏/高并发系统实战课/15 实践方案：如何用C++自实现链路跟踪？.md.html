@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="15 实践方案：如何用C++自实现链路跟踪？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>15 实践方案：如何用C++自实现链路跟踪？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%ef%bc%8c%e6%8a%80%e6%9c%af%e5%ae%9e%e5%8a%9b%e7%9a%84%e8%af%95%e9%87%91%e7%9f%b3.md.html" id="00 开篇词 高并发系统，技术实力的试金石.md.html">00 开篇词 高并发系统，技术实力的试金石.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bb%93%e6%9e%84%e6%a2%b3%e7%90%86%ef%bc%9a%e5%a4%a7%e5%b9%b6%e5%8f%91%e4%b8%8b%ef%bc%8c%e4%bd%a0%e7%9a%84%e6%95%b0%e6%8d%ae%e5%ba%93%e8%a1%a8%e5%8f%af%e8%83%bd%e6%88%90%e4%b8%ba%e6%80%a7%e8%83%bd%e9%9a%90%e6%82%a3.md.html" id="01 结构梳理：大并发下，你的数据库表可能成为性能隐患.md.html">01 结构梳理：大并发下，你的数据库表可能成为性能隐患.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/02%20%e7%bc%93%e5%ad%98%e4%b8%80%e8%87%b4%ef%bc%9a%e8%af%bb%e5%a4%9a%e5%86%99%e5%b0%91%e6%97%b6%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e6%9b%b4%e6%96%b0%e7%bc%93%e5%ad%98%e4%b8%8d%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="02 缓存一致：读多写少时，如何解决数据更新缓存不同步？.md.html">02 缓存一致：读多写少时，如何解决数据更新缓存不同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/03%20Token%ef%bc%9a%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%e7%94%a8%e6%88%b7%e8%ba%ab%e4%bb%bd%e9%89%b4%e6%9d%83%e7%9a%84%e6%b5%81%e9%87%8f%e5%8e%8b%e5%8a%9b%ef%bc%9f.md.html" id="03 Token：如何降低用户身份鉴权的流量压力？.md.html">03 Token：如何降低用户身份鉴权的流量压力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%90%8c%e5%9f%8e%e5%8f%8c%e6%b4%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e6%88%bf%e4%b9%8b%e9%97%b4%e7%9a%84%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="04 同城双活：如何实现机房之间的数据同步？.md.html">04 同城双活：如何实现机房之间的数据同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/05%20%e5%85%b1%e8%af%86Raft%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%a4%9a%e6%9c%ba%e6%88%bf%e6%95%b0%e6%8d%ae%e7%9a%84%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9f.md.html" id="05 共识Raft：如何保证多机房数据的一致性？.md.html">05 共识Raft：如何保证多机房数据的一致性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/06%20%e9%a2%86%e5%9f%9f%e6%8b%86%e5%88%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%90%88%e7%90%86%e5%9c%b0%e6%8b%86%e5%88%86%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="06 领域拆分：如何合理地拆分系统？.md.html">06 领域拆分：如何合理地拆分系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/07%20%e5%bc%ba%e4%b8%80%e8%87%b4%e9%94%81%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e9%ab%98%e5%b9%b6%e5%8f%91%e4%b8%8b%e7%9a%84%e5%ba%93%e5%ad%98%e4%ba%89%e6%8a%a2%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="07 强一致锁：如何解决高并发下的库存争抢问题？.md.html">07 强一致锁：如何解决高并发下的库存争抢问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/08%20%e7%b3%bb%e7%bb%9f%e9%9a%94%e7%a6%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ba%94%e5%af%b9%e9%ab%98%e5%b9%b6%e5%8f%91%e6%b5%81%e9%87%8f%e5%86%b2%e5%87%bb%ef%bc%9f.md.html" id="08 系统隔离：如何应对高并发流量冲击？.md.html">08 系统隔离：如何应对高并发流量冲击？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/09%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%ef%bc%9a%e5%a4%9a%e6%9c%8d%e5%8a%a1%e7%9a%842PC%e3%80%81TCC%e9%83%bd%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="09 分布式事务：多服务的2PC、TCC都是怎么实现的？.md.html">09 分布式事务：多服务的2PC、TCC都是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/10%20%e7%a8%80%e7%96%8f%e7%b4%a2%e5%bc%95%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%ab%98%e5%b9%b6%e5%8f%91%e5%86%99%e4%b8%8d%e6%8e%a8%e8%8d%90%e5%85%b3%e7%b3%bb%e6%95%b0%e6%8d%ae%e5%ba%93%ef%bc%9f.md.html" id="10 稀疏索引：为什么高并发写不推荐关系数据库？.md.html">10 稀疏索引：为什么高并发写不推荐关系数据库？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/11%20%e9%93%be%e8%b7%af%e8%bf%bd%e8%b8%aa%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9a%e5%88%b6%e4%b8%80%e4%b8%aa%e5%88%86%e5%b8%83%e5%bc%8f%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%e7%b3%bb%e7%bb%9f%20%ef%bc%9f.md.html" id="11 链路追踪：如何定制一个分布式链路跟踪系统 ？.md.html">11 链路追踪：如何定制一个分布式链路跟踪系统 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/12%20%e5%bc%95%e6%93%8e%e5%88%86%e7%89%87%ef%bc%9aElasticsearch%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%a3%80%e7%b4%a2%ef%bc%9f.md.html" id="12 引擎分片：Elasticsearch如何实现大数据检索？.md.html">12 引擎分片：Elasticsearch如何实现大数据检索？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%ae%9e%e6%97%b6%e7%bb%9f%e8%ae%a1%ef%bc%9a%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%e5%ae%9e%e6%97%b6%e8%ae%a1%e7%ae%97%e4%b8%ad%e7%9a%84%e5%ae%9e%e7%94%a8%e7%ae%97%e6%b3%95.md.html" id="13 实时统计：链路跟踪实时计算中的实用算法.md.html">13 实时统计：链路跟踪实时计算中的实用算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b7%b3%e6%95%b0%e7%b4%a2%e5%bc%95%ef%bc%9a%e5%90%8e%e8%b5%b7%e6%96%b0%e7%a7%80ClickHouse.md.html" id="14 跳数索引：后起新秀ClickHouse.md.html">14 跳数索引：后起新秀ClickHouse.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%ae%9e%e8%b7%b5%e6%96%b9%e6%a1%88%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8C++%e8%87%aa%e5%ae%9e%e7%8e%b0%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%ef%bc%9f.md.html" id="15 实践方案：如何用C++自实现链路跟踪？.md.html">15 实践方案：如何用C++自实现链路跟踪？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/16%20%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%ef%bc%9a%e7%94%a8%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%e5%81%9a%e6%9c%8d%e5%8a%a1%e4%bc%9a%e9%81%87%e5%88%b0%e5%93%aa%e4%ba%9b%e5%9d%91%ef%bc%9f.md.html" id="16 本地缓存：用本地缓存做服务会遇到哪些坑？.md.html">16 本地缓存：用本地缓存做服务会遇到哪些坑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/17%20%e4%b8%9a%e5%8a%a1%e8%84%9a%e6%9c%ac%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4%e5%8f%af%e7%bc%96%e7%a8%8b%e8%ae%a2%e9%98%85%e5%bc%8f%e7%bc%93%e5%ad%98%e6%9c%8d%e5%8a%a1%e6%9b%b4%e6%9c%89%e7%94%a8%ef%bc%9f.md.html" id="17 业务脚本：为什么说可编程订阅式缓存服务更有用？.md.html">17 业务脚本：为什么说可编程订阅式缓存服务更有用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/18%20%e6%b5%81%e9%87%8f%e6%8b%86%e5%88%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e7%bc%93%e8%a7%a3%e6%b5%81%e9%87%8f%e5%8e%8b%e5%8a%9b%ef%bc%9f.md.html" id="18 流量拆分：如何通过架构设计缓解流量压力？.md.html">18 流量拆分：如何通过架构设计缓解流量压力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/19%20%e6%b5%81%e9%87%8f%e8%b0%83%e5%ba%a6%ef%bc%9aDNS%e3%80%81%e5%85%a8%e7%ab%99%e5%8a%a0%e9%80%9f%e5%8f%8a%e6%9c%ba%e6%88%bf%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1.md.html" id="19 流量调度：DNS、全站加速及机房负载均衡.md.html">19 流量调度：DNS、全站加速及机房负载均衡.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/20%20%e6%95%b0%e6%8d%ae%e5%bc%95%e6%93%8e%ef%bc%9a%e7%bb%9f%e4%b8%80%e7%bc%93%e5%ad%98%e6%95%b0%e6%8d%ae%e5%b9%b3%e5%8f%b0.md.html" id="20 数据引擎：统一缓存数据平台.md.html">20 数据引擎：统一缓存数据平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/21%20%e4%b8%9a%e5%8a%a1%e7%bc%93%e5%ad%98%ef%bc%9a%e5%85%83%e6%95%b0%e6%8d%ae%e6%9c%8d%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="21 业务缓存：元数据服务如何实现？.md.html">21 业务缓存：元数据服务如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/22%20%e5%ad%98%e5%82%a8%e6%88%90%e6%9c%ac%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8e%a8%e7%ae%97%e6%97%a5%e5%bf%97%e4%b8%ad%e5%bf%83%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%88%90%e6%9c%ac%ef%bc%9f.md.html" id="22 存储成本：如何推算日志中心的实现成本？.md.html">22 存储成本：如何推算日志中心的实现成本？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/23%20%e7%bd%91%e5%85%b3%e7%bc%96%e7%a8%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e7%94%a8%e6%88%b7%e7%bd%91%e5%85%b3%e5%92%8c%e7%bc%93%e5%ad%98%e9%99%8d%e4%bd%8e%e7%a0%94%e5%8f%91%e6%88%90%e6%9c%ac%ef%bc%9f.md.html" id="23 网关编程：如何通过用户网关和缓存降低研发成本？.md.html">23 网关编程：如何通过用户网关和缓存降低研发成本？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/24%20%e6%80%a7%e8%83%bd%e5%8e%8b%e6%b5%8b%ef%bc%9a%e5%8e%8b%e6%b5%8b%e4%b8%8d%e5%ae%8c%e5%96%84%ef%bc%8c%e6%95%88%e6%9e%9c%e5%87%8f%e4%b8%80%e5%8d%8a.md.html" id="24 性能压测：压测不完善，效果减一半.md.html">24 性能压测：压测不完善，效果减一半.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/%e7%ad%94%e7%96%91%e8%af%be%e5%a0%82%20%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="答疑课堂 思考题答案（一）.md.html">答疑课堂 思考题答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e4%b8%ba%e8%80%85%e5%b8%b8%e6%88%90%ef%bc%8c%e8%a1%8c%e8%80%85%e5%b8%b8%e8%87%b3.md.html" id="结束语 为者常成，行者常至.md.html">结束语 为者常成，行者常至.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="15 实践方案：如何用C++自实现链路跟踪？" id="title">15 实践方案：如何用C++自实现链路跟踪？</h1>
+<div><p>你好，我是徐长龙。</p>
+<p>在前面几节课，我们讲解了MySQL和多个分布式检索系统的关键原理，明白了它们如何实现分布式数据存储和检索。写多读少系统的主要优化思路相信你已经心中有数了，主要包括：用分布式队列汇总日志、利用内存缓存新写入的数据、顺序写入磁盘、多服务器分片、分布式查询可拆分索引。</p>
+<p>不过你可能觉得这些离我们的业务逻辑还有点远，这节课我就分享一下，之前我是怎样用C++来实现链路跟踪系统的。</p>
+<p>通过分析这个系统实现的主要思路和关键细节，你不但能学到业务场景里的实用技巧，更重要的是，把技术理解和业务实现联系在一起，更深入地理解写多读少的系统。</p>
+<h2 id="案例背景">案例背景</h2>
+<p>2016年我在微博任职，那时微博有很多重要但复杂的内部系统，由于相互依赖较为严重，并且不能登陆公用集群，每次排查问题的时候都很痛苦。</p>
+<p>很多问题需要不断加日志试探，三天左右才能摸出眉目。为了更高效地排查线上故障，我们需要一些工具辅助提高排查问题效率，于是我和几个伙伴合作实现了一个分布式链路跟踪的系统。</p>
+<p>由于那时候，我<strong>只有两台4核8G内存服务器</strong>，可用硬件资源不多，所以分布式链路跟踪的存储和计算的功能是通过C++ 11实现的。这个项目最大的挑战就是<strong>如何在有限的资源下，记录下所有请求过程，并能够实时统计监控线上故障，辅助排查问题。</strong></p>
+<p>要想做一个这样的系统，主要分为几个关键功能：日志采集、日志传输、日志存储、日志查询、实时性能统计展示以及故障线索收集。经过讨论，我们确定了具体项目实现思路，如下图所示：</p>
+<p><img alt="图片" src="assets/a0cf54f05f6c4c80ab3bbd7bd21dd2e2.jpg"/></p>
+<p>链路跟踪的第一步就是收集日志。当时我看了链路跟踪的相关资料后，决定按分布式链路跟踪思路去设计实现。因为这样做，可以通过每次请求入口产生的的TraceID，汇集一次请求的所有相关日志。</p>
+<p>但是具体收集什么日志，才对排查问题更有帮助呢？如果链路跟踪只记录接口的性能，实际就只能辅助我们分析性能问题，对排查逻辑问题意义并不大。</p>
+<p>经过进一步讨论，我们决定给分级日志和异常日志都带上TraceID，方便我们获取更多业务过程状态。另外，我们在请求其他服务的请求Header内也加上TraceID和RPCID，并且记录了API、SQL请求的参数、返回内容和性能数据。综合这些，就能实现完整的全量日志监控跟踪系统，性能问题和逻辑缺陷都能排查。</p>
+<p>接下来，我们就看看这里的主要功能是怎样实现的。</p>
+<h2 id="抓取-采集与传输">抓取、采集与传输</h2>
+<p>日志采集在我们的系统里怎么实现呢？</p>
+<p>相信你多少能猜到大致做法：一般来说，我们需要在接口被请求时，接收传递过来的TraceID以及RPCID，如果没有传递过来的TraceID，那么自己可以用UUID生成一个，用于标识后续在请求期间所有的日志。</p>
+<p><img alt="图片" src="assets/3d6bbb06b97a4951874c0f74df0f60ac.jpg"/></p>
+<p>服务被请求时，建议记录一条被调用的访问日志，具体可以记录当前被请求的参数以及接口最后返回的结果、httpcode、耗时。通过这个日志，后续可以方便我们分析服务的性能和故障。</p>
+<p><img alt="图片" src="assets/8e37e5cd775843908ee45becd10a63e2.jpg"/></p>
+<p>而对于被请求期间的业务所产生的业务日志、错误日志，以及请求其他资源的日志，都需要做详细记录，比如SQL查询记录、API请求记录以及这些请求的参数、返回、耗时。</p>
+<p><img alt="图片" src="assets/f7c875c4eccc4252b4ecf434e0494041.jpg"/></p>
+<p>无论我们想做链路跟踪还是统计系统服务状态，都需要做类似AOP切面拦截，通过切面编程抓取所有操作数据库或API请求前后的数据。为了更好理解这里给你提供一个AOP的<a href="https://github.com/137-rick/laravel-aop-trace/tree/master" target="_blank">实现样例</a>，这是我之前在生产环境中使用的。</p>
+<p>记录了项目的请求依赖资源部分之后，我用了两个传输方式来传输生成的日志：一个是通过memcache的长链接协议，将日志推送到我们日志收集服务上，这种推送日志请求超时超过200ms就会丢弃，这样能避免拖慢接口的性能。</p>
+<p>另外一个方式是落地到本地磁盘，通过Filebeat实时抓取推送，将日志收集汇总起来。当然，第二种方式最稳定，但是由于我们公共服务器集群不让登录的限制，有一部分系统只能使用第一种方式来传递日志。</p>
+<p>前面提到，由于跟踪的都是核心系统，并且业务都很复杂，所以我们对所有的请求过程和参数返回都做了记录。</p>
+<p>可以预见，这样的方式产生的日志量很大，而且日志的写并发吞吐很高，甚至支付系统在某次服务高峰时会出现日志写 100MB/s的情况。因此我们的日志写入及传输都需要有很好的性能服务支持，同时还要保证日志不会丢失。</p>
+<p>为此，我们选择了用Kafka来传输日志，Kafka通过对同一个topic数据做多个分区动态调配来实现负载均衡及动态扩容，当我们流量超过其承受能力时，可以随时通过给服务器群组增加服务器来扩容，从而提供更好的吞吐量。可以说多系统之间的实时高吞吐传输同步，几乎都是使用Kafka实现的。</p>
+<h2 id="可动态扩容的分组消费">可动态扩容的分组消费</h2>
+<p>那么Kafka是如何帮助业务动态扩容消费性能的呢？</p>
+<p><img alt="图片" src="assets/acc024793eff4afc9a3605da476bed53.jpg"/></p>
+<p>在Kafka消费这里使用的是Consumer Group分组消费，分组消费是一个很棒的实现，我们可以让多个服务同时消费一组数据，比如：启动两个进程消费20个分区的数据，也就是一个服务负责消费10个区的数据。</p>
+<p>如果服务运转期间消费能力不够了，消息出现堆积，我们可以找两台服务器新启动2个消费进程，此时Kafka会对consumer进程自动重新调度（rebalance），让四个消费进程平分20个分区，即自动调度成每个消费进程消费5个分区的数据。</p>
+<p>通过这个功能，我们可以动态扩容消费服务器的能力，比如随时增加消费进程数来提高消费能力，甚至一些消费服务可以随时重启。</p>
+<p>这个功能可以让我们动态扩容变得更容易，对于<strong>写并发大</strong>的数据流传输或同步的服务帮助很大，几乎大部分最终一致性的数据服务，最终都是靠分布式队列来实现的。微博内部很多系统间的数据同步，最后都改成了使用kafka去做同步。</p>
+<p>基于Kafka的分组特性，我们将服务做成了两组消费服务，一组用于数据的统计，一组用于存储，通过这个方式隔离存储和实时统计服务。</p>
+<h2 id="写多读少的rocksdb">写多读少的RocksDB</h2>
+<p>接下来，我们重点说说分布式存储怎么处理，因为这是自实现最有特色的地方。另外，计算部分的实现和第十三节课的情况大同小异，你可以点<a href="https://time.geekbang.org/column/article/605494" target="_blank">这里</a>回看。</p>
+<p>考虑到只有两台存储服务器，<strong>我需要提供一个写性能很好并支持“检索”的日志存储检索服务</strong>，经过查找和对比，最终我选择了RocksDB。</p>
+<p>RocksDB是Facebook做实验出来的产品，后经不断完善，最终被大量用户使用。它提供了超越LevelDB写性能的服务，能够在Flash、磁盘、HDFS媒介上存储，并且能够充分利用多核以及SSD提供更高性能的高负载数据存储服务。</p>
+<p>由于Rocksdb是嵌入式的，所以我们实现的服务和存储引擎之间没有网络消耗，性能会更好，再配合上Kafka分组消费，就可以实现一个无副本的分布式存储。</p>
+<p>我首先看中的是RocksDB这个引擎的写性能。回想一下我们<a href="https://time.geekbang.org/column/article/602928" target="_blank">第十节课</a>讲过的内容，RocksDB利用了内存做缓存，同时利用磁盘顺序写性能最强的特性，能够提供接近单机300M/s的写数据能力，理想情况下，两台存储服务器就可以提供600M/s的写入能力。再加上Kafka缓解写高峰压力，这个设计已经能满足大部分业务需求了。</p>
+<p>其次，RocksDB的接入非常简单，想要在项目中引入它的库，只要保证它的写操作只有一个线程写，其他线程可以实例化 <strong>Secondary只读</strong>即可。</p>
+<p>此外，RocksDB还支持内存和磁盘冷热数据的自动管理、存储数据压缩等功能，而且单个库就能存储上TB的数据、单个Value 长度能够达到3G，这非常适合在分布式链路跟踪的系统里存储和查找大量的文本日志。</p>
+<p>接下来要解决的问题就是，如何在RocksdDB分配管理我们的Trace日志。</p>
+<p>为了提高查询效率，并且只保留7天日志，我们选择了按天保存日志，一天一个RocksDB库，过期的数据库可以删除或归档到HDFS内。</p>
+<p>汇总保存日志的时候，我们利用了RocksDB的这两个方面的特性。一方面通过Trace日志的TraceID作为key来存储，这样我们直接通过TraceID就可以查到所有相关日志。</p>
+<p>另一方面，是利用Merge操作对KV中的value实现string append。Merge是RocksDB里很少有人提到的一个功能，但用起来还不错，可以帮我们把所有日志高性能地追加到一个Key内。Merge操作的官方demo代码你可以从<a href="https://github.com/facebook/rocksdb/blob/main/utilities/merge_operators/string_append/stringappend.cc" target="_blank">这里</a>获取，如果对于实现原理感兴趣，还可以参考下 <a href="https://jiaweichiu.github.io/articles/2018-12/rocksdb-merge-operators" target="_blank">rocksdb-merge-operators</a>。</p>
+<h2 id="分布式查询与计算">分布式查询与计算</h2>
+<p>数据存储好后，如何查询呢？</p>
+<p>事实上很简单，我们的Trace SDK会让每个接口返回响应内容的同时，在header中包含了TraceID，debug的时候使用返回traceId进行查询时，界面会对所有存储节点发送查询请求，通过TraceID从RocksDB拿出所有按回车分割的日志后，汇总排序即可。</p>
+<p>另外，日志存储服务集成了Libevent，通过它实现了HTTP和Memcache协议的查询接口服务，由于这里比较复杂有多个模式，这里不对这个做详细介绍了，如果你想了解如何用epoll和Socket实现一个简单的HTTP服务，具体可以看看我闲暇时写的<a href="https://github.com/137-rick/zeus" target="_blank">小demo</a> 。</p>
+<p>我再补充说一下，怎么对多节点数据进行查询。由于读操作很少，我们可以通过异步请求多个存储实例直接问询查询内容，再到协调节点进行汇总排序即可。</p>
+<p>说完了数据查询，我们再聊聊分布式计算。</p>
+<p>想要实现服务器状态统计计算，核心还是利用Kafka的分组消费，另外启动一组服务消费日志内容，在内存中对日志进行汇总计算。</p>
+<p>如果想采样服务器的请求情况，可以定期按时间块索引随机采1000个TraceID到RocksDB的时间块索引内，需要展示的时候，将它们取出聚合展示即可。关于实时计算的算法和思路，我在<a href="https://time.geekbang.org/column/article/605494" target="_blank">第十三节课</a>中已经讲过了，你可以去回顾一下。</p>
+<p>关于自实现的整体思路我们聊完了。看完以后你可能会好奇，现在硬件资源已经很充裕了，我还用学习这些吗？</p>
+<p>事实上，在硬件资源充裕的时代我们还是要考虑成本。我们推算一下，比如2000台服务器性能提升一倍，就能节省1000台服务器。如果一台每年1w维护费用，那么就是每年能节省1000w。架构师除了解决业务问题外，大部分时间都是在思考如何在保证服务稳定的情况下降低成本。</p>
+<p>另外，我再说说选择开源的一些建议。由于市面很多开源是共建的，并且有一些开源属于个人的习作，没有在生产环境验证过。我们要尽量选择在生产环境验证过的、活跃的社区功能。</p>
+<p>虽然之前我使用C++实现链路跟踪，但现在技术发展得很快，如果放在今天，我是不推荐你也用同样方法做这个服务的。实践的时候，你可以考虑使用Java、GO、Rust等语言去尝试，相信这样会让你节省大量的时间。</p>
+<h2 id="总结">总结</h2>
+<p>这节课我和你分享了我用C++实现链路跟踪的实践方案，其中的技术要点你可以参考下图。</p>
+<p><img alt="图片" src="assets/acf865ea30d24164b315d778888a9391.jpg"/></p>
+<p>写多读少的系统，普遍会用分布式的队列服务（类似Kafka）汇总数据，配合多台服务器或分片来消费加工数据，通过这样的架构来应对数据洪流。</p>
+<p>这一章我们详细分析了写多读少系统的几种方案，你会发现它们各有千秋。为了方便你对比学习，我引入了MySQL作为参考。</p>
+<p>你也可以参考后面这张表格的思路，把技术实现的关键点（比如数据传输、写入、分片、扩容、查询等等）列出来，通过这种方式，可以帮你快速分析出哪种技术实现更匹配自己项目的业务需要。</p>
+<p><img alt="" src="assets/c95e087777a346e5a5008f0822cbfdd9.jpg"/></p>
+<h2 id="思考题">思考题</h2>
+<p>今天我给你准备了两道思考题。</p>
+<p>第一题，如何解决Kafka消费偶发乱序以及小概率消费重复问题？</p>
+<p>第二题稍有难度，有兴趣的话你可以挑战一下。epoll实现时会分单线程Reactor、单Reactor多线程、多线程Reactor这几种方式，对于存储服务你觉得哪种方式更适合呢？</p>
+<p>欢迎你在留言区与我交流讨论，我们下节课见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#076b6b6b3e333636373047606a666e6b2964686a" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93590e52589982d8',t:'MTc0NTUzMzkzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

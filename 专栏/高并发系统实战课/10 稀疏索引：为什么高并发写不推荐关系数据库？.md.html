@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="10 稀疏索引：为什么高并发写不推荐关系数据库？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>10 稀疏索引：为什么高并发写不推荐关系数据库？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%ef%bc%8c%e6%8a%80%e6%9c%af%e5%ae%9e%e5%8a%9b%e7%9a%84%e8%af%95%e9%87%91%e7%9f%b3.md.html" id="00 开篇词 高并发系统，技术实力的试金石.md.html">00 开篇词 高并发系统，技术实力的试金石.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bb%93%e6%9e%84%e6%a2%b3%e7%90%86%ef%bc%9a%e5%a4%a7%e5%b9%b6%e5%8f%91%e4%b8%8b%ef%bc%8c%e4%bd%a0%e7%9a%84%e6%95%b0%e6%8d%ae%e5%ba%93%e8%a1%a8%e5%8f%af%e8%83%bd%e6%88%90%e4%b8%ba%e6%80%a7%e8%83%bd%e9%9a%90%e6%82%a3.md.html" id="01 结构梳理：大并发下，你的数据库表可能成为性能隐患.md.html">01 结构梳理：大并发下，你的数据库表可能成为性能隐患.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/02%20%e7%bc%93%e5%ad%98%e4%b8%80%e8%87%b4%ef%bc%9a%e8%af%bb%e5%a4%9a%e5%86%99%e5%b0%91%e6%97%b6%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e6%9b%b4%e6%96%b0%e7%bc%93%e5%ad%98%e4%b8%8d%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="02 缓存一致：读多写少时，如何解决数据更新缓存不同步？.md.html">02 缓存一致：读多写少时，如何解决数据更新缓存不同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/03%20Token%ef%bc%9a%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%e7%94%a8%e6%88%b7%e8%ba%ab%e4%bb%bd%e9%89%b4%e6%9d%83%e7%9a%84%e6%b5%81%e9%87%8f%e5%8e%8b%e5%8a%9b%ef%bc%9f.md.html" id="03 Token：如何降低用户身份鉴权的流量压力？.md.html">03 Token：如何降低用户身份鉴权的流量压力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%90%8c%e5%9f%8e%e5%8f%8c%e6%b4%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e6%88%bf%e4%b9%8b%e9%97%b4%e7%9a%84%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="04 同城双活：如何实现机房之间的数据同步？.md.html">04 同城双活：如何实现机房之间的数据同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/05%20%e5%85%b1%e8%af%86Raft%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%a4%9a%e6%9c%ba%e6%88%bf%e6%95%b0%e6%8d%ae%e7%9a%84%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9f.md.html" id="05 共识Raft：如何保证多机房数据的一致性？.md.html">05 共识Raft：如何保证多机房数据的一致性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/06%20%e9%a2%86%e5%9f%9f%e6%8b%86%e5%88%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%90%88%e7%90%86%e5%9c%b0%e6%8b%86%e5%88%86%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="06 领域拆分：如何合理地拆分系统？.md.html">06 领域拆分：如何合理地拆分系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/07%20%e5%bc%ba%e4%b8%80%e8%87%b4%e9%94%81%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e9%ab%98%e5%b9%b6%e5%8f%91%e4%b8%8b%e7%9a%84%e5%ba%93%e5%ad%98%e4%ba%89%e6%8a%a2%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="07 强一致锁：如何解决高并发下的库存争抢问题？.md.html">07 强一致锁：如何解决高并发下的库存争抢问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/08%20%e7%b3%bb%e7%bb%9f%e9%9a%94%e7%a6%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ba%94%e5%af%b9%e9%ab%98%e5%b9%b6%e5%8f%91%e6%b5%81%e9%87%8f%e5%86%b2%e5%87%bb%ef%bc%9f.md.html" id="08 系统隔离：如何应对高并发流量冲击？.md.html">08 系统隔离：如何应对高并发流量冲击？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/09%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%ef%bc%9a%e5%a4%9a%e6%9c%8d%e5%8a%a1%e7%9a%842PC%e3%80%81TCC%e9%83%bd%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="09 分布式事务：多服务的2PC、TCC都是怎么实现的？.md.html">09 分布式事务：多服务的2PC、TCC都是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/10%20%e7%a8%80%e7%96%8f%e7%b4%a2%e5%bc%95%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%ab%98%e5%b9%b6%e5%8f%91%e5%86%99%e4%b8%8d%e6%8e%a8%e8%8d%90%e5%85%b3%e7%b3%bb%e6%95%b0%e6%8d%ae%e5%ba%93%ef%bc%9f.md.html" id="10 稀疏索引：为什么高并发写不推荐关系数据库？.md.html">10 稀疏索引：为什么高并发写不推荐关系数据库？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/11%20%e9%93%be%e8%b7%af%e8%bf%bd%e8%b8%aa%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9a%e5%88%b6%e4%b8%80%e4%b8%aa%e5%88%86%e5%b8%83%e5%bc%8f%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%e7%b3%bb%e7%bb%9f%20%ef%bc%9f.md.html" id="11 链路追踪：如何定制一个分布式链路跟踪系统 ？.md.html">11 链路追踪：如何定制一个分布式链路跟踪系统 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/12%20%e5%bc%95%e6%93%8e%e5%88%86%e7%89%87%ef%bc%9aElasticsearch%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%a3%80%e7%b4%a2%ef%bc%9f.md.html" id="12 引擎分片：Elasticsearch如何实现大数据检索？.md.html">12 引擎分片：Elasticsearch如何实现大数据检索？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%ae%9e%e6%97%b6%e7%bb%9f%e8%ae%a1%ef%bc%9a%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%e5%ae%9e%e6%97%b6%e8%ae%a1%e7%ae%97%e4%b8%ad%e7%9a%84%e5%ae%9e%e7%94%a8%e7%ae%97%e6%b3%95.md.html" id="13 实时统计：链路跟踪实时计算中的实用算法.md.html">13 实时统计：链路跟踪实时计算中的实用算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b7%b3%e6%95%b0%e7%b4%a2%e5%bc%95%ef%bc%9a%e5%90%8e%e8%b5%b7%e6%96%b0%e7%a7%80ClickHouse.md.html" id="14 跳数索引：后起新秀ClickHouse.md.html">14 跳数索引：后起新秀ClickHouse.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%ae%9e%e8%b7%b5%e6%96%b9%e6%a1%88%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8C++%e8%87%aa%e5%ae%9e%e7%8e%b0%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%ef%bc%9f.md.html" id="15 实践方案：如何用C++自实现链路跟踪？.md.html">15 实践方案：如何用C++自实现链路跟踪？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/16%20%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%ef%bc%9a%e7%94%a8%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%e5%81%9a%e6%9c%8d%e5%8a%a1%e4%bc%9a%e9%81%87%e5%88%b0%e5%93%aa%e4%ba%9b%e5%9d%91%ef%bc%9f.md.html" id="16 本地缓存：用本地缓存做服务会遇到哪些坑？.md.html">16 本地缓存：用本地缓存做服务会遇到哪些坑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/17%20%e4%b8%9a%e5%8a%a1%e8%84%9a%e6%9c%ac%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4%e5%8f%af%e7%bc%96%e7%a8%8b%e8%ae%a2%e9%98%85%e5%bc%8f%e7%bc%93%e5%ad%98%e6%9c%8d%e5%8a%a1%e6%9b%b4%e6%9c%89%e7%94%a8%ef%bc%9f.md.html" id="17 业务脚本：为什么说可编程订阅式缓存服务更有用？.md.html">17 业务脚本：为什么说可编程订阅式缓存服务更有用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/18%20%e6%b5%81%e9%87%8f%e6%8b%86%e5%88%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e7%bc%93%e8%a7%a3%e6%b5%81%e9%87%8f%e5%8e%8b%e5%8a%9b%ef%bc%9f.md.html" id="18 流量拆分：如何通过架构设计缓解流量压力？.md.html">18 流量拆分：如何通过架构设计缓解流量压力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/19%20%e6%b5%81%e9%87%8f%e8%b0%83%e5%ba%a6%ef%bc%9aDNS%e3%80%81%e5%85%a8%e7%ab%99%e5%8a%a0%e9%80%9f%e5%8f%8a%e6%9c%ba%e6%88%bf%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1.md.html" id="19 流量调度：DNS、全站加速及机房负载均衡.md.html">19 流量调度：DNS、全站加速及机房负载均衡.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/20%20%e6%95%b0%e6%8d%ae%e5%bc%95%e6%93%8e%ef%bc%9a%e7%bb%9f%e4%b8%80%e7%bc%93%e5%ad%98%e6%95%b0%e6%8d%ae%e5%b9%b3%e5%8f%b0.md.html" id="20 数据引擎：统一缓存数据平台.md.html">20 数据引擎：统一缓存数据平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/21%20%e4%b8%9a%e5%8a%a1%e7%bc%93%e5%ad%98%ef%bc%9a%e5%85%83%e6%95%b0%e6%8d%ae%e6%9c%8d%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="21 业务缓存：元数据服务如何实现？.md.html">21 业务缓存：元数据服务如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/22%20%e5%ad%98%e5%82%a8%e6%88%90%e6%9c%ac%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8e%a8%e7%ae%97%e6%97%a5%e5%bf%97%e4%b8%ad%e5%bf%83%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%88%90%e6%9c%ac%ef%bc%9f.md.html" id="22 存储成本：如何推算日志中心的实现成本？.md.html">22 存储成本：如何推算日志中心的实现成本？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/23%20%e7%bd%91%e5%85%b3%e7%bc%96%e7%a8%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e7%94%a8%e6%88%b7%e7%bd%91%e5%85%b3%e5%92%8c%e7%bc%93%e5%ad%98%e9%99%8d%e4%bd%8e%e7%a0%94%e5%8f%91%e6%88%90%e6%9c%ac%ef%bc%9f.md.html" id="23 网关编程：如何通过用户网关和缓存降低研发成本？.md.html">23 网关编程：如何通过用户网关和缓存降低研发成本？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/24%20%e6%80%a7%e8%83%bd%e5%8e%8b%e6%b5%8b%ef%bc%9a%e5%8e%8b%e6%b5%8b%e4%b8%8d%e5%ae%8c%e5%96%84%ef%bc%8c%e6%95%88%e6%9e%9c%e5%87%8f%e4%b8%80%e5%8d%8a.md.html" id="24 性能压测：压测不完善，效果减一半.md.html">24 性能压测：压测不完善，效果减一半.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/%e7%ad%94%e7%96%91%e8%af%be%e5%a0%82%20%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="答疑课堂 思考题答案（一）.md.html">答疑课堂 思考题答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e4%b8%ba%e8%80%85%e5%b8%b8%e6%88%90%ef%bc%8c%e8%a1%8c%e8%80%85%e5%b8%b8%e8%87%b3.md.html" id="结束语 为者常成，行者常至.md.html">结束语 为者常成，行者常至.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="10 稀疏索引：为什么高并发写不推荐关系数据库？" id="title">10 稀疏索引：为什么高并发写不推荐关系数据库？</h1>
+<div><p>你好，我是徐长龙。</p>
+<p>从这一章起，我们来学习如何优化<strong>写多读少</strong>的系统。说到高并发写，就不得不提及新分布式数据库HTAP，它实现了OLAP和OLTP的融合，可以同时提供数据分析挖掘和关系查询。</p>
+<p>事实上，HTAP的OLAP并不是大数据，或者说它并不是我们印象中每天拿几T的日志过来用于离线分析计算的那个大数据。这里更多的是指数据挖掘的最后一环，也就是数据挖掘结果对外查询使用的场景。</p>
+<p>对于这个范围的服务，在行业中比较出名的实时数据统计分析的服务有ElasticSearch、ClickHouse，虽然它们的QPS不高，但是能够充分利用系统资源，对大量数据做统计、过滤、查询。但是，相对地，为什么MySQL这种关系数据库不适合做类似的事情呢？这节课我们一起分析分析。</p>
+<h2 id="b-tree索引与数据量">B+Tree索引与数据量</h2>
+<p>MySQL我们已经很熟悉了，我们常常用它做业务数据存储查询以及信息管理的工作。相信你也听过“一张表不要超过2000万行数据”这句话，为什么会有这样的说法呢？</p>
+<p>核心在于MySQL数据库的索引，实现上和我们的需求上有些冲突。具体点说，我们对外的服务基本都要求实时处理，在保证高并发查询的同时，还需要在一秒内找出数据并返回给用户，这意味着对数据大小以及数据量的要求都非常高高。</p>
+<p>MySQL为了达到这个效果，几乎所有<strong>查询</strong>都是通过索引去<strong>缩小扫描数据的范围</strong>，然后再回到表中对范围内数据进行<strong>遍历加工、过滤</strong>，最终拿到我们的业务需要的数据。</p>
+<p>事实上，<strong>并不是MySQL不能存储更多的数据，而限制我们的多数是数据查询效率问题</strong>。</p>
+<p>那么MySQL限制查询效率的地方有哪些？请看下图：</p>
+<p><img alt="图片" src="assets/d0c22f1a55114a77a9bbd0d7c307569e.jpg"/></p>
+<p>众所周知，MySQL的InnoDB数据库的索引是B+Tree，<strong>B+Tree的特点在于只有在最底层才会存储真正的数据ID，通过这个ID就可以提取到数据的具体内容</strong>，同时B+Tree索引最底层的数据是按索引字段顺序进行存储的。</p>
+<p>通过<strong>这种设计方式，我们只需进行1～3次IO（树深度决定了IO次数）就能找到所查范围内排序好的数据</strong>，而树形的索引最影响查询效率的是<strong>树的深度以及数据量</strong>（数据越独特，筛选的数据范围就越少）。</p>
+<p>数据量我么很好理解，只要我们的索引字段足够独特，筛选出来的数据量就是可控的。</p>
+<p>但是什么会影响到索引树的深度个数呢？这是因为MySQL的索引是使用Page作为单位进行存储的，而每页只能存储16KB（innodb_page_size）数据。如果我们每行数据的索引是1KB，那么除去Page页的一些固定结构占用外，一页只能放16条数据，这导致树的一些分支装不下更多数据时，我么就需要对索引的深度再加一层。</p>
+<p>我们从这个Page就可以推导出：索引第一层放16条，树第二层大概能放2万条，树第三层大概能放2400万条，三层的深度B+Tree按主键查找数据每次查询需要<strong>3次IO</strong>（一层索引在内存，IO两次索引，最后一次是拿数据）。</p>
+<p>不过这个2000万并不是绝对的，如果我们的每行数据是0.5KB，那么大概在4000万以后才会出现第四层深度。而对于辅助索引，一页Page能存放1170个索引节点（主键bigint8字节+数据指针6字节），三层深度的辅助索引大概能记录10亿条索引记录。</p>
+<p>可以看到，我们的数据存储数量超过三层时，每次数据操作<strong>需要更多的IO操作</strong>来进行查询，这样做的后果就是查询数据返回的速度变慢。所以，很多互联网系统为了保持服务的高效，会定期整理数据。</p>
+<p><img alt="图片" src="assets/1f3c08fa44b74ba08d6118ab06f4e7e3.jpg"/></p>
+<p>通过上面的讲解，相信你已经对整个查询有画面感了：当我们查询时，通过1～3次IO查找辅助索引，从而找到一批数据主键ID。然后，通过MySQL的MMR算法将这些ID做排序，再回表去<strong>聚簇索引</strong>按取值范围提取在子叶上的业务数据，将这些数据边取边算或一起取出再进行聚合排序后，之后再返回结果。</p>
+<p>可以看到，我们常用的数据库之所以快，核心在于索引用得好。由于加工数据光用索引是无法完成的，我们还需要找到具体的数据进行再次加工，才能得到我们业务所需的数据，这也是为什么<strong>我们的字段数据长度和数据量会直接影响我们对外服务的响应速度</strong>。</p>
+<p>同时请你注意，我们一个表不能增加过多的索引，因为索引太多会影响到表插入的性能。并且我们的查询要遵循左前缀原则来逐步缩小查找的数据范围，而不能利用多个CPU并行去查询索引数据。这些大大限制了我们对大数据的处理能力。</p>
+<p>另外，如果有数据持续高并发插入数据库会导致MySQL集群工作异常、主库响应缓慢、主从同步延迟加大等问题。<strong>从部署结构上来说，MySQL只有主从模式</strong>，大批量的数据写操作只能由主库承受，当我们数据写入缓慢时客户端只能等待服务端响应，严重影响数据写入效率。</p>
+<p>看到这里，相信你已经理解为什么关系型数据库并不适合太多的数据，其实OLAP的数据库也不一定适合大量的数据，正如我提到的OLAP提供的服务很多也需要实时响应，所以很多时候这类数据库对外提供服务的时候，计算用的数据也是做过深加工的。但即使如此，OLAP和OLTP底层实现仍旧有很多不同。</p>
+<p>我们先来分析索引的不同。OLTP常用的是B+Tree，我们知道，B+tree索引是一个整体的树，当我们的数据量大时会影响索引树的深度，如果深度过高就会严重影响其工作效率。对于大量数据，OLAP服务会用什么类型的索引呢？</p>
+<h2 id="稀疏索引lsm-tree与存储">稀疏索引LSM Tree与存储</h2>
+<p>这里重点介绍一下LSM索引。我第一次见到LSM Tree还是从RocksDB（以及LevelDB）上看到的，RocksDB之所以能够得到快速推广并受到欢迎，主要是因为它利用了<strong>磁盘顺序写性能超绝</strong>的特性，并以较小的性能查询代价提供了写多读少的KV数据存储查询服务，这和关系数据库的存储有很大的不同。</p>
+<p>为了更好理解，我们详细讲讲Rocksdb稀疏索引是如何实现的，如下图所示：<img alt="图片" src="assets/e13a5d66c5574a3cb8cbb879059dd3a4.jpg"/></p>
+<p>我们前面讲过，B+Tree是一个大树，它是一个聚合的完整整体，任何数据的增删改都是在这个整体内进行操作，这就导致了大量的随机读写IO。</p>
+<p>RocksDB LSM则不同，它是由一棵棵小树组成，当我们新数据写入时会在内存中暂存，这样能够获得非常大的写并发处理能力。而当内存中数据积累到一定程度后，会将内存中数据和索引做<strong>顺序写</strong>，落地形成一个数据块。</p>
+<p>这个数据块内保存着一棵小树和具体的数据，新生成的数据块会保存在Level 0 层（最大有几层可配置），Level 0 层会有多个类似的数据块文件。结构如下图所示：</p>
+<p><img alt="图片" src="assets/c70aa78532c84a6e9e887829a89be6f7.jpg"/></p>
+<p>每一层的数据块和数据量超过一定程度时，RocksDB合并不同Level的数据，将多个数据块内的数据和索引合并在一起，并推送到Level的下一层。通过这个方式，每一层的数据块个数和数据量就能保持一定的数量，合并后的数据会更紧密、更容易被找到。</p>
+<p>这样的设计，可以让一个Key存在于多个Level或者数据块中，但是最新的常用的数据肯定是在Level最顶部或内存（0～4层，0为顶部）中最新的数据块内。</p>
+<p><img alt="图片" src="assets/f64327d8b2c44d62898b9ec007f42387.jpg"/></p>
+<p>而当我们查询一个key的时候，RocksDB会先查内存。如果没找到，会从Level 0层到下层，每层按生成最新到最老的顺序去查询每层的数据块。同时为了减少IO次数，每个数据块都会有一个BloomFIlter辅助索引，来辅助确认这个数据块中是否<strong>可能有</strong>对应的Key；如果当前数据块没有，那么可以快速去找下一个数据块，直到找到为止。当然，最惨的情况是遍历所有数据块。</p>
+<p>可以看到，这个方式虽然放弃了整体索引的一致性，却换来了更高效的写性能。在读取时通过<strong>遍历所有子树来</strong>查找，减少了写入时对树的合并代价。</p>
+<p>LSM这种方式的数据存储在OLAP数据库中很常用，因为OLAP多数属于<strong>写多读少</strong>，而当我们使用OLAP对外提供数据服务的时候，多数会通过缓存来帮助数据库承受更大的读取压力。</p>
+<h2 id="列存储数据库">列存储数据库</h2>
+<p>说到这里，不得不提OLAP数据库和OLTP数据之间的另一个区别。我们常用的关系型数据库，属于行式存储数据库Row-based，表数据结构是什么样，它就会按表结构的字段顺序进行存储；而大数据挖掘使用的数据库普遍使用列式存储（Column-based），原因在于我们用关系数据库保存的多数是实体属性和实体关系，很多查询每一列都是不可或缺的。</p>
+<p><img alt="图片" src="assets/62427f3c5e7748a0b4997caa71898f5e.jpg"/>-
+<img alt="图片" src="assets/a222d39d68fe478a9302d6bcab41aef2.jpg"/></p>
+<p>但是，实时数据分析则相反，很多情况下常用一行表示一个用户或主要实体（聚合根），而列保存这个用户或主要实体是否买过某物、使用过什么App、去过哪里、开什么车、点过什么食品、哪里人等等。</p>
+<p>这样组织出来的数据，做数据挖掘、分析对比很方便，不过也会导致一个表有成百上千个字段，如果用行存储的数据引擎，我们对数据的筛选是一行行进行读取的，会浪费大量的IO读取。</p>
+<p>而列存储引擎可以指定用什么字段读取所需字段的数据，并且这个方式能够充分利用到磁盘顺序读写的性能，大大提高这种列筛选式的查询，并且列方式更好进行数据压缩，在实时计算领域做数据统计分析的时候，表现会更好。</p>
+<p><img alt="" src="assets/a62949813e74442dba78f316669dc39e.jpg"/></p>
+<p>到了这里相信你已经发现，使用场景不同，数据底层的实现也需要不同的方式才能换来更好的性能和性价比。随着行业变得更加成熟，这些需求和特点会不断挖掘、总结、合并到我们的底层服务当中，逐渐降低我们的工作难度和工作量。</p>
+<h2 id="htap">HTAP</h2>
+<p>通过前面的讲解，我么可以看到OLAP和OLTP数据库各有特点，并且有不同的发展方向，事实上它们对外提供的数据查询服务都是期望实时快速的，而不同在于如何存储和查找索引。</p>
+<p>最近几年流行将两者结合成一套数据库集群服务，同时提供OLAP以及OLTP服务，并且相互不影响，实现行数据库与列数据库的互补。</p>
+<p>2022年国产数据库行业内OceanBase、PolarDB等云厂商提供的分布式数据库都在紧锣密鼓地开始支持HTAP。这让我们可以保存同一份数据，根据不同查询的范围触发不同的引擎，共同对外提供数据服务。</p>
+<p>可以看到，未来的某一天，我们的数据库既能快速地实时分析，又能快速提供业务数据服务。逐渐地，数据服务底层会出现多套存储、索引结构来帮助我们更方便地实现数据库。</p>
+<p>而目前常见的HTAP实现方式，普遍采用一个服务集群内同一套数据支持多种数据存储方式（行存储、列存储），通过对数据提供不同的索引来实现OLAP及OLTP需求，而用户在查询时，可以指定或由数据库查询引擎根据SQL和数据情况，自动选择使用哪个引擎来优化查询。</p>
+<h2 id="总结">总结</h2>
+<p>这节课，我们讨论了OLAP和OLTP数据库的索引、存储、数据量以及应用的不同场景。</p>
+<p>OLAP相对于关系数据库的数据存储量会更多，并且对于大量数据批量写入支持很好。很多情况下，高并发批量写数据很常见，其表的字段会更多，数据的存储多数是用列式方式存储，而数据的索引用的则是列索引，通过这些即可实现实时大数据计算结果的查询和分析。</p>
+<p>相对于离线计算来说，这种方式更加快速方便，唯一的缺点在于这类服务都需要多台服务器做分布式，成本高昂。</p>
+<p>可以看出，我们使用的场景不同决定了我们的数据底层如何去做更高效，HTAP的出现，让我们在不同的场景中有了更多的选择，毕竟大数据挖掘是一个很庞大的数据管理体系，如果能有一个轻量级的OLAP，会让我们的业务拥有更多的可能。</p>
+<h2 id="思考题">思考题</h2>
+<p>最后，请你思考一下：列存储数据库为什么能够提高OLAP查找性能？</p>
+<p>欢迎你在留言区与我交流讨论，我们下节课见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#076b6b6b3e333636373047606a666e6b2964686a" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93590d6bcf101737',t:'MTc0NTUzMzkwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

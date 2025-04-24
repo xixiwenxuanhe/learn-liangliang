@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="09 分布式事务：多服务的2PC、TCC都是怎么实现的？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>09 分布式事务：多服务的2PC、TCC都是怎么实现的？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%ef%bc%8c%e6%8a%80%e6%9c%af%e5%ae%9e%e5%8a%9b%e7%9a%84%e8%af%95%e9%87%91%e7%9f%b3.md.html" id="00 开篇词 高并发系统，技术实力的试金石.md.html">00 开篇词 高并发系统，技术实力的试金石.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bb%93%e6%9e%84%e6%a2%b3%e7%90%86%ef%bc%9a%e5%a4%a7%e5%b9%b6%e5%8f%91%e4%b8%8b%ef%bc%8c%e4%bd%a0%e7%9a%84%e6%95%b0%e6%8d%ae%e5%ba%93%e8%a1%a8%e5%8f%af%e8%83%bd%e6%88%90%e4%b8%ba%e6%80%a7%e8%83%bd%e9%9a%90%e6%82%a3.md.html" id="01 结构梳理：大并发下，你的数据库表可能成为性能隐患.md.html">01 结构梳理：大并发下，你的数据库表可能成为性能隐患.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/02%20%e7%bc%93%e5%ad%98%e4%b8%80%e8%87%b4%ef%bc%9a%e8%af%bb%e5%a4%9a%e5%86%99%e5%b0%91%e6%97%b6%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e6%9b%b4%e6%96%b0%e7%bc%93%e5%ad%98%e4%b8%8d%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="02 缓存一致：读多写少时，如何解决数据更新缓存不同步？.md.html">02 缓存一致：读多写少时，如何解决数据更新缓存不同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/03%20Token%ef%bc%9a%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%e7%94%a8%e6%88%b7%e8%ba%ab%e4%bb%bd%e9%89%b4%e6%9d%83%e7%9a%84%e6%b5%81%e9%87%8f%e5%8e%8b%e5%8a%9b%ef%bc%9f.md.html" id="03 Token：如何降低用户身份鉴权的流量压力？.md.html">03 Token：如何降低用户身份鉴权的流量压力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%90%8c%e5%9f%8e%e5%8f%8c%e6%b4%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e6%88%bf%e4%b9%8b%e9%97%b4%e7%9a%84%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%ef%bc%9f.md.html" id="04 同城双活：如何实现机房之间的数据同步？.md.html">04 同城双活：如何实现机房之间的数据同步？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/05%20%e5%85%b1%e8%af%86Raft%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%a4%9a%e6%9c%ba%e6%88%bf%e6%95%b0%e6%8d%ae%e7%9a%84%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9f.md.html" id="05 共识Raft：如何保证多机房数据的一致性？.md.html">05 共识Raft：如何保证多机房数据的一致性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/06%20%e9%a2%86%e5%9f%9f%e6%8b%86%e5%88%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%90%88%e7%90%86%e5%9c%b0%e6%8b%86%e5%88%86%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="06 领域拆分：如何合理地拆分系统？.md.html">06 领域拆分：如何合理地拆分系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/07%20%e5%bc%ba%e4%b8%80%e8%87%b4%e9%94%81%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e9%ab%98%e5%b9%b6%e5%8f%91%e4%b8%8b%e7%9a%84%e5%ba%93%e5%ad%98%e4%ba%89%e6%8a%a2%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="07 强一致锁：如何解决高并发下的库存争抢问题？.md.html">07 强一致锁：如何解决高并发下的库存争抢问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/08%20%e7%b3%bb%e7%bb%9f%e9%9a%94%e7%a6%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ba%94%e5%af%b9%e9%ab%98%e5%b9%b6%e5%8f%91%e6%b5%81%e9%87%8f%e5%86%b2%e5%87%bb%ef%bc%9f.md.html" id="08 系统隔离：如何应对高并发流量冲击？.md.html">08 系统隔离：如何应对高并发流量冲击？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/09%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%ef%bc%9a%e5%a4%9a%e6%9c%8d%e5%8a%a1%e7%9a%842PC%e3%80%81TCC%e9%83%bd%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="09 分布式事务：多服务的2PC、TCC都是怎么实现的？.md.html">09 分布式事务：多服务的2PC、TCC都是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/10%20%e7%a8%80%e7%96%8f%e7%b4%a2%e5%bc%95%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%ab%98%e5%b9%b6%e5%8f%91%e5%86%99%e4%b8%8d%e6%8e%a8%e8%8d%90%e5%85%b3%e7%b3%bb%e6%95%b0%e6%8d%ae%e5%ba%93%ef%bc%9f.md.html" id="10 稀疏索引：为什么高并发写不推荐关系数据库？.md.html">10 稀疏索引：为什么高并发写不推荐关系数据库？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/11%20%e9%93%be%e8%b7%af%e8%bf%bd%e8%b8%aa%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9a%e5%88%b6%e4%b8%80%e4%b8%aa%e5%88%86%e5%b8%83%e5%bc%8f%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%e7%b3%bb%e7%bb%9f%20%ef%bc%9f.md.html" id="11 链路追踪：如何定制一个分布式链路跟踪系统 ？.md.html">11 链路追踪：如何定制一个分布式链路跟踪系统 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/12%20%e5%bc%95%e6%93%8e%e5%88%86%e7%89%87%ef%bc%9aElasticsearch%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%a3%80%e7%b4%a2%ef%bc%9f.md.html" id="12 引擎分片：Elasticsearch如何实现大数据检索？.md.html">12 引擎分片：Elasticsearch如何实现大数据检索？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/13%20%e5%ae%9e%e6%97%b6%e7%bb%9f%e8%ae%a1%ef%bc%9a%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%e5%ae%9e%e6%97%b6%e8%ae%a1%e7%ae%97%e4%b8%ad%e7%9a%84%e5%ae%9e%e7%94%a8%e7%ae%97%e6%b3%95.md.html" id="13 实时统计：链路跟踪实时计算中的实用算法.md.html">13 实时统计：链路跟踪实时计算中的实用算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/14%20%e8%b7%b3%e6%95%b0%e7%b4%a2%e5%bc%95%ef%bc%9a%e5%90%8e%e8%b5%b7%e6%96%b0%e7%a7%80ClickHouse.md.html" id="14 跳数索引：后起新秀ClickHouse.md.html">14 跳数索引：后起新秀ClickHouse.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%ae%9e%e8%b7%b5%e6%96%b9%e6%a1%88%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8C++%e8%87%aa%e5%ae%9e%e7%8e%b0%e9%93%be%e8%b7%af%e8%b7%9f%e8%b8%aa%ef%bc%9f.md.html" id="15 实践方案：如何用C++自实现链路跟踪？.md.html">15 实践方案：如何用C++自实现链路跟踪？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/16%20%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%ef%bc%9a%e7%94%a8%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%e5%81%9a%e6%9c%8d%e5%8a%a1%e4%bc%9a%e9%81%87%e5%88%b0%e5%93%aa%e4%ba%9b%e5%9d%91%ef%bc%9f.md.html" id="16 本地缓存：用本地缓存做服务会遇到哪些坑？.md.html">16 本地缓存：用本地缓存做服务会遇到哪些坑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/17%20%e4%b8%9a%e5%8a%a1%e8%84%9a%e6%9c%ac%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4%e5%8f%af%e7%bc%96%e7%a8%8b%e8%ae%a2%e9%98%85%e5%bc%8f%e7%bc%93%e5%ad%98%e6%9c%8d%e5%8a%a1%e6%9b%b4%e6%9c%89%e7%94%a8%ef%bc%9f.md.html" id="17 业务脚本：为什么说可编程订阅式缓存服务更有用？.md.html">17 业务脚本：为什么说可编程订阅式缓存服务更有用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/18%20%e6%b5%81%e9%87%8f%e6%8b%86%e5%88%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e7%bc%93%e8%a7%a3%e6%b5%81%e9%87%8f%e5%8e%8b%e5%8a%9b%ef%bc%9f.md.html" id="18 流量拆分：如何通过架构设计缓解流量压力？.md.html">18 流量拆分：如何通过架构设计缓解流量压力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/19%20%e6%b5%81%e9%87%8f%e8%b0%83%e5%ba%a6%ef%bc%9aDNS%e3%80%81%e5%85%a8%e7%ab%99%e5%8a%a0%e9%80%9f%e5%8f%8a%e6%9c%ba%e6%88%bf%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1.md.html" id="19 流量调度：DNS、全站加速及机房负载均衡.md.html">19 流量调度：DNS、全站加速及机房负载均衡.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/20%20%e6%95%b0%e6%8d%ae%e5%bc%95%e6%93%8e%ef%bc%9a%e7%bb%9f%e4%b8%80%e7%bc%93%e5%ad%98%e6%95%b0%e6%8d%ae%e5%b9%b3%e5%8f%b0.md.html" id="20 数据引擎：统一缓存数据平台.md.html">20 数据引擎：统一缓存数据平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/21%20%e4%b8%9a%e5%8a%a1%e7%bc%93%e5%ad%98%ef%bc%9a%e5%85%83%e6%95%b0%e6%8d%ae%e6%9c%8d%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="21 业务缓存：元数据服务如何实现？.md.html">21 业务缓存：元数据服务如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/22%20%e5%ad%98%e5%82%a8%e6%88%90%e6%9c%ac%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8e%a8%e7%ae%97%e6%97%a5%e5%bf%97%e4%b8%ad%e5%bf%83%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%88%90%e6%9c%ac%ef%bc%9f.md.html" id="22 存储成本：如何推算日志中心的实现成本？.md.html">22 存储成本：如何推算日志中心的实现成本？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/23%20%e7%bd%91%e5%85%b3%e7%bc%96%e7%a8%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e7%94%a8%e6%88%b7%e7%bd%91%e5%85%b3%e5%92%8c%e7%bc%93%e5%ad%98%e9%99%8d%e4%bd%8e%e7%a0%94%e5%8f%91%e6%88%90%e6%9c%ac%ef%bc%9f.md.html" id="23 网关编程：如何通过用户网关和缓存降低研发成本？.md.html">23 网关编程：如何通过用户网关和缓存降低研发成本？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/24%20%e6%80%a7%e8%83%bd%e5%8e%8b%e6%b5%8b%ef%bc%9a%e5%8e%8b%e6%b5%8b%e4%b8%8d%e5%ae%8c%e5%96%84%ef%bc%8c%e6%95%88%e6%9e%9c%e5%87%8f%e4%b8%80%e5%8d%8a.md.html" id="24 性能压测：压测不完善，效果减一半.md.html">24 性能压测：压测不完善，效果减一半.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/%e7%ad%94%e7%96%91%e8%af%be%e5%a0%82%20%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="答疑课堂 思考题答案（一）.md.html">答疑课堂 思考题答案（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e4%b8%ba%e8%80%85%e5%b8%b8%e6%88%90%ef%bc%8c%e8%a1%8c%e8%80%85%e5%b8%b8%e8%87%b3.md.html" id="结束语 为者常成，行者常至.md.html">结束语 为者常成，行者常至.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="09 分布式事务：多服务的2PC、TCC都是怎么实现的？" id="title">09 分布式事务：多服务的2PC、TCC都是怎么实现的？</h1>
+<div><p>你好，我是徐长龙，今天这节课我们聊聊分布式事务。</p>
+<p>目前业界流行微服务，DDD领域驱动设计也随之流行起来。DDD是一种拆分微服务的方法，它从业务流程的视角从上往下拆分领域，通过聚合根关联多个领域，将多个流程聚合在一起，形成独立的服务。相比由数据表结构设计出的微服务，DDD这种方式更加合理，但也加大了分布式事务的实现难度。</p>
+<p>在传统的分布式事务实现方式中，我们普遍会将一个完整的事务放在一个独立的项目中统一维护，并在一个数据库中统一处理所有的操作。这样在出现问题时，直接一起回滚，即可保证数据的互斥和统一性。</p>
+<p>不过，<strong>这种方式的服务复用性和隔离性较差，很多核心业务为了事务的一致性只能聚合在一起。</strong></p>
+<p>为了保证一致性，事务在执行期间会互斥锁定大量的数据，导致服务整体性能存在瓶颈。<strong>而非核心业务要想在隔离要求高的系统架构中，实现跨微服务的事务，难度更大，</strong>因为核心业务基本不会配合非核心业务做改造，再加上核心业务经常随业务需求改动（聚合的业务过多），结果就是非核心业务没法做事务，核心业务也无法做个性化改造。</p>
+<p>也正因为如此，多个系统要想在互动的同时保持事务一致性，是一个令人头疼的问题，业内很多非核心业务无法和核心模块一起开启事务，经常出现操作出错，需要人工补偿修复的情况。</p>
+<p>尤其在微服务架构或用DDD方式实现的系统中，服务被拆分得更细，并且都是独立部署，拥有独立的数据库，这就导致要想保持事务一致性实现就更难了，因此跨越多个服务实现分布式事务已成为刚需。</p>
+<p>好在目前业内有很多实现分布式事务的方式，比如2PC、3PC、TCC等，但究竟用哪种比较合适呢？这是我们需要重点关注的。因此，这节课我会带你对分布式事务做一些讨论，让你对分布式事务有更深的认识，帮你做出更好的决策。</p>
+<h2 id="xa协议">XA协议</h2>
+<p>在讲分布式事务之前，我们先认识一下XA协议。</p>
+<p>XA协议是一个很流行的分布式事务协议，可以很好地支撑我们实现分布式事务，比如常见的2PC、3PC等。这个协议适合在多个数据库中，协调分布式事务，目前Oracle、DB2、MySQL 5.7.7以上版本都支持它（虽然有很多bug）。而理解了XA协议，对我们深入了解分布式事务的本质很有帮助。</p>
+<p>支持XA协议的数据库可以在客户端断开的情况下，将执行好的业务结果暂存起来，直到另外一个进程确认才会最终提交或回滚事务，这样就能轻松实现多个数据库的事务一致性。</p>
+<p>在XA协议里有三个主要的角色：</p>
+<ul>
+<li><strong>应用（AP）</strong>：应用是具体的业务逻辑代码实现，业务逻辑通过请求事务协调器开启全局事务，在事务协调器注册多个子事务后，业务代码会依次给所有参与事务的子业务下发请求。待所有子业务提交成功后，业务代码根据返回情况告诉事务协调器各个子事务的执行情况，由事务协调器决策子事务是提交还是回滚（有些实现是事务协调器发请求给子服务）。</li>
+<li><strong>事务协调器（TM）</strong>：用于创建主事务，同时协调各个子事务。事务协调器会根据各个子事务的执行情况，决策这些子事务最终是提交执行结果，还是回滚执行结果。此外，事务协调器很多时候还会自动帮我们提交事务；</li>
+<li><strong>资源管理器（RM）</strong>：是一种支持事务或XA协议的数据资源，比如MySQL、Redis等。</li>
+</ul>
+<p>另外，XA还对分布式事务规定了两个阶段：Prepare阶段和Commit阶段。</p>
+<p><strong>在Prepare阶段</strong>，<strong>事务协调器</strong>会通过xid（事务唯一标识，由业务或事务协调器生成）协调多个资源管理器执行<strong>子事务</strong>，所有子事务执行成功后会向事务协调器汇报。</p>
+<p>这时的子事务执行成功是指事务内SQL执行成功，并没有执行事务的最终commit（提交），所有子事务是提交还是回滚，需要等事务协调器做最终决策。</p>
+<p>接着分布式事务<strong>进入Commit阶段</strong>：当<strong>事务协调器</strong>收到所有资源管理器成功执行子事务的消息后，会记录事务执行成功，并对子事务做真正提交。如果Prepare阶段有子事务失败，或者事务协调器在一段时间内没有收到所有子事务执行成功的消息，就会通知所有资源管理器对子事务执行回滚的操作。</p>
+<p>需要说明的是，每个子事务都有多个状态，每个状态的流转情况如下图所示：</p>
+<p><img alt="" src="assets/9ba2b17f7f8c417faffc06c36bc25103.jpg"/></p>
+<p>如上图，子事务有四个阶段的状态：</p>
+<ul>
+<li><strong>ACTIVE：</strong>子事务SQL正在执行中；</li>
+<li><strong>IDLE：</strong>子事务执行完毕等待切换Prepared状态，如果本次操作不参与回滚，就可以直接提交完成；</li>
+<li><strong>PREPARED：</strong>子事务执行完毕，等待其他服务实例的子事务全部Ready。</li>
+<li><strong>COMMITED/FAILED：</strong>所有子事务执行成功/失败后，一起提交或回滚。</li>
+</ul>
+<p>下面我们来看XA协调两个事务的具体流程，这里我拿最常见的2PC方式为例进行讲解。</p>
+<p><img alt="图片" src="assets/ea15dd6f4dbe4b4a9949b709c0b5c33b.jpg"/></p>
+<p>如上图所示，在协调两个服务Application 1和Application 2时，业务会先请求事务协调器创建全局事务，同时生成全局事务的唯一标识xid，然后再在事务协调器里分别注册两个子事务，生成每个子事务对应的xid。这里说明一下，xid由gtrid+bqual+formatID组成，多个子事务的gtrid是相同的，但其他部分必须区分开，防止这些服务在一个数据库下。</p>
+<p>那么有了子事务的xid，被请求的服务会通过xid标识开启XA子事务，让XA子事务执行业务操作。当事务数据操作都执行完毕后，子事务会执行Prepare指令，将子事务标注为Prepared状态，然后以同样的方式执行xid2事务。</p>
+<p>所有子事务执行完毕后，Prepared状态的XA事务会暂存在MySQL中，即使业务暂时断开，事务也会存在。这时，业务代码请求事务协调器通知所有申请的子事务全部执行成功。与此同时，TM会通知RM1和RM2执行最终的commit（或调用每个业务封装的提交接口）。</p>
+<p>至此，整个事务流程执行完毕。而在Prepare阶段，如果有子事务执行失败，程序或事务协调器，就会通知所有已经在Prepared状态的事务执行回滚。</p>
+<p>以上就是XA协议实现多个子系统的事务一致性的过程，可以说大部分的分布式事务都是使用类似的方式实现的。下面我们通过一个案例，看看XA协议在MySQL中的指令是如何使用的。</p>
+<h2 id="mysql-xa的2pc分布式事务">MySQL XA的2PC分布式事务</h2>
+<p>在进入案例之前，你可以先了解一下MySQL中，所有关XA协议的指令集，以方便接下来的学习：</p>
+<pre><code class="language-sql"># 开启一个事务Id为xid的XA子事务
+# gtrid是事务主ID，bqual是子事务标识
+# formatid是数据类型标注 类似format type
+XA {START|BEGIN} xid[gtrid[,bqual[,format_id]]] [JOIN|RESUME] 
+
+# 结束xid的子事务，这个事务会标注为IDLE状态
+# 如果IDEL状态直接执行XA COMMIT提交那么就是 1PC
+XA END xid [SUSPEND [FOR MIGRATE]] 
+
+# 让子事务处于Prepared状态，等待其他子事务处理后，后续统一最终提交或回滚
+# 另外 在这个操作之前如果断开链接，之前执行的事务都会回滚
+XA PREPARE xid 
+
+# 上面不同子事务 用不同的xid(gtrid一致，如果在一个实例bqual必须不同)
+
+# 指定xid子事务最终提交
+XA COMMIT xid [ONE PHASE] 
+XA ROLLBACK xid 子事务最终回滚
+
+# 查看处于Prepared状态的事务
+# 我们用这个来确认事务进展情况，借此决定是否整体提交
+# 即使提交链接断开了，我们用这个仍旧能看到所有的PrepareD状态的事务
+# 
+XA RECOVER [CONVERT XID] 
+</code></pre>
+<p>言归正传，我们以购物场景为例，在购物的整个事务流程中，需要协调的服务有三个：<strong>用户钱包、商品库存和用户购物订单，</strong>它们的数据都放在私有的数据库中。</p>
+<p><img alt="图片" src="assets/5a76f465a05d45d6b2878e600900a658.jpg"/></p>
+<p>按照业务流程，用户在购买商品时，系统需要执行扣库存、生成购物订单和扣除用户账户余额的操作 。其中，“扣库存”和“扣除用户账户余额”是为了保证数据的准确和一致性，所以扣减过程中，要在事务操作期间锁定互斥的其他线程操作保证一致性，然后通过2PC方式，对三个服务实现事务协调。</p>
+<p>具体实现代码如下：</p>
+<pre><code class="language-go">package main
+import (
+   "database/sql"
+   "fmt"
+   _ "github.com/go-sql-driver/mysql"
+   "strconv"
+   "time"
+)
+func main() {
+   // 库存的连接
+   stockDb, err := sql.Open("mysql", "root:paswd@tcp(127.0.0.1:3306)/shop_product_stock")
+   if err != nil {
+      panic(err.Error())
+   }
+   defer stockDb.Close()
+   //订单的连接
+   orderDb, err := sql.Open("mysql", "root:paswd@tcp(127.0.0.1:3307)/shop_order")
+   if err != nil {
+      panic(err.Error())
+   }
+   defer orderDb.Close()
+   //钱包的连接
+   moneyDb, err := sql.Open("mysql", "root:paswd@tcp(127.0.0.1:3308)/user_money_bag")
+   if err != nil {
+      panic(err.Error())
+   }
+   defer moneyDb.Close()
+   
+   // 生成xid(如果在同一个数据库，子事务不能使用相同xid)
+   xid := strconv.FormatInt(time.Now().UnixMilli(), 10)
+   //如果后续执行过程有报错，那么回滚所有子事务
+   defer func() {
+      if err := recover(); err != nil {
+         stockDb.Exec("XA ROLLBACK ?", xid)
+         orderDb.Exec("XA ROLLBACK ?", xid)
+         moneyDb.Exec("XA ROLLBACK ?", xid)
+      }
+   }()
+ 
+   // 第一阶段 Prepare
+   // 库存 子事务启动
+   if _, err = stockDb.Exec("XA START ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //扣除库存，这里省略了数据行锁操作
+   if _, err = stockDb.Exec("update product_stock set stock=stock-1 where id =1"); err != nil {
+      panic(err.Error())
+   }
+   //事务执行结束
+   if _, err = stockDb.Exec("XA END ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //设置库存任务为Prepared状态
+   if _, err = stockDb.Exec("XA PREPARE ?", xid); err != nil {
+      panic(err.Error())
+   }
+
+   // 订单 子事务启动
+   if _, err = orderDb.Exec("XA START ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //创建订单
+   if _, err = orderDb.Exec("insert shop_order(id,pid,xx) value (1,2,3)"); err != nil {
+      panic(err.Error())
+   }
+   //事务执行结束
+   if _, err = orderDb.Exec("XA END ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //设置任务为Prepared状态
+   if _, err = orderDb.Exec("XA PREPARE ?", xid); err != nil {
+      panic(err.Error())
+   }
+   
+   // 钱包 子事务启动
+   if _, err = moneyDb.Exec("XA START ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //扣减用户账户现金，这里省略了数据行锁操作
+   if _, err = moneyDb.Exec("update user_money_bag set money=money-1 where id =9527"); err != nil {
+      panic(err.Error())
+   }
+   //事务执行结束
+   if _, err = moneyDb.Exec("XA END ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //设置任务为Prepared状态
+   if _, err = moneyDb.Exec("XA PREPARE ?", xid); err != nil {
+      panic(err.Error())
+   }
+   // 在这时，如果链接断开、Prepared状态的XA事务仍旧在MySQL存在
+   // 任意一个链接调用XA RECOVER都能够看到这三个没有最终提交的事务
+   
+   // --------
+   // 第二阶段 运行到这里没有任何问题
+   // 那么执行 commit
+   // --------
+   if _, err = stockDb.Exec("XA COMMIT ?", xid); err != nil {
+      panic(err.Error())
+   }
+   if _, err = orderDb.Exec("XA COMMIT ?", xid); err != nil {
+      panic(err.Error())
+   }
+   if _, err = moneyDb.Exec("XA COMMIT ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //到这里全部流程完毕
+}
+</code></pre>
+<p>可以看到，MySQL通过XA指令轻松实现了多个库或多个服务的事务一致性提交。</p>
+<p>可能你会想，为什么在上面的代码中没有看到事务协调器的相关操作？这里我们不妨去掉子业务的具体实现，用API调用的方式看一下是怎么回事：</p>
+<pre><code class="language-go">package main
+import (
+   "database/sql"
+   "fmt"
+   _ "github.com/go-sql-driver/mysql"
+   "strconv"
+   "time"
+)
+func main() {
+   // 库存的连接
+   stockDb, err := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/shop_product_stock")
+   if err != nil {
+      panic(err.Error())
+   }
+   defer stockDb.Close()
+   //订单的连接
+   orderDb, err := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3307)/shop_order")
+   if err != nil {
+      panic(err.Error())
+   }
+   defer orderDb.Close()
+   //钱包的连接
+   moneyDb, err := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3308)/user_money_bag")
+   if err != nil {
+      panic(err.Error())
+   }
+   defer moneyDb.Close()
+   
+   // 生成xid
+   xid := strconv.FormatInt(time.Now().UnixMilli(), 10)
+   //如果后续执行过程有报错，那么回滚所有子事务
+   defer func() {
+      if err := recover(); err != nil {
+         stockDb.Exec("XA ROLLBACK ?", xid)
+         orderDb.Exec("XA ROLLBACK ?", xid)
+         moneyDb.Exec("XA ROLLBACK ?", xid)
+      }
+   }()
+ 
+   //调用API扣款，api内执行xa start、sql、xa end、xa prepare
+   if _, err = API.Call("UserMoneyBagPay", uid, price, xid); err != nil {
+      panic(err.Error())
+   }
+   //调用商品库存扣库存
+   if _, err = API.Call("ShopStockDecr", productId, 1, xid); err != nil {
+      panic(err.Error())
+   }
+   //调用API生成订单
+   if _, err = API.Call("ShopOrderCreate",productId, uid, price, xid); err != nil {
+      panic(err.Error())
+   }
+   // --------
+   // 第二阶段 运行到这里没有任何问题
+   // 那么执行 commit
+   // --------
+   if _, err = stockDb.Exec("XA COMMIT ?", xid); err != nil {
+      panic(err.Error())
+   }
+   if _, err = orderDb.Exec("XA COMMIT ?", xid); err != nil {
+      panic(err.Error())
+   }
+   if _, err = moneyDb.Exec("XA COMMIT ?", xid); err != nil {
+      panic(err.Error())
+   }
+   //到这里全部流程完毕
+}
+</code></pre>
+<p>我想你已经知道了，当前程序本身就已经实现了事务协调器的功能。其实一些开源的分布式事务组件，比如 <a href="https://seata.io/zh-cn/docs/overview/what-is-seata.html" target="_blank">seata</a>或 <a href="https://github.com/dtm-labs/dtm" target="_blank">dtm</a> 等，对事务协调器有一个更好的抽象封装，如果你感兴趣的话可以体验测试一下。</p>
+<p>而上面两个演示代码的具体执行过程如下图所示：</p>
+<p><img alt="图片" src="assets/faea8f67c2e24c1e9690e68fbae33657.jpg"/></p>
+<p>通过流程图你会发现，2PC事务不仅容易理解，实现起来也简单。</p>
+<p>不过它最大的缺点是在Prepare阶段，很多操作的数据需要先做行锁定，才能保证数据的一致性。并且应用和每个子事务的过程需要阻塞，等整个事务全部完成才能释放资源，这就导致资源锁定时间比较长，并发也不高，常有大量事务排队。</p>
+<p>除此之外，在一些特殊情况下，2PC会丢数据，比如在Commit阶段，如果事务协调器的提交操作被打断了，XA事务就会遗留在MySQL中。</p>
+<p>而且你应该已经发现了，2PC的整体设计是没有超时机制的，如果长时间不提交遗留在MySQL中的XA子事务，就会导致数据库长期被锁表。</p>
+<p>在很多开源的实现中，2PC的事务协调器会自动回滚或强制提交长时间没有提交的事务，但是如果进程重启或宕机，这个操作就会丢失了，此时就需要人工介入修复了。</p>
+<h2 id="3pc简述">3PC简述</h2>
+<p>另外提一句，分布式事务的实现除了2PC外，还有3PC。与2PC相比，3PC主要多了事务超时、多次重复尝试，以及提交check的功能。但因为确认步骤过多，很多业务的互斥排队时间会很长，所以3PC的事务失败率要比2PC高很多。</p>
+<p>为了减少3PC因资源锁定等待超时导致的重复工作，3PC做了预操作，整体流程分成三个阶段：</p>
+<ul>
+<li><strong>CanCommit阶段</strong>：为了减少因等待锁定数据导致的超时情况，提高事务成功率，事务协调器会发送消息确认资源管理器的资源锁定情况，以及所有子事务的数据库锁定数据的情况。</li>
+<li><strong>PreCommit阶段</strong>：执行2PC的Prepare阶段；</li>
+<li><strong>DoCommit阶段</strong>：执行2PC的Commit阶段。</li>
+</ul>
+<p>总体来说，3PC步骤过多，过程比较复杂，整体执行也更加缓慢，所以在分布式生产环境中很少用到它，这里我就不再过多展开了。</p>
+<h2 id="tcc协议">TCC协议</h2>
+<p>事实上，2PC和3PC都存在执行缓慢、并发低的问题，这里我再介绍一个性能更好的分布式事务TCC。</p>
+<p>TCC是Try-Confirm-Cancel的缩写，从流程上来看，它比2PC多了一个阶段，也就是将Prepare阶段又拆分成了两个阶段：Try阶段和Confirm阶段。TCC可以不使用XA，只使用普通事务就能实现分布式事务。</p>
+<p>首先在 <strong>Try阶段，</strong>业务代码会预留业务所需的全部资源，比如冻结用户账户100元、提前扣除一个商品库存、提前创建一个没有开始交易的订单等，这样可以减少各个子事务锁定的数据量。业务拿到这些资源后，后续两个阶段操作就可以无锁进行了。</p>
+<p>在 <strong>Confirm阶段</strong>，业务确认所需的资源都拿到后，子事务会并行执行这些业务。执行时可以不做任何锁互斥，也无需检查，直接执行Try阶段准备的所有资源就行。</p>
+<p>请注意，协议要求所有操作都是幂等的，以支持失败重试，因为在一些特殊情况下，比如资源锁争抢超时、网络不稳定等，操作要尝试执行多次才会成功。</p>
+<p>最后在 <strong>Cancel阶段</strong>：如果子事务在Try阶段或Confirm阶段多次执行重试后仍旧失败，TM就会执行Cancel阶段的代码，并释放Try预留的资源，同时回滚Confirm期间的内容。注意，Cancel阶段的代码也要做幂等，以支持多次执行。</p>
+<p>上述流程图如下：</p>
+<p><img alt="图片" src="assets/5e87af2a7f34494d84b2360cb532cfe3.jpg"/></p>
+<p>最后，我们总结一下TCC事务的优点：</p>
+<ul>
+<li>并发能力高，且无长期资源锁定；</li>
+<li>代码入侵实现分布式事务回滚，开发量较大，需要代码提供每个阶段的具体操作；</li>
+<li>数据一致性相对来说较好；</li>
+<li>适用于订单类业务，以及对中间状态有约束的业务。</li>
+</ul>
+<p>当然，它的缺点也很明显：</p>
+<ul>
+<li>只适合短事务，不适合多阶段的事务；</li>
+<li>不适合多层嵌套的服务；</li>
+<li>相关事务逻辑要求幂等；</li>
+<li>存在执行过程被打断时，容易丢失数据的情况。</li>
+</ul>
+<h2 id="总结">总结</h2>
+<p>通常来讲，实现分布式事务要耗费我们大量的精力和时间，硬件上的投入也不少，但当业务真的需要分布式事务时，XA协议可以给我们提供强大的数据层支撑。</p>
+<p>分布式事务的实现方式有多种，常见的有2PC、3PC、TCC等。其中，2PC可以实现多个子事务统一提交回滚，但因为要保证数据的一致性，所以它的并发性能不好。而且2PC没有超时的机制，经常会将很多XA子事务遗漏在数据库中。</p>
+<p>3PC虽然有超时的机制，但是因为交互过多，事务经常会出现超时的情况，导致事务的性能很差。如果3PC多次尝试失败超时后，它会尝试回滚，这时如果回滚也超时，就会出现丢数据的情况。</p>
+<p>TCC则可以提前预定事务中需要锁定的资源，来减少业务粒度。它使用普通事务即可完成分布式事务协调，因此相对地TCC的性能很好。但是，提交最终事务和回滚逻辑都需要支持幂等，为此需要人工要投入的精力也更多。</p>
+<p>目前，市面上有很多优秀的中间件，比如DTM、Seata，它们对分布式事务协调做了很多的优化，比如过程中如果出现打断情况，它们能够自动重试、AT模式根据业务修改的SQL自动生成回滚操作的SQL，这个相对来说会智能一些。</p>
+<p>此外，这些中间件还能支持更复杂的多层级、多步骤的事务协调，提供的流程机制也更加完善。所以在实现分布式事务时，建议使用成熟的开源加以辅助，能够让我们少走弯路。</p>
+<h2 id="思考题">思考题</h2>
+<p>现在市面上有诸多分布式实现方式，你觉得哪一种性能更好？</p>
+<p>欢迎在留言区与我交流讨论，我们下节课见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#b1dddddd888580808186f1d6dcd0d8dd9fd2dedc" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93590d4afcb0d46d',t:'MTc0NTUzMzg5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
