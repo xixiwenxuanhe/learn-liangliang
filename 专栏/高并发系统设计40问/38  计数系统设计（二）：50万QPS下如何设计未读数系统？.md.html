@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="38  计数系统设计（二）：50万QPS下如何设计未读数系统？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>38  计数系统设计（二）：50万QPS下如何设计未读数系统？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%a0%e8%a6%81%e5%ad%a6%e4%b9%a0%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="00 开篇词  为什么你要学习高并发系统设计？.md.html">00 开篇词  为什么你要学习高并发系统设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/01%20%20%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%ae%83%e7%9a%84%e9%80%9a%e7%94%a8%e8%ae%be%e8%ae%a1%e6%96%b9%e6%b3%95%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="01  高并发系统：它的通用设计方法是什么？.md.html">01  高并发系统：它的通用设计方法是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/02%20%20%e6%9e%b6%e6%9e%84%e5%88%86%e5%b1%82%ef%bc%9a%e6%88%91%e4%bb%ac%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%80%e5%ae%9a%e8%a6%81%e8%bf%99%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="02  架构分层：我们为什么一定要这么做？.md.html">02  架构分层：我们为什么一定要这么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/03%20%20%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e7%9b%ae%e6%a0%87%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8f%90%e5%8d%87%e7%b3%bb%e7%bb%9f%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="03  系统设计目标（一）：如何提升系统性能？.md.html">03  系统设计目标（一）：如何提升系统性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/04%20%20%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e7%9b%ae%e6%a0%87%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%b3%bb%e7%bb%9f%e6%80%8e%e6%a0%b7%e5%81%9a%e5%88%b0%e9%ab%98%e5%8f%af%e7%94%a8%ef%bc%9f.md.html" id="04  系统设计目标（二）：系统怎样做到高可用？.md.html">04  系统设计目标（二）：系统怎样做到高可用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/05%20%20%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e7%9b%ae%e6%a0%87%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e7%b3%bb%e7%bb%9f%e6%98%93%e4%ba%8e%e6%89%a9%e5%b1%95%ef%bc%9f.md.html" id="05  系统设计目标（三）：如何让系统易于扩展？.md.html">05  系统设计目标（三）：如何让系统易于扩展？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/06%20%20%e9%9d%a2%e8%af%95%e7%8e%b0%e5%9c%ba%e7%ac%ac%e4%b8%80%e6%9c%9f%ef%bc%9a%e5%bd%93%e9%97%ae%e5%88%b0%e7%bb%84%e4%bb%b6%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86%e6%97%b6%ef%bc%8c%e9%9d%a2%e8%af%95%e5%ae%98%e6%98%af%e5%9c%a8%e5%88%81%e9%9a%be%e4%bd%a0%e5%90%97%ef%bc%9f.md.html" id="06  面试现场第一期：当问到组件实现原理时，面试官是在刁难你吗？.md.html">06  面试现场第一期：当问到组件实现原理时，面试官是在刁难你吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/07%20%20%e6%b1%a0%e5%8c%96%e6%8a%80%e6%9c%af%ef%bc%9a%e5%a6%82%e4%bd%95%e5%87%8f%e5%b0%91%e9%a2%91%e7%b9%81%e5%88%9b%e5%bb%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e8%bf%9e%e6%8e%a5%e7%9a%84%e6%80%a7%e8%83%bd%e6%8d%9f%e8%80%97%ef%bc%9f.md.html" id="07  池化技术：如何减少频繁创建数据库连接的性能损耗？.md.html">07  池化技术：如何减少频繁创建数据库连接的性能损耗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/08%20%20%e6%95%b0%e6%8d%ae%e5%ba%93%e4%bc%98%e5%8c%96%e6%96%b9%e6%a1%88%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%9f%a5%e8%af%a2%e8%af%b7%e6%b1%82%e5%a2%9e%e5%8a%a0%e6%97%b6%ef%bc%8c%e5%a6%82%e4%bd%95%e5%81%9a%e4%b8%bb%e4%bb%8e%e5%88%86%e7%a6%bb%ef%bc%9f.md.html" id="08  数据库优化方案（一）：查询请求增加时，如何做主从分离？.md.html">08  数据库优化方案（一）：查询请求增加时，如何做主从分离？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/09%20%20%e6%95%b0%e6%8d%ae%e5%ba%93%e4%bc%98%e5%8c%96%e6%96%b9%e6%a1%88%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%86%99%e5%85%a5%e6%95%b0%e6%8d%ae%e9%87%8f%e5%a2%9e%e5%8a%a0%e6%97%b6%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%88%86%e5%ba%93%e5%88%86%e8%a1%a8%ef%bc%9f.md.html" id="09  数据库优化方案（二）：写入数据量增加时，如何实现分库分表？.md.html">09  数据库优化方案（二）：写入数据量增加时，如何实现分库分表？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/10%20%20%e5%8f%91%e5%8f%b7%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%88%86%e5%ba%93%e5%88%86%e8%a1%a8%e5%90%8eID%e7%9a%84%e5%85%a8%e5%b1%80%e5%94%af%e4%b8%80%e6%80%a7%ef%bc%9f.md.html" id="10  发号器：如何保证分库分表后ID的全局唯一性？.md.html">10  发号器：如何保证分库分表后ID的全局唯一性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/11%20%20NoSQL%ef%bc%9a%e5%9c%a8%e9%ab%98%e5%b9%b6%e5%8f%91%e5%9c%ba%e6%99%af%e4%b8%8b%ef%bc%8c%e6%95%b0%e6%8d%ae%e5%ba%93%e5%92%8cNoSQL%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e4%ba%92%e8%a1%a5%ef%bc%9f.md.html" id="11  NoSQL：在高并发场景下，数据库和NoSQL如何做到互补？.md.html">11  NoSQL：在高并发场景下，数据库和NoSQL如何做到互补？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/12%20%20%e7%bc%93%e5%ad%98%ef%bc%9a%e6%95%b0%e6%8d%ae%e5%ba%93%e6%88%90%e4%b8%ba%e7%93%b6%e9%a2%88%e5%90%8e%ef%bc%8c%e5%8a%a8%e6%80%81%e6%95%b0%e6%8d%ae%e7%9a%84%e6%9f%a5%e8%af%a2%e8%a6%81%e5%a6%82%e4%bd%95%e5%8a%a0%e9%80%9f%ef%bc%9f.md.html" id="12  缓存：数据库成为瓶颈后，动态数据的查询要如何加速？.md.html">12  缓存：数据库成为瓶颈后，动态数据的查询要如何加速？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/13%20%20%e7%bc%93%e5%ad%98%e7%9a%84%e4%bd%bf%e7%94%a8%e5%a7%bf%e5%8a%bf%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%89%e6%8b%a9%e7%bc%93%e5%ad%98%e7%9a%84%e8%af%bb%e5%86%99%e7%ad%96%e7%95%a5%ef%bc%9f.md.html" id="13  缓存的使用姿势（一）：如何选择缓存的读写策略？.md.html">13  缓存的使用姿势（一）：如何选择缓存的读写策略？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/14%20%20%e7%bc%93%e5%ad%98%e7%9a%84%e4%bd%bf%e7%94%a8%e5%a7%bf%e5%8a%bf%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%93%e5%ad%98%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e9%ab%98%e5%8f%af%e7%94%a8%ef%bc%9f.md.html" id="14  缓存的使用姿势（二）：缓存如何做到高可用？.md.html">14  缓存的使用姿势（二）：缓存如何做到高可用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/15%20%20%e7%bc%93%e5%ad%98%e7%9a%84%e4%bd%bf%e7%94%a8%e5%a7%bf%e5%8a%bf%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e7%bc%93%e5%ad%98%e7%a9%bf%e9%80%8f%e4%ba%86%e6%80%8e%e4%b9%88%e5%8a%9e%ef%bc%9f.md.html" id="15  缓存的使用姿势（三）：缓存穿透了怎么办？.md.html">15  缓存的使用姿势（三）：缓存穿透了怎么办？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/16%20%20CDN%ef%bc%9a%e9%9d%99%e6%80%81%e8%b5%84%e6%ba%90%e5%a6%82%e4%bd%95%e5%8a%a0%e9%80%9f%ef%bc%9f.md.html" id="16  CDN：静态资源如何加速？.md.html">16  CDN：静态资源如何加速？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/17%20%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%ef%bc%9a%e7%a7%92%e6%9d%80%e6%97%b6%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e6%af%8f%e7%a7%92%e4%b8%8a%e4%b8%87%e6%ac%a1%e7%9a%84%e4%b8%8b%e5%8d%95%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="17  消息队列：秒杀时如何处理每秒上万次的下单请求？.md.html">17  消息队列：秒杀时如何处理每秒上万次的下单请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/18%20%20%e6%b6%88%e6%81%af%e6%8a%95%e9%80%92%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e6%b6%88%e6%81%af%e4%bb%85%e4%bb%85%e8%a2%ab%e6%b6%88%e8%b4%b9%e4%b8%80%e6%ac%a1%ef%bc%9f.md.html" id="18  消息投递：如何保证消息仅仅被消费一次？.md.html">18  消息投递：如何保证消息仅仅被消费一次？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/19%20%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%ef%bc%9a%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e7%b3%bb%e7%bb%9f%e4%b8%ad%e6%b6%88%e6%81%af%e7%9a%84%e5%bb%b6%e8%bf%9f%ef%bc%9f.md.html" id="19  消息队列：如何降低消息队列系统中消息的延迟？.md.html">19  消息队列：如何降低消息队列系统中消息的延迟？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/20%20%20%e9%9d%a2%e8%af%95%e7%8e%b0%e5%9c%ba%e7%ac%ac%e4%ba%8c%e6%9c%9f%ef%bc%9a%e5%bd%93%e9%97%ae%e5%88%b0%e9%a1%b9%e7%9b%ae%e7%bb%8f%e5%8e%86%e6%97%b6%ef%bc%8c%e9%9d%a2%e8%af%95%e5%ae%98%e7%a9%b6%e7%ab%9f%e6%83%b3%e8%a6%81%e4%ba%86%e8%a7%a3%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="20  面试现场第二期：当问到项目经历时，面试官究竟想要了解什么？.md.html">20  面试现场第二期：当问到项目经历时，面试官究竟想要了解什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/21%20%20%e7%b3%bb%e7%bb%9f%e6%9e%b6%e6%9e%84%ef%bc%9a%e6%af%8f%e7%a7%921%e4%b8%87%e6%ac%a1%e8%af%b7%e6%b1%82%e7%9a%84%e7%b3%bb%e7%bb%9f%e8%a6%81%e5%81%9a%e6%9c%8d%e5%8a%a1%e5%8c%96%e6%8b%86%e5%88%86%e5%90%97%ef%bc%9f.md.html" id="21  系统架构：每秒1万次请求的系统要做服务化拆分吗？.md.html">21  系统架构：每秒1万次请求的系统要做服务化拆分吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/22%20%20%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%ef%bc%9a%e5%be%ae%e6%9c%8d%e5%8a%a1%e5%8c%96%e5%90%8e%ef%bc%8c%e7%b3%bb%e7%bb%9f%e6%9e%b6%e6%9e%84%e8%a6%81%e5%a6%82%e4%bd%95%e6%94%b9%e9%80%a0%ef%bc%9f.md.html" id="22  微服务架构：微服务化后，系统架构要如何改造？.md.html">22  微服务架构：微服务化后，系统架构要如何改造？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/23%20%20RPC%e6%a1%86%e6%9e%b6%ef%bc%9a10%e4%b8%87QPS%e4%b8%8b%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%af%ab%e7%a7%92%e7%ba%a7%e7%9a%84%e6%9c%8d%e5%8a%a1%e8%b0%83%e7%94%a8%ef%bc%9f.md.html" id="23  RPC框架：10万QPS下如何实现毫秒级的服务调用？.md.html">23  RPC框架：10万QPS下如何实现毫秒级的服务调用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/24%20%20%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e5%af%bb%e5%9d%80%ef%bc%9f.md.html" id="24  注册中心：分布式系统如何寻址？.md.html">24  注册中心：分布式系统如何寻址？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/25%20%20%e5%88%86%e5%b8%83%e5%bc%8fTrace%ef%bc%9a%e6%a8%aa%e8%b7%a8%e5%87%a0%e5%8d%81%e4%b8%aa%e5%88%86%e5%b8%83%e5%bc%8f%e7%bb%84%e4%bb%b6%e7%9a%84%e6%85%a2%e8%af%b7%e6%b1%82%e8%a6%81%e5%a6%82%e4%bd%95%e6%8e%92%e6%9f%a5%ef%bc%9f.md.html" id="25  分布式Trace：横跨几十个分布式组件的慢请求要如何排查？.md.html">25  分布式Trace：横跨几十个分布式组件的慢请求要如何排查？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/26%20%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e6%80%8e%e6%a0%b7%e6%8f%90%e5%8d%87%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%a8%aa%e5%90%91%e6%89%a9%e5%b1%95%e8%83%bd%e5%8a%9b%ef%bc%9f.md.html" id="26  负载均衡：怎样提升系统的横向扩展能力？.md.html">26  负载均衡：怎样提升系统的横向扩展能力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/27%20%20API%e7%bd%91%e5%85%b3%ef%bc%9a%e7%b3%bb%e7%bb%9f%e7%9a%84%e9%97%a8%e9%9d%a2%e8%a6%81%e5%a6%82%e4%bd%95%e5%81%9a%e5%91%a2%ef%bc%9f.md.html" id="27  API网关：系统的门面要如何做呢？.md.html">27  API网关：系统的门面要如何做呢？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/28%20%20%e5%a4%9a%e6%9c%ba%e6%88%bf%e9%83%a8%e7%bd%b2%ef%bc%9a%e8%b7%a8%e5%9c%b0%e5%9f%9f%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e5%81%9a%ef%bc%9f.md.html" id="28  多机房部署：跨地域的分布式系统如何做？.md.html">28  多机房部署：跨地域的分布式系统如何做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/29%20%20Service%20Mesh%ef%bc%9a%e5%a6%82%e4%bd%95%e5%b1%8f%e8%94%bd%e6%9c%8d%e5%8a%a1%e5%8c%96%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%9c%8d%e5%8a%a1%e6%b2%bb%e7%90%86%e7%bb%86%e8%8a%82%ef%bc%9f.md.html" id="29  Service Mesh：如何屏蔽服务化系统的服务治理细节？.md.html">29  Service Mesh：如何屏蔽服务化系统的服务治理细节？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/30%20%20%e7%bb%99%e7%b3%bb%e7%bb%9f%e5%8a%a0%e4%b8%8a%e7%9c%bc%e7%9d%9b%ef%bc%9a%e6%9c%8d%e5%8a%a1%e7%ab%af%e7%9b%91%e6%8e%a7%e8%a6%81%e6%80%8e%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="30  给系统加上眼睛：服务端监控要怎么做？.md.html">30  给系统加上眼睛：服务端监控要怎么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/31%20%20%e5%ba%94%e7%94%a8%e6%80%a7%e8%83%bd%e7%ae%a1%e7%90%86%ef%bc%9a%e7%94%a8%e6%88%b7%e7%9a%84%e4%bd%bf%e7%94%a8%e4%bd%93%e9%aa%8c%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e7%9b%91%e6%8e%a7%ef%bc%9f.md.html" id="31  应用性能管理：用户的使用体验应该如何监控？.md.html">31  应用性能管理：用户的使用体验应该如何监控？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/32%20%20%e5%8e%8b%e5%8a%9b%e6%b5%8b%e8%af%95%ef%bc%9a%e6%80%8e%e6%a0%b7%e8%ae%be%e8%ae%a1%e5%85%a8%e9%93%be%e8%b7%af%e5%8e%8b%e5%8a%9b%e6%b5%8b%e8%af%95%e5%b9%b3%e5%8f%b0%ef%bc%9f.md.html" id="32  压力测试：怎样设计全链路压力测试平台？.md.html">32  压力测试：怎样设计全链路压力测试平台？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/33%20%20%e9%85%8d%e7%bd%ae%e7%ae%a1%e7%90%86%ef%bc%9a%e6%88%90%e5%8d%83%e4%b8%8a%e4%b8%87%e7%9a%84%e9%85%8d%e7%bd%ae%e9%a1%b9%e8%a6%81%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%ef%bc%9f.md.html" id="33  配置管理：成千上万的配置项要如何管理？.md.html">33  配置管理：成千上万的配置项要如何管理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/34%20%20%e9%99%8d%e7%ba%a7%e7%86%94%e6%96%ad%ef%bc%9a%e5%a6%82%e4%bd%95%e5%b1%8f%e8%94%bd%e9%9d%9e%e6%a0%b8%e5%bf%83%e7%b3%bb%e7%bb%9f%e6%95%85%e9%9a%9c%e7%9a%84%e5%bd%b1%e5%93%8d%ef%bc%9f.md.html" id="34  降级熔断：如何屏蔽非核心系统故障的影响？.md.html">34  降级熔断：如何屏蔽非核心系统故障的影响？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/35%20%20%e6%b5%81%e9%87%8f%e6%8e%a7%e5%88%b6%ef%bc%9a%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e4%b8%ad%e6%88%91%e4%bb%ac%e5%a6%82%e4%bd%95%e6%93%8d%e7%ba%b5%e6%b5%81%e9%87%8f%ef%bc%9f.md.html" id="35  流量控制：高并发系统中我们如何操纵流量？.md.html">35  流量控制：高并发系统中我们如何操纵流量？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/36%20%20%e9%9d%a2%e8%af%95%e7%8e%b0%e5%9c%ba%e7%ac%ac%e4%b8%89%e6%9c%9f%ef%bc%9a%e4%bd%a0%e8%a6%81%e5%a6%82%e4%bd%95%e5%87%86%e5%a4%87%e4%b8%80%e5%9c%ba%e6%8a%80%e6%9c%af%e9%9d%a2%e8%af%95%e5%91%a2%ef%bc%9f.md.html" id="36  面试现场第三期：你要如何准备一场技术面试呢？.md.html">36  面试现场第三期：你要如何准备一场技术面试呢？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/37%20%20%e8%ae%a1%e6%95%b0%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e9%9d%a2%e5%af%b9%e6%b5%b7%e9%87%8f%e6%95%b0%e6%8d%ae%e7%9a%84%e8%ae%a1%e6%95%b0%e5%99%a8%e8%a6%81%e5%a6%82%e4%bd%95%e5%81%9a%ef%bc%9f.md.html" id="37  计数系统设计（一）：面对海量数据的计数器要如何做？.md.html">37  计数系统设计（一）：面对海量数据的计数器要如何做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/38%20%20%e8%ae%a1%e6%95%b0%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a50%e4%b8%87QPS%e4%b8%8b%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e6%9c%aa%e8%af%bb%e6%95%b0%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="38  计数系统设计（二）：50万QPS下如何设计未读数系统？.md.html">38  计数系统设计（二）：50万QPS下如何设计未读数系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/39%20%20%e4%bf%a1%e6%81%af%e6%b5%81%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e9%80%9a%e7%94%a8%e4%bf%a1%e6%81%af%e6%b5%81%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%8e%a8%e6%a8%a1%e5%bc%8f%e8%a6%81%e5%a6%82%e4%bd%95%e5%81%9a%ef%bc%9f.md.html" id="39  信息流设计（一）：通用信息流系统的推模式要如何做？.md.html">39  信息流设计（一）：通用信息流系统的推模式要如何做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/40%20%20%e4%bf%a1%e6%81%af%e6%b5%81%e8%ae%be%e8%ae%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e9%80%9a%e7%94%a8%e4%bf%a1%e6%81%af%e6%b5%81%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%8b%89%e6%a8%a1%e5%bc%8f%e8%a6%81%e5%a6%82%e4%bd%95%e5%81%9a%ef%bc%9f.md.html" id="40  信息流设计（二）：通用信息流系统的拉模式要如何做？.md.html">40  信息流设计（二）：通用信息流系统的拉模式要如何做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/%e5%8a%a0%e9%a4%90%20%20%e6%95%b0%e6%8d%ae%e7%9a%84%e8%bf%81%e7%a7%bb%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e5%81%9a%ef%bc%9f.md.html" id="加餐  数据的迁移应该如何做？.md.html">加餐  数据的迁移应该如何做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%20%2010%e9%81%93%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e9%a2%98%e7%9b%ae%e8%87%aa%e6%b5%8b.md.html" id="期中测试  10道高并发系统设计题目自测.md.html">期中测试  10道高并发系统设计题目自测.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%20%e4%bb%8e%e2%80%9c%e5%bf%83%e2%80%9d%e5%87%ba%e5%8f%91%ef%bc%8c%e6%88%91%e8%bf%98%e6%9c%89%e6%97%a0%e6%95%b0%e4%b8%aa%e5%8f%af%e8%83%bd.md.html" id="用户故事  从“心”出发，我还有无数个可能.md.html">用户故事  从“心”出发，我还有无数个可能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e5%b9%b6%e5%8f%91%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a140%e9%97%ae/%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e5%ad%a6%e4%b8%8d%e5%8f%af%e4%bb%a5%e5%b7%b2.md.html" id="结束语  学不可以已.md.html">结束语  学不可以已.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="38  计数系统设计（二）：50万QPS下如何设计未读数系统？" id="title">38  计数系统设计（二）：50万QPS下如何设计未读数系统？</h1>
+<div><p>你好，我是唐扬。</p>
+<p>在上一节课中我带你了解了如何设计一套支撑高并发访问和存储大数据量的通用计数系统，我们通过缓存技术、消息队列技术以及对于 Redis 的深度改造，就能够支撑万亿级计数数据存储以及每秒百万级别读取请求了。然而有一类特殊的计数并不能完全使用我们提到的方案，那就是未读数。</p>
+<p>未读数也是系统中一个常见的模块，以微博系统为例，你可看到有多个未读计数的场景，比如：</p>
+<p>当有人 @你、评论你、给你的博文点赞或者给你发送私信的时候，你会收到相应的未读提醒；</p>
+<p>在早期的微博版本中有系统通知的功能，也就是系统会给全部用户发送消息，通知用户有新的版本或者有一些好玩的运营活动，如果用户没有看，系统就会给他展示有多少条未读的提醒。</p>
+<p>我们在浏览信息流的时候，如果长时间没有刷新页面，那么信息流上方就会提示你在这段时间有多少条信息没有看。</p>
+<p>那当你遇到第一个需求时，要如何记录未读数呢？其实，这个需求可以用上节课提到的通用计数系统来实现，因为二者的场景非常相似。</p>
+<p>你可以在计数系统中增加一块儿内存区域，以用户 ID 为 Key 存储多个未读数，当有人 @ 你时，增加你的未读 @的计数；当有人评论你时，增加你的未读评论的计数，以此类推。当你点击了未读数字进入通知页面，查看 @ 你或者评论你的消息时，重置这些未读计数为零。相信通过上一节课的学习，你已经非常熟悉这一类系统的设计了，所以我不再赘述。</p>
+<p>那么系统通知的未读数是如何实现的呢？我们能用通用计数系统实现吗？答案是不能的，因为会出现一些问题。</p>
+<h2 id="系统通知的未读数要如何设计">系统通知的未读数要如何设计</h2>
+<p>来看具体的例子。假如你的系统中只有 A、B、C 三个用户，那么你可以在通用计数系统中增加一块儿内存区域，并且以用户 ID 为 Key 来存储这三个用户的未读通知数据，当系统发送一个新的通知时，我们会循环给每一个用户的未读数加 1，这个处理逻辑的伪代码就像下面这样：</p>
+<pre><code>List&lt;Long&gt; userIds = getAllUserIds();
+
+for(Long id : userIds) {
+
+  incrUnreadCount(id);
+
+}
+</code></pre>
+<p>这样看来，似乎简单可行，但随着系统中的用户越来越多，这个方案存在两个致命的问题。</p>
+<p>首先，获取全量用户就是一个比较耗时的操作，相当于对用户库做一次全表的扫描，这不仅会对数据库造成很大的压力，而且查询全量用户数据的响应时间是很长的，对于在线业务来说是难以接受的。如果你的用户库已经做了分库分表，那么就要扫描所有的库表，响应时间就更长了。<strong>不过有一个折中的方法，</strong> 那就是在发送系统通知之前，先从线下的数据仓库中获取全量的用户 ID，并且存储在一个本地的文件中，然后再轮询所有的用户 ID，给这些用户增加未读计数。</p>
+<p>这似乎是一个可行的技术方案，然而它给所有人增加未读计数，会消耗非常长的时间。你计算一下，假如你的系统中有一个亿的用户，给一个用户增加未读数需要消耗 1ms，那么给所有人都增加未读计数就需要 100000000 * 1 /1000 = 100000 秒，也就是超过一天的时间；即使你启动 100 个线程并发的设置，也需要十几分钟的时间才能完成，而用户很难接受这么长的延迟时间。</p>
+<p>另外，使用这种方式需要给系统中的每一个用户都记一个未读数的值，而在系统中，活跃用户只是很少的一部分，大部分的用户是不活跃的，甚至从来没有打开过系统通知，为这些用户记录未读数显然是一种浪费。</p>
+<p>通过上面的内容，你可以知道为什么我们不能用通用计数系统实现系统通知未读数了吧？那正确的做法是什么呢？</p>
+<p>要知道，系统通知实际上是存储在一个大的列表中的，这个列表对所有用户共享，也就是所有人看到的都是同一份系统通知的数据。不过不同的人最近看到的消息不同，所以每个人会有不同的未读数。因此，你可以记录一下在这个列表中每个人看过最后一条消息的 ID，然后统计这个 ID 之后有多少条消息，这就是未读数了。</p>
+<p><img alt="img" src="assets/a5f0b6776246dc6b4c7e96c72d74a210.jpg"/></p>
+<p>这个方案在实现时有这样几个关键点：</p>
+<p>用户访问系统通知页面需要设置未读数为 0，我们需要将用户最近看过的通知 ID 设置为最新的一条系统通知 ID；</p>
+<p>如果最近看过的通知 ID 为空，则认为是一个新的用户，返回未读数为 0；</p>
+<p>对于非活跃用户，比如最近一个月都没有登录和使用过系统的用户，可以把用户最近看过的通知 ID 清空，节省内存空间。</p>
+<p><strong>这是一种比较通用的方案，即节省内存，又能尽量减少获取未读数的延迟。</strong> 这个方案适用的另一个业务场景是全量用户打点的场景，比如像下面这张微博截图中的红点。</p>
+<p><img alt="img" src="assets/ae6a5e9e04be08d18c493729458d543f.jpg"/></p>
+<p>这个红点和系统通知类似，也是一种通知全量用户的手段，如果逐个通知用户，延迟也是无法接受的。<strong>因此你可以采用和系统通知类似的方案。</strong></p>
+<p>首先，我们为每一个用户存储一个时间戳，代表最近点过这个红点的时间，用户点了红点，就把这个时间戳设置为当前时间；然后，我们也记录一个全局的时间戳，这个时间戳标识最新的一次打点时间，如果你在后台操作给全体用户打点，就更新这个时间戳为当前时间。而我们在判断是否需要展示红点时，只需要判断用户的时间戳和全局时间戳的大小，如果用户时间戳小于全局时间戳，代表在用户最后一次点击红点之后又有新的红点推送，那么就要展示红点，反之，就不展示红点了。</p>
+<p><img alt="img" src="assets/553e7da158a7eca56369e23c9b672898.jpg"/></p>
+<p>这两个场景的共性是全部用户共享一份有限的存储数据，每个人只记录自己在这份存储中的偏移量，就可以得到未读数了。</p>
+<p>你可以看到，系统消息未读的实现方案不是很复杂，它通过设计避免了操作全量数据未读数，如果你的系统中有这种打红点的需求，那我建议你可以结合实际工作灵活使用上述方案。</p>
+<p>最后一个需求关注的是微博信息流的未读数，在现在的社交系统中，关注关系已经成为标配的功能，而基于关注关系的信息流也是一种非常重要的信息聚合方式，因此，如何设计信息流的未读数系统就成了你必须面对的一个问题。</p>
+<h2 id="如何为信息流的未读数设计方案">如何为信息流的未读数设计方案</h2>
+<p>信息流的未读数之所以复杂主要有这样几点原因。</p>
+<p>首先，微博的信息流是基于关注关系的，未读数也是基于关注关系的，就是说，你关注的人发布了新的微博，那么你作为粉丝未读数就要增加 1。如果微博用户都是像我这样只有几百粉丝的“小透明”就简单了，你发微博的时候系统给你粉丝的未读数增加 1 不是什么难事儿。但是对于一些动辄几千万甚至上亿粉丝的微博大 V 就麻烦了，增加未读数可能需要几个小时。假设你是杨幂的粉丝，想了解她实时发布的博文，那么如果当她发布博文几个小时之后，你才收到提醒，这显然是不能接受的。所以未读数的延迟是你在设计方案时首先要考虑的内容。</p>
+<p>其次，信息流未读数请求量极大、并发极高，这是因为接口是客户端轮询请求的，不是用户触发的。也就是说，用户即使打开微博客户端什么都不做，这个接口也会被请求到。在几年前，请求未读数接口的量级就已经接近每秒 50 万次，这几年随着微博量级的增长，请求量也变得更高。而作为微博的非核心接口，我们不太可能使用大量的机器来抗未读数请求，因此，如何使用有限的资源来支撑如此高的流量是这个方案的难点。</p>
+<p>最后，它不像系统通知那样有共享的存储，因为每个人关注的人不同，信息流的列表也就不同，所以也就没办法采用系统通知未读数的方案。</p>
+<p>那要如何设计能够承接每秒几十万次请求的信息流未读数系统呢？你可以这样做：</p>
+<p>首先，在通用计数器中记录每一个用户发布的博文数；</p>
+<p>然后在 Redis 或者 Memcached 中记录一个人所有关注人的博文数快照，当用户点击未读消息重置未读数为 0 时，将他关注所有人的博文数刷新到快照中；</p>
+<p>这样，他关注所有人的博文总数减去快照中的博文总数就是他的信息流未读数。</p>
+<p><img alt="img" src="assets/a563b121ae1147a2d877a7bb14c9658a.jpg"/></p>
+<p>假如用户 A，像上图这样关注了用户 B、C、D，其中 B 发布的博文数是 10，C 发布的博文数是 8，D 发布的博文数是 14，而在用户 A 最近一次查看未读消息时，记录在快照中的这三个用户的博文数分别是 6、7、12，因此用户 A 的未读数就是（10-6）+（8-7）+（14-12）=7。</p>
+<p>这个方案设计简单，并且是全内存操作，性能足够好，能够支撑比较高的并发，事实上微博团队仅仅用 16 台普通的服务器就支撑了每秒接近 50 万次的请求，这就足以证明这个方案的性能有多出色，因此，它完全能够满足信息流未读数的需求。</p>
+<p>当然了这个方案也有一些缺陷，比如说快照中需要存储关注关系，如果关注关系变更的时候更新不及时，那么就会造成未读数不准确；快照采用的是全缓存存储，如果缓存满了就会剔除一些数据，那么被剔除用户的未读数就变为 0 了。但是好在用户对于未读数的准确度要求不高（未读 10 条还是 11 条，其实用户有时候看不出来），因此，这些缺陷也是可以接受的。</p>
+<p>通过分享未读数系统设计这个案例，我想给你一些建议：</p>
+<p>缓存是提升系统性能和抵抗大并发量的神器，像是微博信息流未读数这么大的量级我们仅仅使用十几台服务器就可以支撑，这全都是缓存的功劳；</p>
+<p>要围绕系统设计的关键困难点想解决办法，就像我们解决系统通知未读数的延迟问题一样；</p>
+<p>合理分析业务场景，明确哪些是可以权衡的，哪些是不行的，会对你的系统设计增益良多，比如对于长久不登录用户，我们就会记录未读数为 0，通过这样的权衡，可以极大地减少内存的占用，减少成本。</p>
+<h2 id="课程小结">课程小结</h2>
+<p>以上就是本节课的全部内容了，本节课我带你了解了未读数系统的设计，这里你需要了解的重点是：</p>
+<p>评论未读、@未读、赞未读等一对一关系的未读数可以使用上节课讲到的通用计数方案来解决；</p>
+<p>在系统通知未读、全量用户打点等存在有限的共享存储的场景下，可以通过记录用户上次操作的时间或者偏移量，来实现未读方案；</p>
+<p>最后，信息流未读方案最为复杂，采用的是记录用户博文数快照的方式。</p>
+<p>这里你可以看到，这三类需求虽然都和未读数有关，但是需求场景不同、对于量级的要求不同，设计出来的方案也就不同。因此，就像我刚刚提到的样子，你在做方案设计的时候，要分析需求的场景，比如说数据的量级是怎样的，请求的量级是怎样的，有没有一些可以利用的特点（比如系统通知未读场景下的有限共享存储、信息流未读场景下关注人数是有限的等等），然后再制定针对性的方案，切忌盲目使用之前的经验套用不同的场景，否则就可能造成性能的下降，甚至危害系统的稳定性。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#8ce0e0e0b5b8bdbdbcbbccebe1ede5e0a2efe3e1" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935859aa9952c947',t:'MTc0NTUyNjUzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
