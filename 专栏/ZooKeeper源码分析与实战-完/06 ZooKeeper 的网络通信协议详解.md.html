@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="06 ZooKeeper 的网络通信协议详解" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>06 ZooKeeper 的网络通信协议详解 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e8%af%8d%ef%bc%9a%e9%80%89%e6%8b%a9%20ZooKeeper%ef%bc%8c%e4%b8%80%e6%ad%a5%e5%88%b0%e4%bd%8d%e6%8e%8c%e6%8f%a1%e5%88%86%e5%b8%83%e5%bc%8f%e5%bc%80%e5%8f%91.md.html" id="00 开篇词：选择 ZooKeeper，一步到位掌握分布式开发.md.html">00 开篇词：选择 ZooKeeper，一步到位掌握分布式开发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/01%20ZooKeeper%20%e6%95%b0%e6%8d%ae%e6%a8%a1%e5%9e%8b%ef%bc%9a%e8%8a%82%e7%82%b9%e7%9a%84%e7%89%b9%e6%80%a7%e4%b8%8e%e5%ba%94%e7%94%a8.md.html" id="01 ZooKeeper 数据模型：节点的特性与应用.md.html">01 ZooKeeper 数据模型：节点的特性与应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/02%20%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%e6%a8%a1%e5%bc%8f%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%20Watch%20%e6%9c%ba%e5%88%b6%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e9%80%9a%e7%9f%a5.md.html" id="02 发布订阅模式：如何使用 Watch 机制实现分布式通知.md.html">02 发布订阅模式：如何使用 Watch 机制实现分布式通知.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/03%20ACL%20%e6%9d%83%e9%99%90%e6%8e%a7%e5%88%b6%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%9c%aa%e7%bb%8f%e6%8e%88%e6%9d%83%e7%9a%84%e8%ae%bf%e9%97%ae%ef%bc%9f.md.html" id="03 ACL 权限控制：如何避免未经授权的访问？.md.html">03 ACL 权限控制：如何避免未经授权的访问？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/04%20ZooKeeper%20%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e5%ba%8f%e5%88%97%e5%8c%96%ef%bc%9f.md.html" id="04 ZooKeeper 如何进行序列化？.md.html">04 ZooKeeper 如何进行序列化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/05%20%e6%b7%b1%e5%85%a5%e5%88%86%e6%9e%90%20Jute%20%e7%9a%84%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="05 深入分析 Jute 的底层实现原理.md.html">05 深入分析 Jute 的底层实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/06%20ZooKeeper%20%e7%9a%84%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%e5%8d%8f%e8%ae%ae%e8%af%a6%e8%a7%a3.md.html" id="06 ZooKeeper 的网络通信协议详解.md.html">06 ZooKeeper 的网络通信协议详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/07%20%e5%8d%95%e6%9c%ba%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%a6%82%e4%bd%95%e4%bb%8e%e5%88%9d%e5%a7%8b%e5%8c%96%e5%88%b0%e5%af%b9%e5%a4%96%e6%8f%90%e4%be%9b%e6%9c%8d%e5%8a%a1%ef%bc%9f.md.html" id="07 单机模式：服务器如何从初始化到对外提供服务？.md.html">07 单机模式：服务器如何从初始化到对外提供服务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/08%20%e9%9b%86%e7%be%a4%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%a6%82%e4%bd%95%e4%bb%8e%e5%88%9d%e5%a7%8b%e5%8c%96%e5%88%b0%e5%af%b9%e5%a4%96%e6%8f%90%e4%be%9b%e6%9c%8d%e5%8a%a1%ef%bc%9f.md.html" id="08 集群模式：服务器如何从初始化到对外提供服务？.md.html">08 集群模式：服务器如何从初始化到对外提供服务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/09%20%e5%88%9b%e5%bb%ba%e4%bc%9a%e8%af%9d%ef%bc%9a%e9%81%bf%e5%bc%80%e6%97%a5%e5%b8%b8%e5%bc%80%e5%8f%91%e7%9a%84%e9%82%a3%e4%ba%9b%e2%80%9c%e5%9d%91%e2%80%9d.md.html" id="09 创建会话：避开日常开发的那些“坑”.md.html">09 创建会话：避开日常开发的那些“坑”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/10%20ClientCnxn%ef%bc%9a%e5%ae%a2%e6%88%b7%e7%ab%af%e6%a0%b8%e5%bf%83%e5%b7%a5%e4%bd%9c%e7%b1%bb%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86%e8%a7%a3%e6%9e%90.md.html" id="10 ClientCnxn：客户端核心工作类工作原理解析.md.html">10 ClientCnxn：客户端核心工作类工作原理解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/11%20%e5%88%86%e6%a1%b6%e7%ad%96%e7%95%a5%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%ab%98%e6%95%88%e7%9a%84%e4%bc%9a%e8%af%9d%e7%ae%a1%e7%90%86%ef%bc%9f.md.html" id="11 分桶策略：如何实现高效的会话管理？.md.html">11 分桶策略：如何实现高效的会话管理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/12%20%e6%9c%8d%e5%8a%a1%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e4%b8%80%e6%ac%a1%e4%bc%9a%e8%af%9d%e8%af%b7%e6%b1%82%e7%9a%84%ef%bc%9f.md.html" id="12 服务端是如何处理一次会话请求的？.md.html">12 服务端是如何处理一次会话请求的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/13%20Curator%ef%bc%9a%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%20ZooKeeper%20%e4%bd%bf%e7%94%a8%e7%9a%84%e5%a4%8d%e6%9d%82%e6%80%a7%ef%bc%9f.md.html" id="13 Curator：如何降低 ZooKeeper 使用的复杂性？.md.html">13 Curator：如何降低 ZooKeeper 使用的复杂性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/14%20Leader%20%e9%80%89%e4%b8%be%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%88%86%e5%b8%83%e5%bc%8f%e6%95%b0%e6%8d%ae%e7%9a%84%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9f.md.html" id="14 Leader 选举：如何保证分布式数据的一致性？.md.html">14 Leader 选举：如何保证分布式数据的一致性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/15%20ZooKeeper%20%e7%a9%b6%e7%ab%9f%e6%98%af%e6%80%8e%e4%b9%88%e9%80%89%e4%b8%ad%20Leader%20%e7%9a%84%ef%bc%9f.md.html" id="15 ZooKeeper 究竟是怎么选中 Leader 的？.md.html">15 ZooKeeper 究竟是怎么选中 Leader 的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/16%20ZooKeeper%20%e9%9b%86%e7%be%a4%e4%b8%ad%20Leader%20%e4%b8%8e%20Follower%20%e7%9a%84%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%e7%ad%96%e7%95%a5.md.html" id="16 ZooKeeper 集群中 Leader 与 Follower 的数据同步策略.md.html">16 ZooKeeper 集群中 Leader 与 Follower 的数据同步策略.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/17%20%e9%9b%86%e7%be%a4%e4%b8%ad%20Leader%20%e7%9a%84%e4%bd%9c%e7%94%a8%ef%bc%9a%e4%ba%8b%e5%8a%a1%e7%9a%84%e8%af%b7%e6%b1%82%e5%a4%84%e7%90%86%e4%b8%8e%e8%b0%83%e5%ba%a6%e5%88%86%e6%9e%90.md.html" id="17 集群中 Leader 的作用：事务的请求处理与调度分析.md.html">17 集群中 Leader 的作用：事务的请求处理与调度分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/18%20%e9%9b%86%e7%be%a4%e4%b8%ad%20Follow%20%e7%9a%84%e4%bd%9c%e7%94%a8%ef%bc%9a%e9%9d%9e%e4%ba%8b%e5%8a%a1%e8%af%b7%e6%b1%82%e7%9a%84%e5%a4%84%e7%90%86%e4%b8%8e%20Leader%20%e7%9a%84%e9%80%89%e4%b8%be%e5%88%86%e6%9e%90.md.html" id="18 集群中 Follow 的作用：非事务请求的处理与 Leader 的选举分析.md.html">18 集群中 Follow 的作用：非事务请求的处理与 Leader 的选举分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/19%20Observer%20%e7%9a%84%e4%bd%9c%e7%94%a8%e4%b8%8e%20Follow%20%e6%9c%89%e5%93%aa%e4%ba%9b%e4%b8%8d%e5%90%8c%ef%bc%9f.md.html" id="19 Observer 的作用与 Follow 有哪些不同？.md.html">19 Observer 的作用与 Follow 有哪些不同？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/20%20%e4%b8%80%e4%b8%aa%e8%bf%90%e8%a1%8c%e4%b8%ad%e7%9a%84%20ZooKeeper%20%e6%9c%8d%e5%8a%a1%e4%bc%9a%e4%ba%a7%e7%94%9f%e5%93%aa%e4%ba%9b%e6%95%b0%e6%8d%ae%e5%92%8c%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="20 一个运行中的 ZooKeeper 服务会产生哪些数据和文件？.md.html">20 一个运行中的 ZooKeeper 服务会产生哪些数据和文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/21%20ZooKeeper%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%ef%bc%9a%e5%ae%9e%e7%8e%b0%e5%92%8c%e5%8e%9f%e7%90%86%e8%a7%a3%e6%9e%90.md.html" id="21 ZooKeeper 分布式锁：实现和原理解析.md.html">21 ZooKeeper 分布式锁：实现和原理解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/22%20%e5%9f%ba%e4%ba%8e%20ZooKeeper%20%e5%91%bd%e5%90%8d%e6%9c%8d%e5%8a%a1%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%20ID%20%e7%94%9f%e6%88%90%e5%99%a8.md.html" id="22 基于 ZooKeeper 命名服务的应用：分布式 ID 生成器.md.html">22 基于 ZooKeeper 命名服务的应用：分布式 ID 生成器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/23%20%e4%bd%bf%e7%94%a8%20ZooKeeper%20%e5%ae%9e%e7%8e%b0%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%8a%9f%e8%83%bd.md.html" id="23 使用 ZooKeeper 实现负载均衡服务器功能.md.html">23 使用 ZooKeeper 实现负载均衡服务器功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/24%20ZooKeeper%20%e5%9c%a8%20Kafka%20%e5%92%8c%20Dubbo%20%e4%b8%ad%e7%9a%84%e5%b7%a5%e4%b8%9a%e7%ba%a7%e5%ae%9e%e7%8e%b0%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90.md.html" id="24 ZooKeeper 在 Kafka 和 Dubbo 中的工业级实现案例分析.md.html">24 ZooKeeper 在 Kafka 和 Dubbo 中的工业级实现案例分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/25%20%e5%a6%82%e4%bd%95%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e9%ab%98%e5%8f%af%e7%94%a8%e7%9a%84%20ZooKeeper%20%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="25 如何搭建一个高可用的 ZooKeeper 生产环境？.md.html">25 如何搭建一个高可用的 ZooKeeper 生产环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/26%20JConsole%20%e4%b8%8e%e5%9b%9b%e5%ad%97%e6%af%8d%e5%91%bd%e4%bb%a4%ef%bc%9a%e5%a6%82%e4%bd%95%e7%9b%91%e6%8e%a7%e6%9c%8d%e5%8a%a1%e5%99%a8%e4%b8%8a%20ZooKeeper%20%e7%9a%84%e8%bf%90%e8%a1%8c%e7%8a%b6%e6%80%81%ef%bc%9f.md.html" id="26 JConsole 与四字母命令：如何监控服务器上 ZooKeeper 的运行状态？.md.html">26 JConsole 与四字母命令：如何监控服务器上 ZooKeeper 的运行状态？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/27%20crontab%20%e4%b8%8e%20PurgeTxnLog%ef%bc%9a%e7%ba%bf%e4%b8%8a%e7%b3%bb%e7%bb%9f%e6%97%a5%e5%bf%97%e6%b8%85%e7%90%86%e7%9a%84%e6%9c%80%e4%bd%b3%e6%97%b6%e9%97%b4%e5%92%8c%e6%96%b9%e5%bc%8f.md.html" id="27 crontab 与 PurgeTxnLog：线上系统日志清理的最佳时间和方式.md.html">27 crontab 与 PurgeTxnLog：线上系统日志清理的最佳时间和方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/28%20%e5%bd%bb%e5%ba%95%e6%8e%8c%e6%8f%a1%e4%ba%8c%e9%98%b6%e6%ae%b5%e6%8f%90%e4%ba%a4%e4%b8%89%e9%98%b6%e6%ae%b5%e6%8f%90%e4%ba%a4%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="28 彻底掌握二阶段提交三阶段提交算法原理.md.html">28 彻底掌握二阶段提交三阶段提交算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/29%20ZAB%20%e5%8d%8f%e8%ae%ae%e7%ae%97%e6%b3%95%ef%bc%9a%e5%b4%a9%e6%ba%83%e6%81%a2%e5%a4%8d%e5%92%8c%e6%b6%88%e6%81%af%e5%b9%bf%e6%92%ad.md.html" id="29 ZAB 协议算法：崩溃恢复和消息广播.md.html">29 ZAB 协议算法：崩溃恢复和消息广播.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/30%20ZAB%20%e4%b8%8e%20Paxos%20%e7%ae%97%e6%b3%95%e7%9a%84%e8%81%94%e7%b3%bb%e4%b8%8e%e5%8c%ba%e5%88%ab.md.html" id="30 ZAB 与 Paxos 算法的联系与区别.md.html">30 ZAB 与 Paxos 算法的联系与区别.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/31%20ZooKeeper%20%e4%b8%ad%e4%ba%8c%e9%98%b6%e6%ae%b5%e6%8f%90%e4%ba%a4%e7%ae%97%e6%b3%95%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%88%86%e6%9e%90.md.html" id="31 ZooKeeper 中二阶段提交算法的实现分析.md.html">31 ZooKeeper 中二阶段提交算法的实现分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/32%20ZooKeeper%20%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0%e8%a7%a3%e6%9e%90.md.html" id="32 ZooKeeper 数据存储底层实现解析.md.html">32 ZooKeeper 数据存储底层实现解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/33%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e5%88%86%e5%b8%83%e6%8a%80%e6%9c%af%e5%8f%91%e5%b1%95%e4%b8%8e%20ZooKeeper%20%e5%ba%94%e7%94%a8%e5%89%8d%e6%99%af.md.html" id="33 结束语  分布技术发展与 ZooKeeper 应用前景.md.html">33 结束语  分布技术发展与 ZooKeeper 应用前景.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="06 ZooKeeper 的网络通信协议详解" id="title">06 ZooKeeper 的网络通信协议详解</h1>
+<div><p>本节课我们将学习 ZooKeeper 的网络通信协议。同时，本节课也是基础篇中的最后一节课。在 ZooKeeper 中无论是客户端和服务器之间的通信，还是集群之间服务器的内部协同工作都是基于网络进行通信的。而网络通信协议则是影响 ZooKeeper 性能和稳定性的核心点。</p>
+<h3 id="zookeeper-协议简述">ZooKeeper 协议简述</h3>
+<p>说到网络通信协议我们最为熟悉的应该就是 TCP/IP 协议。而 ZooKeeper 则是在 TCP/IP 协议的基础上实现了自己特有的通信协议格式。在 ZooKeeper 中一次客户端的请求协议由请求头、请求体组成。而在一次服务端的响应协议中由响应头和响应体组成。</p>
+<h3 id="zookeeper-协议的底层实现">ZooKeeper 协议的底层实现</h3>
+<p>我们大概了解了 ZooKeeper 中的网络通信协议的结构后。接下来我们看一下在 ZooKeeper 中的内部对于网络通信协议的底层是怎么样实现的。</p>
+<h4 id="请求协议">请求协议</h4>
+<p>请求协议就是客户端向服务端发送的协议。比如我们经常用到的会话创建、数据节点查询等操作。都是客户端通过网络向 ZooKeeper 服务端发送请求协议完成的。</p>
+<h4 id="客户端请求头底层解析">客户端请求头底层解析</h4>
+<p>首先，我们先看一下请求头的内部的实现原理。在 ZooKeeper 中请求头是通过 RequestHeader 类实现的。首先 RequestHeader 类实现了 Record 接口，用于之后在网络传输中进行序列化操作。</p>
+<p>我们可以看到 RequestHeader 类中只有两个属性字段分别是 xid 和 type。这两个字段在我们第一节课 ZooKeeper 的数据模型中介绍过，分别代表客户端序号用于记录客户端请求的发起顺序以及请求操作的类型。</p>
+<pre><code class="language-java">class RequestHeader implements Record{
+
+  private int xid;
+
+  private int type;
+
+}
+</code></pre>
+<h4 id="客户端请求体底层解析">客户端请求体底层解析</h4>
+<p>我们接下来再看一下客户端请求协议的请求体，协议的请求体包括了协议处理逻辑的全部内容，一次会话请求的所有操作内容都涵盖在请求体中。在 ZooKeeper 的内部实现中，根据不同的请求操作类型，会采用不同的结构封装请求体。接下来我们就以最常用的创建一次会话和数据节点的查询和更新这三种操作来介绍，深入底层看看 ZooKeeper 在内部是如何实现的。</p>
+<p><strong>会话创建</strong></p>
+<p>前面的课程我们已经介绍了 ZooKeeper 中的会话创建以及会话管理等相关知识。通过之前的学习我们知道了在 ZooKeeper 客户端发起会话时，会向服务端发送一个会话创建请求，该请求的作用就是通知 ZooKeeper 服务端需要处理一个来自客户端的访问链接。</p>
+<p>而服务端处理会话创建请求时所需要的所有信息都包括在请求体内。在 ZooKeeper 中该请求体是通过 ConnectRequest 类实现的，其内部一共包括了五种属性字段。分别是 protocolVersion 表示该请求协议的版本信息、lastZxidSeen 最后一次接收到的服务器的 zxid 序号、timeOut 会话的超时时间、会话标识符 sessionId 以及会话的密码 password。有了这些信息 ZooKeeper 服务端在接收一个请求时，就可以根据请求体的信息进行相关的操作了。</p>
+<pre><code class="language-java">ConnectRequest implements Record {
+
+  private int protocolVersion;
+
+  private long lastZxidSeen;
+
+  private int timeOut;
+
+  private long sessionId;
+
+  private byte[] passwd;
+
+ }
+</code></pre>
+<p><strong>节点查询</strong></p>
+<p>在我们通过客户端 API 查询 ZooKeeper 服务器上的数据节点时，客户端会向服务端发送 GetDataRequest 会话请求。与上面介绍的会话请求不同。ZooKeeper 在处理获取数据节点会话请求时，选择了另一种结构作为该协议的请求体。而具体的实现类则是 GetDataRequest 。在 GetDataRequest 类中首先实现了 Record 接口用于序列化操作。其具有两个属性分别是字符类型 path 表示要请求的数据节点路径以及布尔类型 watch 表示该节点是否注册了 Watch 监控。</p>
+<p>节点路径如下：</p>
+<pre><code class="language-java">public class GetDataRequest implements Record {
+
+  private String path;
+
+  private boolean watch;
+</code></pre>
+<p><strong>节点更新</strong></p>
+<p>最后，我们来看一下最后一种会话操作类型即节点的更新操作，同样的在客户端向服务端发送一个数据节点更新操作时，其在网络上实际发送的是更新操作的请求协议。而在 ZooKeeper 中对于协议内部的请求体，ZooKeeper 通过 SetDataRequest 类进行了封装。在 SetDataRequest 内部也包含了三种属性，分别是 path 表示节点的路径、data 表示节点数据信息以及 version 表示节点期望的版本号用于锁的验证。</p>
+<pre><code class="language-java">public class SetDataRequest implements Record {
+
+  private String path;
+
+  private byte[] data;
+
+  private int version;
+
+ }
+</code></pre>
+<p>到目前为止我们就对 ZooKeeper 客户端在一次网络会话请求中所发送的请求协议的内部结构和底层实现都做了介绍，然而这些都是客户端向服务器端的请求协议，接下来我们就继续分析 ZooKeeper 服务端向客户端发送的响应协议是如何实现的。</p>
+<h4 id="响应协议">响应协议</h4>
+<p>响应协议可以理解为服务端在处理客户端的请求后，返回相关信息给客户端。而服务端所采用的响应协议类型则要根据客户端的请求协议类型来选择。</p>
+<h4 id="服务端请求头解析">服务端请求头解析</h4>
+<p>在服务端接收到客户端的请求后，执行相关操作将结果通知给客户端。而在 ZooKeeper 服务端向客户单发送的响应协议中，也是包括了请求头和请求体。而与客户端的请求头不同的是在 ZooKeeper 服务端的请求头多了一个错误状态字段。具体的实现类是 ReplyHeader。</p>
+<pre><code class="language-java">public class ReplyHeader implements Record {
+
+  private int xid;
+
+  private long zxid;
+
+  private int err;
+
+  }
+</code></pre>
+<h4 id="服务端请求体解析">服务端请求体解析</h4>
+<p>下面我们再看一下响应协议的请求体部分，服务端的请求体可以理解为对客户端所请求内容的封装，一个服务端的请求体包含了客户端所要查询的数据而对于不同的请求类型，在 ZooKeeper 的服务端也是采用了不同的结构进行处理的。与上面我们讲解客户端请求体的方法一样，我们还是通过会话的创建、数据节点的查询和修改这三种请求操作来介绍，看看 ZooKeeper 服务端是如何响应客户端请求的。</p>
+<p><strong>响应会话创建</strong></p>
+<p>对于客户端发起的一次会话连接操作，ZooKeeper 服务端在处理后，会返回给客户端一个 Response 响应。而在底层代码中 ZooKeeper 是通过 ConnectRespose 类来实现的。在该类中有四个属性，分别是 protocolVersion 请求协议的版本信息、timeOut 会话超时时间、sessionId 会话标识符以及 passwd 会话密码。</p>
+<pre><code class="language-java">public class ConnectResponse implements Record {
+
+  private int protocolVersion;
+
+  private int timeOut;
+
+  private long sessionId;
+
+  private byte[] passwd;
+
+  }
+</code></pre>
+<p><strong>响应节点查询</strong></p>
+<p>在客户端发起查询节点数据的请求时，服务端根据客户端发送的节点路径，并验证客户端具有相应的权限后，会将节点数据返回给客户端。而 ZooKeeper 服务端通过 GetDataResponse 类来封装查询到的节点相关信息到响应协议的请求体中。在 GetDataResponse 内部有两种属性字段分别是 data 属性表示节点数据的内容和 stat 属性表示节点的状态信息。</p>
+<pre><code class="language-java">public class GetDataResponse implements Record {
+
+  private byte[] data;
+
+  private org.apache.zookeeper.data.Stat stat;
+
+  }
+</code></pre>
+<p><strong>响应节点更新</strong></p>
+<p>在客户端发送一个节点变更操作后， ZooKeeper 服务端在处理完相关逻辑后，会发送一个响应给客户端。而在 ZooKeeper 中更新完节点后会将操作结果返回给客户端，节点更新操作的响应协议请求体通过 SetDataResponse 类来实现。而在该类的内部只有一个属性就是 stat 字段，表示该节点数据更新后的最新状态信息。</p>
+<pre><code class="language-java">public class SetDataResponse implements Record {
+
+  private org.apache.zookeeper.data.Stat stat;
+
+  }
+</code></pre>
+<h3 id="结束">结束</h3>
+<p>会话相关的知识点在之前的课程中我们已经讲到过了，从客户端到服务端的处理过程我们都已经很熟悉了。本节课我们从网络传输的角度来分析 ZooKeeper 底层的实现，通过本节课的学习后，我们就将 ZooKeeper 会话请求的全部过程都介绍完了。</p>
+<p>通过本节课的学习，我们知道了 ZooKeeper 中的网络通信协议是通过不同的类具体实现的。那么我们思考这样一个问题。如果一个会话的超时时间是在服务器端实现的。会话超时服务器端会主动关闭会话。所以在会话请求的请求体中包括了设置会话超时的属性字段，而我们经常会遇到一个问题就是明明通过客户端将超时时间设置了一个值，而在实际执行的时候会话超时的时间可能远远小于我们设置的时间。这是因为在 ZooKeeper 处理会话超时时间的时候不只是简单地使用客户端传来的超时时间还会根据 minSessionTimeout 和 maxSessionTimeout 这两个参数来调整时间的设置。这里请大家在日常设置中多注意。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#600c0c0c59545151505720070d01090c4e030f0d" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357e08c6a4020a8',t:'MTc0NTUyMTU3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

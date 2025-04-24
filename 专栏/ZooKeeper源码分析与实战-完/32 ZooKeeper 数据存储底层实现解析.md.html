@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="32 ZooKeeper 数据存储底层实现解析" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>32 ZooKeeper 数据存储底层实现解析 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e8%af%8d%ef%bc%9a%e9%80%89%e6%8b%a9%20ZooKeeper%ef%bc%8c%e4%b8%80%e6%ad%a5%e5%88%b0%e4%bd%8d%e6%8e%8c%e6%8f%a1%e5%88%86%e5%b8%83%e5%bc%8f%e5%bc%80%e5%8f%91.md.html" id="00 开篇词：选择 ZooKeeper，一步到位掌握分布式开发.md.html">00 开篇词：选择 ZooKeeper，一步到位掌握分布式开发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/01%20ZooKeeper%20%e6%95%b0%e6%8d%ae%e6%a8%a1%e5%9e%8b%ef%bc%9a%e8%8a%82%e7%82%b9%e7%9a%84%e7%89%b9%e6%80%a7%e4%b8%8e%e5%ba%94%e7%94%a8.md.html" id="01 ZooKeeper 数据模型：节点的特性与应用.md.html">01 ZooKeeper 数据模型：节点的特性与应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/02%20%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%e6%a8%a1%e5%bc%8f%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%20Watch%20%e6%9c%ba%e5%88%b6%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e9%80%9a%e7%9f%a5.md.html" id="02 发布订阅模式：如何使用 Watch 机制实现分布式通知.md.html">02 发布订阅模式：如何使用 Watch 机制实现分布式通知.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/03%20ACL%20%e6%9d%83%e9%99%90%e6%8e%a7%e5%88%b6%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%9c%aa%e7%bb%8f%e6%8e%88%e6%9d%83%e7%9a%84%e8%ae%bf%e9%97%ae%ef%bc%9f.md.html" id="03 ACL 权限控制：如何避免未经授权的访问？.md.html">03 ACL 权限控制：如何避免未经授权的访问？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/04%20ZooKeeper%20%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e5%ba%8f%e5%88%97%e5%8c%96%ef%bc%9f.md.html" id="04 ZooKeeper 如何进行序列化？.md.html">04 ZooKeeper 如何进行序列化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/05%20%e6%b7%b1%e5%85%a5%e5%88%86%e6%9e%90%20Jute%20%e7%9a%84%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="05 深入分析 Jute 的底层实现原理.md.html">05 深入分析 Jute 的底层实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/06%20ZooKeeper%20%e7%9a%84%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%e5%8d%8f%e8%ae%ae%e8%af%a6%e8%a7%a3.md.html" id="06 ZooKeeper 的网络通信协议详解.md.html">06 ZooKeeper 的网络通信协议详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/07%20%e5%8d%95%e6%9c%ba%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%a6%82%e4%bd%95%e4%bb%8e%e5%88%9d%e5%a7%8b%e5%8c%96%e5%88%b0%e5%af%b9%e5%a4%96%e6%8f%90%e4%be%9b%e6%9c%8d%e5%8a%a1%ef%bc%9f.md.html" id="07 单机模式：服务器如何从初始化到对外提供服务？.md.html">07 单机模式：服务器如何从初始化到对外提供服务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/08%20%e9%9b%86%e7%be%a4%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%a6%82%e4%bd%95%e4%bb%8e%e5%88%9d%e5%a7%8b%e5%8c%96%e5%88%b0%e5%af%b9%e5%a4%96%e6%8f%90%e4%be%9b%e6%9c%8d%e5%8a%a1%ef%bc%9f.md.html" id="08 集群模式：服务器如何从初始化到对外提供服务？.md.html">08 集群模式：服务器如何从初始化到对外提供服务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/09%20%e5%88%9b%e5%bb%ba%e4%bc%9a%e8%af%9d%ef%bc%9a%e9%81%bf%e5%bc%80%e6%97%a5%e5%b8%b8%e5%bc%80%e5%8f%91%e7%9a%84%e9%82%a3%e4%ba%9b%e2%80%9c%e5%9d%91%e2%80%9d.md.html" id="09 创建会话：避开日常开发的那些“坑”.md.html">09 创建会话：避开日常开发的那些“坑”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/10%20ClientCnxn%ef%bc%9a%e5%ae%a2%e6%88%b7%e7%ab%af%e6%a0%b8%e5%bf%83%e5%b7%a5%e4%bd%9c%e7%b1%bb%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86%e8%a7%a3%e6%9e%90.md.html" id="10 ClientCnxn：客户端核心工作类工作原理解析.md.html">10 ClientCnxn：客户端核心工作类工作原理解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/11%20%e5%88%86%e6%a1%b6%e7%ad%96%e7%95%a5%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%ab%98%e6%95%88%e7%9a%84%e4%bc%9a%e8%af%9d%e7%ae%a1%e7%90%86%ef%bc%9f.md.html" id="11 分桶策略：如何实现高效的会话管理？.md.html">11 分桶策略：如何实现高效的会话管理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/12%20%e6%9c%8d%e5%8a%a1%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e4%b8%80%e6%ac%a1%e4%bc%9a%e8%af%9d%e8%af%b7%e6%b1%82%e7%9a%84%ef%bc%9f.md.html" id="12 服务端是如何处理一次会话请求的？.md.html">12 服务端是如何处理一次会话请求的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/13%20Curator%ef%bc%9a%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%20ZooKeeper%20%e4%bd%bf%e7%94%a8%e7%9a%84%e5%a4%8d%e6%9d%82%e6%80%a7%ef%bc%9f.md.html" id="13 Curator：如何降低 ZooKeeper 使用的复杂性？.md.html">13 Curator：如何降低 ZooKeeper 使用的复杂性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/14%20Leader%20%e9%80%89%e4%b8%be%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%88%86%e5%b8%83%e5%bc%8f%e6%95%b0%e6%8d%ae%e7%9a%84%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9f.md.html" id="14 Leader 选举：如何保证分布式数据的一致性？.md.html">14 Leader 选举：如何保证分布式数据的一致性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/15%20ZooKeeper%20%e7%a9%b6%e7%ab%9f%e6%98%af%e6%80%8e%e4%b9%88%e9%80%89%e4%b8%ad%20Leader%20%e7%9a%84%ef%bc%9f.md.html" id="15 ZooKeeper 究竟是怎么选中 Leader 的？.md.html">15 ZooKeeper 究竟是怎么选中 Leader 的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/16%20ZooKeeper%20%e9%9b%86%e7%be%a4%e4%b8%ad%20Leader%20%e4%b8%8e%20Follower%20%e7%9a%84%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%e7%ad%96%e7%95%a5.md.html" id="16 ZooKeeper 集群中 Leader 与 Follower 的数据同步策略.md.html">16 ZooKeeper 集群中 Leader 与 Follower 的数据同步策略.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/17%20%e9%9b%86%e7%be%a4%e4%b8%ad%20Leader%20%e7%9a%84%e4%bd%9c%e7%94%a8%ef%bc%9a%e4%ba%8b%e5%8a%a1%e7%9a%84%e8%af%b7%e6%b1%82%e5%a4%84%e7%90%86%e4%b8%8e%e8%b0%83%e5%ba%a6%e5%88%86%e6%9e%90.md.html" id="17 集群中 Leader 的作用：事务的请求处理与调度分析.md.html">17 集群中 Leader 的作用：事务的请求处理与调度分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/18%20%e9%9b%86%e7%be%a4%e4%b8%ad%20Follow%20%e7%9a%84%e4%bd%9c%e7%94%a8%ef%bc%9a%e9%9d%9e%e4%ba%8b%e5%8a%a1%e8%af%b7%e6%b1%82%e7%9a%84%e5%a4%84%e7%90%86%e4%b8%8e%20Leader%20%e7%9a%84%e9%80%89%e4%b8%be%e5%88%86%e6%9e%90.md.html" id="18 集群中 Follow 的作用：非事务请求的处理与 Leader 的选举分析.md.html">18 集群中 Follow 的作用：非事务请求的处理与 Leader 的选举分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/19%20Observer%20%e7%9a%84%e4%bd%9c%e7%94%a8%e4%b8%8e%20Follow%20%e6%9c%89%e5%93%aa%e4%ba%9b%e4%b8%8d%e5%90%8c%ef%bc%9f.md.html" id="19 Observer 的作用与 Follow 有哪些不同？.md.html">19 Observer 的作用与 Follow 有哪些不同？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/20%20%e4%b8%80%e4%b8%aa%e8%bf%90%e8%a1%8c%e4%b8%ad%e7%9a%84%20ZooKeeper%20%e6%9c%8d%e5%8a%a1%e4%bc%9a%e4%ba%a7%e7%94%9f%e5%93%aa%e4%ba%9b%e6%95%b0%e6%8d%ae%e5%92%8c%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="20 一个运行中的 ZooKeeper 服务会产生哪些数据和文件？.md.html">20 一个运行中的 ZooKeeper 服务会产生哪些数据和文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/21%20ZooKeeper%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%ef%bc%9a%e5%ae%9e%e7%8e%b0%e5%92%8c%e5%8e%9f%e7%90%86%e8%a7%a3%e6%9e%90.md.html" id="21 ZooKeeper 分布式锁：实现和原理解析.md.html">21 ZooKeeper 分布式锁：实现和原理解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/22%20%e5%9f%ba%e4%ba%8e%20ZooKeeper%20%e5%91%bd%e5%90%8d%e6%9c%8d%e5%8a%a1%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%20ID%20%e7%94%9f%e6%88%90%e5%99%a8.md.html" id="22 基于 ZooKeeper 命名服务的应用：分布式 ID 生成器.md.html">22 基于 ZooKeeper 命名服务的应用：分布式 ID 生成器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/23%20%e4%bd%bf%e7%94%a8%20ZooKeeper%20%e5%ae%9e%e7%8e%b0%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%8a%9f%e8%83%bd.md.html" id="23 使用 ZooKeeper 实现负载均衡服务器功能.md.html">23 使用 ZooKeeper 实现负载均衡服务器功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/24%20ZooKeeper%20%e5%9c%a8%20Kafka%20%e5%92%8c%20Dubbo%20%e4%b8%ad%e7%9a%84%e5%b7%a5%e4%b8%9a%e7%ba%a7%e5%ae%9e%e7%8e%b0%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90.md.html" id="24 ZooKeeper 在 Kafka 和 Dubbo 中的工业级实现案例分析.md.html">24 ZooKeeper 在 Kafka 和 Dubbo 中的工业级实现案例分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/25%20%e5%a6%82%e4%bd%95%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e9%ab%98%e5%8f%af%e7%94%a8%e7%9a%84%20ZooKeeper%20%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="25 如何搭建一个高可用的 ZooKeeper 生产环境？.md.html">25 如何搭建一个高可用的 ZooKeeper 生产环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/26%20JConsole%20%e4%b8%8e%e5%9b%9b%e5%ad%97%e6%af%8d%e5%91%bd%e4%bb%a4%ef%bc%9a%e5%a6%82%e4%bd%95%e7%9b%91%e6%8e%a7%e6%9c%8d%e5%8a%a1%e5%99%a8%e4%b8%8a%20ZooKeeper%20%e7%9a%84%e8%bf%90%e8%a1%8c%e7%8a%b6%e6%80%81%ef%bc%9f.md.html" id="26 JConsole 与四字母命令：如何监控服务器上 ZooKeeper 的运行状态？.md.html">26 JConsole 与四字母命令：如何监控服务器上 ZooKeeper 的运行状态？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/27%20crontab%20%e4%b8%8e%20PurgeTxnLog%ef%bc%9a%e7%ba%bf%e4%b8%8a%e7%b3%bb%e7%bb%9f%e6%97%a5%e5%bf%97%e6%b8%85%e7%90%86%e7%9a%84%e6%9c%80%e4%bd%b3%e6%97%b6%e9%97%b4%e5%92%8c%e6%96%b9%e5%bc%8f.md.html" id="27 crontab 与 PurgeTxnLog：线上系统日志清理的最佳时间和方式.md.html">27 crontab 与 PurgeTxnLog：线上系统日志清理的最佳时间和方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/28%20%e5%bd%bb%e5%ba%95%e6%8e%8c%e6%8f%a1%e4%ba%8c%e9%98%b6%e6%ae%b5%e6%8f%90%e4%ba%a4%e4%b8%89%e9%98%b6%e6%ae%b5%e6%8f%90%e4%ba%a4%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="28 彻底掌握二阶段提交三阶段提交算法原理.md.html">28 彻底掌握二阶段提交三阶段提交算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/29%20ZAB%20%e5%8d%8f%e8%ae%ae%e7%ae%97%e6%b3%95%ef%bc%9a%e5%b4%a9%e6%ba%83%e6%81%a2%e5%a4%8d%e5%92%8c%e6%b6%88%e6%81%af%e5%b9%bf%e6%92%ad.md.html" id="29 ZAB 协议算法：崩溃恢复和消息广播.md.html">29 ZAB 协议算法：崩溃恢复和消息广播.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/30%20ZAB%20%e4%b8%8e%20Paxos%20%e7%ae%97%e6%b3%95%e7%9a%84%e8%81%94%e7%b3%bb%e4%b8%8e%e5%8c%ba%e5%88%ab.md.html" id="30 ZAB 与 Paxos 算法的联系与区别.md.html">30 ZAB 与 Paxos 算法的联系与区别.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/31%20ZooKeeper%20%e4%b8%ad%e4%ba%8c%e9%98%b6%e6%ae%b5%e6%8f%90%e4%ba%a4%e7%ae%97%e6%b3%95%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%88%86%e6%9e%90.md.html" id="31 ZooKeeper 中二阶段提交算法的实现分析.md.html">31 ZooKeeper 中二阶段提交算法的实现分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/32%20ZooKeeper%20%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0%e8%a7%a3%e6%9e%90.md.html" id="32 ZooKeeper 数据存储底层实现解析.md.html">32 ZooKeeper 数据存储底层实现解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/ZooKeeper%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/33%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e5%88%86%e5%b8%83%e6%8a%80%e6%9c%af%e5%8f%91%e5%b1%95%e4%b8%8e%20ZooKeeper%20%e5%ba%94%e7%94%a8%e5%89%8d%e6%99%af.md.html" id="33 结束语  分布技术发展与 ZooKeeper 应用前景.md.html">33 结束语  分布技术发展与 ZooKeeper 应用前景.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="32 ZooKeeper 数据存储底层实现解析" id="title">32 ZooKeeper 数据存储底层实现解析</h1>
+<div><p>在之前的“27 课| crontab 与 PurgeTxnLog：线上系统日志清理的最佳时间和方式”中，我们介绍了线上日志的清理方式，并讲解了 ZooKeeper 服务在运行的过程中产生的数据日志等文件。本节课我们将继续学习 ZooKeeper 文件存储和管理的相关知识，深入分析 ZooKeeper 文件系统的布局方式和不同文件的内部结构格式。</p>
+<h3 id="文件系统布局">文件系统布局</h3>
+<p>无论是 ZooKeeper 服务在运行时候产生的数据日志，还是在集群中进行数据同步的时候所用到的数据快照，都可以被看作一种文件系统。而文件系统的两个功能就是对文件的存储和对不同文件格式的解析。ZooKeeper 中的数据存储，可以分为两种类型：数据日志文件和快照文件，接下来我们就分别介绍这两种文件的结构信息和底层实现。</p>
+<h3 id="数据日志">数据日志</h3>
+<p>在 ZooKeeper 服务运行的过程中，数据日志是用来记录 ZooKeeper 服务运行状态的数据文件。通过这个文件我们不但能统计 ZooKeeper 服务的运行情况，更可以在 ZooKeeper 服务发生异常的情况下，根据日志文件记录的内容来进行分析，定位问题产生的原因并找到解决异常错误的方法。</p>
+<p>如何找到日志文件呢？在 ZooKeeper 的 zoo.cfg 配置文件中的 dataLogDir 属性字段，所指定的文件地址就是当前 ZooKeeper 服务的日志文件的存储地址。</p>
+<p>在了解了 ZooKeeper 服务在运行的过程中所产生的日志文件的存放位置，以及日志文件的格式结构后，接下来我们就深入到 ZooKeeper 服务的底层，来看一下它是如何实现日志的搜集以及存储的。</p>
+<h4 id="搜集日志">搜集日志</h4>
+<p>我们先来看一下 ，ZooKeeper 是如何搜集程序的运行信息的。在统计操作情况的日志信息中，ZooKeeper 通过第三方开源日志服务框架 SLF4J 来实现的。</p>
+<p>SLF4J 是一个<strong>采用门面设计模式（Facade）</strong> 的日志框架。如下图所示，门面模式也叫作外观模式，采用这种设计模式的主要作用是，对外隐藏系统内部的复杂性，并向外部调用的客户端或程序提供统一的接口。门面模式通常以接口的方式实现，可以被程序中的方法引用。</p>
+<p>在下图中，我们用门面模式创建了一个绘制几何图形的小功能。首先，定义了一个 Shape 接口类，并分别创建了三个类 Circle、Square、Rectangle ，以继承 Shape 接口。其次，我们再来创建一个画笔类 ShapeMaker ，在该类中我定义了 shape 形状字段以及绘画函数 drawCircle等。</p>
+<p><img alt="Drawing 0.png" src="assets/Ciqc1F8_iESARR3eAAB5fX25Qrk279.png"/></p>
+<p>之后，当我们在本地项目中需要调用实现的会话功能时，直接调用 ShapeMaker 类，并传入我们要绘制的图形信息，就可以实现图形的绘制功能了。它使用起来非常简单，不必关心其底层是如何实现绘制操作的，只要将我们需要绘制的图形信息传入到接口函数中即可。</p>
+<p>而在 ZooKeeper 中使用 SLF4J 日志框架也同样简单，如下面的代码所示，首先在类中通过工厂函数创建日志工具类 LOG，然后在需要搜集的操作流程处引入日志搜集函数 LOG.info 即可。</p>
+<pre><code>protected static final Logger LOG = LoggerFactory.getLogger(Learner.class);
+
+LOG.info("Revalidating client: 0x" + Long.toHexString(clientId));
+
+LOG.warn("Couldn't find the leader with id = "
+
+        + current.getId());
+</code></pre>
+<h4 id="存储日志">存储日志</h4>
+<p>接下来我们看一下搜集完的日志是什么样子的。在开头我们已经说过，系统日志的存放位置，在 zoo.cfg 文件中。假设我们的日志路径为dataDir=/var/lib/zookeeper，打开系统命令行，进入到该文件夹，就会看到如下图所示的样子，所有系统日志文件都放在了该文件夹下。</p>
+<p><img alt="Drawing 1.png" src="assets/CgqCHl8_iFWAQwfvAAAfvGjcfow495.png"/></p>
+<h3 id="快照文件">快照文件</h3>
+<p>除了上面介绍的记录系统操作日志的文件外，ZooKeeper 中另一种十分重要的文件数据是快照日志文件。快照日志文件主要用来存储 ZooKeeper 服务中的事务性操作日志，并通过数据快照文件实现集群之间服务器的数据同步功能。</p>
+<h4 id="快照创建">快照创建</h4>
+<p>接下来我们来介绍，在 ZooKeeper 的底层实现中，一个快照文件是如何创建的。</p>
+<p>如下面的代码所示，在 ZooKeeper 的源码中定义了一个 SnapShot 接口类，在该接口中描述了 ZooKeeper 服务的相关属性和方法。其中 serialize 函数是用来将内存中的快照文件转存到本地磁盘中时的序列化操作。而 deserialize 的作用正好与其相反，是把快照文件从本地磁盘中加载到内存中时的反序列化操作。无论是序列化还是反序列化，整个快照所操作的数据对象是 ZooKeeper 数据模型，也就是由 Znode 组成的结构树。</p>
+<pre><code>public interface SnapShot {
+
+  long deserialize(DataTree dt, Map&lt;Long, Integer&gt; sessions) 
+
+    throws IOException;
+
+    void serialize(DataTree dt, Map&lt;Long, Integer&gt; sessions,
+
+               File name, boolean fsync)
+
+    throws IOException;
+
+    File findMostRecentSnapshot() throws IOException;
+
+    void close() throws IOException;
+
+}
+</code></pre>
+<h4 id="快照存储">快照存储</h4>
+<p>创建完 ZooKeeper 服务的数据快照文件后，接下来就要对数据文件进行持久化的存储操作了。其实在整个 ZooKeeper 中，随着服务的不同阶段变化，数据快照存放文件的位置也随之变化。存储位置的变化，主要是内存和本地磁盘之间的转变。当 ZooKeeper 集群处理来自客户端的事务性的会话请求的时候，会首先在服务器内存中针对本次会话生成数据快照。当整个集群可以执行该条事务会话请求后，提交该请求操作，就会将数据快照持久化到本地磁盘中，如下图所示。</p>
+<p><img alt="zk.png" src="assets/Ciqc1F8_iGKAU3N-AABQvy8biHk445.png"/></p>
+<p>存储到本地磁盘中的数据快照文件，是经过 ZooKeeper 序列化后的二进制格式文件，通常我们无法直接查看，但如果想要查看，也可以通过 ZooKeeper 自带的 SnapshotFormatter 类来实现。如下图所示，在 SnapshotFormatter 类的内部用来查看快照文件的几种函数分别是： printDetails 函数，用来打印日志中的数据节点和 Session 会话信息；printZnodeDetails 函数，用来查看日志文件中节点的详细信息，包括节点 id 编码、state 状态信息、version 节点版本信息等。</p>
+<pre><code>public class SnapshotFormatter {
+
+  private void printDetails(DataTree dataTree, Map&lt;Long, Integer&gt; sessions) 
+
+  private void printZnodeDetails(DataTree dataTree) 
+
+  private void printZnode(DataTree dataTree, String name)
+
+  private void printSessionDetails(DataTree dataTree, Map&lt;Long, Integer&gt; sessions) 
+
+  private void printStat(StatPersisted stat)
+
+  private void printHex(String prefix, long value) 
+
+}
+</code></pre>
+<p>虽然 ZooKeeper 提供了 SnapshotFormatter 类，但其实现的查询功能比较单一，我们可以通过本节课的学习，按照自己的业务需求，编写自己的快照文件查看器。</p>
+<p>到目前位置，我们对 ZooKeeper 服务相关的数据文件都做了讲解。无论是数据日志文件，还是数据快照文件，最终都会存储在本地磁盘中。而从文件的生成方式来看，两种日志文件的不同是：数据日志文件实施性更高，相对的产生的日志文件也不断变化，只要 ZooKeeper 服务一直运行，就会产生新的操作日志数据；而数据快照并非实时产生，它是当集群中数据发生变化后，先在内存中生成数据快照文件，经过序列化后再存储到本地磁盘中。</p>
+<h3 id="总结">总结</h3>
+<p>本节课我们讲解了在 ZooKeeper 服务运行过程中所产生的两种主要数据文件：数据日志文件和数据快照文件的结构信息和底层实现，以便加强你对它们的理解。而数据日志文件如何监控并解决异常情况，数据快照文件如何实现数据同步等内容，我们在之前的课程中已经提到，希望你回顾之前的内容，并结合本节课的内容，对 ZooKeeper 的文件系统有更深的理解。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#076b6b6b3e333636373047606a666e6b2964686a" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357e2903e1be5b4',t:'MTc0NTUyMTY2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
