@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="27 如何设计计算高可用架构？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>27 如何设计计算高可用架构？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e7%85%a7%e7%9d%80%e5%81%9a%ef%bc%8c%e4%bd%a0%e4%b9%9f%e8%83%bd%e6%88%90%e4%b8%ba%e6%9e%b6%e6%9e%84%e5%b8%88%ef%bc%81.md.html" id="00 开篇词 照着做，你也能成为架构师！.md.html">00 开篇词 照着做，你也能成为架构师！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/01%20%e6%9e%b6%e6%9e%84%e5%88%b0%e5%ba%95%e6%98%af%e6%8c%87%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="01 架构到底是指什么？.md.html">01 架构到底是指什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/02%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e7%9a%84%e5%8e%86%e5%8f%b2%e8%83%8c%e6%99%af.md.html" id="02 架构设计的历史背景.md.html">02 架构设计的历史背景.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/03%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e7%9a%84%e7%9b%ae%e7%9a%84.md.html" id="03 架构设计的目的.md.html">03 架构设计的目的.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/04%20%e5%a4%8d%e6%9d%82%e5%ba%a6%e6%9d%a5%e6%ba%90%ef%bc%9a%e9%ab%98%e6%80%a7%e8%83%bd.md.html" id="04 复杂度来源：高性能.md.html">04 复杂度来源：高性能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/05%20%e5%a4%8d%e6%9d%82%e5%ba%a6%e6%9d%a5%e6%ba%90%ef%bc%9a%e9%ab%98%e5%8f%af%e7%94%a8.md.html" id="05 复杂度来源：高可用.md.html">05 复杂度来源：高可用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/06%20%e5%a4%8d%e6%9d%82%e5%ba%a6%e6%9d%a5%e6%ba%90%ef%bc%9a%e5%8f%af%e6%89%a9%e5%b1%95%e6%80%a7.md.html" id="06 复杂度来源：可扩展性.md.html">06 复杂度来源：可扩展性.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/07%20%e5%a4%8d%e6%9d%82%e5%ba%a6%e6%9d%a5%e6%ba%90%ef%bc%9a%e4%bd%8e%e6%88%90%e6%9c%ac%e3%80%81%e5%ae%89%e5%85%a8%e3%80%81%e8%a7%84%e6%a8%a1.md.html" id="07 复杂度来源：低成本、安全、规模.md.html">07 复杂度来源：低成本、安全、规模.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/08%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e4%b8%89%e5%8e%9f%e5%88%99.md.html" id="08 架构设计三原则.md.html">08 架构设计三原则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/09%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e5%8e%9f%e5%88%99%e6%a1%88%e4%be%8b.md.html" id="09 架构设计原则案例.md.html">09 架构设计原则案例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/10%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e6%b5%81%e7%a8%8b%ef%bc%9a%e8%af%86%e5%88%ab%e5%a4%8d%e6%9d%82%e5%ba%a6.md.html" id="10 架构设计流程：识别复杂度.md.html">10 架构设计流程：识别复杂度.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/11%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e6%b5%81%e7%a8%8b%ef%bc%9a%e8%ae%be%e8%ae%a1%e5%a4%87%e9%80%89%e6%96%b9%e6%a1%88.md.html" id="11 架构设计流程：设计备选方案.md.html">11 架构设计流程：设计备选方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/12%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e6%b5%81%e7%a8%8b%ef%bc%9a%e8%af%84%e4%bc%b0%e5%92%8c%e9%80%89%e6%8b%a9%e5%a4%87%e9%80%89%e6%96%b9%e6%a1%88.md.html" id="12 架构设计流程：评估和选择备选方案.md.html">12 架构设计流程：评估和选择备选方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/13%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e6%b5%81%e7%a8%8b%ef%bc%9a%e8%af%a6%e7%bb%86%e6%96%b9%e6%a1%88%e8%ae%be%e8%ae%a1.md.html" id="13 架构设计流程：详细方案设计.md.html">13 架构设计流程：详细方案设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/14%20%e9%ab%98%e6%80%a7%e8%83%bd%e6%95%b0%e6%8d%ae%e5%ba%93%e9%9b%86%e7%be%a4%ef%bc%9a%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb.md.html" id="14 高性能数据库集群：读写分离.md.html">14 高性能数据库集群：读写分离.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/15%20%e9%ab%98%e6%80%a7%e8%83%bd%e6%95%b0%e6%8d%ae%e5%ba%93%e9%9b%86%e7%be%a4%ef%bc%9a%e5%88%86%e5%ba%93%e5%88%86%e8%a1%a8.md.html" id="15 高性能数据库集群：分库分表.md.html">15 高性能数据库集群：分库分表.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/16%20%e9%ab%98%e6%80%a7%e8%83%bdNoSQL.md.html" id="16 高性能NoSQL.md.html">16 高性能NoSQL.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/17%20%e9%ab%98%e6%80%a7%e8%83%bd%e7%bc%93%e5%ad%98%e6%9e%b6%e6%9e%84.md.html" id="17 高性能缓存架构.md.html">17 高性能缓存架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/18%20%e5%8d%95%e6%9c%8d%e5%8a%a1%e5%99%a8%e9%ab%98%e6%80%a7%e8%83%bd%e6%a8%a1%e5%bc%8f%ef%bc%9aPPC%e4%b8%8eTPC.md.html" id="18 单服务器高性能模式：PPC与TPC.md.html">18 单服务器高性能模式：PPC与TPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/19%20%e5%8d%95%e6%9c%8d%e5%8a%a1%e5%99%a8%e9%ab%98%e6%80%a7%e8%83%bd%e6%a8%a1%e5%bc%8f%ef%bc%9aReactor%e4%b8%8eProactor.md.html" id="19 单服务器高性能模式：Reactor与Proactor.md.html">19 单服务器高性能模式：Reactor与Proactor.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/20%20%e9%ab%98%e6%80%a7%e8%83%bd%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e5%88%86%e7%b1%bb%e5%8f%8a%e6%9e%b6%e6%9e%84.md.html" id="20 高性能负载均衡：分类及架构.md.html">20 高性能负载均衡：分类及架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/21%20%e9%ab%98%e6%80%a7%e8%83%bd%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e7%ae%97%e6%b3%95.md.html" id="21 高性能负载均衡：算法.md.html">21 高性能负载均衡：算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/22%20%e6%83%b3%e6%88%90%e4%b8%ba%e6%9e%b6%e6%9e%84%e5%b8%88%ef%bc%8c%e4%bd%a0%e5%bf%85%e9%a1%bb%e7%9f%a5%e9%81%93CAP%e7%90%86%e8%ae%ba.md.html" id="22 想成为架构师，你必须知道CAP理论.md.html">22 想成为架构师，你必须知道CAP理论.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/23%20%e6%83%b3%e6%88%90%e4%b8%ba%e6%9e%b6%e6%9e%84%e5%b8%88%ef%bc%8c%e4%bd%a0%e5%bf%85%e9%a1%bb%e6%8e%8c%e6%8f%a1%e7%9a%84CAP%e7%bb%86%e8%8a%82.md.html" id="23 想成为架构师，你必须掌握的CAP细节.md.html">23 想成为架构师，你必须掌握的CAP细节.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/24%20FMEA%e6%96%b9%e6%b3%95%ef%bc%8c%e6%8e%92%e9%99%a4%e6%9e%b6%e6%9e%84%e5%8f%af%e7%94%a8%e6%80%a7%e9%9a%90%e6%82%a3%e7%9a%84%e5%88%a9%e5%99%a8.md.html" id="24 FMEA方法，排除架构可用性隐患的利器.md.html">24 FMEA方法，排除架构可用性隐患的利器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/25%20%e9%ab%98%e5%8f%af%e7%94%a8%e5%ad%98%e5%82%a8%e6%9e%b6%e6%9e%84%ef%bc%9a%e5%8f%8c%e6%9c%ba%e6%9e%b6%e6%9e%84.md.html" id="25 高可用存储架构：双机架构.md.html">25 高可用存储架构：双机架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/26%20%e9%ab%98%e5%8f%af%e7%94%a8%e5%ad%98%e5%82%a8%e6%9e%b6%e6%9e%84%ef%bc%9a%e9%9b%86%e7%be%a4%e5%92%8c%e5%88%86%e5%8c%ba.md.html" id="26 高可用存储架构：集群和分区.md.html">26 高可用存储架构：集群和分区.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/27%20%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e8%ae%a1%e7%ae%97%e9%ab%98%e5%8f%af%e7%94%a8%e6%9e%b6%e6%9e%84%ef%bc%9f.md.html" id="27 如何设计计算高可用架构？.md.html">27 如何设计计算高可用架构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/28%20%e4%b8%9a%e5%8a%a1%e9%ab%98%e5%8f%af%e7%94%a8%e7%9a%84%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%bc%82%e5%9c%b0%e5%a4%9a%e6%b4%bb%e6%9e%b6%e6%9e%84.md.html" id="28 业务高可用的保障：异地多活架构.md.html">28 业务高可用的保障：异地多活架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/29%20%e5%bc%82%e5%9c%b0%e5%a4%9a%e6%b4%bb%e8%ae%be%e8%ae%a14%e5%a4%a7%e6%8a%80%e5%b7%a7.md.html" id="29 异地多活设计4大技巧.md.html">29 异地多活设计4大技巧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/30%20%e5%bc%82%e5%9c%b0%e5%a4%9a%e6%b4%bb%e8%ae%be%e8%ae%a14%e6%ad%a5%e8%b5%b0.md.html" id="30 异地多活设计4步走.md.html">30 异地多活设计4步走.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/31%20%e5%a6%82%e4%bd%95%e5%ba%94%e5%af%b9%e6%8e%a5%e5%8f%a3%e7%ba%a7%e7%9a%84%e6%95%85%e9%9a%9c%ef%bc%9f.md.html" id="31 如何应对接口级的故障？.md.html">31 如何应对接口级的故障？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/32%20%e5%8f%af%e6%89%a9%e5%b1%95%e6%9e%b6%e6%9e%84%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%80%9d%e6%83%b3%e5%92%8c%e6%a8%a1%e5%bc%8f.md.html" id="32 可扩展架构的基本思想和模式.md.html">32 可扩展架构的基本思想和模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/33%20%e4%bc%a0%e7%bb%9f%e7%9a%84%e5%8f%af%e6%89%a9%e5%b1%95%e6%9e%b6%e6%9e%84%e6%a8%a1%e5%bc%8f%ef%bc%9a%e5%88%86%e5%b1%82%e6%9e%b6%e6%9e%84%e5%92%8cSOA.md.html" id="33 传统的可扩展架构模式：分层架构和SOA.md.html">33 传统的可扩展架构模式：分层架构和SOA.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/34%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%ef%bc%9a%e9%93%b6%e5%bc%b9%20or%20%e7%84%a6%e6%b2%b9%e5%9d%91%ef%bc%9f.md.html" id="34 深入理解微服务架构：银弹 or 焦油坑？.md.html">34 深入理解微服务架构：银弹 or 焦油坑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/35%20%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5%20-%20%e6%96%b9%e6%b3%95%e7%af%87.md.html" id="35 微服务架构最佳实践 - 方法篇.md.html">35 微服务架构最佳实践 - 方法篇.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/36%20%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5%20-%20%e5%9f%ba%e7%a1%80%e8%ae%be%e6%96%bd%e7%af%87.md.html" id="36 微服务架构最佳实践 - 基础设施篇.md.html">36 微服务架构最佳实践 - 基础设施篇.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/37%20%e5%be%ae%e5%86%85%e6%a0%b8%e6%9e%b6%e6%9e%84%e8%af%a6%e8%a7%a3.md.html" id="37 微内核架构详解.md.html">37 微内核架构详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/38%20%e6%9e%b6%e6%9e%84%e5%b8%88%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e5%88%a4%e6%96%ad%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e7%9a%84%e6%96%b9%e5%90%91%ef%bc%9f.md.html" id="38 架构师应该如何判断技术演进的方向？.md.html">38 架构师应该如何判断技术演进的方向？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/39%20%e4%ba%92%e8%81%94%e7%bd%91%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e7%9a%84%e6%a8%a1%e5%bc%8f.md.html" id="39 互联网技术演进的模式.md.html">39 互联网技术演进的模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/40%20%e4%ba%92%e8%81%94%e7%bd%91%e6%9e%b6%e6%9e%84%e6%a8%a1%e6%9d%bf%ef%bc%9a%e5%ad%98%e5%82%a8%e5%b1%82%e6%8a%80%e6%9c%af.md.html" id="40 互联网架构模板：存储层技术.md.html">40 互联网架构模板：存储层技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/41%20%e4%ba%92%e8%81%94%e7%bd%91%e6%9e%b6%e6%9e%84%e6%a8%a1%e6%9d%bf%ef%bc%9a%e5%bc%80%e5%8f%91%e5%b1%82%e5%92%8c%e6%9c%8d%e5%8a%a1%e5%b1%82%e6%8a%80%e6%9c%af.md.html" id="41 互联网架构模板：开发层和服务层技术.md.html">41 互联网架构模板：开发层和服务层技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/42%20%e4%ba%92%e8%81%94%e7%bd%91%e6%9e%b6%e6%9e%84%e6%a8%a1%e6%9d%bf%ef%bc%9a%e7%bd%91%e7%bb%9c%e5%b1%82%e6%8a%80%e6%9c%af.md.html" id="42 互联网架构模板：网络层技术.md.html">42 互联网架构模板：网络层技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/43%20%e4%ba%92%e8%81%94%e7%bd%91%e6%9e%b6%e6%9e%84%e6%a8%a1%e6%9d%bf%ef%bc%9a%e7%94%a8%e6%88%b7%e5%b1%82%e5%92%8c%e4%b8%9a%e5%8a%a1%e5%b1%82%e6%8a%80%e6%9c%af.md.html" id="43 互联网架构模板：用户层和业务层技术.md.html">43 互联网架构模板：用户层和业务层技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/44%20%e4%ba%92%e8%81%94%e7%bd%91%e6%9e%b6%e6%9e%84%e6%a8%a1%e6%9d%bf%ef%bc%9a%e5%b9%b3%e5%8f%b0%e6%8a%80%e6%9c%af.md.html" id="44 互联网架构模板：平台技术.md.html">44 互联网架构模板：平台技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/45%20%e6%9e%b6%e6%9e%84%e9%87%8d%e6%9e%84%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%e7%ac%ac%e4%b8%80%e5%bc%8f%ef%bc%9a%e6%9c%89%e7%9a%84%e6%94%be%e7%9f%a2.md.html" id="45 架构重构内功心法第一式：有的放矢.md.html">45 架构重构内功心法第一式：有的放矢.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/46%20%e6%9e%b6%e6%9e%84%e9%87%8d%e6%9e%84%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%e7%ac%ac%e4%ba%8c%e5%bc%8f%ef%bc%9a%e5%90%88%e7%ba%b5%e8%bf%9e%e6%a8%aa.md.html" id="46 架构重构内功心法第二式：合纵连横.md.html">46 架构重构内功心法第二式：合纵连横.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/47%20%e6%9e%b6%e6%9e%84%e9%87%8d%e6%9e%84%e5%86%85%e5%8a%9f%e5%bf%83%e6%b3%95%e7%ac%ac%e4%b8%89%e5%bc%8f%ef%bc%9a%e8%bf%90%e7%ad%b9%e5%b8%b7%e5%b9%84.md.html" id="47 架构重构内功心法第三式：运筹帷幄.md.html">47 架构重构内功心法第三式：运筹帷幄.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/48%20%e5%86%8d%e8%b0%88%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%89%e6%8b%a9%e3%80%81%e4%bd%bf%e7%94%a8%e4%bb%a5%e5%8f%8a%e4%ba%8c%e6%ac%a1%e5%bc%80%e5%8f%91%ef%bc%9f.md.html" id="48 再谈开源项目：如何选择、使用以及二次开发？.md.html">48 再谈开源项目：如何选择、使用以及二次开发？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/49%20%e8%b0%88%e8%b0%88App%e6%9e%b6%e6%9e%84%e7%9a%84%e6%bc%94%e8%bf%9b.md.html" id="49 谈谈App架构的演进.md.html">49 谈谈App架构的演进.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/50%20%e6%9e%b6%e6%9e%84%e5%ae%9e%e6%88%98%ef%bc%9a%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e6%96%87%e6%a1%a3%e6%a8%a1%e6%9d%bf.md.html" id="50 架构实战：架构设计文档模板.md.html">50 架构实战：架构设计文档模板.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/51%20%e5%a6%82%e4%bd%95%e7%94%bb%e5%87%ba%e4%bc%98%e7%a7%80%e7%9a%84%e8%bd%af%e4%bb%b6%e7%b3%bb%e7%bb%9f%e6%9e%b6%e6%9e%84%e5%9b%be%ef%bc%9f.md.html" id="51 如何画出优秀的软件系统架构图？.md.html">51 如何画出优秀的软件系统架构图？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e5%8a%a0%e9%a4%90%ef%bd%9c%e4%b8%9a%e5%8a%a1%e6%9e%b6%e6%9e%84%e5%ae%9e%e6%88%98%e8%90%a5%e5%bc%80%e8%90%a5%e4%ba%86.md.html" id="加餐｜业务架构实战营开营了.md.html">加餐｜业务架构实战营开营了.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e5%8a%a0%e9%a4%90%ef%bd%9c%e5%8d%95%e6%9c%8d%e5%8a%a1%e5%99%a8%e9%ab%98%e6%80%a7%e8%83%bd%e6%a8%a1%e5%bc%8f%e6%80%a7%e8%83%bd%e5%af%b9%e6%af%94.md.html" id="加餐｜单服务器高性能模式性能对比.md.html">加餐｜单服务器高性能模式性能对比.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e5%8a%a0%e9%a4%90%ef%bd%9c%e6%89%92%e4%b8%80%e6%89%92%e4%b8%ad%e5%8f%b0%e7%9a%87%e5%b8%9d%e7%9a%84%e5%a4%96%e8%a1%a3.md.html" id="加餐｜扒一扒中台皇帝的外衣.md.html">加餐｜扒一扒中台皇帝的外衣.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%9c%b0%e5%ad%a6%e4%b9%a0%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae%20%e5%8d%8e%e4%bb%94%ef%bc%8c%e6%94%be%e5%ad%a6%e5%88%ab%e8%b5%b0%ef%bc%81%20%e7%ac%ac3%e6%9c%9f.md.html" id="如何高效地学习开源项目 华仔，放学别走！ 第3期.md.html">如何高效地学习开源项目 华仔，放学别走！ 第3期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e6%96%b0%e4%b9%a6%e9%a6%96%e5%8f%91%20%e3%80%8a%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84%e3%80%8b.md.html" id="新书首发 《从零开始学架构》.md.html">新书首发 《从零开始学架构》.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e6%9e%b6%e6%9e%84%e4%b8%93%e6%a0%8f%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%8d%8e%e4%bb%94%ef%bc%8c%e6%94%be%e5%ad%a6%e5%88%ab%e8%b5%b0%ef%bc%81%20%e7%ac%ac2%e6%9c%9f.md.html" id="架构专栏特别放送 华仔，放学别走！ 第2期.md.html">架构专栏特别放送 华仔，放学别走！ 第2期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e6%9e%b6%e6%9e%84%e4%b8%93%e6%a0%8f%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%8d%8e%e4%bb%94%ef%bc%8c%e6%94%be%e5%ad%a6%e5%88%ab%e8%b5%b0%ef%bc%81%e7%ac%ac1%e6%9c%9f.md.html" id="架构专栏特别放送 华仔，放学别走！第1期.md.html">架构专栏特别放送 华仔，放学别走！第1期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e6%9e%b6%e6%9e%84%e5%b8%88%e5%bf%85%e8%af%bb%e4%b9%a6%e5%8d%95%20%e5%8d%8e%e4%bb%94%ef%bc%8c%e6%94%be%e5%ad%a6%e5%88%ab%e8%b5%b0%ef%bc%81%20%e7%ac%ac5%e6%9c%9f.md.html" id="架构师必读书单 华仔，放学别走！ 第5期.md.html">架构师必读书单 华仔，放学别走！ 第5期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e6%9e%b6%e6%9e%84%e5%b8%88%e6%88%90%e9%95%bf%e4%b9%8b%e8%b7%af%20%e5%8d%8e%e4%bb%94%ef%bc%8c%e6%94%be%e5%ad%a6%e5%88%ab%e8%b5%b0%ef%bc%81%20%e7%ac%ac4%e6%9c%9f.md.html" id="架构师成长之路 华仔，放学别走！ 第4期.md.html">架构师成长之路 华仔，放学别走！ 第4期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e5%ad%a6%e6%9e%b6%e6%9e%84/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%9d%9a%e6%8c%81%ef%bc%8c%e6%88%90%e5%b0%b1%e4%bd%a0%e7%9a%84%e6%8a%80%e6%9c%af%e6%a2%a6%e6%83%b3.md.html" id="结束语 坚持，成就你的技术梦想.md.html">结束语 坚持，成就你的技术梦想.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="27 如何设计计算高可用架构？" id="title">27 如何设计计算高可用架构？</h1>
+<div><p>计算高可用的主要设计目标是当出现部分硬件损坏时，计算任务能够继续正常运行。因此计算高可用的本质是通过冗余来规避部分故障的风险，单台服务器是无论如何都达不到这个目标的。所以计算高可用的设计思想很简单：通过增加更多服务器来达到计算高可用。</p>
+<p>计算高可用架构的设计复杂度主要体现在<strong>任务管理</strong>方面，即当任务在某台服务器上执行失败后，如何将任务重新分配到新的服务器进行执行。因此，计算高可用架构设计的关键点有下面两点。</p>
+<p>1.哪些服务器可以执行任务</p>
+<p>第一种方式和计算高性能中的集群类似，每个服务器都可以执行任务。例如，常见的访问网站的某个页面。</p>
+<p>第二种方式和存储高可用中的集群类似，只有特定服务器（通常叫“主机”）可以执行任务。当执行任务的服务器故障后，系统需要挑选新的服务器来执行任务。例如，ZooKeeper的Leader才能处理写操作请求。</p>
+<p>2.任务如何重新执行</p>
+<p>第一种策略是对于已经分配的任务即使执行失败也不做任何处理，系统只需要保证新的任务能够分配到其他非故障服务器上执行即可。</p>
+<p>第二种策略是设计一个任务管理器来管理需要执行的计算任务，服务器执行完任务后，需要向任务管理器反馈任务执行结果，任务管理器根据任务执行结果来决定是否需要将任务重新分配到另外的服务器上执行。</p>
+<p>需要注意的是：“任务分配器”是一个逻辑的概念，并不一定要求系统存在一个独立的任务分配器模块。例如：</p>
+<ul>
+<li>Nginx将页面请求发送给Web服务器，而CSS/JS等静态文件直接读取本地缓存。这里的Nginx角色是反向代理系统，但是承担了任务分配器的职责，而不需要Nginx做反向代理，后面再来一个任务分配器。</li>
+<li>对于一些后台批量运算的任务，可以设计一个独立的任务分配系统来管理这些批处理任务的执行和分配。</li>
+<li>ZooKeeper中的Follower节点，当接收到写请求时会将请求转发给Leader节点处理，当接收到读请求时就自己处理，这里的Follower就相当于一个逻辑上的任务分配器。</li>
+</ul>
+<p>接下来，我将详细阐述常见的计算高可用架构：主备、主从和集群。</p>
+<h2 id="主备">主备</h2>
+<p>主备架构是计算高可用最简单的架构，和存储高可用的主备复制架构类似，但是要更简单一些，因为计算高可用的主备架构无须数据复制，其基本的架构示意图如下：</p>
+<p><img alt="img" src="assets/83e0a9670c16yyf0a074776325f840d6.jpg"/></p>
+<p>主备方案的详细设计：</p>
+<ul>
+<li>主机执行所有计算任务。例如，读写数据、执行操作等。</li>
+<li>当主机故障（例如，主机宕机）时，任务分配器不会自动将计算任务发送给备机，此时系统处于不可用状态。</li>
+<li>如果主机能够恢复（不管是人工恢复还是自动恢复），任务分配器继续将任务发送给主机。</li>
+<li>如果主机不能够恢复（例如，机器硬盘损坏，短时间内无法恢复），则需要人工操作，将备机升为主机，然后让任务分配器将任务发送给新的主机（即原来的备机）；同时，为了继续保持主备架构，需要人工增加新的机器作为备机。</li>
+</ul>
+<p>根据备机状态的不同，主备架构又可以细分为冷备架构和温备架构。</p>
+<p><strong>冷备</strong>：备机上的程序包和配置文件都准备好，但备机上的业务系统没有启动（注意：备机的服务器是启动的），主机故障后，需要人工手工将备机的业务系统启动，并将任务分配器的任务请求切换发送给备机。</p>
+<p><strong>温备</strong>：备机上的业务系统已经启动，只是不对外提供服务，主机故障后，人工只需要将任务分配器的任务请求切换发送到备机即可。冷备可以节省一定的能源，但温备能够大大减少手工操作时间，因此一般情况下推荐用温备的方式。</p>
+<p>主备架构的优点就是简单，主备机之间不需要进行交互，状态判断和切换操作由人工执行，系统实现很简单。而缺点正好也体现在“人工操作”这点上，因为人工操作的时间不可控，可能系统已经发生问题了，但维护人员还没发现，等了1个小时才发现。发现后人工切换的操作效率也比较低，可能需要半个小时才完成切换操作，而且手工操作过程中容易出错。例如，修改配置文件改错了、启动了错误的程序等。</p>
+<p>和存储高可用中的主备复制架构类似，计算高可用的主备架构也比较适合与内部管理系统、后台管理系统这类使用人数不多、使用频率不高的业务，不太适合在线的业务。</p>
+<h2 id="主从">主从</h2>
+<p>和存储高可用中的主从复制架构类似，计算高可用的主从架构中的从机也是要执行任务的。任务分配器需要将任务进行分类，确定哪些任务可以发送给主机执行，哪些任务可以发送给备机执行，其基本的架构示意图如下：</p>
+<p><img alt="img" src="assets/7e19db520ec219ec68c83c7d0639455e.jpg"/></p>
+<p>主从方案详细设计：</p>
+<ul>
+<li>正常情况下，主机执行部分计算任务（如图中的“计算任务A”），备机执行部分计算任务（如图中的“计算任务B”）。</li>
+<li>当主机故障（例如，主机宕机）时，任务分配器不会自动将原本发送给主机的任务发送给从机，而是继续发送给主机，不管这些任务执行是否成功。</li>
+<li>如果主机能够恢复（不管是人工恢复还是自动恢复），任务分配器继续按照原有的设计策略分配任务，即计算任务A发送给主机，计算任务B发送给从机。</li>
+<li>如果主机不能够恢复（例如，机器硬盘损坏，短时间内无法恢复），则需要人工操作，将原来的从机升级为主机（一般只是修改配置即可），增加新的机器作为从机，新的从机准备就绪后，任务分配器继续按照原有的设计策略分配任务。</li>
+</ul>
+<p>主从架构与主备架构相比，优缺点有：</p>
+<ul>
+<li>优点：主从架构的从机也执行任务，发挥了从机的硬件性能。</li>
+<li>缺点：主从架构需要将任务分类，任务分配器会复杂一些。</li>
+</ul>
+<h2 id="集群">集群</h2>
+<p>主备架构和主从架构通过冗余一台服务器来提升可用性，且需要人工来切换主备或者主从。这样的架构虽然简单，但存在一个主要的问题：人工操作效率低、容易出错、不能及时处理故障。因此在可用性要求更加严格的场景中，我们需要系统能够自动完成切换操作，这就是高可用集群方案。</p>
+<p>高可用计算的集群方案根据集群中服务器节点角色的不同，可以分为两类：一类是对称集群，即集群中每个服务器的角色都是一样的，都可以执行所有任务；另一类是非对称集群，集群中的服务器分为多个不同的角色，不同的角色执行不同的任务，例如最常见的Master-Slave角色。</p>
+<p>需要注意的是，计算高可用集群包含2台服务器的集群，这点和存储高可用集群不太一样。存储高可用集群把双机架构和集群架构进行了区分；而在计算高可用集群架构中，2台服务器的集群和多台服务器的集群，在设计上没有本质区别，因此不需要进行区分。</p>
+<p><strong>对称集群</strong></p>
+<p>对称集群更通俗的叫法是负载均衡集群，因此接下来我使用“负载均衡集群”这个通俗的说法，架构示意图如下：</p>
+<p><img alt="img" src="assets/2f4079bceeb190987d495b06a744c9a8.jpg"/></p>
+<p>负载均衡集群详细设计：</p>
+<ul>
+<li>正常情况下，任务分配器采取某种策略（随机、轮询等）将计算任务分配给集群中的不同服务器。</li>
+<li>当集群中的某台服务器故障后，任务分配器不再将任务分配给它，而是将任务分配给其他服务器执行。</li>
+<li>当故障的服务器恢复后，任务分配器重新将任务分配给它执行。</li>
+</ul>
+<p>负载均衡集群的设计关键点在于两点：</p>
+<ul>
+<li>任务分配器需要选取分配策略。</li>
+<li>任务分配器需要检测服务器状态。</li>
+</ul>
+<p>任务分配策略比较简单，轮询和随机基本就够了。状态检测稍微复杂一些，既要检测服务器的状态，例如服务器是否宕机、网络是否正常等；同时还要检测任务的执行状态，例如任务是否卡死、是否执行时间过长等。常用的做法是任务分配器和服务器之间通过心跳来传递信息，包括服务器信息和任务信息，然后根据实际情况来确定状态判断条件。</p>
+<p>例如，一个在线页面访问系统，正常情况下页面平均会在500毫秒内返回，那么状态判断条件可以设计为：1分钟内响应时间超过1秒（包括超时）的页面数量占了80%时，就认为服务器有故障。</p>
+<p>例如，一个后台统计任务系统，正常情况下任务会在5分钟内执行完成，那么状态判断条件可以设计为：单个任务执行时间超过10分钟还没有结束，就认为服务器有故障。</p>
+<p>通过上面两个案例可以看出，不同业务场景的状态判断条件差异很大，实际设计时要根据业务需求来进行设计和调优。</p>
+<p><strong>非对称集群</strong></p>
+<p>非对称集群中不同服务器的角色是不同的，不同角色的服务器承担不同的职责。以Master-Slave为例，部分任务是Master服务器才能执行，部分任务是Slave服务器才能执行。非对称集群的基本架构示意图如下：</p>
+<p><img alt="img" src="assets/cae563655fd7cea154932yy6ca7db114.jpg"/>
+非对称集群架构详细设计：</p>
+<ul>
+<li>集群会通过某种方式来区分不同服务器的角色。例如，通过ZAB算法选举，或者简单地取当前存活服务器中节点ID最小的服务器作为Master服务器。</li>
+<li>任务分配器将不同任务发送给不同服务器。例如，图中的计算任务A发送给Master服务器，计算任务B发送给Slave服务器。</li>
+<li>当指定类型的服务器故障时，需要重新分配角色。例如，Master服务器故障后，需要将剩余的Slave服务器中的一个重新指定为Master服务器；如果是Slave服务器故障，则并不需要重新分配角色，只需要将故障服务器从集群剔除即可。</li>
+</ul>
+<p>非对称集群相比负载均衡集群，设计复杂度主要体现在两个方面：</p>
+<ul>
+<li>任务分配策略更加复杂：需要将任务划分为不同类型并分配给不同角色的集群节点。</li>
+<li>角色分配策略实现比较复杂：例如，可能需要使用ZAB、Raft这类复杂的算法来实现Leader的选举。</li>
+</ul>
+<p>我以ZooKeeper为例：</p>
+<ul>
+<li>任务分配器：ZooKeeper中不存在独立的任务分配器节点，每个Server都是任务分配器，Follower收到请求后会进行判断，如果是写请求就转发给Leader，如果是读请求就自己处理。</li>
+<li>角色指定：ZooKeeper通过ZAB算法来选举Leader，当Leader故障后，所有的Follower节点会暂停读写操作，开始进行选举，直到新的Leader选举出来后才继续对Client提供服务。</li>
+</ul>
+<h2 id="小结">小结</h2>
+<p>今天我为你讲了几种常见的计算高可用架构，并分析了不同方案的详细设计，希望对你有所帮助。</p>
+<p>这就是今天的全部内容，留一道思考题给你吧，计算高可用架构从形式上和存储高可用架构看上去几乎一样，它们的复杂度是一样的么？谈谈你的理解。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#6a060606535e5b5b5a5d2a0d070b030644090507" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358947a5832a9d6',t:'MTc0NTUyODk0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
