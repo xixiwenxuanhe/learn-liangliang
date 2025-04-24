@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="28 性能：如何理解JavaScript中的并行、并发？（下）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>28 性能：如何理解JavaScript中的并行、并发？（下） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20JavaScript%e7%9a%84%e8%bf%9b%e9%98%b6%e4%b9%8b%e8%b7%af.md.html" id="00 开篇词 JavaScript的进阶之路.md.html">00 开篇词 JavaScript的进阶之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/01%20%e5%87%bd%e6%95%b0%e5%bc%8fvs.%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%ef%bc%9a%e5%93%8d%e5%ba%94%e6%9c%aa%e7%9f%a5%e5%92%8c%e4%b8%8d%e7%a1%ae%e5%ae%9a.md.html" id="01 函数式vs.面向对象：响应未知和不确定.md.html">01 函数式vs.面向对象：响应未知和不确定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/02%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e9%97%ad%e5%8c%85%e5%af%b9%e8%b1%a1%e7%ae%a1%e7%90%86%e7%a8%8b%e5%ba%8f%e4%b8%ad%e7%8a%b6%e6%80%81%e7%9a%84%e5%8f%98%e5%8c%96%ef%bc%9f.md.html" id="02 如何通过闭包对象管理程序中状态的变化？.md.html">02 如何通过闭包对象管理程序中状态的变化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/03%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e9%83%a8%e5%88%86%e5%ba%94%e7%94%a8%e5%92%8c%e6%9f%af%e9%87%8c%e5%8c%96%e8%ae%a9%e5%87%bd%e6%95%b0%e5%85%b7%e8%b1%a1%e5%8c%96%ef%bc%9f.md.html" id="03 如何通过部分应用和柯里化让函数具象化？.md.html">03 如何通过部分应用和柯里化让函数具象化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e7%bb%84%e5%90%88%e3%80%81%e7%ae%a1%e9%81%93%e5%92%8creducer%e8%ae%a9%e5%87%bd%e6%95%b0%e6%8a%bd%e8%b1%a1%e5%8c%96%ef%bc%9f.md.html" id="04 如何通过组合、管道和reducer让函数抽象化？.md.html">04 如何通过组合、管道和reducer让函数抽象化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/05%20map%e3%80%81reduce%e5%92%8cmonad%e5%a6%82%e4%bd%95%e5%9b%b4%e7%bb%95%e5%80%bc%e8%bf%9b%e8%a1%8c%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="05 map、reduce和monad如何围绕值进行操作？.md.html">05 map、reduce和monad如何围绕值进行操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/06%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e6%a8%a1%e5%9d%97%e5%8c%96%e3%80%81%e5%bc%82%e6%ad%a5%e5%92%8c%e8%a7%82%e5%af%9f%e5%81%9a%e5%88%b0%e5%8a%a8%e6%80%81%e5%8a%a0%e8%bd%bd%ef%bc%9f.md.html" id="06 如何通过模块化、异步和观察做到动态加载？.md.html">06 如何通过模块化、异步和观察做到动态加载？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/07%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%e5%af%b9%e8%b1%a1%e7%9a%84%e7%a7%81%e6%9c%89%e5%92%8c%e9%9d%99%e6%80%81%e5%b1%9e%e6%80%a7.md.html" id="07 深入理解对象的私有和静态属性.md.html">07 深入理解对象的私有和静态属性.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/08%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%e7%bb%a7%e6%89%bf%e3%80%81Delegation%e5%92%8c%e7%bb%84%e5%90%88.md.html" id="08 深入理解继承、Delegation和组合.md.html">08 深入理解继承、Delegation和组合.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/09%20%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%ef%bc%9a%e9%80%9a%e8%bf%87%e8%af%8d%e6%b3%95%e4%bd%9c%e7%94%a8%e5%9f%9f%e5%92%8c%e8%b0%83%e7%94%a8%e7%82%b9%e7%90%86%e8%a7%a3this%e7%bb%91%e5%ae%9a.md.html" id="09 面向对象：通过词法作用域和调用点理解this绑定.md.html">09 面向对象：通过词法作用域和调用点理解this绑定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/10%20JS%e6%9c%89%e5%93%aa8%e7%a7%8d%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%ef%bc%8c%e4%bd%a0%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 JS有哪8种数据类型，你需要注意什么？.md.html">10 JS有哪8种数据类型，你需要注意什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/11%20%e9%80%9a%e8%bf%87JS%e5%bc%95%e6%93%8e%e7%9a%84%e5%a0%86%e6%a0%88%e4%ba%86%e8%a7%a3%e9%97%ad%e5%8c%85%e5%8e%9f%e7%90%86.md.html" id="11 通过JS引擎的堆栈了解闭包原理.md.html">11 通过JS引擎的堆栈了解闭包原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/12%20JS%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%e8%af%a5%e7%94%a8%e8%bf%ad%e4%bb%a3%e8%bf%98%e6%98%af%e9%80%92%e5%bd%92%ef%bc%9f.md.html" id="12 JS语义分析该用迭代还是递归？.md.html">12 JS语义分析该用迭代还是递归？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/13%20JS%e5%bc%95%e6%93%8e%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%95%b0%e7%bb%84%e7%9a%84%e7%a8%b3%e5%ae%9a%e6%8e%92%e5%ba%8f%ef%bc%9f.md.html" id="13 JS引擎如何实现数组的稳定排序？.md.html">13 JS引擎如何实现数组的稳定排序？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/14%20%e9%80%9a%e8%bf%87SparkPlug%e6%b7%b1%e5%85%a5%e4%ba%86%e8%a7%a3%e8%b0%83%e7%94%a8%e6%a0%88.md.html" id="14 通过SparkPlug深入了解调用栈.md.html">14 通过SparkPlug深入了解调用栈.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e5%93%88%e5%b8%8c%e6%9f%a5%e6%89%beJS%e5%af%b9%e8%b1%a1%e5%86%85%e5%ad%98%e5%9c%b0%e5%9d%80%ef%bc%9f.md.html" id="15 如何通过哈希查找JS对象内存地址？.md.html">15 如何通过哈希查找JS对象内存地址？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/16%20%e4%b8%ba%e4%bb%80%e4%b9%88%e7%8e%af%e5%bd%a2%e9%98%9f%e5%88%97%e9%80%82%e5%90%88%e5%81%9aNode%e6%95%b0%e6%8d%ae%e6%b5%81%e7%bc%93%e5%ad%98%ef%bc%9f.md.html" id="16 为什么环形队列适合做Node数据流缓存？.md.html">16 为什么环形队列适合做Node数据流缓存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/17%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e9%93%be%e8%a1%a8%e5%81%9aLRU_LFU%e7%bc%93%e5%ad%98%ef%bc%9f.md.html" id="17 如何通过链表做LRU_LFU缓存？.md.html">17 如何通过链表做LRU_LFU缓存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/18%20TurboFan%e5%a6%82%e4%bd%95%e7%94%a8%e5%9b%be%e5%81%9aJS%e7%bc%96%e8%af%91%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="18 TurboFan如何用图做JS编译优化？.md.html">18 TurboFan如何用图做JS编译优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/19%20%e9%80%9a%e8%bf%87%e6%a0%91%e5%92%8c%e5%9b%be%e7%9c%8b%e5%a6%82%e4%bd%95%e5%9c%a8%e6%97%a0%e5%ba%8f%e4%b8%ad%e6%89%be%e5%88%b0%e8%b7%af%e5%be%84%e5%92%8c%e7%a7%a9%e5%ba%8f.md.html" id="19 通过树和图看如何在无序中找到路径和秩序.md.html">19 通过树和图看如何在无序中找到路径和秩序.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/20%20%e7%ae%97%e6%b3%95%e6%80%9d%e6%83%b3%ef%bc%9aJS%e4%b8%ad%e5%88%86%e6%b2%bb%e3%80%81%e8%b4%aa%e5%bf%83%e3%80%81%e5%9b%9e%e6%ba%af%e5%92%8c%e5%8a%a8%e6%80%81%e8%a7%84%e5%88%92.md.html" id="20 算法思想：JS中分治、贪心、回溯和动态规划.md.html">20 算法思想：JS中分治、贪心、回溯和动态规划.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/21%20%e5%88%9b%e5%bb%ba%e5%9e%8b%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4Redux%e5%8f%af%e4%bb%a5%e6%9b%bf%e4%bb%a3%e5%8d%95%e4%be%8b%e7%8a%b6%e6%80%81%e7%ae%a1%e7%90%86.md.html" id="21 创建型：为什么说Redux可以替代单例状态管理.md.html">21 创建型：为什么说Redux可以替代单例状态管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/22%20%e7%bb%93%e6%9e%84%e5%9e%8b%ef%bc%9aVue.js%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e4%bb%a3%e7%90%86%e5%ae%9e%e7%8e%b0%e5%93%8d%e5%ba%94%e5%bc%8f%e7%bc%96%e7%a8%8b.md.html" id="22 结构型：Vue.js如何通过代理实现响应式编程.md.html">22 结构型：Vue.js如何通过代理实现响应式编程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/23%20%e7%bb%93%e6%9e%84%e5%9e%8b%ef%bc%9a%e9%80%9a%e8%bf%87jQuery%e7%9c%8b%e7%bb%93%e6%9e%84%e5%9e%8b%e6%a8%a1%e5%bc%8f.md.html" id="23 结构型：通过jQuery看结构型模式.md.html">23 结构型：通过jQuery看结构型模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/24%20%e8%a1%8c%e4%b8%ba%e5%9e%8b%ef%bc%9a%e9%80%9a%e8%bf%87%e8%a7%82%e5%af%9f%e8%80%85%e3%80%81%e8%bf%ad%e4%bb%a3%e5%99%a8%e6%a8%a1%e5%bc%8f%e7%9c%8bJS%e5%bc%82%e6%ad%a5%e5%9b%9e%e8%b0%83.md.html" id="24 行为型：通过观察者、迭代器模式看JS异步回调.md.html">24 行为型：通过观察者、迭代器模式看JS异步回调.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/25%20%e8%a1%8c%e4%b8%ba%e5%9e%8b%ef%bc%9a%e6%a8%a1%e7%89%88%e3%80%81%e7%ad%96%e7%95%a5%e5%92%8c%e7%8a%b6%e6%80%81%e6%a8%a1%e5%bc%8f%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="25 行为型：模版、策略和状态模式有什么区别？.md.html">25 行为型：模版、策略和状态模式有什么区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/26%20%e7%89%b9%e6%ae%8a%e5%9e%8b%ef%bc%9a%e5%89%8d%e7%ab%af%e6%9c%89%e5%93%aa%e4%ba%9b%e5%a4%84%e7%90%86%e5%8a%a0%e8%bd%bd%e5%92%8c%e6%b8%b2%e6%9f%93%e7%9a%84%e7%89%b9%e6%ae%8a%e2%80%9c%e6%a8%a1%e5%bc%8f%e2%80%9d%ef%bc%9f.md.html" id="26 特殊型：前端有哪些处理加载和渲染的特殊“模式”？.md.html">26 特殊型：前端有哪些处理加载和渲染的特殊“模式”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/27%20%e6%80%a7%e8%83%bd%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3JavaScript%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e3%80%81%e5%b9%b6%e5%8f%91%ef%bc%9f%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="27 性能：如何理解JavaScript中的并行、并发？（上）.md.html">27 性能：如何理解JavaScript中的并行、并发？（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/28%20%e6%80%a7%e8%83%bd%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3JavaScript%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e3%80%81%e5%b9%b6%e5%8f%91%ef%bc%9f%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="28 性能：如何理解JavaScript中的并行、并发？（下）.md.html">28 性能：如何理解JavaScript中的并行、并发？（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/29%20%e6%80%a7%e8%83%bd%ef%bc%9a%e9%80%9a%e8%bf%87Orinoco%e3%80%81Jank%20Busters%e7%9c%8b%e5%9e%83%e5%9c%be%e5%9b%9e%e6%94%b6.md.html" id="29 性能：通过Orinoco、Jank Busters看垃圾回收.md.html">29 性能：通过Orinoco、Jank Busters看垃圾回收.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/30%20%e7%bd%91%e7%bb%9c%ef%bc%9a%e4%bb%8eHTTP_1%e5%88%b0HTTP_3%ef%bc%8c%e4%bd%a0%e9%83%bd%e9%9c%80%e8%a6%81%e4%ba%86%e8%a7%a3%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="30 网络：从HTTP_1到HTTP_3，你都需要了解什么？.md.html">30 网络：从HTTP_1到HTTP_3，你都需要了解什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/31%20%e5%ae%89%e5%85%a8%ef%bc%9aJS%e4%bb%a3%e7%a0%81%e5%92%8c%e7%a8%8b%e5%ba%8f%e9%83%bd%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e5%93%aa%e4%ba%9b%e5%ae%89%e5%85%a8%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="31 安全：JS代码和程序都需要注意哪些安全问题？.md.html">31 安全：JS代码和程序都需要注意哪些安全问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/32%20%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%bc%80%e5%8f%91%e5%88%b0%e9%87%8d%e6%9e%84%e4%b8%ad%e7%9a%84%e6%b5%8b%e8%af%95.md.html" id="32 测试（一）：开发到重构中的测试.md.html">32 测试（一）：开发到重构中的测试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/33%20%e6%b5%8b%e8%af%95%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%8a%9f%e8%83%bd%e6%80%a7%e6%b5%8b%e8%af%95.md.html" id="33 测试（二）：功能性测试.md.html">33 测试（二）：功能性测试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/34%20%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e9%9d%9e%e5%8a%9f%e8%83%bd%e6%80%a7%e6%b5%8b%e8%af%95.md.html" id="34 测试（三）：非功能性测试.md.html">34 测试（三）：非功能性测试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/35%20%e9%9d%99%e6%80%81%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5%ef%bc%9aESLint%e8%af%ad%e6%b3%95%e8%a7%84%e5%88%99%e5%92%8c%e4%bb%a3%e7%a0%81%e9%a3%8e%e6%a0%bc%e7%9a%84%e6%a3%80%e6%9f%a5.md.html" id="35 静态类型检查：ESLint语法规则和代码风格的检查.md.html">35 静态类型检查：ESLint语法规则和代码风格的检查.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/36%20Flow%ef%bc%9a%e9%80%9a%e8%bf%87Flow%e7%b1%bb%e7%9c%8bJS%e7%9a%84%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5.md.html" id="36 Flow：通过Flow类看JS的类型检查.md.html">36 Flow：通过Flow类看JS的类型检查.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/37%20%e5%8c%85%e7%ae%a1%e7%90%86%e5%92%8c%e5%88%86%e5%8f%91%ef%bc%9a%e9%80%9a%e8%bf%87NPM%e5%81%9a%e5%8c%85%e7%9a%84%e7%ae%a1%e7%90%86%e5%92%8c%e5%88%86%e5%8f%91.md.html" id="37 包管理和分发：通过NPM做包的管理和分发.md.html">37 包管理和分发：通过NPM做包的管理和分发.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bc%96%e8%af%91%e5%92%8c%e6%89%93%e5%8c%85%ef%bc%9a%e9%80%9a%e8%bf%87Webpack%e3%80%81Babel%e5%81%9a%e7%bc%96%e8%af%91%e5%92%8c%e6%89%93%e5%8c%85.md.html" id="38 编译和打包：通过Webpack、Babel做编译和打包.md.html">38 编译和打包：通过Webpack、Babel做编译和打包.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/39%20%e8%af%ad%e6%b3%95%e6%89%a9%e5%b1%95%ef%bc%9a%e9%80%9a%e8%bf%87JSX%e6%9d%a5%e5%81%9a%e8%af%ad%e6%b3%95%e6%89%a9%e5%b1%95.md.html" id="39 语法扩展：通过JSX来做语法扩展.md.html">39 语法扩展：通过JSX来做语法扩展.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/40%20Polyfill%ef%bc%9a%e9%80%9a%e8%bf%87Polyfill%e8%ae%a9%e6%b5%8f%e8%a7%88%e5%99%a8%e6%8f%90%e4%be%9b%e5%8e%9f%e7%94%9f%e6%94%af%e6%8c%81.md.html" id="40 Polyfill：通过Polyfill让浏览器提供原生支持.md.html">40 Polyfill：通过Polyfill让浏览器提供原生支持.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/41%20%e5%be%ae%e5%89%8d%e7%ab%af%ef%bc%9a%e4%bb%8eMVC%e8%b4%ab%e8%a1%80%e6%a8%a1%e5%bc%8f%e5%88%b0DDD%e5%85%85%e8%a1%80%e6%a8%a1%e5%bc%8f.md.html" id="41 微前端：从MVC贫血模式到DDD充血模式.md.html">41 微前端：从MVC贫血模式到DDD充血模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/42%20%e5%a4%a7%e5%89%8d%e7%ab%af%ef%bc%9a%e9%80%9a%e8%bf%87%e4%b8%80%e4%ba%91%e5%a4%9a%e7%ab%af%e6%90%ad%e5%bb%ba%e8%b7%a8PC_%e7%a7%bb%e5%8a%a8%e7%9a%84%e5%b9%b3%e5%8f%b0%e5%ba%94%e7%94%a8.md.html" id="42 大前端：通过一云多端搭建跨PC_移动的平台应用.md.html">42 大前端：通过一云多端搭建跨PC_移动的平台应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/43%20%e5%85%83%e7%bc%96%e7%a8%8b%ef%bc%9a%e9%80%9a%e8%bf%87Proxies%e5%92%8cReflect%e8%b5%8b%e8%83%bd%e5%85%83%e7%bc%96%e7%a8%8b.md.html" id="43 元编程：通过Proxies和Reflect赋能元编程.md.html">43 元编程：通过Proxies和Reflect赋能元编程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/JavaScript%20%e8%bf%9b%e9%98%b6%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20JavaScript%e7%9a%84%e6%9c%aa%e6%9d%a5%e4%b9%8b%e8%b7%af%ef%bc%9a%e6%ba%90%e4%ba%8e%e4%b8%80%e4%b8%aa%e4%bb%a5%e7%bb%88%e4%b8%ba%e5%a7%8b%e7%9a%84%e5%88%9d%e5%bf%83.md.html" id="结束语 JavaScript的未来之路：源于一个以终为始的初心.md.html">结束语 JavaScript的未来之路：源于一个以终为始的初心.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="28 性能：如何理解JavaScript中的并行、并发？（下）" id="title">28 性能：如何理解JavaScript中的并行、并发？（下）</h1>
+<div><p>你好，我是石川。</p>
+<p>在上一讲中，我们初步介绍了并发和并行的概念，对比了不同语言对多线程开发的支持。我们也通过postMessage，学习了用信息传递的方式在主线程和Worker线程间实现交互。但是，我们也发现了JavaScript对比其它语言，在多线程方面还有不足，似乎信息传递本身不能让数据在不同的线程中真正做到共享，而<strong>只是互传拷贝的信息</strong>。</p>
+<p>所以今天，我们再来看看如何能在信息互传的基础上，让数据真正地在多线程间共享和修改。不过更重要的是，这种修改是不是真的有必要呢。</p>
+<h2 id="sab-atomics模式">SAB+Atomics模式</h2>
+<p>前面，我们说过对象的数据结构在线程间是不能共享的。如果通过postMessage来做信息传递的话，需要数据先被深拷贝。那有没有什么办法能让不同的线程同时访问一个数据源呢？答案是有，要做到数据的共享，也就是内存共享，我们就需要用到 <strong>SAB（SharedArrayBuffer）</strong>和 <strong>Atomics</strong>。下面，我们先从SAB开始了解。</p>
+<h3 id="共享的arraybuffer"><strong>共享的ArrayBuffer</strong></h3>
+<p>SAB是一个共享的ArrayBuffer内存块。在说到SAB前，我们先看看ArrayBuffer是什么，这还要从内存说起。我们可以把内存想象成一个储藏室中的货架，为了找到存放的物品，有从1-9这样的地址。而里面存储的物品是用字节表示的，字节通常是内存中最小的值单元，里面可以有不同数量的比特（bit)，比如一个字节（byte）里可以有8、32或64比特。我们可以看到 bit 和 byte 它俩的英文写法和读音有些相似，所以这里要注意<strong>不要把字节和比特混淆</strong>。</p>
+<p>还有一点需要注意的是，计算机在内存中的数据存储是<strong>二进制的</strong>，比如数字2的二进制写法就是00000010，用8个比特来表示，就如下图所示。如果是字母的话，则可以先通过UTF-8这样的方式，先转换成数字，再转换为二进制。比如字母H，转换成数字就是72，再转换为二进制就是01001000。</p>
+<p><img alt="图片" src="assets/82e60aa17e0a431897a3766afd58aecd.jpg"/></p>
+<p>在JavaScript语言当中，<strong>内存管理是自动的</strong>，也就是说当我们敲一行代码后，我们的虚机会自动地帮助我们在内存中找到剩余的空间，把数据放进去存储。并且会追踪这段代码在我们的程序中是否还可以被访问到，如果发现已经无法访问了，就会做相关的清除处理。这个过程也被称之为<strong>垃圾回收</strong>。</p>
+<p>如果你使用C语言编写再编译成WebAssembly的话，那么基于C语言的手动内存管理和垃圾回收的机制，你就需要通过内存分配（malloc）的功能从一个空闲列表（free list）中找到存放位置来存放，使用后，再通过释放（free）的功能将内存释放。</p>
+<p>再回到JavaScript的场景中，为什么我们前面要介绍自动和手工的内存管理呢？</p>
+<p>这也就回到了我们上一讲最后留的问题了，就是为什么说使用ArrayBuffer的性能更高。这里我们顺便解决下上节课的思考题，如果在开发中使用更高级的数据类型，并且把数据处理的工作完全交给JavaScript的虚机如V8来处理，这样确实能给我们带来方便，但同时，副作用就是降低了性能极度调优的灵活性。比如当我们创建一个变量的时候，虚机为了猜测它的类型和在内存中的表现形式，可能要花费2-8倍的内存。而且有些对象创建和使用的方式，可能会增加垃圾回收的难度。</p>
+<p>但如果我们使用ArrayBuffer这样更原始的数据类型，并通过C语言来编写程序并编译成WebAssembly的话，<strong>可以给开发者更多的控制，来根据使用场景更细粒度地管理内存的分配，提高程序的性能。</strong></p>
+<p>那一个ArrayBuffer和我们经常用的数组有什么区别呢？一起来看下面的代码，一个普通的数组中可以有数字、字符串、对象等不同类型的数据，但是在ArrayBuffer当中，我们唯一可用的就是字节。</p>
+<pre><code class="language-javascript">// 数组
+[5, {prop: "value"}, "一个字符串"]；
+
+[0] = 5；
+[1] = {prop: "value"}；
+[2] = "一个字符串"；
+
+// ArrayBuffer
+[01001011101000000111]
+</code></pre>
+<p>这里的字节虽然可以用一串数字表示，但是有个问题是，机器怎么能知道它的单位呢？比如我前面介绍的，这串数字本身是没意义的，只有根据不同的8、32或者64比特单位，它才能具有意义。这时，我们就需要一个view来给它分段。</p>
+<p><img alt="图片" src="assets/96560c0aa03b4f80965f6e8aea4d0241.jpg"/></p>
+<p>所以一个ArrayBuffer中的数据是不能直接被操作，而要通过 <strong>TypedArray</strong> 或 <strong>DataView</strong> 来操作。</p>
+<pre><code class="language-javascript">// main.js
+var worker = new Worker('worker.js');
+
+// 创建一个1KB大小的ArrayBuffer
+var buffer = new SharedArrayBuffer(1024); 
+
+// 创建一个TypedArray的DataView
+var view = new Uint8Array(buffer); 
+
+// 传递信息
+worker.postMessage(buffer);
+
+setTimeout(() =&gt; {
+  // buffer中的第1个字节
+  console.log('later', view[0]); // later 5
+  // buffer中foo的属性值
+  console.log('prop', buffer.foo); // prop 32
+}, 1000);
+
+// worker.js
+self.onmessage = ({data: buffer}) =&gt; {
+  buffer.foo = 32;
+  var view = new Uint8Array(buffer);
+  view[0] = 5;
+}
+</code></pre>
+<p>其实一个ArrayBuffer或SAB在初始化的时候，也是要用到postMessage和结构化拷贝算法的。但是和信息传递不同的是，这里在请求端发起请求时传入的数据，被拷贝后，如果在接收端做了修改，这个修改后的数据的指向和之前的数据是一致的。我们可以对比下普通的postMessage和ArrayBuffer以及SAB的区别。</p>
+<p><img alt="图片" src="assets/b27a8ea133814ba38e0b2bb8ac05b7b0.jpg"/></p>
+<p>所以，我们在上面SAB的例子中可以发现，通过setTimeout而不是onmessage，就可以获取在worker.js修改后的buffer的字节和属性了。但这里需要注意的是，字节的数量在SAB中是一开始就定好，且不可修改的。</p>
+<h3 id="atomics和原子性"><strong>Atomics和原子性</strong></h3>
+<p>说完了SharedArrayBuffer，我们再来看看原子性。既然数据要共享，就要考虑<strong>原子性</strong>的问题。</p>
+<p>如果你有做过数据库开发的话，应该听过 <strong>ACID</strong> 的原则，它是原子性、一致性、隔离性、持久性的缩写。原子性指的是一个事务中的所有操作，或者全部完成，或者全部不完成，不会结束在中间环节。任务在执行过程中发生的错误，都会被回滚到初始状态。这样做的结果是，事务不可分割、不可约简。</p>
+<p>那为什么在数据库的开发中，会如此重视原子性呢？</p>
+<p>你可以想想，如果我们单独看一个客户端的请求，它可能是原子性的，可如果是几个请求，可能就不是原子性的了。但是如果这些请求都属于同一个交易，那么当用户成功付款后，付款结果没能抵达电商接口，这个交易是不完整的，不仅在经济上可能造成损失，并且会给客户带来很不好的体验。所以从这个角度来看，包含这三条请求的整个交易就是一个原子性事务。</p>
+<p>同样的，在分布式的设计中，一个网络中的不同节点间的互动也应该保证原子性的原则。那么再回到线程，我们说<strong>一个计算机中不同的线程对一个共享的数据也应该保持原子性的操作</strong>。</p>
+<p>那这时你可能会问，如我们之前所说，并发中我们的程序就很容易进入一个竞争条件（race condition），那既然在并发设计中需要让事务保持原子性，那在JavaScript中面对并发怎么处理？</p>
+<p>别担心，这个问题可以通过JavaScript提供的原子（Atomics）来解决。Atomics提供了所需的工具来进行原子性的操作，并且提供了线程安全的等待机制。在JavaScript中，有一个全局的Atomics对象，它<strong>自带一些内置的方法</strong>。</p>
+<p><img alt="图片" src="assets/37769cfc93e34362907c7461020138b2.jpg"/></p>
+<p>在SAB的内存管理中，上述这些方法可以解决3大类的问题。第一个问题是在单个操作中的竞争条件，第二个问题是在多个操作中的竞争条件，第三个问题是在指令顺序造成的问题。下面，我们依次来看一下。</p>
+<h4 id="单个操作中的竞争条件"><strong>单个操作中的竞争条件</strong></h4>
+<p>这里你可能会好奇，一个单个操作为什么还会有竞争？举个例子，如果我们用2个工作线程，都对一个数字做+1的增量运算，你可能觉得无论谁操作都一样，结果都是+1，但是问题并没有这么简单。因为在实际计算的时候，我们的数据是会从内存中取出，放到寄存器里，然后通过运算器来运算的，这个时候，如果有一个数字6，同时被工作线程1和2取出，然后计算+1，那么结果可能就是7，而不是8。因为这两个线程在访问内存中的数据计算前收到的都是6，所以+1的结果被覆盖计算了2次。</p>
+<p><img alt="图片" src="assets/63625ac763fe45749374c6c378c12cca.jpg"/></p>
+<p>那为了解决这个问题，上面提到的 Atomics.add()、Atomics.sub()、Atomics.and()、Atomics.or()、Atomics.xor()、Atomics.exchange() 等运算就是很好地避免这一类问题的方法。如果要做乘法除法，则可以通过Atomics.compareExchange()来创建相关的功能。</p>
+<h4 id="多个操作中的竞争条件"><strong>多个操作中的竞争条件</strong></h4>
+<p>说完了单个操作中的竞争条件，我们再来看看多个操作中的竞争条件。在JavaScript中，我们可以通过 <strong>futex</strong> 来起到互斥锁的作用。它来源于Linux内核中，有一种互斥锁（mutex）叫做快速用户空间互斥体（futex，fast userspace mutex）的锁。futex中有两个方法，一个是Atomics.wait()，另外一个是Atomics.wake()。这里也很好基于字面意思来理解，一个代表等待，一个代表唤醒。</p>
+<p>在用锁的时候，我们要注意，前端浏览器中主线程是不允许加锁的，在后端的Node中，主线程是可以加锁的。之所以在前端浏览器中不能加锁，是因为阻碍JavaScript的主线程执行，对用户体验的影响实在太大了，而对于后端来讲，则没有这么直接的影响。</p>
+<p>如果在前端主线程想使用wait()，也不是完全没办法，这里可以使用waitAsync()。相比wait()可以暂停主线程再传递字符串，waitAsync要另起线程，所以从性能上来说，它比wait()会差一些。所以对于热路径（hotpath），也就是程序中那些会被频繁执行到的代码来说，可能不是那么有用，但是对于非信息传递类的工作来说，比如通知另外的线程，它还是有用的。</p>
+<h4 id="指令顺序造成的竞争条件">指令顺序造成的竞争条件</h4>
+<p>最后，我们再来看看指令顺序造成的竞争条件。如果你对计算机有芯片层面的理解的话，就会知道我们的<strong>代码在指令执行的流水线层面会被重新排序</strong>。如果在单线程的情况下，这可能不会造成什么问题，因为其它的代码需要在当前的函数在调用栈中完成执行才看到结果。但是如果在多线程下，其它的线程在结果出现前，就可能看到变化而没有考虑后序运行的代码指令结果。那这个问题要怎么解决呢？</p>
+<p>这个时候，就要用到 Atomics.store() 和 Atomics.load()。函数中 Atomics.store() 以前的所有变量更新都保证在将变量值写回内存之前完成，函数中 Atomics.load() 之后的所有变量加载都保证在获取变量值之后完成。这样就避免了指令顺序造成的竞争条件。</p>
+<h3 id="数据传输的序列化">数据传输的序列化</h3>
+<p>在使用SAB的时候，还有一点需要注意的是数据的序列化，也就是说我们在使用它来传递字符串、布尔或对象的时候，都需要一个编码和解码的过程。特别是对象，因为我们知道对象类型是没法直接传递的，所以这个时候，我们就需要用到“<strong>通过JSON将对象序列化成字符串</strong>”的方法，所以它更适合用postMessage和onmessage来做传递，而不是通过SAB。</p>
+<h2 id="actor-model模式"><strong>Actor Model模式</strong></h2>
+<p>通过上面的例子，我们可以看出，直接使用SAB+Atomics的方式还是蛮复杂的，稍有不慎，可能引起的性能问题远远大于优化的效果。所以除非真的是研发型的项目，否则只是纯应用类的项目，最好是通过一些成熟的库或者WebAssembly将复杂的内存管理抽象成简单的接口，这样的方式会更加适合。另外，我们也可以看看SAB+Atomics的一个替代方案，<strong>Actor Model</strong> 模式。</p>
+<p>在Actor Model模式中，因为Actor是分布在不同的进程里的，如我们之前所说，进程间的内存是不共享的，每个Actor不一定在同一个线程上，而且各自管理自己的数据，不会被其它线程访问到，所以就没有互斥锁和线程安全的问题。<strong>Actor之间只能互相传递和接收信息。</strong></p>
+<p><img alt="图片" src="assets/03af917b32c848fa931f7f73a2535bd9.jpg"/></p>
+<p>这种模式更符合JavaScript的设计，因为它本身就对手动内存管理的支持度不高，所以在 Actor Model 这种模式下，我们只是通过线程做信息传递，而不做共享。但是，这并不代表主线程和Worker间的影响就仅限于信息传递，比如通过Worker传给主线程的数据，主线程完全可以自行基于接收到的数据来改变DOM，只是在这个过程中，需要自己做一些转换的工作。</p>
+<p>这里，我们针对数据量较大的信息传递时，应该注意一些<strong>优化策略</strong>：</p>
+<ul>
+<li>我们可以将任务切分成小块儿依次传递；</li>
+<li>每次我们可以选择传递delta，也就是有变化的部分，而不是将全量数据进行传递；</li>
+<li>如果我们传递的频率过高，也可以将消息捆绑来传递；</li>
+<li>最后一点就是通过ArrayBuffer提高性能。</li>
+</ul>
+<h2 id="总结">总结</h2>
+<p>通过这两节课的学习，我们可以看到多线程的开发在前端还有很长的路要走。</p>
+<p>我们也看到了SAB+Atomics的模式，虽然从某种程度上看，在JavaScript中可以实现，但实际上，Actor Model更易于在JavaScript中的使用，特别是在前端场景中。很明显，我们不想因为多线程对同一组对象的并行修改，而引起竞争条件；或者为了数据在内存中的共享，增加过于复杂的逻辑来支持数据的编码、解码和转换；亦或为了手工的内存管理，增加额外的逻辑。</p>
+<p>虽然多线程的开发，在前端更多处于实验性阶段，但是我认为它还是有着很大的想象空间的。因为前端如果有着比较耗内存的需要大量运算的任务，可以交给Worker Thread来处理，这样JavaScript的主线程就可以把精力放在UI渲染上。特别是通过Actor模式，可以大大提高主程序的性能，同时又避免副作用。</p>
+<h2 id="思考题">思考题</h2>
+<p>我们说过对象在线程间是不能共享的，那通过SharedArrayBuffer你觉得可以实现对象的共享吗？</p>
+<p>欢迎在留言区分享你的答案、交流学习心得或者提出问题，如果觉得有收获，也欢迎你把今天的内容分享给更多的朋友。我们下节课再见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#d3bfbfbfeae7e2e2e3e493b4beb2babffdb0bcbe" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93588a06ee4128c6',t:'MTc0NTUyODUyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
