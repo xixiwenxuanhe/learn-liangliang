@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e6%b7%b1%e5%85%a5%e6%8e%8c%e6%8f%a1%20Dubbo%20%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%8c%e6%8f%90%e5%8d%87%e4%bd%a0%e7%9a%84%e8%81%8c%e5%9c%ba%e7%ab%9e%e4%ba%89%e5%8a%9b.md.html" id="00 开篇词  深入掌握 Dubbo 原理与实现，提升你的职场竞争力.md.html">00 开篇词  深入掌握 Dubbo 原理与实现，提升你的职场竞争力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/01%20%20Dubbo%20%e6%ba%90%e7%a0%81%e7%8e%af%e5%a2%83%e6%90%ad%e5%bb%ba%ef%bc%9a%e5%8d%83%e9%87%8c%e4%b9%8b%e8%a1%8c%ef%bc%8c%e5%a7%8b%e4%ba%8e%e8%b6%b3%e4%b8%8b.md.html" id="01  Dubbo 源码环境搭建：千里之行，始于足下.md.html">01  Dubbo 源码环境搭建：千里之行，始于足下.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/02%20Dubbo%20%e7%9a%84%e9%85%8d%e7%bd%ae%e6%80%bb%e7%ba%bf%ef%bc%9a%e6%8a%93%e4%bd%8f%20URL%ef%bc%8c%e5%b0%b1%e7%90%86%e8%a7%a3%e4%ba%86%e5%8d%8a%e4%b8%aa%20Dubbo.md.html" id="02 Dubbo 的配置总线：抓住 URL，就理解了半个 Dubbo.md.html">02 Dubbo 的配置总线：抓住 URL，就理解了半个 Dubbo.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/03%20%20Dubbo%20SPI%20%e7%b2%be%e6%9e%90%ef%bc%8c%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0%e4%b8%a4%e6%9e%81%e5%8f%8d%e8%bd%ac%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="03  Dubbo SPI 精析，接口实现两极反转（上）.md.html">03  Dubbo SPI 精析，接口实现两极反转（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/04%20%20Dubbo%20SPI%20%e7%b2%be%e6%9e%90%ef%bc%8c%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0%e4%b8%a4%e6%9e%81%e5%8f%8d%e8%bd%ac%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="04  Dubbo SPI 精析，接口实现两极反转（下）.md.html">04  Dubbo SPI 精析，接口实现两极反转（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/05%20%20%e6%b5%b7%e9%87%8f%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1%ef%bc%8c%e4%b8%80%e4%b8%aa%e6%97%b6%e9%97%b4%e8%bd%ae%e6%90%9e%e5%ae%9a.md.html" id="05  海量定时任务，一个时间轮搞定.md.html">05  海量定时任务，一个时间轮搞定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/06%20%20ZooKeeper%20%e4%b8%8e%20Curator%ef%bc%8c%e6%b1%82%e4%bd%a0%e5%88%ab%e7%94%a8%20ZkClient%20%e4%ba%86%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）.md.html">06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/07%20%20ZooKeeper%20%e4%b8%8e%20Curator%ef%bc%8c%e6%b1%82%e4%bd%a0%e5%88%ab%e7%94%a8%20ZkClient%20%e4%ba%86%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="07  ZooKeeper 与 Curator，求你别用 ZkClient 了（下）.md.html">07  ZooKeeper 与 Curator，求你别用 ZkClient 了（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/08%20%20%e4%bb%a3%e7%90%86%e6%a8%a1%e5%bc%8f%e4%b8%8e%e5%b8%b8%e8%a7%81%e5%ae%9e%e7%8e%b0.md.html" id="08  代理模式与常见实现.md.html">08  代理模式与常见实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/09%20%20Netty%20%e5%85%a5%e9%97%a8%ef%bc%8c%e7%94%a8%e5%ae%83%e5%81%9a%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e9%83%bd%e8%af%b4%e5%a5%bd%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="09  Netty 入门，用它做网络编程都说好（上）.md.html">09  Netty 入门，用它做网络编程都说好（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/10%20%20Netty%20%e5%85%a5%e9%97%a8%ef%bc%8c%e7%94%a8%e5%ae%83%e5%81%9a%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e9%83%bd%e8%af%b4%e5%a5%bd%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="10  Netty 入门，用它做网络编程都说好（下）.md.html">10  Netty 入门，用它做网络编程都说好（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/11%20%20%e7%ae%80%e6%98%93%e7%89%88%20RPC%20%e6%a1%86%e6%9e%b6%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="11  简易版 RPC 框架实现（上）.md.html">11  简易版 RPC 框架实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/12%20%20%e7%ae%80%e6%98%93%e7%89%88%20RPC%20%e6%a1%86%e6%9e%b6%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12  简易版 RPC 框架实现（下）.md.html">12  简易版 RPC 框架实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/13%20%20%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%ef%bc%9a%e9%99%8d%e4%bd%8e%20ZooKeeper%20%e5%8e%8b%e5%8a%9b%e7%9a%84%e4%b8%80%e4%b8%aa%e5%b8%b8%e7%94%a8%e6%89%8b%e6%ae%b5.md.html" id="13  本地缓存：降低 ZooKeeper 压力的一个常用手段.md.html">13  本地缓存：降低 ZooKeeper 压力的一个常用手段.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/14%20%20%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6%e6%98%af%e7%bd%91%e7%bb%9c%e6%93%8d%e4%bd%9c%e7%9a%84%e5%9f%ba%e6%9c%ac%e4%bf%9d%e8%af%81.md.html" id="14  重试机制是网络操作的基本保证.md.html">14  重试机制是网络操作的基本保证.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/15%20%20ZooKeeper%20%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%8c%e5%ae%98%e6%96%b9%e6%8e%a8%e8%8d%90%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e5%ae%9e%e8%b7%b5.md.html" id="15  ZooKeeper 注册中心实现，官方推荐注册中心实践.md.html">15  ZooKeeper 注册中心实现，官方推荐注册中心实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/16%20%20Dubbo%20Serialize%20%e5%b1%82%ef%bc%9a%e5%a4%9a%e7%a7%8d%e5%ba%8f%e5%88%97%e5%8c%96%e7%ae%97%e6%b3%95%ef%bc%8c%e6%80%bb%e6%9c%89%e4%b8%80%e6%ac%be%e9%80%82%e5%90%88%e4%bd%a0.md.html" id="16  Dubbo Serialize 层：多种序列化算法，总有一款适合你.md.html">16  Dubbo Serialize 层：多种序列化算法，总有一款适合你.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/17%20%20Dubbo%20Remoting%20%e5%b1%82%e6%a0%b8%e5%bf%83%e6%8e%a5%e5%8f%a3%e5%88%86%e6%9e%90%ef%bc%9a%e8%bf%99%e5%b1%85%e7%84%b6%e6%98%af%e4%b8%80%e5%a5%97%e5%85%bc%e5%ae%b9%e6%89%80%e6%9c%89%20NIO%20%e6%a1%86%e6%9e%b6%e7%9a%84%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="17  Dubbo Remoting 层核心接口分析：这居然是一套兼容所有 NIO 框架的设计？.md.html">17  Dubbo Remoting 层核心接口分析：这居然是一套兼容所有 NIO 框架的设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/18%20%20Buffer%20%e7%bc%93%e5%86%b2%e5%8c%ba%ef%bc%9a%e6%88%91%e4%bb%ac%e4%b8%8d%e7%94%9f%e4%ba%a7%e6%95%b0%e6%8d%ae%ef%bc%8c%e6%88%91%e4%bb%ac%e5%8f%aa%e6%98%af%e6%95%b0%e6%8d%ae%e7%9a%84%e6%90%ac%e8%bf%90%e5%b7%a5.md.html" id="18  Buffer 缓冲区：我们不生产数据，我们只是数据的搬运工.md.html">18  Buffer 缓冲区：我们不生产数据，我们只是数据的搬运工.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/19%20%20Transporter%20%e5%b1%82%e6%a0%b8%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%9a%e7%bc%96%e8%a7%a3%e7%a0%81%e4%b8%8e%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e4%b8%80%e6%96%87%e6%89%93%e5%b0%bd%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="19  Transporter 层核心实现：编解码与线程模型一文打尽（上）.md.html">19  Transporter 层核心实现：编解码与线程模型一文打尽（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/20%20%20Transporter%20%e5%b1%82%e6%a0%b8%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%9a%e7%bc%96%e8%a7%a3%e7%a0%81%e4%b8%8e%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e4%b8%80%e6%96%87%e6%89%93%e5%b0%bd%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="20  Transporter 层核心实现：编解码与线程模型一文打尽（下）.md.html">20  Transporter 层核心实现：编解码与线程模型一文打尽（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/21%20%20Exchange%20%e5%b1%82%e5%89%96%e6%9e%90%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82%20Request-Response%20%e6%a8%a1%e5%9e%8b%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="21  Exchange 层剖析：彻底搞懂 Request-Response 模型（上）.md.html">21  Exchange 层剖析：彻底搞懂 Request-Response 模型（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/22%20%20Exchange%20%e5%b1%82%e5%89%96%e6%9e%90%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82%20Request-Response%20%e6%a8%a1%e5%9e%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="22  Exchange 层剖析：彻底搞懂 Request-Response 模型（下）.md.html">22  Exchange 层剖析：彻底搞懂 Request-Response 模型（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/23%20%20%e6%a0%b8%e5%bf%83%e6%8e%a5%e5%8f%a3%e4%bb%8b%e7%bb%8d%ef%bc%8cRPC%20%e5%b1%82%e9%aa%a8%e6%9e%b6%e6%a2%b3%e7%90%86.md.html" id="23  核心接口介绍，RPC 层骨架梳理.md.html">23  核心接口介绍，RPC 层骨架梳理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/24%20%20%e4%bb%8e%20Protocol%20%e8%b5%b7%e6%89%8b%ef%bc%8c%e7%9c%8b%e6%9c%8d%e5%8a%a1%e6%9a%b4%e9%9c%b2%e5%92%8c%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e7%9a%84%e5%85%a8%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）.md.html">24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/25%20%20%e4%bb%8e%20Protocol%20%e8%b5%b7%e6%89%8b%ef%bc%8c%e7%9c%8b%e6%9c%8d%e5%8a%a1%e6%9a%b4%e9%9c%b2%e5%92%8c%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e7%9a%84%e5%85%a8%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="25  从 Protocol 起手，看服务暴露和服务引用的全流程（下）.md.html">25  从 Protocol 起手，看服务暴露和服务引用的全流程（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/26%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e7%9b%b4%e5%87%bb%20Dubbo%20%e2%80%9c%e5%bf%83%e8%84%8f%e2%80%9d%ef%bc%8c%e5%b8%a6%e4%bd%a0%e4%b8%80%e8%b5%b7%e6%8e%a2%e7%a7%98%20Invoker%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="26  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（上）.md.html">26  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/27%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e7%9b%b4%e5%87%bb%20Dubbo%20%e2%80%9c%e5%bf%83%e8%84%8f%e2%80%9d%ef%bc%8c%e5%b8%a6%e4%bd%a0%e4%b8%80%e8%b5%b7%e6%8e%a2%e7%a7%98%20Invoker%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="27  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（下）.md.html">27  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/28%20%20%e5%a4%8d%e6%9d%82%e9%97%ae%e9%a2%98%e7%ae%80%e5%8d%95%e5%8c%96%ef%bc%8c%e4%bb%a3%e7%90%86%e5%b8%ae%e4%bd%a0%e9%9a%90%e8%97%8f%e4%ba%86%e5%a4%9a%e5%b0%91%e5%ba%95%e5%b1%82%e7%bb%86%e8%8a%82%ef%bc%9f.md.html" id="28  复杂问题简单化，代理帮你隐藏了多少底层细节？.md.html">28  复杂问题简单化，代理帮你隐藏了多少底层细节？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/29%20%20%e5%8a%a0%e9%a4%90%ef%bc%9aHTTP%20%e5%8d%8f%e8%ae%ae%20+%20JSON-RPC%ef%bc%8cDubbo%20%e8%b7%a8%e8%af%ad%e8%a8%80%e5%b0%b1%e6%98%af%e5%a6%82%e6%ad%a4%e7%ae%80%e5%8d%95.md.html" id="29  加餐：HTTP 协议 + JSON-RPC，Dubbo 跨语言就是如此简单.md.html">29  加餐：HTTP 协议 + JSON-RPC，Dubbo 跨语言就是如此简单.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/30%20%20Filter%20%e6%8e%a5%e5%8f%a3%ef%bc%8c%e6%89%a9%e5%b1%95%20Dubbo%20%e6%a1%86%e6%9e%b6%e7%9a%84%e5%b8%b8%e7%94%a8%e6%89%8b%e6%ae%b5%e6%8c%87%e5%8c%97.md.html" id="30  Filter 接口，扩展 Dubbo 框架的常用手段指北.md.html">30  Filter 接口，扩展 Dubbo 框架的常用手段指北.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/31%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e6%bd%9c%20Directory%20%e5%ae%9e%e7%8e%b0%ef%bc%8c%e6%8e%a2%e7%a7%98%e6%9c%8d%e5%8a%a1%e7%9b%ae%e5%bd%95%e7%8e%84%e6%9c%ba.md.html" id="31  加餐：深潜 Directory 实现，探秘服务目录玄机.md.html">31  加餐：深潜 Directory 实现，探秘服务目录玄机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/32%20%20%e8%b7%af%e7%94%b1%e6%9c%ba%e5%88%b6%ef%bc%9a%e8%af%b7%e6%b1%82%e5%88%b0%e5%ba%95%e6%80%8e%e4%b9%88%e8%b5%b0%ef%bc%8c%e5%ae%83%e8%af%b4%e4%ba%86%e7%ae%97%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="32  路由机制：请求到底怎么走，它说了算（上）.md.html">32  路由机制：请求到底怎么走，它说了算（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/33%20%20%e8%b7%af%e7%94%b1%e6%9c%ba%e5%88%b6%ef%bc%9a%e8%af%b7%e6%b1%82%e5%88%b0%e5%ba%95%e6%80%8e%e4%b9%88%e8%b5%b0%ef%bc%8c%e5%ae%83%e8%af%b4%e4%ba%86%e7%ae%97%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="33  路由机制：请求到底怎么走，它说了算（下）.md.html">33  路由机制：请求到底怎么走，它说了算（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/34%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e5%88%9d%e6%8e%a2%20Dubbo%20%e5%8a%a8%e6%80%81%e9%85%8d%e7%bd%ae%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf.md.html" id="34  加餐：初探 Dubbo 动态配置的那些事儿.md.html">34  加餐：初探 Dubbo 动态配置的那些事儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/35%20%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e5%85%ac%e5%b9%b3%e5%85%ac%e6%ad%a3%e7%89%a9%e5%b0%bd%e5%85%b6%e7%94%a8%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%ad%96%e7%95%a5%ef%bc%8c%e8%bf%99%e9%87%8c%e9%83%bd%e6%9c%89%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="35  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（上）.md.html">35  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/36%20%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e5%85%ac%e5%b9%b3%e5%85%ac%e6%ad%a3%e7%89%a9%e5%b0%bd%e5%85%b6%e7%94%a8%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%ad%96%e7%95%a5%ef%bc%8c%e8%bf%99%e9%87%8c%e9%83%bd%e6%9c%89%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="36  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（下）.md.html">36  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/37%20%20%e9%9b%86%e7%be%a4%e5%ae%b9%e9%94%99%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%a5%bd%e6%b1%89%e4%b8%89%e4%b8%aa%e5%b8%ae%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="37  集群容错：一个好汉三个帮（上）.md.html">37  集群容错：一个好汉三个帮（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/38%20%20%e9%9b%86%e7%be%a4%e5%ae%b9%e9%94%99%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%a5%bd%e6%b1%89%e4%b8%89%e4%b8%aa%e5%b8%ae%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="38  集群容错：一个好汉三个帮（下）.md.html">38  集群容错：一个好汉三个帮（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/39%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e5%a4%9a%e4%b8%aa%e8%bf%94%e5%9b%9e%e5%80%bc%e4%b8%8d%e7%94%a8%e6%80%95%ef%bc%8cMerger%20%e5%90%88%e5%b9%b6%e5%99%a8%e6%9d%a5%e5%b8%ae%e5%bf%99.md.html" id="39  加餐：多个返回值不用怕，Merger 合并器来帮忙.md.html">39  加餐：多个返回值不用怕，Merger 合并器来帮忙.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/40%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%a8%a1%e6%8b%9f%e8%bf%9c%e7%a8%8b%e8%b0%83%e7%94%a8%ef%bc%8cMock%20%e6%9c%ba%e5%88%b6%e5%b8%ae%e4%bd%a0%e6%90%9e%e5%ae%9a.md.html" id="40  加餐：模拟远程调用，Mock 机制帮你搞定.md.html">40  加餐：模拟远程调用，Mock 机制帮你搞定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/41%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e4%b8%80%e9%94%ae%e9%80%9a%e5%85%b3%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e5%85%a8%e6%b5%81%e7%a8%8b.md.html" id="41  加餐：一键通关服务发布全流程.md.html">41  加餐：一键通关服务发布全流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/42%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e6%b5%81%e7%a8%8b%e5%85%a8%e8%a7%a3%e6%9e%90.md.html" id="42  加餐：服务引用流程全解析.md.html">42  加餐：服务引用流程全解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/43%20%20%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e8%ae%be%e8%ae%a1%e6%96%b9%e6%a1%88%ef%bc%9a%e6%96%b0%e7%89%88%e6%9c%ac%e6%96%b0%e6%96%b9%e6%a1%88.md.html" id="43  服务自省设计方案：新版本新方案.md.html">43  服务自省设计方案：新版本新方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/44%20%20%e5%85%83%e6%95%b0%e6%8d%ae%e6%96%b9%e6%a1%88%e6%b7%b1%e5%ba%a6%e5%89%96%e6%9e%90%ef%bc%8c%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e6%95%b0%e6%8d%ae%e9%87%8f%e8%86%a8%e8%83%80%ef%bc%9f.md.html" id="44  元数据方案深度剖析，如何避免注册中心数据量膨胀？.md.html">44  元数据方案深度剖析，如何避免注册中心数据量膨胀？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/45%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e5%85%a5%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e6%96%b9%e6%a1%88%e4%b8%ad%e7%9a%84%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="45  加餐：深入服务自省方案中的服务发布订阅（上）.md.html">45  加餐：深入服务自省方案中的服务发布订阅（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/46%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e5%85%a5%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e6%96%b9%e6%a1%88%e4%b8%ad%e7%9a%84%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="46  加餐：深入服务自省方案中的服务发布订阅（下）.md.html">46  加餐：深入服务自省方案中的服务发布订阅（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/47%20%20%e9%85%8d%e7%bd%ae%e4%b8%ad%e5%bf%83%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%9a%e9%9b%86%e4%b8%ad%e5%8c%96%e9%85%8d%e7%bd%ae%20and%20%e6%9c%ac%e5%9c%b0%e5%8c%96%e9%85%8d%e7%bd%ae%ef%bc%8c%e6%88%91%e9%83%bd%e8%a6%81%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="47  配置中心设计与实现：集中化配置 and 本地化配置，我都要（上）.md.html">47  配置中心设计与实现：集中化配置 and 本地化配置，我都要（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/48%20%20%e9%85%8d%e7%bd%ae%e4%b8%ad%e5%bf%83%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%9a%e9%9b%86%e4%b8%ad%e5%8c%96%e9%85%8d%e7%bd%ae%20and%20%e6%9c%ac%e5%9c%b0%e5%8c%96%e9%85%8d%e7%bd%ae%ef%bc%8c%e6%88%91%e9%83%bd%e8%a6%81%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="48  配置中心设计与实现：集中化配置 and 本地化配置，我都要（下）.md.html">48  配置中心设计与实现：集中化配置 and 本地化配置，我都要（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/49%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e8%ae%a4%e7%9c%9f%e5%ad%a6%e4%b9%a0%ef%bc%8c%e7%bc%a9%e5%b0%8f%e5%b7%ae%e8%b7%9d.md.html" id="49 结束语  认真学习，缩小差距.md.html">49 结束语  认真学习，缩小差距.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）" id="title">06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）</h1>
+<div><p>在前面我们介绍 Dubbo 简化架构的时候提到过，Dubbo Provider 在启动时会将自身的服务信息整理成 URL 注册到注册中心，Dubbo Consumer 在启动时会向注册中心订阅感兴趣的 Provider 信息，之后 Provider 和 Consumer 才能建立连接，进行后续的交互。可见，<strong>一个稳定、高效的注册中心对基于 Dubbo 的微服务来说是至关重要的</strong>。</p>
+<p>Dubbo 目前支持 Consul、etcd、Nacos、ZooKeeper、Redis 等多种开源组件作为注册中心，并且在 Dubbo 源码也有相应的接入模块，如下图所示：</p>
+<p><img alt="Drawing 0.png" src="assets/Ciqc1F81FQ2ANt6EAADZ01G_QYM489.png"/></p>
+<p><strong>Dubbo 官方推荐使用 ZooKeeper 作为注册中心</strong>，它是在实际生产中最常用的注册中心实现，这也是我们本课时要介绍 ZooKeeper 核心原理的原因。</p>
+<p>要与 ZooKeeper 集群进行交互，我们可以使用 ZooKeeper 原生客户端或是 ZkClient、Apache Curator 等第三方开源客户端。在后面介绍 dubbo-registry-zookeeper 模块的具体实现时你会看到，Dubbo 底层使用的是 Apache Curator。<strong>Apache Curator 是实践中最常用的 ZooKeeper 客户端。</strong></p>
+<h3 id="zookeeper-核心概念">ZooKeeper 核心概念</h3>
+<p><strong>Apache ZooKeeper 是一个针对分布式系统的、可靠的、可扩展的协调服务</strong>，它通常作为统一命名服务、统一配置管理、注册中心（分布式集群管理）、分布式锁服务、Leader 选举服务等角色出现。很多分布式系统都依赖与 ZooKeeper 集群实现分布式系统间的协调调度，例如：Dubbo、HDFS 2.x、HBase、Kafka 等。<strong>ZooKeeper 已经成为现代分布式系统的标配</strong>。</p>
+<p>ZooKeeper 本身也是一个分布式应用程序，下图展示了 ZooKeeper 集群的核心架构。</p>
+<p><img alt="2.png" src="assets/CgqCHl82OOeARx1GAAEjvCaXdEE505.png"/></p>
+<p>ZooKeeper 集群的核心架构图</p>
+<ul>
+<li><strong>Client 节点</strong>：从业务角度来看，这是分布式应用中的一个节点，通过 ZkClient 或是其他 ZooKeeper 客户端与 ZooKeeper 集群中的一个 Server 实例维持长连接，并定时发送心跳。从 ZooKeeper 集群的角度来看，它是 ZooKeeper 集群的一个客户端，可以主动查询或操作 ZooKeeper 集群中的数据，也可以在某些 ZooKeeper 节点（ZNode）上添加监听。当被监听的 ZNode 节点发生变化时，例如，该 ZNode 节点被删除、新增子节点或是其中数据被修改等，ZooKeeper 集群都会立即通过长连接通知 Client。</li>
+<li><strong>Leader 节点</strong>：ZooKeeper 集群的主节点，负责整个 ZooKeeper 集群的写操作，保证集群内事务处理的顺序性。同时，还要负责整个集群中所有 Follower 节点与 Observer 节点的数据同步。</li>
+<li><strong>Follower 节点</strong>：ZooKeeper 集群中的从节点，可以接收 Client 读请求并向 Client 返回结果，并不处理写请求，而是转发到 Leader 节点完成写入操作。另外，Follower 节点还会参与 Leader 节点的选举。</li>
+<li><strong>Observer 节点</strong>：ZooKeeper 集群中特殊的从节点，不会参与 Leader 节点的选举，其他功能与 Follower 节点相同。引入 Observer 角色的目的是增加 ZooKeeper 集群读操作的吞吐量，如果单纯依靠增加 Follower 节点来提高 ZooKeeper 的读吞吐量，那么有一个很严重的副作用，就是 ZooKeeper 集群的写能力会大大降低，因为 ZooKeeper 写数据时需要 Leader 将写操作同步给半数以上的 Follower 节点。引入 Observer 节点使得 ZooKeeper 集群在写能力不降低的情况下，大大提升了读操作的吞吐量。</li>
+</ul>
+<p>了解了 ZooKeeper 整体的架构之后，我们再来了解一下 ZooKeeper 集群存储数据的逻辑结构。ZooKeeper 逻辑上是按照<strong>树型结构</strong>进行数据存储的（如下图），其中的节点称为 <strong>ZNode</strong>。每个 ZNode 有一个名称标识，即树根到该节点的路径（用 “/” 分隔），ZooKeeper 树中的每个节点都可以拥有子节点，这与文件系统的目录树类似。</p>
+<p><img alt="1.png" src="assets/CgqCHl82OR6AJaDUAAEpNFJyW_0507.png"/></p>
+<p>ZooKeeper 树型存储结构</p>
+<p>ZNode 节点类型有如下四种：</p>
+<ul>
+<li><strong>持久节点。</strong> 持久节点创建后，会一直存在，不会因创建该节点的 Client 会话失效而删除。</li>
+<li><strong>持久顺序节点。</strong> 持久顺序节点的基本特性与持久节点一致，创建节点的过程中，ZooKeeper 会在其名字后自动追加一个单调增长的数字后缀，作为新的节点名。</li>
+<li><strong>临时节点。</strong> 创建临时节点的 ZooKeeper Client 会话失效之后，其创建的临时节点会被 ZooKeeper 集群自动删除。与持久节点的另一点区别是，临时节点下面不能再创建子节点。</li>
+<li><strong>临时顺序节点。</strong> 基本特性与临时节点一致，创建节点的过程中，ZooKeeper 会在其名字后自动追加一个单调增长的数字后缀，作为新的节点名。</li>
+</ul>
+<p>在每个 ZNode 中都维护着一个 stat 结构，记录了该 ZNode 的元数据，其中包括版本号、操作控制列表（ACL）、时间戳和数据长度等信息，如下表所示：</p>
+<p><img alt="Drawing 3.png" src="assets/CgqCHl81FVuAFUp7AARJWw4cOq4421.png"/></p>
+<p>我们除了可以通过 ZooKeeper Client 对 ZNode 进行增删改查等基本操作，还可以注册 Watcher 监听 ZNode 节点、其中的数据以及子节点的变化。一旦监听到变化，则相应的 Watcher 即被触发，相应的 ZooKeeper Client 会立即得到通知。Watcher 有如下特点：</p>
+<ul>
+<li><strong>主动推送。</strong> Watcher 被触发时，由 ZooKeeper 集群主动将更新推送给客户端，而不需要客户端轮询。</li>
+<li><strong>一次性。</strong> 数据变化时，Watcher 只会被触发一次。如果客户端想得到后续更新的通知，必须要在 Watcher 被触发后重新注册一个 Watcher。</li>
+<li><strong>可见性。</strong> 如果一个客户端在读请求中附带 Watcher，Watcher 被触发的同时再次读取数据，客户端在得到 Watcher 消息之前肯定不可能看到更新后的数据。换句话说，更新通知先于更新结果。</li>
+<li><strong>顺序性。</strong> 如果多个更新触发了多个 Watcher ，那 Watcher 被触发的顺序与更新顺序一致。</li>
+</ul>
+<h3 id="消息广播流程概述">消息广播流程概述</h3>
+<p>ZooKeeper 集群中三种角色的节点（Leader、Follower 和 Observer）都可以处理 Client 的读请求，因为每个节点都保存了相同的数据副本，直接进行读取即可返回给 Client。</p>
+<p>对于写请求，如果 Client 连接的是 Follower 节点（或 Observer 节点），则在 Follower 节点（或 Observer 节点）收到写请求将会被转发到 Leader 节点。下面是 Leader 处理写请求的核心流程：</p>
+<ol>
+<li>Leader 节点接收写请求后，会为写请求赋予一个全局唯一的 zxid（64 位自增 id），通过 zxid 的大小比较就可以实现写操作的顺序一致性。</li>
+<li>Leader 通过先进先出队列（会给每个 Follower 节点都创建一个队列，保证发送的顺序性），将带有 zxid 的消息作为一个 proposal（提案）分发给所有 Follower 节点。</li>
+<li>当 Follower 节点接收到 proposal 之后，会先将 proposal 写到本地事务日志，写事务成功后再向 Leader 节点回一个 ACK 响应。</li>
+<li>当 Leader 节点接收到过半 Follower 的 ACK 响应之后，Leader 节点就向所有 Follower 节点发送 COMMIT 命令，并在本地执行提交。</li>
+<li>当 Follower 收到消息的 COMMIT 命令之后也会提交操作，写操作到此完成。</li>
+<li>最后，Follower 节点会返回 Client 写请求相应的响应。</li>
+</ol>
+<p>下图展示了写操作的核心流程：</p>
+<p><img alt="Drawing 4.png" src="assets/Ciqc1F81FXOAKEC8AAKkiqE6rHY039.png"/></p>
+<p>写操作核心流程图</p>
+<h3 id="崩溃恢复">崩溃恢复</h3>
+<p>上面写请求处理流程中，如果发生 Leader 节点宕机，整个 ZooKeeper 集群可能处于如下两种状态：</p>
+<ol>
+<li>当 Leader 节点收到半数以上 Follower 节点的 ACK 响应之后，会向各个 Follower 节点广播 COMMIT 命令，同时也会在本地执行 COMMIT 并向连接的客户端进行响应。如果在各个 Follower 收到 COMMIT 命令前 Leader 就宕机了，就会导致剩下的服务器没法执行这条消息。</li>
+<li>当 Leader 节点生成 proposal 之后就宕机了，而其他 Follower 并没有收到此 proposal（或者只有一小部分 Follower 节点收到了这条 proposal），那么此次写操作就是执行失败的。</li>
+</ol>
+<p>在 Leader 宕机后，ZooKeeper 会进入崩溃恢复模式，重新进行 Leader 节点的选举。</p>
+<p>ZooKeeper 对新 Leader 有如下两个要求：</p>
+<ol>
+<li>对于原 Leader 已经提交了的 proposal，新 Leader 必须能够广播并提交，这样就需要选择拥有最大 zxid 值的节点作为 Leader。</li>
+<li>对于原 Leader 还未广播或只部分广播成功的 proposal，新 Leader 能够通知原 Leader 和已经同步了的 Follower 删除，从而保证集群数据的一致性。</li>
+</ol>
+<p>ZooKeeper 选主使用的是 ZAB 协议，如果展开介绍的话内容会非常多，这里我们就通过一个示例简单介绍 ZooKeeper 选主的大致流程。</p>
+<p>比如，当前集群中有 5 个 ZooKeeper 节点构成，sid 分别为 1、2、3、4 和 5，zxid 分别为 10、10、9、9 和 8，此时，sid 为 1 的节点是 Leader 节点。实际上，zxid 包含了 <strong>epoch（高 32 位）和自增计数器（低 32 位）</strong> 两部分。其中，epoch 是“纪元”的意思，标识当前 Leader 周期，每次选举时 epoch 部分都会递增，这就防止了网络隔离之后，上一周期的旧 Leader 重新连入集群造成不必要的重新选举。该示例中我们假设各个节点的 epoch 都相同。</p>
+<p>某一时刻，节点 1 的服务器宕机了，ZooKeeper 集群开始进行选主。由于无法检测到集群中其他节点的状态信息（处于 Looking 状态），因此每个节点都将自己作为被选举的对象来进行投票。于是 sid 为 2、3、4、5 的节点，投票情况分别为（2,10）、（3,9）、（4,9）、（5,8），同时各个节点也会接收到来自其他节点的投票（这里以（sid, zxid）的形式来标识一次投票信息）。</p>
+<ul>
+<li>对于节点 2 来说，接收到（3,9）、（4,9）、（5,8）的投票，对比后发现自己的 zxid 最大，因此不需要做任何投票变更。</li>
+<li>对于节点 3 来说，接收到（2,10）、（4,9）、（5,8）的投票，对比后由于 2 的 zxid 比自己的 zxid 要大，因此需要更改投票，改投（2,10），并将改投后的票发给其他节点。</li>
+<li>对于节点 4 来说，接收到（2,10）、（3,9）、（5,8）的投票，对比后由于 2 的 zxid 比自己的 zxid 要大，因此需要更改投票，改投（2,10），并将改投后的票发给其他节点。</li>
+<li>对于节点 5 来说，也是一样，最终改投（2,10）。</li>
+</ul>
+<p>经过第二轮投票后，集群中的每个节点都会再次收到其他机器的投票，然后开始统计投票，如果有过半的节点投了同一个节点，则该节点成为新的 Leader，这里显然<strong>节点 2 成了新 Leader节点</strong>。</p>
+<p>Leader 节点此时会将 epoch 值加 1，并将新生成的 epoch 分发给各个 Follower 节点。各个 Follower 节点收到全新的 epoch 后，返回 ACK 给 Leader 节点，并带上各自最大的 zxid 和历史事务日志信息。Leader 选出最大的 zxid，并更新自身历史事务日志，示例中的节点 2 无须更新。Leader 节点紧接着会将最新的事务日志同步给集群中所有的 Follower 节点，只有当半数 Follower 同步成功，这个准 Leader 节点才能成为正式的 Leader 节点并开始工作。</p>
+<h3 id="总结">总结</h3>
+<p>本课时我们重点介绍了 ZooKeeper 的核心概念以及 ZooKeeper 集群的基本工作原理：</p>
+<ul>
+<li>首先介绍了 ZooKeeper 集群中各个节点的角色以及职能；</li>
+<li>然后介绍了 ZooKeeper 中存储数据的逻辑结构以及 ZNode 节点的相关特性；</li>
+<li>紧接着又讲解了 ZooKeeper 集群读写数据的核心流程；</li>
+<li>最后我们通过示例分析了 ZooKeeper 集群的崩溃恢复流程。</li>
+</ul>
+<p>在下一课时，我们将介绍 Apache Curator 的相关内容。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#1d71717124292c2c2d2a5d7a707c7471337e7270" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935797dc79aa3b7e',t:'MTc0NTUxODYwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

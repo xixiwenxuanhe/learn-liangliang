@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="13  本地缓存：降低 ZooKeeper 压力的一个常用手段" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>13  本地缓存：降低 ZooKeeper 压力的一个常用手段 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e6%b7%b1%e5%85%a5%e6%8e%8c%e6%8f%a1%20Dubbo%20%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%8c%e6%8f%90%e5%8d%87%e4%bd%a0%e7%9a%84%e8%81%8c%e5%9c%ba%e7%ab%9e%e4%ba%89%e5%8a%9b.md.html" id="00 开篇词  深入掌握 Dubbo 原理与实现，提升你的职场竞争力.md.html">00 开篇词  深入掌握 Dubbo 原理与实现，提升你的职场竞争力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/01%20%20Dubbo%20%e6%ba%90%e7%a0%81%e7%8e%af%e5%a2%83%e6%90%ad%e5%bb%ba%ef%bc%9a%e5%8d%83%e9%87%8c%e4%b9%8b%e8%a1%8c%ef%bc%8c%e5%a7%8b%e4%ba%8e%e8%b6%b3%e4%b8%8b.md.html" id="01  Dubbo 源码环境搭建：千里之行，始于足下.md.html">01  Dubbo 源码环境搭建：千里之行，始于足下.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/02%20Dubbo%20%e7%9a%84%e9%85%8d%e7%bd%ae%e6%80%bb%e7%ba%bf%ef%bc%9a%e6%8a%93%e4%bd%8f%20URL%ef%bc%8c%e5%b0%b1%e7%90%86%e8%a7%a3%e4%ba%86%e5%8d%8a%e4%b8%aa%20Dubbo.md.html" id="02 Dubbo 的配置总线：抓住 URL，就理解了半个 Dubbo.md.html">02 Dubbo 的配置总线：抓住 URL，就理解了半个 Dubbo.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/03%20%20Dubbo%20SPI%20%e7%b2%be%e6%9e%90%ef%bc%8c%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0%e4%b8%a4%e6%9e%81%e5%8f%8d%e8%bd%ac%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="03  Dubbo SPI 精析，接口实现两极反转（上）.md.html">03  Dubbo SPI 精析，接口实现两极反转（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/04%20%20Dubbo%20SPI%20%e7%b2%be%e6%9e%90%ef%bc%8c%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0%e4%b8%a4%e6%9e%81%e5%8f%8d%e8%bd%ac%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="04  Dubbo SPI 精析，接口实现两极反转（下）.md.html">04  Dubbo SPI 精析，接口实现两极反转（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/05%20%20%e6%b5%b7%e9%87%8f%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1%ef%bc%8c%e4%b8%80%e4%b8%aa%e6%97%b6%e9%97%b4%e8%bd%ae%e6%90%9e%e5%ae%9a.md.html" id="05  海量定时任务，一个时间轮搞定.md.html">05  海量定时任务，一个时间轮搞定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/06%20%20ZooKeeper%20%e4%b8%8e%20Curator%ef%bc%8c%e6%b1%82%e4%bd%a0%e5%88%ab%e7%94%a8%20ZkClient%20%e4%ba%86%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）.md.html">06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/07%20%20ZooKeeper%20%e4%b8%8e%20Curator%ef%bc%8c%e6%b1%82%e4%bd%a0%e5%88%ab%e7%94%a8%20ZkClient%20%e4%ba%86%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="07  ZooKeeper 与 Curator，求你别用 ZkClient 了（下）.md.html">07  ZooKeeper 与 Curator，求你别用 ZkClient 了（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/08%20%20%e4%bb%a3%e7%90%86%e6%a8%a1%e5%bc%8f%e4%b8%8e%e5%b8%b8%e8%a7%81%e5%ae%9e%e7%8e%b0.md.html" id="08  代理模式与常见实现.md.html">08  代理模式与常见实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/09%20%20Netty%20%e5%85%a5%e9%97%a8%ef%bc%8c%e7%94%a8%e5%ae%83%e5%81%9a%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e9%83%bd%e8%af%b4%e5%a5%bd%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="09  Netty 入门，用它做网络编程都说好（上）.md.html">09  Netty 入门，用它做网络编程都说好（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/10%20%20Netty%20%e5%85%a5%e9%97%a8%ef%bc%8c%e7%94%a8%e5%ae%83%e5%81%9a%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e9%83%bd%e8%af%b4%e5%a5%bd%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="10  Netty 入门，用它做网络编程都说好（下）.md.html">10  Netty 入门，用它做网络编程都说好（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/11%20%20%e7%ae%80%e6%98%93%e7%89%88%20RPC%20%e6%a1%86%e6%9e%b6%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="11  简易版 RPC 框架实现（上）.md.html">11  简易版 RPC 框架实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/12%20%20%e7%ae%80%e6%98%93%e7%89%88%20RPC%20%e6%a1%86%e6%9e%b6%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12  简易版 RPC 框架实现（下）.md.html">12  简易版 RPC 框架实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/13%20%20%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%ef%bc%9a%e9%99%8d%e4%bd%8e%20ZooKeeper%20%e5%8e%8b%e5%8a%9b%e7%9a%84%e4%b8%80%e4%b8%aa%e5%b8%b8%e7%94%a8%e6%89%8b%e6%ae%b5.md.html" id="13  本地缓存：降低 ZooKeeper 压力的一个常用手段.md.html">13  本地缓存：降低 ZooKeeper 压力的一个常用手段.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/14%20%20%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6%e6%98%af%e7%bd%91%e7%bb%9c%e6%93%8d%e4%bd%9c%e7%9a%84%e5%9f%ba%e6%9c%ac%e4%bf%9d%e8%af%81.md.html" id="14  重试机制是网络操作的基本保证.md.html">14  重试机制是网络操作的基本保证.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/15%20%20ZooKeeper%20%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%8c%e5%ae%98%e6%96%b9%e6%8e%a8%e8%8d%90%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e5%ae%9e%e8%b7%b5.md.html" id="15  ZooKeeper 注册中心实现，官方推荐注册中心实践.md.html">15  ZooKeeper 注册中心实现，官方推荐注册中心实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/16%20%20Dubbo%20Serialize%20%e5%b1%82%ef%bc%9a%e5%a4%9a%e7%a7%8d%e5%ba%8f%e5%88%97%e5%8c%96%e7%ae%97%e6%b3%95%ef%bc%8c%e6%80%bb%e6%9c%89%e4%b8%80%e6%ac%be%e9%80%82%e5%90%88%e4%bd%a0.md.html" id="16  Dubbo Serialize 层：多种序列化算法，总有一款适合你.md.html">16  Dubbo Serialize 层：多种序列化算法，总有一款适合你.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/17%20%20Dubbo%20Remoting%20%e5%b1%82%e6%a0%b8%e5%bf%83%e6%8e%a5%e5%8f%a3%e5%88%86%e6%9e%90%ef%bc%9a%e8%bf%99%e5%b1%85%e7%84%b6%e6%98%af%e4%b8%80%e5%a5%97%e5%85%bc%e5%ae%b9%e6%89%80%e6%9c%89%20NIO%20%e6%a1%86%e6%9e%b6%e7%9a%84%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="17  Dubbo Remoting 层核心接口分析：这居然是一套兼容所有 NIO 框架的设计？.md.html">17  Dubbo Remoting 层核心接口分析：这居然是一套兼容所有 NIO 框架的设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/18%20%20Buffer%20%e7%bc%93%e5%86%b2%e5%8c%ba%ef%bc%9a%e6%88%91%e4%bb%ac%e4%b8%8d%e7%94%9f%e4%ba%a7%e6%95%b0%e6%8d%ae%ef%bc%8c%e6%88%91%e4%bb%ac%e5%8f%aa%e6%98%af%e6%95%b0%e6%8d%ae%e7%9a%84%e6%90%ac%e8%bf%90%e5%b7%a5.md.html" id="18  Buffer 缓冲区：我们不生产数据，我们只是数据的搬运工.md.html">18  Buffer 缓冲区：我们不生产数据，我们只是数据的搬运工.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/19%20%20Transporter%20%e5%b1%82%e6%a0%b8%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%9a%e7%bc%96%e8%a7%a3%e7%a0%81%e4%b8%8e%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e4%b8%80%e6%96%87%e6%89%93%e5%b0%bd%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="19  Transporter 层核心实现：编解码与线程模型一文打尽（上）.md.html">19  Transporter 层核心实现：编解码与线程模型一文打尽（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/20%20%20Transporter%20%e5%b1%82%e6%a0%b8%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%9a%e7%bc%96%e8%a7%a3%e7%a0%81%e4%b8%8e%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e4%b8%80%e6%96%87%e6%89%93%e5%b0%bd%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="20  Transporter 层核心实现：编解码与线程模型一文打尽（下）.md.html">20  Transporter 层核心实现：编解码与线程模型一文打尽（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/21%20%20Exchange%20%e5%b1%82%e5%89%96%e6%9e%90%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82%20Request-Response%20%e6%a8%a1%e5%9e%8b%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="21  Exchange 层剖析：彻底搞懂 Request-Response 模型（上）.md.html">21  Exchange 层剖析：彻底搞懂 Request-Response 模型（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/22%20%20Exchange%20%e5%b1%82%e5%89%96%e6%9e%90%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82%20Request-Response%20%e6%a8%a1%e5%9e%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="22  Exchange 层剖析：彻底搞懂 Request-Response 模型（下）.md.html">22  Exchange 层剖析：彻底搞懂 Request-Response 模型（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/23%20%20%e6%a0%b8%e5%bf%83%e6%8e%a5%e5%8f%a3%e4%bb%8b%e7%bb%8d%ef%bc%8cRPC%20%e5%b1%82%e9%aa%a8%e6%9e%b6%e6%a2%b3%e7%90%86.md.html" id="23  核心接口介绍，RPC 层骨架梳理.md.html">23  核心接口介绍，RPC 层骨架梳理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/24%20%20%e4%bb%8e%20Protocol%20%e8%b5%b7%e6%89%8b%ef%bc%8c%e7%9c%8b%e6%9c%8d%e5%8a%a1%e6%9a%b4%e9%9c%b2%e5%92%8c%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e7%9a%84%e5%85%a8%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）.md.html">24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/25%20%20%e4%bb%8e%20Protocol%20%e8%b5%b7%e6%89%8b%ef%bc%8c%e7%9c%8b%e6%9c%8d%e5%8a%a1%e6%9a%b4%e9%9c%b2%e5%92%8c%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e7%9a%84%e5%85%a8%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="25  从 Protocol 起手，看服务暴露和服务引用的全流程（下）.md.html">25  从 Protocol 起手，看服务暴露和服务引用的全流程（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/26%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e7%9b%b4%e5%87%bb%20Dubbo%20%e2%80%9c%e5%bf%83%e8%84%8f%e2%80%9d%ef%bc%8c%e5%b8%a6%e4%bd%a0%e4%b8%80%e8%b5%b7%e6%8e%a2%e7%a7%98%20Invoker%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="26  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（上）.md.html">26  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/27%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e7%9b%b4%e5%87%bb%20Dubbo%20%e2%80%9c%e5%bf%83%e8%84%8f%e2%80%9d%ef%bc%8c%e5%b8%a6%e4%bd%a0%e4%b8%80%e8%b5%b7%e6%8e%a2%e7%a7%98%20Invoker%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="27  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（下）.md.html">27  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/28%20%20%e5%a4%8d%e6%9d%82%e9%97%ae%e9%a2%98%e7%ae%80%e5%8d%95%e5%8c%96%ef%bc%8c%e4%bb%a3%e7%90%86%e5%b8%ae%e4%bd%a0%e9%9a%90%e8%97%8f%e4%ba%86%e5%a4%9a%e5%b0%91%e5%ba%95%e5%b1%82%e7%bb%86%e8%8a%82%ef%bc%9f.md.html" id="28  复杂问题简单化，代理帮你隐藏了多少底层细节？.md.html">28  复杂问题简单化，代理帮你隐藏了多少底层细节？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/29%20%20%e5%8a%a0%e9%a4%90%ef%bc%9aHTTP%20%e5%8d%8f%e8%ae%ae%20+%20JSON-RPC%ef%bc%8cDubbo%20%e8%b7%a8%e8%af%ad%e8%a8%80%e5%b0%b1%e6%98%af%e5%a6%82%e6%ad%a4%e7%ae%80%e5%8d%95.md.html" id="29  加餐：HTTP 协议 + JSON-RPC，Dubbo 跨语言就是如此简单.md.html">29  加餐：HTTP 协议 + JSON-RPC，Dubbo 跨语言就是如此简单.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/30%20%20Filter%20%e6%8e%a5%e5%8f%a3%ef%bc%8c%e6%89%a9%e5%b1%95%20Dubbo%20%e6%a1%86%e6%9e%b6%e7%9a%84%e5%b8%b8%e7%94%a8%e6%89%8b%e6%ae%b5%e6%8c%87%e5%8c%97.md.html" id="30  Filter 接口，扩展 Dubbo 框架的常用手段指北.md.html">30  Filter 接口，扩展 Dubbo 框架的常用手段指北.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/31%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e6%bd%9c%20Directory%20%e5%ae%9e%e7%8e%b0%ef%bc%8c%e6%8e%a2%e7%a7%98%e6%9c%8d%e5%8a%a1%e7%9b%ae%e5%bd%95%e7%8e%84%e6%9c%ba.md.html" id="31  加餐：深潜 Directory 实现，探秘服务目录玄机.md.html">31  加餐：深潜 Directory 实现，探秘服务目录玄机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/32%20%20%e8%b7%af%e7%94%b1%e6%9c%ba%e5%88%b6%ef%bc%9a%e8%af%b7%e6%b1%82%e5%88%b0%e5%ba%95%e6%80%8e%e4%b9%88%e8%b5%b0%ef%bc%8c%e5%ae%83%e8%af%b4%e4%ba%86%e7%ae%97%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="32  路由机制：请求到底怎么走，它说了算（上）.md.html">32  路由机制：请求到底怎么走，它说了算（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/33%20%20%e8%b7%af%e7%94%b1%e6%9c%ba%e5%88%b6%ef%bc%9a%e8%af%b7%e6%b1%82%e5%88%b0%e5%ba%95%e6%80%8e%e4%b9%88%e8%b5%b0%ef%bc%8c%e5%ae%83%e8%af%b4%e4%ba%86%e7%ae%97%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="33  路由机制：请求到底怎么走，它说了算（下）.md.html">33  路由机制：请求到底怎么走，它说了算（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/34%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e5%88%9d%e6%8e%a2%20Dubbo%20%e5%8a%a8%e6%80%81%e9%85%8d%e7%bd%ae%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf.md.html" id="34  加餐：初探 Dubbo 动态配置的那些事儿.md.html">34  加餐：初探 Dubbo 动态配置的那些事儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/35%20%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e5%85%ac%e5%b9%b3%e5%85%ac%e6%ad%a3%e7%89%a9%e5%b0%bd%e5%85%b6%e7%94%a8%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%ad%96%e7%95%a5%ef%bc%8c%e8%bf%99%e9%87%8c%e9%83%bd%e6%9c%89%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="35  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（上）.md.html">35  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/36%20%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e5%85%ac%e5%b9%b3%e5%85%ac%e6%ad%a3%e7%89%a9%e5%b0%bd%e5%85%b6%e7%94%a8%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%ad%96%e7%95%a5%ef%bc%8c%e8%bf%99%e9%87%8c%e9%83%bd%e6%9c%89%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="36  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（下）.md.html">36  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/37%20%20%e9%9b%86%e7%be%a4%e5%ae%b9%e9%94%99%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%a5%bd%e6%b1%89%e4%b8%89%e4%b8%aa%e5%b8%ae%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="37  集群容错：一个好汉三个帮（上）.md.html">37  集群容错：一个好汉三个帮（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/38%20%20%e9%9b%86%e7%be%a4%e5%ae%b9%e9%94%99%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%a5%bd%e6%b1%89%e4%b8%89%e4%b8%aa%e5%b8%ae%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="38  集群容错：一个好汉三个帮（下）.md.html">38  集群容错：一个好汉三个帮（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/39%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e5%a4%9a%e4%b8%aa%e8%bf%94%e5%9b%9e%e5%80%bc%e4%b8%8d%e7%94%a8%e6%80%95%ef%bc%8cMerger%20%e5%90%88%e5%b9%b6%e5%99%a8%e6%9d%a5%e5%b8%ae%e5%bf%99.md.html" id="39  加餐：多个返回值不用怕，Merger 合并器来帮忙.md.html">39  加餐：多个返回值不用怕，Merger 合并器来帮忙.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/40%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%a8%a1%e6%8b%9f%e8%bf%9c%e7%a8%8b%e8%b0%83%e7%94%a8%ef%bc%8cMock%20%e6%9c%ba%e5%88%b6%e5%b8%ae%e4%bd%a0%e6%90%9e%e5%ae%9a.md.html" id="40  加餐：模拟远程调用，Mock 机制帮你搞定.md.html">40  加餐：模拟远程调用，Mock 机制帮你搞定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/41%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e4%b8%80%e9%94%ae%e9%80%9a%e5%85%b3%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e5%85%a8%e6%b5%81%e7%a8%8b.md.html" id="41  加餐：一键通关服务发布全流程.md.html">41  加餐：一键通关服务发布全流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/42%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e6%b5%81%e7%a8%8b%e5%85%a8%e8%a7%a3%e6%9e%90.md.html" id="42  加餐：服务引用流程全解析.md.html">42  加餐：服务引用流程全解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/43%20%20%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e8%ae%be%e8%ae%a1%e6%96%b9%e6%a1%88%ef%bc%9a%e6%96%b0%e7%89%88%e6%9c%ac%e6%96%b0%e6%96%b9%e6%a1%88.md.html" id="43  服务自省设计方案：新版本新方案.md.html">43  服务自省设计方案：新版本新方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/44%20%20%e5%85%83%e6%95%b0%e6%8d%ae%e6%96%b9%e6%a1%88%e6%b7%b1%e5%ba%a6%e5%89%96%e6%9e%90%ef%bc%8c%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e6%95%b0%e6%8d%ae%e9%87%8f%e8%86%a8%e8%83%80%ef%bc%9f.md.html" id="44  元数据方案深度剖析，如何避免注册中心数据量膨胀？.md.html">44  元数据方案深度剖析，如何避免注册中心数据量膨胀？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/45%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e5%85%a5%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e6%96%b9%e6%a1%88%e4%b8%ad%e7%9a%84%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="45  加餐：深入服务自省方案中的服务发布订阅（上）.md.html">45  加餐：深入服务自省方案中的服务发布订阅（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/46%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e5%85%a5%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e6%96%b9%e6%a1%88%e4%b8%ad%e7%9a%84%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="46  加餐：深入服务自省方案中的服务发布订阅（下）.md.html">46  加餐：深入服务自省方案中的服务发布订阅（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/47%20%20%e9%85%8d%e7%bd%ae%e4%b8%ad%e5%bf%83%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%9a%e9%9b%86%e4%b8%ad%e5%8c%96%e9%85%8d%e7%bd%ae%20and%20%e6%9c%ac%e5%9c%b0%e5%8c%96%e9%85%8d%e7%bd%ae%ef%bc%8c%e6%88%91%e9%83%bd%e8%a6%81%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="47  配置中心设计与实现：集中化配置 and 本地化配置，我都要（上）.md.html">47  配置中心设计与实现：集中化配置 and 本地化配置，我都要（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/48%20%20%e9%85%8d%e7%bd%ae%e4%b8%ad%e5%bf%83%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%9a%e9%9b%86%e4%b8%ad%e5%8c%96%e9%85%8d%e7%bd%ae%20and%20%e6%9c%ac%e5%9c%b0%e5%8c%96%e9%85%8d%e7%bd%ae%ef%bc%8c%e6%88%91%e9%83%bd%e8%a6%81%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="48  配置中心设计与实现：集中化配置 and 本地化配置，我都要（下）.md.html">48  配置中心设计与实现：集中化配置 and 本地化配置，我都要（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/49%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e8%ae%a4%e7%9c%9f%e5%ad%a6%e4%b9%a0%ef%bc%8c%e7%bc%a9%e5%b0%8f%e5%b7%ae%e8%b7%9d.md.html" id="49 结束语  认真学习，缩小差距.md.html">49 结束语  认真学习，缩小差距.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="13  本地缓存：降低 ZooKeeper 压力的一个常用手段" id="title">13  本地缓存：降低 ZooKeeper 压力的一个常用手段</h1>
+<div><p>从这一课时开始，我们就进入了第二部分：注册中心。注册中心（Registry）在微服务架构中的作用举足轻重，有了它，<strong>服务提供者（Provider）</strong> 和<strong>消费者（Consumer）</strong> 就能感知彼此。从下面的 Dubbo 架构图中可知：</p>
+<p><img alt="Drawing 0.png" src="assets/CgqCHl9W91KABCfoAAB7_C-aKWA893.png"/></p>
+<p>Dubbo 架构图</p>
+<ul>
+<li>Provider 从容器启动后的初始化阶段便会向注册中心完成注册操作；</li>
+<li>Consumer 启动初始化阶段会完成对所需 Prov·ider 的订阅操作；</li>
+<li>另外，在 Provider 发生变化时，需要通知监听的 Consumer。</li>
+</ul>
+<p>Registry 只是 Consumer 和 Provider 感知彼此状态变化的一种便捷途径而已，它们彼此的实际通讯交互过程是直接进行的，对于 Registry 来说是透明无感的。Provider 状态发生变化了，会由 Registry 主动推送订阅了该 Provider 的所有 Consumer，这保证了 Consumer 感知 Provider 状态变化的及时性，也将和具体业务需求逻辑交互解耦，提升了系统的稳定性。</p>
+<p>Dubbo 中存在很多概念，但有些理解起来就特别费劲，如本文的 Registry，翻译过来的意思是“注册中心”，但它其实是应用本地的注册中心客户端，<strong>真正的“注册中心”服务是其他独立部署的进程，或进程组成的集群，比如 ZooKeeper 集群</strong>。本地的 Registry 通过和 ZooKeeper 等进行实时的信息同步，维持这些内容的一致性，从而实现了注册中心这个特性。另外，就 Registry 而言，Consumer 和 Provider 只是个用户视角的概念，它们被抽象为了一条 URL 。</p>
+<p>从本课时开始，我们就真正开始分析 Dubbo 源码了。首先看一下本课程第二部分内容在 Dubbo 架构中所处的位置（如下图红框所示），可以看到这部分内容在整个 Dubbo 体系中还是相对独立的，没有涉及 Protocol、Invoker 等 Dubbo 内部的概念。等介绍完这些概念之后，我们还会回看图中 Registry 红框之外的内容。</p>
+<p><img alt="Drawing 1.png" src="assets/CgqCHl9W92uAEdHNAC1YtFrPHGA595.png"/></p>
+<p>整个 Dubbo 体系图</p>
+<h3 id="核心接口">核心接口</h3>
+<p>作为“注册中心”部分的第一课时，我们有必要介绍下 dubbo-registry-api 模块中的核心抽象接口，如下图所示：</p>
+<p><img alt="Drawing 2.png" src="assets/Ciqc1F9W94aAIB3iAAE7RxqxFDw401.png"/></p>
+<p>在 Dubbo 中，一般使用 Node 这个接口来抽象节点的概念。<strong>Node</strong>不仅可以表示 Provider 和 Consumer 节点，还可以表示注册中心节点。Node 接口中定义了三个非常基础的方法（如下图所示）：</p>
+<p><img alt="Drawing 3.png" src="assets/Ciqc1F9W942AJdaYAAAlxcqD4vE542.png"/></p>
+<ul>
+<li>getUrl() 方法返回表示当前节点的 URL；</li>
+<li>isAvailable() 检测当前节点是否可用；</li>
+<li>destroy() 方法负责销毁当前节点并释放底层资源。</li>
+</ul>
+<p><strong>RegistryService 接口</strong>抽象了注册服务的基本行为，如下图所示：</p>
+<p><img alt="Drawing 4.png" src="assets/CgqCHl9W95SAEiTBAABRqhrI6ig390.png"/></p>
+<ul>
+<li>register() 方法和 unregister() 方法分别表示<strong>注册</strong>和<strong>取消注册</strong>一个 URL。</li>
+<li>subscribe() 方法和 unsubscribe() 方法分别表示<strong>订阅</strong>和<strong>取消订阅</strong>一个 URL。订阅成功之后，当订阅的数据发生变化时，注册中心会主动通知第二个参数指定的 NotifyListener 对象，NotifyListener 接口中定义的 notify() 方法就是用来接收该通知的。</li>
+<li>lookup() 方法能够<strong>查询</strong>符合条件的注册数据，它与 subscribe() 方法有一定的区别，subscribe() 方法采用的是 push 模式，lookup() 方法采用的是 pull 模式。</li>
+</ul>
+<p><strong>Registry 接口</strong>继承了 RegistryService 接口和 Node 接口，如下图所示，它表示的就是一个拥有注册中心能力的节点，其中的 reExportRegister() 和 reExportUnregister() 方法都是委托给 RegistryService 中的相应方法。</p>
+<p><img alt="Drawing 5.png" src="assets/Ciqc1F9W952Aesi9AAAjKOjjN0I785.png"/></p>
+<p><strong>RegistryFactory 接口</strong>是 Registry 的工厂接口，负责创建 Registry 对象，具体定义如下所示，其中 @SPI 注解指定了默认的扩展名为 dubbo，@Adaptive 注解表示会生成适配器类并根据 URL 参数中的 protocol 参数值选择相应的实现。</p>
+<pre><code>@SPI("dubbo")
+
+public interface RegistryFactory {
+
+    @Adaptive({"protocol"})
+
+    Registry getRegistry(URL url);
+
+}
+</code></pre>
+<p>通过下面两张继承关系图可以看出，每个 Registry 实现类都有对应的 RegistryFactory 工厂实现，每个 RegistryFactory 工厂实现只负责创建对应的 Registry 对象。</p>
+<p><img alt="Drawing 6.png" src="assets/CgqCHl9W96aAbyVRAAIzHNPLhSM843.png"/></p>
+<p>RegistryFactory 继承关系图</p>
+<p><img alt="Drawing 7.png" src="assets/Ciqc1F9W97CAdPcXAAG1fsVxaeI019.png"/></p>
+<p>Registry 继承关系图</p>
+<p>其中，RegistryFactoryWrapper 是 RegistryFactory 接口的 Wrapper 类，它在底层 RegistryFactory 创建的 Registry 对象外层封装了一个 ListenerRegistryWrapper ，ListenerRegistryWrapper 中维护了一个 RegistryServiceListener 集合，会将 register()、subscribe() 等事件通知到 RegistryServiceListener 监听器。</p>
+<p>AbstractRegistryFactory 是一个实现了 RegistryFactory 接口的抽象类，提供了规范 URL 的操作以及缓存 Registry 对象的公共能力。其中，缓存 Registry 对象是使用 HashMap<string, registry=""> 集合实现的（REGISTRIES 静态字段）。在规范 URL 的实现逻辑中，AbstractRegistryFactory 会将 RegistryService 的类名设置为 URL path 和 interface 参数，同时删除 export 和 refer 参数。</string,></p>
+<h3 id="abstractregistry">AbstractRegistry</h3>
+<p>AbstractRegistry 实现了 Registry 接口，虽然 AbstractRegistry 本身在内存中实现了注册数据的读写功能，也没有什么抽象方法，但它依然被标记成了抽象类，从前面的Registry 继承关系图中可以看出，<strong>Registry 接口的所有实现类都继承了 AbstractRegistry</strong>。</p>
+<p>为了减轻注册中心组件的压力，AbstractRegistry 会把当前节点订阅的 URL 信息缓存到本地的 Properties 文件中，其核心字段如下：</p>
+<ul>
+<li><strong>registryUrl（URL类型）。</strong> 该 URL 包含了创建该 Registry 对象的全部配置信息，是 AbstractRegistryFactory 修改后的产物。</li>
+<li><strong>properties（Properties 类型）、file（File 类型）。</strong> 本地的 Properties 文件缓存，properties 是加载到内存的 Properties 对象，file 是磁盘上对应的文件，两者的数据是同步的。在 AbstractRegistry 初始化时，会根据 registryUrl 中的 file.cache 参数值决定是否开启文件缓存。如果开启文件缓存功能，就会立即将 file 文件中的 KV 缓存加载到 properties 字段中。当 properties 中的注册数据发生变化时，会写入本地的 file 文件进行同步。properties 是一个 KV 结构，其中 Key 是当前节点作为 Consumer 的一个 URL，Value 是对应的 Provider 列表，包含了所有 Category（例如，providers、routes、configurators 等） 下的 URL。properties 中有一个特殊的 Key 值为 registies，对应的 Value 是注册中心列表，其他记录的都是 Provider 列表。</li>
+<li><strong>syncSaveFile（boolean 类型）。</strong> 是否同步保存文件的配置，对应的是 registryUrl 中的 save.file 参数。</li>
+<li><strong>registryCacheExecutor（ExecutorService 类型）。</strong> 这是一个单线程的线程池，在一个 Provider 的注册数据发生变化的时候，会将该 Provider 的全量数据同步到 properties 字段和缓存文件中，如果 syncSaveFile 配置为 false，就由该线程池异步完成文件写入。</li>
+<li><strong>lastCacheChanged（AtomicLong 类型）。</strong> 注册数据的版本号，每次写入 file 文件时，都是全覆盖写入，而不是修改文件，所以需要版本控制，防止旧数据覆盖新数据。</li>
+<li><strong>registered（Set 类型）。</strong> 这个比较简单，它是注册的 URL 集合。</li>
+<li><strong>subscribed（ConcurrentMap<url, set=""> 类型）。</url,></strong> 表示订阅 URL 的监听器集合，其中 Key 是被监听的 URL， Value 是相应的监听器集合。</li>
+<li><strong>notified（ConcurrentMap<url, list="" map<string,="">&gt;类型）。</url,></strong> 该集合第一层 Key 是当前节点作为 Consumer 的一个 URL，表示的是该节点的某个 Consumer 角色（一个节点可以同时消费多个 Provider 节点）；Value 是一个 Map 集合，该 Map 集合的 Key 是 Provider URL 的分类（Category），例如 providers、routes、configurators 等，Value 就是相应分类下的 URL 集合。</li>
+</ul>
+<p>介绍完 AbstractRegistry 的核心字段之后，我们接下来就再看看 AbstractRegistry 依赖这些字段都提供了哪些公共能力。</p>
+<h4 id="1-本地缓存">1. 本地缓存</h4>
+<p>作为一个 RPC 框架，Dubbo 在微服务架构中解决了各个服务间协作的难题；作为 Provider 和 Consumer 的底层依赖，它会与服务一起打包部署。dubbo-registry 也仅仅是其中一个依赖包，负责完成与 ZooKeeper、etcd、Consul 等服务发现组件的交互。</p>
+<p>当 Provider 端暴露的 URL 发生变化时，ZooKeeper 等服务发现组件会通知 Consumer 端的 Registry 组件，Registry 组件会调用 notify() 方法，被通知的 Consumer 能匹配到所有 Provider 的 URL 列表并写入 properties 集合中。</p>
+<p>下面我们来看 notify() 方法的核心实现：</p>
+<pre><code>// 注意入参，第一个URL参数表示的是Consumer，第二个NotifyListener是第一个参数对应的监听器，第三个参数是Provider端暴露的URL的全量数据
+
+protected void notify(URL url, NotifyListener listener,
+
+    List&lt;URL&gt; urls) {
+
+    ... // 省略一系列边界条件的检查
+
+    Map&lt;String, List&lt;URL&gt;&gt; result = new HashMap&lt;&gt;();
+
+    for (URL u : urls) {
+
+        // 需要Consumer URL与Provider URL匹配，具体匹配规则后面详述
+
+        if (UrlUtils.isMatch(url, u)) { 
+
+            // 根据Provider URL中的category参数进行分类
+
+            String category = u.getParameter("category", "providers");
+
+            List&lt;URL&gt; categoryList = result.computeIfAbsent(category, 
+
+                k -&gt; new ArrayList&lt;&gt;());
+
+            categoryList.add(u);
+
+        }
+
+    }
+
+    if (result.size() == 0) {
+
+        return;
+
+    }
+
+    Map&lt;String, List&lt;URL&gt;&gt; categoryNotified = 
+
+      notified.computeIfAbsent(url, u -&gt; new ConcurrentHashMap&lt;&gt;());
+
+    for (Map.Entry&lt;String, List&lt;URL&gt;&gt; entry : result.entrySet()) {
+
+        String category = entry.getKey();
+
+        List&lt;URL&gt; categoryList = entry.getValue();
+
+        categoryNotified.put(category, categoryList); // 更新notified
+
+        listener.notify(categoryList); // 调用NotifyListener
+
+        // 更新properties集合以及底层的文件缓存
+
+        saveProperties(url);
+
+    }
+
+}
+</code></pre>
+<p>在 saveProperties() 方法中会取出 Consumer 订阅的各个分类的 URL 连接起来（中间以空格分隔），然后以 Consumer 的 ServiceKey 为键值写到 properties 中，同时 lastCacheChanged 版本号会自增。完成 properties 字段的更新之后，会根据 syncSaveFile 字段值来决定是在当前线程同步更新 file 文件，还是向 registryCacheExecutor 线程池提交任务，异步完成 file 文件的同步。本地缓存文件的具体路径是：</p>
+<pre><code>/.dubbo/dubbo-registry-[当前应用名]-[当前Registry所在的IP地址].cache
+</code></pre>
+<p>这里首先关注<strong>第一个细节：UrlUtils.isMatch() 方法</strong>。该方法会完成 Consumer URL 与 Provider URL 的匹配，依次匹配的部分如下所示：</p>
+<ul>
+<li>匹配 Consumer 和 Provider 的接口（优先取 interface 参数，其次再取 path）。双方接口相同或者其中一方为“*”，则匹配成功，执行下一步。</li>
+<li>匹配 Consumer 和 Provider 的 category。</li>
+<li>检测 Consumer URL 和 Provider URL 中的 enable 参数是否符合条件。</li>
+<li>检测 Consumer 和 Provider 端的 group、version 以及 classifier 是否符合条件。</li>
+</ul>
+<p><strong>第二个细节是：URL.getServiceKey() 方法</strong>。该方法返回的 ServiceKey 是 properties 集合以及相应缓存文件中的 Key。ServiceKey 的格式如下：</p>
+<pre><code>[group]/{interface(或path)}[:version]
+</code></pre>
+<p><strong>AbstractRegistry 的核心是本地文件缓存的功能。</strong> 在 AbstractRegistry 的构造方法中，会调用 loadProperties() 方法将上面写入的本地缓存文件，加载到 properties 对象中。</p>
+<p>在网络抖动等原因而导致订阅失败时，Consumer 端的 Registry 就可以调用 getCacheUrls() 方法获取本地缓存，从而得到最近注册的 Provider URL。可见，<strong>AbstractRegistry 通过本地缓存提供了一种容错机制，保证了服务的可靠性</strong>。</p>
+<h4 id="2-注册-订阅">2. 注册/订阅</h4>
+<p>AbstractRegistry 实现了 Registry 接口，它实现的 registry() 方法会将当前节点要注册的 URL 缓存到 registered 集合，而 unregistry() 方法会从 registered 集合删除指定的 URL，例如当前节点下线的时候。</p>
+<p>subscribe() 方法会将当前节点作为 Consumer 的 URL 以及相关的 NotifyListener 记录到 subscribed 集合，unsubscribe() 方法会将当前节点的 URL 以及关联的 NotifyListener 从 subscribed 集合删除。</p>
+<p>这四个方法都是简单的集合操作，这里我们就不再展示具体代码了。</p>
+<p>单看 AbstractRegistry 的实现，上述四个基础的注册、订阅方法都是内存操作，但是 Java 有继承和多态的特性，AbstractRegistry 的子类会覆盖上述四个基础的注册、订阅方法进行增强。</p>
+<p><img alt="Drawing 8.png" src="assets/Ciqc1F9W9-eAHUVPAACO6kbGAbU855.png"/></p>
+<h4 id="3-恢复-销毁">3. 恢复/销毁</h4>
+<p>AbstractRegistry 中还有另外两个需要关注的方法：<strong>recover() 方法</strong>和<strong>destroy() 方法</strong>。</p>
+<p>在 Provider 因为网络问题与注册中心断开连接之后，会进行重连，重新连接成功之后，会调用 recover() 方法将 registered 集合中的全部 URL 重新走一遍 register() 方法，恢复注册数据。同样，recover() 方法也会将 subscribed 集合中的 URL 重新走一遍 subscribe() 方法，恢复订阅监听器。recover() 方法的具体实现比较简单，这里就不再展示，你若感兴趣的话，可以参考源码进行学习。</p>
+<p>在当前节点下线的时候，会调用 Node.destroy() 方法释放底层资源。AbstractRegistry 实现的 destroy() 方法会调用 unregister() 方法和 unsubscribe() 方法将当前节点注册的 URL 以及订阅的监听全部清理掉，其中不会清理非动态注册的 URL（即 dynamic 参数明确指定为 false）。AbstractRegistry 中 destroy() 方法的实现比较简单，这里我们也不再展示，如果你感兴趣话，同样可以参考源码进行学习。</p>
+<h3 id="总结">总结</h3>
+<p>本课时是 Dubbo 注册中心分析的第一个课时，我们首先介绍了注册中心在整个 Dubbo 架构中的位置，以及 Registry、 RegistryService、 RegistryFactory 等核心接口的功能。接下来我们还详细讲解了 AbstractRegistry 这个抽象类提供的公共能力，主要是从本地缓存、注册/订阅、恢复/销毁这三方面进行了分析。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#3a565656030e0b0b0a0d7a5d575b535614595557" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935798f869e3825c',t:'MTc0NTUxODY0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

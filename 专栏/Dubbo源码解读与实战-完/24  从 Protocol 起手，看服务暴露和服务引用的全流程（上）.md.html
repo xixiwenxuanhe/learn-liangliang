@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>24  从 Protocol 起手，看服务暴露和服务引用的全流程（上） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e6%b7%b1%e5%85%a5%e6%8e%8c%e6%8f%a1%20Dubbo%20%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%8c%e6%8f%90%e5%8d%87%e4%bd%a0%e7%9a%84%e8%81%8c%e5%9c%ba%e7%ab%9e%e4%ba%89%e5%8a%9b.md.html" id="00 开篇词  深入掌握 Dubbo 原理与实现，提升你的职场竞争力.md.html">00 开篇词  深入掌握 Dubbo 原理与实现，提升你的职场竞争力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/01%20%20Dubbo%20%e6%ba%90%e7%a0%81%e7%8e%af%e5%a2%83%e6%90%ad%e5%bb%ba%ef%bc%9a%e5%8d%83%e9%87%8c%e4%b9%8b%e8%a1%8c%ef%bc%8c%e5%a7%8b%e4%ba%8e%e8%b6%b3%e4%b8%8b.md.html" id="01  Dubbo 源码环境搭建：千里之行，始于足下.md.html">01  Dubbo 源码环境搭建：千里之行，始于足下.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/02%20Dubbo%20%e7%9a%84%e9%85%8d%e7%bd%ae%e6%80%bb%e7%ba%bf%ef%bc%9a%e6%8a%93%e4%bd%8f%20URL%ef%bc%8c%e5%b0%b1%e7%90%86%e8%a7%a3%e4%ba%86%e5%8d%8a%e4%b8%aa%20Dubbo.md.html" id="02 Dubbo 的配置总线：抓住 URL，就理解了半个 Dubbo.md.html">02 Dubbo 的配置总线：抓住 URL，就理解了半个 Dubbo.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/03%20%20Dubbo%20SPI%20%e7%b2%be%e6%9e%90%ef%bc%8c%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0%e4%b8%a4%e6%9e%81%e5%8f%8d%e8%bd%ac%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="03  Dubbo SPI 精析，接口实现两极反转（上）.md.html">03  Dubbo SPI 精析，接口实现两极反转（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/04%20%20Dubbo%20SPI%20%e7%b2%be%e6%9e%90%ef%bc%8c%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0%e4%b8%a4%e6%9e%81%e5%8f%8d%e8%bd%ac%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="04  Dubbo SPI 精析，接口实现两极反转（下）.md.html">04  Dubbo SPI 精析，接口实现两极反转（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/05%20%20%e6%b5%b7%e9%87%8f%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1%ef%bc%8c%e4%b8%80%e4%b8%aa%e6%97%b6%e9%97%b4%e8%bd%ae%e6%90%9e%e5%ae%9a.md.html" id="05  海量定时任务，一个时间轮搞定.md.html">05  海量定时任务，一个时间轮搞定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/06%20%20ZooKeeper%20%e4%b8%8e%20Curator%ef%bc%8c%e6%b1%82%e4%bd%a0%e5%88%ab%e7%94%a8%20ZkClient%20%e4%ba%86%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）.md.html">06  ZooKeeper 与 Curator，求你别用 ZkClient 了（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/07%20%20ZooKeeper%20%e4%b8%8e%20Curator%ef%bc%8c%e6%b1%82%e4%bd%a0%e5%88%ab%e7%94%a8%20ZkClient%20%e4%ba%86%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="07  ZooKeeper 与 Curator，求你别用 ZkClient 了（下）.md.html">07  ZooKeeper 与 Curator，求你别用 ZkClient 了（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/08%20%20%e4%bb%a3%e7%90%86%e6%a8%a1%e5%bc%8f%e4%b8%8e%e5%b8%b8%e8%a7%81%e5%ae%9e%e7%8e%b0.md.html" id="08  代理模式与常见实现.md.html">08  代理模式与常见实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/09%20%20Netty%20%e5%85%a5%e9%97%a8%ef%bc%8c%e7%94%a8%e5%ae%83%e5%81%9a%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e9%83%bd%e8%af%b4%e5%a5%bd%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="09  Netty 入门，用它做网络编程都说好（上）.md.html">09  Netty 入门，用它做网络编程都说好（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/10%20%20Netty%20%e5%85%a5%e9%97%a8%ef%bc%8c%e7%94%a8%e5%ae%83%e5%81%9a%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e9%83%bd%e8%af%b4%e5%a5%bd%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="10  Netty 入门，用它做网络编程都说好（下）.md.html">10  Netty 入门，用它做网络编程都说好（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/11%20%20%e7%ae%80%e6%98%93%e7%89%88%20RPC%20%e6%a1%86%e6%9e%b6%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="11  简易版 RPC 框架实现（上）.md.html">11  简易版 RPC 框架实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/12%20%20%e7%ae%80%e6%98%93%e7%89%88%20RPC%20%e6%a1%86%e6%9e%b6%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12  简易版 RPC 框架实现（下）.md.html">12  简易版 RPC 框架实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/13%20%20%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%ef%bc%9a%e9%99%8d%e4%bd%8e%20ZooKeeper%20%e5%8e%8b%e5%8a%9b%e7%9a%84%e4%b8%80%e4%b8%aa%e5%b8%b8%e7%94%a8%e6%89%8b%e6%ae%b5.md.html" id="13  本地缓存：降低 ZooKeeper 压力的一个常用手段.md.html">13  本地缓存：降低 ZooKeeper 压力的一个常用手段.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/14%20%20%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6%e6%98%af%e7%bd%91%e7%bb%9c%e6%93%8d%e4%bd%9c%e7%9a%84%e5%9f%ba%e6%9c%ac%e4%bf%9d%e8%af%81.md.html" id="14  重试机制是网络操作的基本保证.md.html">14  重试机制是网络操作的基本保证.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/15%20%20ZooKeeper%20%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%8c%e5%ae%98%e6%96%b9%e6%8e%a8%e8%8d%90%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e5%ae%9e%e8%b7%b5.md.html" id="15  ZooKeeper 注册中心实现，官方推荐注册中心实践.md.html">15  ZooKeeper 注册中心实现，官方推荐注册中心实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/16%20%20Dubbo%20Serialize%20%e5%b1%82%ef%bc%9a%e5%a4%9a%e7%a7%8d%e5%ba%8f%e5%88%97%e5%8c%96%e7%ae%97%e6%b3%95%ef%bc%8c%e6%80%bb%e6%9c%89%e4%b8%80%e6%ac%be%e9%80%82%e5%90%88%e4%bd%a0.md.html" id="16  Dubbo Serialize 层：多种序列化算法，总有一款适合你.md.html">16  Dubbo Serialize 层：多种序列化算法，总有一款适合你.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/17%20%20Dubbo%20Remoting%20%e5%b1%82%e6%a0%b8%e5%bf%83%e6%8e%a5%e5%8f%a3%e5%88%86%e6%9e%90%ef%bc%9a%e8%bf%99%e5%b1%85%e7%84%b6%e6%98%af%e4%b8%80%e5%a5%97%e5%85%bc%e5%ae%b9%e6%89%80%e6%9c%89%20NIO%20%e6%a1%86%e6%9e%b6%e7%9a%84%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="17  Dubbo Remoting 层核心接口分析：这居然是一套兼容所有 NIO 框架的设计？.md.html">17  Dubbo Remoting 层核心接口分析：这居然是一套兼容所有 NIO 框架的设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/18%20%20Buffer%20%e7%bc%93%e5%86%b2%e5%8c%ba%ef%bc%9a%e6%88%91%e4%bb%ac%e4%b8%8d%e7%94%9f%e4%ba%a7%e6%95%b0%e6%8d%ae%ef%bc%8c%e6%88%91%e4%bb%ac%e5%8f%aa%e6%98%af%e6%95%b0%e6%8d%ae%e7%9a%84%e6%90%ac%e8%bf%90%e5%b7%a5.md.html" id="18  Buffer 缓冲区：我们不生产数据，我们只是数据的搬运工.md.html">18  Buffer 缓冲区：我们不生产数据，我们只是数据的搬运工.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/19%20%20Transporter%20%e5%b1%82%e6%a0%b8%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%9a%e7%bc%96%e8%a7%a3%e7%a0%81%e4%b8%8e%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e4%b8%80%e6%96%87%e6%89%93%e5%b0%bd%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="19  Transporter 层核心实现：编解码与线程模型一文打尽（上）.md.html">19  Transporter 层核心实现：编解码与线程模型一文打尽（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/20%20%20Transporter%20%e5%b1%82%e6%a0%b8%e5%bf%83%e5%ae%9e%e7%8e%b0%ef%bc%9a%e7%bc%96%e8%a7%a3%e7%a0%81%e4%b8%8e%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e4%b8%80%e6%96%87%e6%89%93%e5%b0%bd%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="20  Transporter 层核心实现：编解码与线程模型一文打尽（下）.md.html">20  Transporter 层核心实现：编解码与线程模型一文打尽（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/21%20%20Exchange%20%e5%b1%82%e5%89%96%e6%9e%90%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82%20Request-Response%20%e6%a8%a1%e5%9e%8b%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="21  Exchange 层剖析：彻底搞懂 Request-Response 模型（上）.md.html">21  Exchange 层剖析：彻底搞懂 Request-Response 模型（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/22%20%20Exchange%20%e5%b1%82%e5%89%96%e6%9e%90%ef%bc%9a%e5%bd%bb%e5%ba%95%e6%90%9e%e6%87%82%20Request-Response%20%e6%a8%a1%e5%9e%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="22  Exchange 层剖析：彻底搞懂 Request-Response 模型（下）.md.html">22  Exchange 层剖析：彻底搞懂 Request-Response 模型（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/23%20%20%e6%a0%b8%e5%bf%83%e6%8e%a5%e5%8f%a3%e4%bb%8b%e7%bb%8d%ef%bc%8cRPC%20%e5%b1%82%e9%aa%a8%e6%9e%b6%e6%a2%b3%e7%90%86.md.html" id="23  核心接口介绍，RPC 层骨架梳理.md.html">23  核心接口介绍，RPC 层骨架梳理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/24%20%20%e4%bb%8e%20Protocol%20%e8%b5%b7%e6%89%8b%ef%bc%8c%e7%9c%8b%e6%9c%8d%e5%8a%a1%e6%9a%b4%e9%9c%b2%e5%92%8c%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e7%9a%84%e5%85%a8%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）.md.html">24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/25%20%20%e4%bb%8e%20Protocol%20%e8%b5%b7%e6%89%8b%ef%bc%8c%e7%9c%8b%e6%9c%8d%e5%8a%a1%e6%9a%b4%e9%9c%b2%e5%92%8c%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e7%9a%84%e5%85%a8%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="25  从 Protocol 起手，看服务暴露和服务引用的全流程（下）.md.html">25  从 Protocol 起手，看服务暴露和服务引用的全流程（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/26%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e7%9b%b4%e5%87%bb%20Dubbo%20%e2%80%9c%e5%bf%83%e8%84%8f%e2%80%9d%ef%bc%8c%e5%b8%a6%e4%bd%a0%e4%b8%80%e8%b5%b7%e6%8e%a2%e7%a7%98%20Invoker%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="26  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（上）.md.html">26  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/27%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e7%9b%b4%e5%87%bb%20Dubbo%20%e2%80%9c%e5%bf%83%e8%84%8f%e2%80%9d%ef%bc%8c%e5%b8%a6%e4%bd%a0%e4%b8%80%e8%b5%b7%e6%8e%a2%e7%a7%98%20Invoker%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="27  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（下）.md.html">27  加餐：直击 Dubbo “心脏”，带你一起探秘 Invoker（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/28%20%20%e5%a4%8d%e6%9d%82%e9%97%ae%e9%a2%98%e7%ae%80%e5%8d%95%e5%8c%96%ef%bc%8c%e4%bb%a3%e7%90%86%e5%b8%ae%e4%bd%a0%e9%9a%90%e8%97%8f%e4%ba%86%e5%a4%9a%e5%b0%91%e5%ba%95%e5%b1%82%e7%bb%86%e8%8a%82%ef%bc%9f.md.html" id="28  复杂问题简单化，代理帮你隐藏了多少底层细节？.md.html">28  复杂问题简单化，代理帮你隐藏了多少底层细节？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/29%20%20%e5%8a%a0%e9%a4%90%ef%bc%9aHTTP%20%e5%8d%8f%e8%ae%ae%20+%20JSON-RPC%ef%bc%8cDubbo%20%e8%b7%a8%e8%af%ad%e8%a8%80%e5%b0%b1%e6%98%af%e5%a6%82%e6%ad%a4%e7%ae%80%e5%8d%95.md.html" id="29  加餐：HTTP 协议 + JSON-RPC，Dubbo 跨语言就是如此简单.md.html">29  加餐：HTTP 协议 + JSON-RPC，Dubbo 跨语言就是如此简单.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/30%20%20Filter%20%e6%8e%a5%e5%8f%a3%ef%bc%8c%e6%89%a9%e5%b1%95%20Dubbo%20%e6%a1%86%e6%9e%b6%e7%9a%84%e5%b8%b8%e7%94%a8%e6%89%8b%e6%ae%b5%e6%8c%87%e5%8c%97.md.html" id="30  Filter 接口，扩展 Dubbo 框架的常用手段指北.md.html">30  Filter 接口，扩展 Dubbo 框架的常用手段指北.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/31%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e6%bd%9c%20Directory%20%e5%ae%9e%e7%8e%b0%ef%bc%8c%e6%8e%a2%e7%a7%98%e6%9c%8d%e5%8a%a1%e7%9b%ae%e5%bd%95%e7%8e%84%e6%9c%ba.md.html" id="31  加餐：深潜 Directory 实现，探秘服务目录玄机.md.html">31  加餐：深潜 Directory 实现，探秘服务目录玄机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/32%20%20%e8%b7%af%e7%94%b1%e6%9c%ba%e5%88%b6%ef%bc%9a%e8%af%b7%e6%b1%82%e5%88%b0%e5%ba%95%e6%80%8e%e4%b9%88%e8%b5%b0%ef%bc%8c%e5%ae%83%e8%af%b4%e4%ba%86%e7%ae%97%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="32  路由机制：请求到底怎么走，它说了算（上）.md.html">32  路由机制：请求到底怎么走，它说了算（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/33%20%20%e8%b7%af%e7%94%b1%e6%9c%ba%e5%88%b6%ef%bc%9a%e8%af%b7%e6%b1%82%e5%88%b0%e5%ba%95%e6%80%8e%e4%b9%88%e8%b5%b0%ef%bc%8c%e5%ae%83%e8%af%b4%e4%ba%86%e7%ae%97%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="33  路由机制：请求到底怎么走，它说了算（下）.md.html">33  路由机制：请求到底怎么走，它说了算（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/34%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e5%88%9d%e6%8e%a2%20Dubbo%20%e5%8a%a8%e6%80%81%e9%85%8d%e7%bd%ae%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf.md.html" id="34  加餐：初探 Dubbo 动态配置的那些事儿.md.html">34  加餐：初探 Dubbo 动态配置的那些事儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/35%20%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e5%85%ac%e5%b9%b3%e5%85%ac%e6%ad%a3%e7%89%a9%e5%b0%bd%e5%85%b6%e7%94%a8%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%ad%96%e7%95%a5%ef%bc%8c%e8%bf%99%e9%87%8c%e9%83%bd%e6%9c%89%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="35  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（上）.md.html">35  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/36%20%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e5%85%ac%e5%b9%b3%e5%85%ac%e6%ad%a3%e7%89%a9%e5%b0%bd%e5%85%b6%e7%94%a8%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%ad%96%e7%95%a5%ef%bc%8c%e8%bf%99%e9%87%8c%e9%83%bd%e6%9c%89%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="36  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（下）.md.html">36  负载均衡：公平公正物尽其用的负载均衡策略，这里都有（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/37%20%20%e9%9b%86%e7%be%a4%e5%ae%b9%e9%94%99%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%a5%bd%e6%b1%89%e4%b8%89%e4%b8%aa%e5%b8%ae%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="37  集群容错：一个好汉三个帮（上）.md.html">37  集群容错：一个好汉三个帮（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/38%20%20%e9%9b%86%e7%be%a4%e5%ae%b9%e9%94%99%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%a5%bd%e6%b1%89%e4%b8%89%e4%b8%aa%e5%b8%ae%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="38  集群容错：一个好汉三个帮（下）.md.html">38  集群容错：一个好汉三个帮（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/39%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e5%a4%9a%e4%b8%aa%e8%bf%94%e5%9b%9e%e5%80%bc%e4%b8%8d%e7%94%a8%e6%80%95%ef%bc%8cMerger%20%e5%90%88%e5%b9%b6%e5%99%a8%e6%9d%a5%e5%b8%ae%e5%bf%99.md.html" id="39  加餐：多个返回值不用怕，Merger 合并器来帮忙.md.html">39  加餐：多个返回值不用怕，Merger 合并器来帮忙.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/40%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%a8%a1%e6%8b%9f%e8%bf%9c%e7%a8%8b%e8%b0%83%e7%94%a8%ef%bc%8cMock%20%e6%9c%ba%e5%88%b6%e5%b8%ae%e4%bd%a0%e6%90%9e%e5%ae%9a.md.html" id="40  加餐：模拟远程调用，Mock 机制帮你搞定.md.html">40  加餐：模拟远程调用，Mock 机制帮你搞定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/41%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e4%b8%80%e9%94%ae%e9%80%9a%e5%85%b3%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e5%85%a8%e6%b5%81%e7%a8%8b.md.html" id="41  加餐：一键通关服务发布全流程.md.html">41  加餐：一键通关服务发布全流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/42%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%9c%8d%e5%8a%a1%e5%bc%95%e7%94%a8%e6%b5%81%e7%a8%8b%e5%85%a8%e8%a7%a3%e6%9e%90.md.html" id="42  加餐：服务引用流程全解析.md.html">42  加餐：服务引用流程全解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/43%20%20%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e8%ae%be%e8%ae%a1%e6%96%b9%e6%a1%88%ef%bc%9a%e6%96%b0%e7%89%88%e6%9c%ac%e6%96%b0%e6%96%b9%e6%a1%88.md.html" id="43  服务自省设计方案：新版本新方案.md.html">43  服务自省设计方案：新版本新方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/44%20%20%e5%85%83%e6%95%b0%e6%8d%ae%e6%96%b9%e6%a1%88%e6%b7%b1%e5%ba%a6%e5%89%96%e6%9e%90%ef%bc%8c%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%b3%a8%e5%86%8c%e4%b8%ad%e5%bf%83%e6%95%b0%e6%8d%ae%e9%87%8f%e8%86%a8%e8%83%80%ef%bc%9f.md.html" id="44  元数据方案深度剖析，如何避免注册中心数据量膨胀？.md.html">44  元数据方案深度剖析，如何避免注册中心数据量膨胀？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/45%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e5%85%a5%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e6%96%b9%e6%a1%88%e4%b8%ad%e7%9a%84%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="45  加餐：深入服务自省方案中的服务发布订阅（上）.md.html">45  加餐：深入服务自省方案中的服务发布订阅（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/46%20%20%e5%8a%a0%e9%a4%90%ef%bc%9a%e6%b7%b1%e5%85%a5%e6%9c%8d%e5%8a%a1%e8%87%aa%e7%9c%81%e6%96%b9%e6%a1%88%e4%b8%ad%e7%9a%84%e6%9c%8d%e5%8a%a1%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="46  加餐：深入服务自省方案中的服务发布订阅（下）.md.html">46  加餐：深入服务自省方案中的服务发布订阅（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/47%20%20%e9%85%8d%e7%bd%ae%e4%b8%ad%e5%bf%83%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%9a%e9%9b%86%e4%b8%ad%e5%8c%96%e9%85%8d%e7%bd%ae%20and%20%e6%9c%ac%e5%9c%b0%e5%8c%96%e9%85%8d%e7%bd%ae%ef%bc%8c%e6%88%91%e9%83%bd%e8%a6%81%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="47  配置中心设计与实现：集中化配置 and 本地化配置，我都要（上）.md.html">47  配置中心设计与实现：集中化配置 and 本地化配置，我都要（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/48%20%20%e9%85%8d%e7%bd%ae%e4%b8%ad%e5%bf%83%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0%ef%bc%9a%e9%9b%86%e4%b8%ad%e5%8c%96%e9%85%8d%e7%bd%ae%20and%20%e6%9c%ac%e5%9c%b0%e5%8c%96%e9%85%8d%e7%bd%ae%ef%bc%8c%e6%88%91%e9%83%bd%e8%a6%81%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="48  配置中心设计与实现：集中化配置 and 本地化配置，我都要（下）.md.html">48  配置中心设计与实现：集中化配置 and 本地化配置，我都要（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Dubbo%e6%ba%90%e7%a0%81%e8%a7%a3%e8%af%bb%e4%b8%8e%e5%ae%9e%e6%88%98-%e5%ae%8c/49%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e8%ae%a4%e7%9c%9f%e5%ad%a6%e4%b9%a0%ef%bc%8c%e7%bc%a9%e5%b0%8f%e5%b7%ae%e8%b7%9d.md.html" id="49 结束语  认真学习，缩小差距.md.html">49 结束语  认真学习，缩小差距.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）" id="title">24  从 Protocol 起手，看服务暴露和服务引用的全流程（上）</h1>
+<div><p>在上一课时我们讲解了 Protocol 的核心接口，那本课时我们就以 Protocol 接口为核心，详细介绍整个 Protocol 的核心实现。下图展示了 Protocol 接口的继承关系：</p>
+<p><img alt="Drawing 0.png" src="assets/Ciqc1F-FTHGAOVGKAAJe5PD5u9A015.png"/></p>
+<p>Protocol 接口继承关系图</p>
+<p>其中，<strong>AbstractProtocol</strong>提供了一些 Protocol 实现需要的公共能力以及公共字段，它的核心字段有如下三个。</p>
+<ul>
+<li>exporterMap（Map<string, exporter<?="">&gt;类型）：用于存储出去的服务集合，其中的 Key 通过 ProtocolUtils.serviceKey() 方法创建的服务标识，在 ProtocolUtils 中维护了多层的 Map 结构（如下图所示）。首先按照 group 分组，在实践中我们可以根据需求设置 group，例如，按照机房、地域等进行 group 划分，做到就近调用；在 GroupServiceKeyCache 中，依次按照 serviceName、serviceVersion、port 进行分类，最终缓存的 serviceKey 是前面三者拼接而成的。</string,></li>
+</ul>
+<p><img alt="Lark20201016-164613.png" src="assets/Ciqc1F-JXfmAJK8RAAHUliqXmBc629.png"/></p>
+<p>groupServiceKeyCacheMap 结构图</p>
+<ul>
+<li>serverMap（Map<string, protocolserver="">类型）：记录了全部的 ProtocolServer 实例，其中的 Key 是 host 和 port 组成的字符串，Value 是监听该地址的 ProtocolServer。ProtocolServer 就是对 RemotingServer 的一层简单封装，表示一个服务端。</string,></li>
+<li>invokers（Set<invoker<?>&gt;类型）：服务引用的集合。</invoker<?></li>
+</ul>
+<p>AbstractProtocol 没有对 Protocol 的 export() 方法进行实现，对 refer() 方法的实现也是委托给了 protocolBindingRefer() 这个抽象方法，然后由子类实现。AbstractProtocol 唯一实现的方法就是 destory() 方法，其首先会遍历 Invokers 集合，销毁全部的服务引用，然后遍历全部的 exporterMap 集合，销毁发布出去的服务，具体实现如下：</p>
+<pre><code>public void destroy() {
+
+    for (Invoker&lt;?&gt; invoker : invokers) {
+
+        if (invoker != null) {
+
+            invokers.remove(invoker);
+
+            invoker.destroy(); // 关闭全部的服务引用
+
+        }
+
+    }
+
+    for (String key : new ArrayList&lt;String&gt;(exporterMap.keySet())) {
+
+        Exporter&lt;?&gt; exporter = exporterMap.remove(key);
+
+        if (exporter != null) {
+
+            exporter.unexport(); // 关闭暴露出去的服务
+
+        }
+
+    }
+
+}
+</code></pre>
+<h3 id="export-流程简析">export 流程简析</h3>
+<p>了解了 AbstractProtocol 提供的公共能力之后，我们再来分析<strong>Dubbo 默认使用的 Protocol 实现类—— DubboProtocol 实现</strong>。这里我们首先关注 DubboProtocol 的 export() 方法，也就是服务发布的相关实现，如下所示：</p>
+<pre><code>public &lt;T&gt; Exporter&lt;T&gt; export(Invoker&lt;T&gt; invoker) throws RpcException {
+
+    URL url = invoker.getUrl();
+
+    // 创建ServiceKey，其核心实现在前文已经详细分析过了，这里不再重复
+
+    String key = serviceKey(url); 
+
+    // 将上层传入的Invoker对象封装成DubboExporter对象，然后记录到exporterMap集合中
+
+    DubboExporter&lt;T&gt; exporter = new DubboExporter&lt;T&gt;(invoker, key, exporterMap);
+
+    exporterMap.put(key, exporter);
+
+    ... // 省略一些日志操作
+
+    // 启动ProtocolServer
+
+    openServer(url);
+
+    // 进行序列化的优化处理
+
+    optimizeSerialization(url);
+
+    return exporter;
+
+}
+</code></pre>
+<h4 id="1-dubboexporter">1. DubboExporter</h4>
+<p>这里涉及的第一个点是 DubboExporter 对 Invoker 的封装，DubboExporter 的继承关系如下图所示：</p>
+<p><img alt="Drawing 2.png" src="assets/CgqCHl-FTJSAd9oTAAAm0DgOmVo715.png"/></p>
+<p>DubboExporter 继承关系图</p>
+<p>AbstractExporter 中维护了一个 Invoker 对象，以及一个 unexported 字段（boolean 类型），在 unexport() 方法中会设置 unexported 字段为 true，并调用 Invoker 对象的 destory() 方法进行销毁。</p>
+<p>DubboExporter 也比较简单，其中会维护底层 Invoker 对应的 ServiceKey 以及 DubboProtocol 中的 exportMap 集合，在其 unexport() 方法中除了会调用父类 AbstractExporter 的 unexport() 方法之外，还会清理该 DubboExporter 实例在 exportMap 中相应的元素。</p>
+<h4 id="2-服务端初始化">2. 服务端初始化</h4>
+<p>了解了 Exporter 实现之后，我们继续看 DubboProtocol 中服务发布的流程。从下面这张调用关系图中可以看出，openServer() 方法会一路调用前面介绍的 Exchange 层、Transport 层，并最终创建 NettyServer 来接收客户端的请求。</p>
+<p><img alt="Drawing 3.png" src="assets/CgqCHl-FTKGAJNO8AAElldtvsRM104.png"/></p>
+<p>export() 方法调用栈</p>
+<p>下面我们将逐个介绍 export() 方法栈中的每个被调用的方法。</p>
+<p>首先，在 openServer() 方法中会根据 URL 判断当前是否为服务端，只有服务端才能创建 ProtocolServer 并对外服务。如果是来自服务端的调用，会依靠 serverMap 集合检查是否已有 ProtocolServer 在监听 URL 指定的地址；如果没有，会调用 createServer() 方法进行创建。openServer() 方法的具体实现如下：</p>
+<pre><code>private void openServer(URL url) {
+
+    String key = url.getAddress(); // 获取host:port这个地址
+
+    boolean isServer = url.getParameter(IS_SERVER_KEY, true);
+
+    if (isServer) { // 只有Server端才能启动Server对象
+
+        ProtocolServer server = serverMap.get(key);
+
+        if (server == null) { // 无ProtocolServer监听该地址
+
+            synchronized (this) { // DoubleCheck，防止并发问题
+
+                server = serverMap.get(key);
+
+                if (server == null) {
+
+                    // 调用createServer()方法创建ProtocolServer对象
+
+                    serverMap.put(key, createServer(url));
+
+                }
+
+            }
+
+        } else { 
+
+            // 如果已有ProtocolServer实例，则尝试根据URL信息重置ProtocolServer
+
+            server.reset(url);
+
+        }
+
+    }
+
+}
+</code></pre>
+<p>createServer() 方法首先会为 URL 添加一些默认值，同时会进行一些参数值的检测，主要有五个。</p>
+<ul>
+<li>HEARTBEAT_KEY 参数值，默认值为 60000，表示默认的心跳时间间隔为 60 秒。</li>
+<li>CHANNEL_READONLYEVENT_SENT_KEY 参数值，默认值为 true，表示 ReadOnly 请求需要阻塞等待响应返回。在 Server 关闭的时候，只能发送 ReadOnly 请求，这些 ReadOnly 请求由这里设置的 CHANNEL_READONLYEVENT_SENT_KEY 参数值决定是否需要等待响应返回。</li>
+<li>CODEC_KEY 参数值，默认值为 dubbo。你可以回顾 Codec2 接口中 @Adaptive 注解的参数，都是获取该 URL 中的 CODEC_KEY 参数值。</li>
+<li>检测 SERVER_KEY 参数指定的扩展实现名称是否合法，默认值为 netty。你可以回顾 Transporter 接口中 @Adaptive 注解的参数，它决定了 Transport 层使用的网络库实现，默认使用 Netty 4 实现。</li>
+<li>检测 CLIENT_KEY 参数指定的扩展实现名称是否合法。同 SERVER_KEY 参数的检查流程。</li>
+</ul>
+<p>完成上述默认参数值的设置之后，我们就可以通过 Exchangers 门面类创建 ExchangeServer，并封装成 DubboProtocolServer 返回。</p>
+<pre><code>private ProtocolServer createServer(URL url) {
+
+    url = URLBuilder.from(url)
+
+            // ReadOnly请求是否阻塞等待
+
+            .addParameterIfAbsent(CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString())
+
+            // 心跳间隔
+
+            .addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT))
+
+            .addParameter(CODEC_KEY, DubboCodec.NAME) // Codec2扩展实现
+
+            .build();
+
+    // 检测SERVER_KEY参数指定的Transporter扩展实现是否合法
+
+    String str = url.getParameter(SERVER_KEY, DEFAULT_REMOTING_SERVER); 
+
+    if (str != null &amp;&amp; str.length() &gt; 0 &amp;&amp; !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
+
+        throw new RpcException("...");
+
+    }
+
+    // 通过Exchangers门面类，创建ExchangeServer对象
+
+    ExchangeServer server = Exchangers.bind(url, requestHandler);
+
+    ... // 检测CLIENT_KEY参数指定的Transporter扩展实现是否合法(略)
+
+    // 将ExchangeServer封装成DubboProtocolServer返回
+
+    return new DubboProtocolServer(server);
+
+}
+</code></pre>
+<p>在 createServer() 方法中还有几个细节需要展开分析一下。第一个是创建 ExchangeServer 时，使用的 Codec2 接口实现实际上是 DubboCountCodec，对应的 SPI 配置文件如下：</p>
+<p><img alt="Drawing 4.png" src="assets/CgqCHl-FTK-AUlLCAADTWhhySe8432.png"/></p>
+<p>Codec2 SPI 配置文件</p>
+<p>DubboCountCodec 中维护了一个 DubboCodec 对象，编解码的能力都是 DubboCodec 提供的，DubboCountCodec 只负责在解码过程中 ChannelBuffer 的 readerIndex 指针控制，具体实现如下：</p>
+<pre><code>public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+
+    int save = buffer.readerIndex(); // 首先保存readerIndex指针位置
+
+    // 创建MultiMessage对象，其中可以存储多条消息
+
+    MultiMessage result = MultiMessage.create(); 
+
+    do {
+
+        // 通过DubboCodec提供的解码能力解码一条消息
+
+        Object obj = codec.decode(channel, buffer);
+
+        // 如果可读字节数不足一条消息，则会重置readerIndex指针
+
+        if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
+
+            buffer.readerIndex(save);
+
+            break;
+
+        } else { // 将成功解码的消息添加到MultiMessage中暂存
+
+            result.addMessage(obj);
+
+            logMessageLength(obj, buffer.readerIndex() - save);
+
+            save = buffer.readerIndex();
+
+        }
+
+    } while (true);
+
+    if (result.isEmpty()) { // 一条消息也未解码出来，则返回NEED_MORE_INPUT错误码
+
+        return Codec2.DecodeResult.NEED_MORE_INPUT;
+
+    }
+
+    if (result.size() == 1) { // 只解码出来一条消息，则直接返回该条消息
+
+        return result.get(0);
+
+    }
+
+    // 解码出多条消息的话，会将MultiMessage返回
+
+    return result;
+
+}
+</code></pre>
+<p>DubboCountCodec、DubboCodec 都实现了第 22 课时介绍的 Codec2 接口，其中 DubboCodec 是 ExchangeCodec 的子类。</p>
+<p><img alt="Drawing 5.png" src="assets/Ciqc1F-FTLuAZ-AoAACeZ02hpEg723.png"/></p>
+<p>DubboCountCodec 及 DubboCodec 继承关系图</p>
+<p>我们知道 ExchangeCodec 只处理了 Dubbo 协议的请求头，而 DubboCodec 则是通过继承的方式，在 ExchangeCodec 基础之上，添加了解析 Dubbo 消息体的功能。在第 22 课时介绍 ExchangeCodec 实现的时候，我们重点分析了 encodeRequest() 方法，即 Request 请求的编码实现，其中会调用 encodeRequestData() 方法完成请求体的编码。</p>
+<p>DubboCodec 中就覆盖了 encodeRequestData() 方法，按照 Dubbo 协议的格式编码 Request 请求体，具体实现如下：</p>
+<pre><code>protected void encodeRequestData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
+
+    // 请求体相关的内容，都封装在了RpcInvocation
+
+    RpcInvocation inv = (RpcInvocation) data; 
+
+    out.writeUTF(version); // 写入版本号
+
+    String serviceName = inv.getAttachment(INTERFACE_KEY);
+
+    if (serviceName == null) {
+
+        serviceName = inv.getAttachment(PATH_KEY);
+
+    }
+
+    // 写入服务名称
+
+    out.writeUTF(serviceName);
+
+    // 写入Service版本号
+
+    out.writeUTF(inv.getAttachment(VERSION_KEY));
+
+    // 写入方法名称
+
+    out.writeUTF(inv.getMethodName());
+
+    // 写入参数类型列表
+
+    out.writeUTF(inv.getParameterTypesDesc());
+
+    // 依次写入全部参数
+
+    Object[] args = inv.getArguments();
+
+    if (args != null) {
+
+        for (int i = 0; i &lt; args.length; i++) {
+
+            out.writeObject(encodeInvocationArgument(channel, inv, i));
+
+        }
+
+    }
+
+    // 依次写入全部的附加信息
+
+    out.writeAttachments(inv.getObjectAttachments());
+
+}
+</code></pre>
+<p>RpcInvocation 实现了上一课时介绍的 Invocation 接口，如下图所示：</p>
+<p><img alt="Drawing 6.png" src="assets/CgqCHl-FTMSAYeP7AAA_pzU2CPA016.png"/></p>
+<p>RpcInvocation 继承关系图</p>
+<p>下面是 RpcInvocation 中的核心字段，通过读写这些字段即可实现 Invocation 接口的全部方法。</p>
+<ul>
+<li>targetServiceUniqueName（String类型）：要调用的唯一服务名称，其实就是 ServiceKey，即 interface/group:version 三部分构成的字符串。</li>
+<li>methodName（String类型）：调用的目标方法名称。</li>
+<li>serviceName（String类型）：调用的目标服务名称，示例中就是org.apache.dubbo.demo.DemoService。</li>
+<li>parameterTypes（Class&lt;?&gt;[]类型）：记录了目标方法的全部参数类型。</li>
+<li>parameterTypesDesc（String类型）：参数列表签名。</li>
+<li>arguments（Object[]类型）：具体参数值。</li>
+<li>attachments（Map<string, object="">类型）：此次调用的附加信息，可以被序列化到请求中。</string,></li>
+<li>attributes（Map<object, object="">类型）：此次调用的属性信息，这些信息不能被发送出去。</object,></li>
+<li>invoker（Invoker&lt;?&gt;类型）：此次调用关联的 Invoker 对象。</li>
+<li>returnType（Class&lt;?&gt;类型）：返回值的类型。</li>
+<li>invokeMode（InvokeMode类型）：此次调用的模式，分为 SYNC、ASYNC 和 FUTURE 三类。</li>
+</ul>
+<p>我们在上面的继承图中看到 RpcInvocation 的一个子类—— DecodeableRpcInvocation，它是用来支持解码的，其实现的 decode() 方法正好是 DubboCodec.encodeRequestData() 方法对应的解码操作，在 DubboCodec.decodeBody() 方法中就调用了这个方法，调用关系如下图所示：</p>
+<p><img alt="Drawing 7.png" src="assets/Ciqc1F-FTM2Ae73pAAC0_daI0N4088.png"/></p>
+<p>decode() 方法调用栈</p>
+<p>这个解码过程中有个细节，在 DubboCodec.decodeBody() 方法中有如下代码片段，其中会根据 DECODE_IN_IO_THREAD_KEY 这个参数决定是否在 DubboCodec 中进行解码（DubboCodec 是在 IO 线程中调用的）。</p>
+<pre><code>// decode request.
+
+Request req = new Request(id);
+
+... // 省略Request中其他字段的设置
+
+Object data;
+
+DecodeableRpcInvocation inv;
+
+// 这里会检查DECODE_IN_IO_THREAD_KEY参数
+
+if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
+
+    inv = new DecodeableRpcInvocation(channel, req, is, proto);
+
+    inv.decode(); // 直接调用decode()方法在当前IO线程中解码
+
+} else { // 这里只是读取数据，不会调用decode()方法在当前IO线程中进行解码
+
+    inv = new DecodeableRpcInvocation(channel, req,
+
+            new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+
+}
+
+data = inv;
+
+req.setData(data); // 设置到Request请求的data字段
+
+return req;
+</code></pre>
+<p>如果不在 DubboCodec 中解码，那会在哪里解码呢？你可以回顾第 20 课时介绍的 DecodeHandler（Transport 层），它的 received() 方法也是可以进行解码的，另外，DecodeableRpcInvocation 中有一个 hasDecoded 字段来判断当前是否已经完成解码，这样，三者配合就可以根据 DECODE_IN_IO_THREAD_KEY 参数决定执行解码操作的线程了。</p>
+<p>如果你对线程模型不清楚，可以依次回顾一下 Exchangers、HeaderExchanger、Transporters 三个门面类的 bind() 方法，以及 Dispatcher 各实现提供的线程模型，搞清楚各个 ChannelHandler 是由哪个线程执行的，这些知识点在前面课时都介绍过了，不再重复。这里我们就直接以 AllDispatcher 实现为例给出结论。</p>
+<ul>
+<li>IO 线程内执行的 ChannelHandler 实现依次有：InternalEncoder、InternalDecoder（两者底层都是调用 DubboCodec）、IdleStateHandler、MultiMessageHandler、HeartbeatHandler 和 NettyServerHandler。</li>
+<li>在非 IO 线程内执行的 ChannelHandler 实现依次有：DecodeHandler、HeaderExchangeHandler 和 DubboProtocol$requestHandler。</li>
+</ul>
+<p>在 DubboProtocol 中有一个 requestHandler 字段，它是一个实现了 ExchangeHandlerAdapter 抽象类的匿名内部类的实例，间接实现了 ExchangeHandler 接口，其核心是 reply() 方法，具体实现如下：</p>
+<pre><code>public CompletableFuture&lt;Object&gt; reply(ExchangeChannel channel, Object message) throws RemotingException {
+
+    ... // 这里省略了检查message类型的逻辑，通过前面Handler的处理，这里收到的message必须是Invocation类型的对象
+
+    Invocation inv = (Invocation) message;
+
+    // 获取此次调用Invoker对象
+
+    Invoker&lt;?&gt; invoker = getInvoker(channel, inv);
+
+    ... // 针对客户端回调的内容，在后面详细介绍，这里不再展开分析
+
+    // 将客户端的地址记录到RpcContext中
+
+    RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
+
+    // 执行真正的调用
+
+    Result result = invoker.invoke(inv);
+
+    // 返回结果
+
+    return result.thenApply(Function.identity());
+
+}
+</code></pre>
+<p>其中 getInvoker() 方法会先根据 Invocation 携带的信息构造 ServiceKey，然后从 exporterMap 集合中查找对应的 DubboExporter 对象，并从中获取底层的 Invoker 对象返回，具体实现如下：</p>
+<pre><code>Invoker&lt;?&gt; getInvoker(Channel channel, Invocation inv) throws RemotingException {
+
+    ... // 省略对客户端Callback以及stub的处理逻辑，后面单独介绍
+
+    String serviceKey = serviceKey(port, path, (String) inv.getObjectAttachments().get(VERSION_KEY),
+
+            (String) inv.getObjectAttachments().get(GROUP_KEY));
+
+    DubboExporter&lt;?&gt; exporter = (DubboExporter&lt;?&gt;) exporterMap.get(serviceKey);
+
+    ... //  查找不到相应的DubboExporter对象时，会直接抛出异常，这里省略了这个检测
+
+    return exporter.getInvoker(); // 获取exporter中获取Invoker对象
+
+}
+</code></pre>
+<p>到这里，我们终于见到了对 Invoker 对象的调用，对 Invoker 实现的介绍和分析，在后面课时我们会深入介绍，这里就先专注于 DubboProtocol 的相关内容。</p>
+<h4 id="3-序列化优化处理">3. 序列化优化处理</h4>
+<p>下面我们回到 DubboProtocol.export() 方法继续分析，在完成 ProtocolServer 的启动之后，export() 方法最后会调用 optimizeSerialization() 方法对指定的序列化算法进行优化。</p>
+<p>这里先介绍一个基础知识，在使用某些序列化算法（例如， Kryo、FST 等）时，为了让其能发挥出最佳的性能，最好将那些需要被序列化的类提前注册到 Dubbo 系统中。例如，我们可以通过一个实现了 SerializationOptimizer 接口的优化器，并在配置中指定该优化器，如下示例代码：</p>
+<pre><code>public class SerializationOptimizerImpl implements SerializationOptimizer {
+
+    public Collection&lt;Class&gt; getSerializableClasses() {
+
+        List&lt;Class&gt; classes = new ArrayList&lt;&gt;();
+
+        classes.add(xxxx.class); // 添加需要被序列化的类
+
+        return classes;
+
+    }
+
+}
+</code></pre>
+<p>在 DubboProtocol.optimizeSerialization() 方法中，就会获取该优化器中注册的类，通知底层的序列化算法进行优化，序列化的性能将会被大大提升。当然，在进行序列化的时候，难免会级联到很多 Java 内部的类（例如，数组、各种集合类型等），Kryo、FST 等序列化算法已经自动将JDK 中的常用类进行了注册，所以无须重复注册它们。</p>
+<p>下面我们回头来看 optimizeSerialization() 方法，分析序列化优化操作的具体实现细节：</p>
+<pre><code>private void optimizeSerialization(URL url) throws RpcException {
+
+    // 根据URL中的optimizer参数值，确定SerializationOptimizer接口的实现类
+
+    String className = url.getParameter(OPTIMIZER_KEY, "");
+
+    Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+
+    // 创建SerializationOptimizer实现类的对象
+
+    SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
+
+    // 调用getSerializableClasses()方法获取需要注册的类
+
+    for (Class c : optimizer.getSerializableClasses()) {
+
+        SerializableClassRegistry.registerClass(c); 
+
+    }
+
+    optimizers.add(className);
+
+}
+</code></pre>
+<p>SerializableClassRegistry 底层维护了一个 static 的 Map（REGISTRATIONS 字段），registerClass() 方法就是将待优化的类写入该集合中暂存，在使用 Kryo、FST 等序列化算法时，会读取该集合中的类，完成注册操作，相关的调用关系如下图所示：</p>
+<p><img alt="Drawing 8.png" src="assets/Ciqc1F-FTOGAEWu7AADOU3xBmjA069.png"/></p>
+<p>getRegisteredClasses() 方法的调用位置</p>
+<p>按照 Dubbo 官方文档的说法，即使不注册任何类进行优化，Kryo 和 FST 的性能依然普遍优于Hessian2 和 Dubbo 序列化。</p>
+<h3 id="总结">总结</h3>
+<p>本课时我们重点介绍了 DubboProtocol 发布一个 Dubbo 服务的核心流程。首先，我们介绍了 AbstractProtocol 这个抽象类为 Protocol 实现类提供的公共能力和字段，然后我们结合 Dubbo 协议对应的 DubboProtocol 实现，讲解了发布一个 Dubbo 服务的核心流程，其中涉及整个服务端核心启动流程、RpcInvocation 实现、DubboProtocol.requestHandler 字段调用 Invoker 对象以及序列化相关的优化处理等内容。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#244848481d1015151413644349454d480a474b49" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93579aae2c95081b',t:'MTc0NTUxODcxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
