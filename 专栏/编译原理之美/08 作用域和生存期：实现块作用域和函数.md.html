@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="08 作用域和生存期：实现块作用域和函数" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>08 作用域和生存期：实现块作用域和函数 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%a0%e8%a6%81%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%ef%bc%9f.md.html" id="00 开篇词 为什么你要学习编译原理？.md.html">00 开篇词 为什么你要学习编译原理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/01%20%e7%90%86%e8%a7%a3%e4%bb%a3%e7%a0%81%ef%bc%9a%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%89%8d%e7%ab%af%e6%8a%80%e6%9c%af.md.html" id="01 理解代码：编译器的前端技术.md.html">01 理解代码：编译器的前端技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/02%20%e6%ad%a3%e5%88%99%e6%96%87%e6%b3%95%e5%92%8c%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba%ef%bc%9a%e7%ba%af%e6%89%8b%e5%b7%a5%e6%89%93%e9%80%a0%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%e5%99%a8.md.html" id="02 正则文法和有限自动机：纯手工打造词法分析器.md.html">02 正则文法和有限自动机：纯手工打造词法分析器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e7%ba%af%e6%89%8b%e5%b7%a5%e6%89%93%e9%80%a0%e5%85%ac%e5%bc%8f%e8%ae%a1%e7%ae%97%e5%99%a8.md.html" id="03 语法分析（一）：纯手工打造公式计算器.md.html">03 语法分析（一）：纯手工打造公式计算器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/04%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%a7%a3%e5%86%b3%e4%ba%8c%e5%85%83%e8%a1%a8%e8%be%be%e5%bc%8f%e4%b8%ad%e7%9a%84%e9%9a%be%e7%82%b9.md.html" id="04 语法分析（二）：解决二元表达式中的难点.md.html">04 语法分析（二）：解决二元表达式中的难点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/05%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%ae%9e%e7%8e%b0%e4%b8%80%e9%97%a8%e7%ae%80%e5%8d%95%e7%9a%84%e8%84%9a%e6%9c%ac%e8%af%ad%e8%a8%80.md.html" id="05 语法分析（三）：实现一门简单的脚本语言.md.html">05 语法分析（三）：实现一门简单的脚本语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/06%20%e7%bc%96%e8%af%91%e5%99%a8%e5%89%8d%e7%ab%af%e5%b7%a5%e5%85%b7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e7%94%a8Antlr%e7%94%9f%e6%88%90%e8%af%8d%e6%b3%95%e3%80%81%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e5%99%a8.md.html" id="06 编译器前端工具（一）：用Antlr生成词法、语法分析器.md.html">06 编译器前端工具（一）：用Antlr生成词法、语法分析器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/07%20%e7%bc%96%e8%af%91%e5%99%a8%e5%89%8d%e7%ab%af%e5%b7%a5%e5%85%b7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%94%a8Antlr%e9%87%8d%e6%9e%84%e8%84%9a%e6%9c%ac%e8%af%ad%e8%a8%80.md.html" id="07 编译器前端工具（二）：用Antlr重构脚本语言.md.html">07 编译器前端工具（二）：用Antlr重构脚本语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/08%20%e4%bd%9c%e7%94%a8%e5%9f%9f%e5%92%8c%e7%94%9f%e5%ad%98%e6%9c%9f%ef%bc%9a%e5%ae%9e%e7%8e%b0%e5%9d%97%e4%bd%9c%e7%94%a8%e5%9f%9f%e5%92%8c%e5%87%bd%e6%95%b0.md.html" id="08 作用域和生存期：实现块作用域和函数.md.html">08 作用域和生存期：实现块作用域和函数.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/09%20%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%ef%bc%9a%e5%ae%9e%e7%8e%b0%e6%95%b0%e6%8d%ae%e5%92%8c%e6%96%b9%e6%b3%95%e7%9a%84%e5%b0%81%e8%a3%85.md.html" id="09 面向对象：实现数据和方法的封装.md.html">09 面向对象：实现数据和方法的封装.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/10%20%e9%97%ad%e5%8c%85%ef%bc%9a%20%e7%90%86%e8%a7%a3%e4%ba%86%e5%8e%9f%e7%90%86%ef%bc%8c%e5%ae%83%e5%b0%b1%e4%b8%8d%e5%8f%8d%e7%9b%b4%e8%a7%89%e4%ba%86.md.html" id="10 闭包： 理解了原理，它就不反直觉了.md.html">10 闭包： 理解了原理，它就不反直觉了.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/11%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bb%ba%e7%ab%8b%e4%b8%80%e4%b8%aa%e5%ae%8c%e5%96%84%e7%9a%84%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="11 语义分析（上）：如何建立一个完善的类型系统？.md.html">11 语义分析（上）：如何建立一个完善的类型系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/12%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%81%9a%e4%b8%8a%e4%b8%8b%e6%96%87%e7%9b%b8%e5%85%b3%e6%83%85%e5%86%b5%e7%9a%84%e5%a4%84%e7%90%86%ef%bc%9f.md.html" id="12 语义分析（下）：如何做上下文相关情况的处理？.md.html">12 语义分析（下）：如何做上下文相关情况的处理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/13%20%e7%bb%a7%e6%89%bf%e5%92%8c%e5%a4%9a%e6%80%81%ef%bc%9a%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e8%bf%90%e8%a1%8c%e6%9c%9f%e7%9a%84%e5%8a%a8%e6%80%81%e7%89%b9%e6%80%a7.md.html" id="13 继承和多态：面向对象运行期的动态特性.md.html">13 继承和多态：面向对象运行期的动态特性.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/14%20%e5%89%8d%e7%ab%af%e6%8a%80%e6%9c%af%e5%ba%94%e7%94%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%8f%e6%98%8e%e5%9c%b0%e6%94%af%e6%8c%81%e6%95%b0%e6%8d%ae%e5%ba%93%e5%88%86%e5%ba%93%e5%88%86%e8%a1%a8%ef%bc%9f.md.html" id="14 前端技术应用（一）：如何透明地支持数据库分库分表？.md.html">14 前端技术应用（一）：如何透明地支持数据库分库分表？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/15%20%e5%89%8d%e7%ab%af%e6%8a%80%e6%9c%af%e5%ba%94%e7%94%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e4%b8%80%e4%b8%aa%e6%8a%a5%e8%a1%a8%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="15 前端技术应用（二）：如何设计一个报表工具？.md.html">15 前端技术应用（二）：如何设计一个报表工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/16%20NFA%e5%92%8cDFA%ef%bc%9a%e5%a6%82%e4%bd%95%e8%87%aa%e5%b7%b1%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%ad%a3%e5%88%99%e8%a1%a8%e8%be%be%e5%bc%8f%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="16 NFA和DFA：如何自己实现一个正则表达式工具？.md.html">16 NFA和DFA：如何自己实现一个正则表达式工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/17%20First%e5%92%8cFollow%e9%9b%86%e5%90%88%ef%bc%9a%e7%94%a8LL%e7%ae%97%e6%b3%95%e6%8e%a8%e6%bc%94%e4%b8%80%e4%b8%aa%e5%ae%9e%e4%be%8b.md.html" id="17 First和Follow集合：用LL算法推演一个实例.md.html">17 First和Follow集合：用LL算法推演一个实例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/18%20%e7%a7%bb%e8%bf%9b%e5%92%8c%e8%a7%84%e7%ba%a6%ef%bc%9a%e7%94%a8LR%e7%ae%97%e6%b3%95%e6%8e%a8%e6%bc%94%e4%b8%80%e4%b8%aa%e5%ae%9e%e4%be%8b.md.html" id="18 移进和规约：用LR算法推演一个实例.md.html">18 移进和规约：用LR算法推演一个实例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/19%20%e6%a1%88%e4%be%8b%e6%80%bb%e7%bb%93%e4%b8%8e%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%ef%bc%9a%e5%af%b9%e4%ba%8e%e5%b7%a6%e9%80%92%e5%bd%92%e7%9a%84%e8%af%ad%e6%b3%95%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e6%8e%a8%e5%af%bc%e4%b8%8d%e6%98%af%e5%b7%a6%e9%80%92%e5%bd%92%e7%9a%84%ef%bc%9f.md.html" id="19 案例总结与热点问题答疑：对于左递归的语法，为什么我的推导不是左递归的？.md.html">19 案例总结与热点问题答疑：对于左递归的语法，为什么我的推导不是左递归的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/20%20%e9%ab%98%e6%95%88%e8%bf%90%e8%a1%8c%ef%bc%9a%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%90%8e%e7%ab%af%e6%8a%80%e6%9c%af.md.html" id="20 高效运行：编译器的后端技术.md.html">20 高效运行：编译器的后端技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/21%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%aa%81%e7%a0%b4%e7%8e%b0%e8%b1%a1%e7%9c%8b%e6%9c%ac%e8%b4%a8%ef%bc%8c%e9%80%8f%e8%bf%87%e8%af%ad%e6%b3%95%e7%9c%8b%e8%bf%90%e8%a1%8c%e6%97%b6.md.html" id="21 运行时机制：突破现象看本质，透过语法看运行时.md.html">21 运行时机制：突破现象看本质，透过语法看运行时.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/22%20%e7%94%9f%e6%88%90%e6%b1%87%e7%bc%96%e4%bb%a3%e7%a0%81%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%b1%87%e7%bc%96%e8%af%ad%e8%a8%80%e5%85%b6%e5%ae%9e%e4%b8%8d%e9%9a%be%e5%ad%a6.md.html" id="22 生成汇编代码（一）：汇编语言其实不难学.md.html">22 生成汇编代码（一）：汇编语言其实不难学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/23%20%e7%94%9f%e6%88%90%e6%b1%87%e7%bc%96%e4%bb%a3%e7%a0%81%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8a%8a%e8%84%9a%e6%9c%ac%e7%bc%96%e8%af%91%e6%88%90%e5%8f%af%e6%89%a7%e8%a1%8c%e6%96%87%e4%bb%b6.md.html" id="23 生成汇编代码（二）：把脚本编译成可执行文件.md.html">23 生成汇编代码（二）：把脚本编译成可执行文件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/24%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e5%85%bc%e5%ae%b9%e4%b8%8d%e5%90%8c%e7%9a%84%e8%af%ad%e8%a8%80%e5%92%8c%e7%a1%ac%e4%bb%b6.md.html" id="24 中间代码：兼容不同的语言和硬件.md.html">24 中间代码：兼容不同的语言和硬件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/25%20%e5%90%8e%e7%ab%af%e6%8a%80%e6%9c%af%e7%9a%84%e9%87%8d%e7%94%a8%ef%bc%9aLLVM%e4%b8%8d%e4%bb%85%e4%bb%85%e8%ae%a9%e4%bd%a0%e9%ab%98%e6%95%88.md.html" id="25 后端技术的重用：LLVM不仅仅让你高效.md.html">25 后端技术的重用：LLVM不仅仅让你高效.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/26%20%e7%94%9f%e6%88%90IR%ef%bc%9a%e5%ae%9e%e7%8e%b0%e9%9d%99%e6%80%81%e7%bc%96%e8%af%91%e7%9a%84%e8%af%ad%e8%a8%80.md.html" id="26 生成IR：实现静态编译的语言.md.html">26 生成IR：实现静态编译的语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/27%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e6%af%94%e4%bb%96%e7%9a%84%e6%9b%b4%e9%ab%98%e6%95%88%ef%bc%9f.md.html" id="27 代码优化：为什么你的代码比他的更高效？.md.html">27 代码优化：为什么你的代码比他的更高效？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/28%20%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90%ef%bc%9a%e4%bd%a0%e5%86%99%e7%9a%84%e7%a8%8b%e5%ba%8f%ef%bc%8c%e5%ae%83%e6%9b%b4%e6%87%82.md.html" id="28 数据流分析：你写的程序，它更懂.md.html">28 数据流分析：你写的程序，它更懂.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/29%20%e7%9b%ae%e6%a0%87%e4%bb%a3%e7%a0%81%e7%9a%84%e7%94%9f%e6%88%90%e5%92%8c%e4%bc%98%e5%8c%96%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%82%e5%ba%94%e5%90%84%e7%a7%8d%e7%a1%ac%e4%bb%b6%e6%9e%b6%e6%9e%84%ef%bc%9f.md.html" id="29 目标代码的生成和优化（一）：如何适应各种硬件架构？.md.html">29 目标代码的生成和优化（一）：如何适应各种硬件架构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/30%20%e7%9b%ae%e6%a0%87%e4%bb%a3%e7%a0%81%e7%9a%84%e7%94%9f%e6%88%90%e5%92%8c%e4%bc%98%e5%8c%96%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%82%e5%ba%94%e5%90%84%e7%a7%8d%e7%a1%ac%e4%bb%b6%e6%9e%b6%e6%9e%84%ef%bc%9f.md.html" id="30 目标代码的生成和优化（二）：如何适应各种硬件架构？.md.html">30 目标代码的生成和优化（二）：如何适应各种硬件架构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/31%20%e5%86%85%e5%ad%98%e8%ae%a1%e7%ae%97%ef%bc%9a%e5%af%b9%e6%b5%b7%e9%87%8f%e6%95%b0%e6%8d%ae%e5%81%9a%e8%ae%a1%e7%ae%97%ef%bc%8c%e5%88%b0%e5%ba%95%e5%8f%af%e4%bb%a5%e6%9c%89%e5%a4%9a%e5%bf%ab%ef%bc%9f.md.html" id="31 内存计算：对海量数据做计算，到底可以有多快？.md.html">31 内存计算：对海量数据做计算，到底可以有多快？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/32%20%e5%ad%97%e8%8a%82%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88Spring%e6%8a%80%e6%9c%af%e5%be%88%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="32 字节码生成：为什么Spring技术很强大？.md.html">32 字节码生成：为什么Spring技术很强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/33%20%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%ef%bc%9a%e8%83%bd%e5%90%a6%e4%b8%8d%e5%81%9c%e4%b8%8b%e6%95%b4%e4%b8%aa%e4%b8%96%e7%95%8c%ef%bc%9f.md.html" id="33 垃圾收集：能否不停下整个世界？.md.html">33 垃圾收集：能否不停下整个世界？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/34%20%e8%bf%90%e8%a1%8c%e6%97%b6%e4%bc%98%e5%8c%96%ef%bc%9a%e5%8d%b3%e6%97%b6%e7%bc%96%e8%af%91%e7%9a%84%e5%8e%9f%e7%90%86%e5%92%8c%e4%bd%9c%e7%94%a8.md.html" id="34 运行时优化：即时编译的原理和作用.md.html">34 运行时优化：即时编译的原理和作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/35%20%e6%a1%88%e4%be%8b%e6%80%bb%e7%bb%93%e4%b8%8e%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%ef%bc%9a%e5%90%8e%e7%ab%af%e9%83%a8%e5%88%86%e7%9c%9f%e7%9a%84%e6%af%94%e5%89%8d%e7%ab%af%e9%83%a8%e5%88%86%e9%9a%be%e5%90%97%ef%bc%9f.md.html" id="35 案例总结与热点问题答疑：后端部分真的比前端部分难吗？.md.html">35 案例总结与热点问题答疑：后端部分真的比前端部分难吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/36%20%e5%bd%93%e5%89%8d%e6%8a%80%e6%9c%af%e7%9a%84%e5%8f%91%e5%b1%95%e8%b6%8b%e5%8a%bf%e4%bb%a5%e5%8f%8a%e5%85%b6%e5%af%b9%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e7%9a%84%e5%bd%b1%e5%93%8d.md.html" id="36 当前技术的发展趋势以及其对编译技术的影响.md.html">36 当前技术的发展趋势以及其对编译技术的影响.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/37%20%20%e4%ba%91%e7%bc%96%e7%a8%8b%ef%bc%9a%e4%ba%91%e8%ae%a1%e7%ae%97%e4%bc%9a%e5%a6%82%e4%bd%95%e6%94%b9%e5%8f%98%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%bc%8f%ef%bc%9f.md.html" id="37  云编程：云计算会如何改变编程模式？.md.html">37  云编程：云计算会如何改变编程模式？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/38%20%e5%85%83%e7%bc%96%e7%a8%8b%ef%bc%9a%e4%b8%80%e8%be%b9%e5%86%99%e7%a8%8b%e5%ba%8f%ef%bc%8c%e4%b8%80%e8%be%b9%e5%86%99%e8%af%ad%e8%a8%80.md.html" id="38 元编程：一边写程序，一边写语言.md.html">38 元编程：一边写程序，一边写语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/%e5%8a%a0%e9%a4%90%20%e6%b1%87%e7%bc%96%e4%bb%a3%e7%a0%81%e7%bc%96%e7%a8%8b%e4%b8%8e%e6%a0%88%e5%b8%a7%e7%ae%a1%e7%90%86.md.html" id="加餐 汇编代码编程与栈帧管理.md.html">加餐 汇编代码编程与栈帧管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e5%9b%a0%e4%b8%ba%e7%83%ad%e7%88%b1%ef%bc%8c%e6%89%80%e4%bb%a5%e5%9d%9a%e6%8c%81.md.html" id="用户故事 因为热爱，所以坚持.md.html">用户故事 因为热爱，所以坚持.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/%e7%ac%ac%e4%ba%8c%e5%ad%a3%e5%9b%9e%e5%bd%92%20%e8%bf%99%e6%ac%a1%ef%bc%8c%e6%88%91%e4%bb%ac%e4%b8%80%e8%b5%b7%e5%ae%9e%e6%88%98%e8%a7%a3%e6%9e%90%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="第二季回归 这次，我们一起实战解析真实世界的编译器.md.html">第二季回归 这次，我们一起实战解析真实世界的编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e4%b9%8b%e7%be%8e/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e7%94%a8%e7%a8%8b%e5%ba%8f%e8%af%ad%e8%a8%80%ef%bc%8c%e6%8e%a8%e5%8a%a8%e8%bf%99%e4%b8%aa%e4%b8%96%e7%95%8c%e7%9a%84%e6%bc%94%e5%8c%96.md.html" id="结束语 用程序语言，推动这个世界的演化.md.html">结束语 用程序语言，推动这个世界的演化.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="08 作用域和生存期：实现块作用域和函数" id="title">08 作用域和生存期：实现块作用域和函数</h1>
+<div><p>目前，我们已经用Antlr重构了脚本解释器，有了工具的帮助，我们可以实现更高级的功能，比如函数功能、面向对象功能。当然了，在这个过程中，我们还要克服一些挑战，比如：</p>
+<ul>
+<li>如果要实现函数功能，要升级变量管理机制；</li>
+<li>引入作用域机制，来保证变量的引用指向正确的变量定义；</li>
+<li>提升变量存储机制，不能只把变量和它的值简单地扔到一个HashMap里，要管理它的生存期，减少对内存的占用。</li>
+</ul>
+<p>本节课，我将借实现块作用域和函数功能，带你探讨作用域和生存期及其实现机制，并升级变量管理机制。那么什么是作用域和生存期，它们的重要性又体现在哪儿呢？</p>
+<p><strong>“作用域”和“生存期”</strong>是计算机语言中更加基础的概念，它们可以帮你深入地理解函数、块、闭包、面向对象、静态成员、本地变量和全局变量等概念。</p>
+<p>而且一旦你深入理解，了解作用域与生存期在编译期和运行期的机制之后，就能解决在学习过程中可能遇到的一些问题，比如：</p>
+<ul>
+<li>闭包的机理到底是什么？</li>
+<li>为什么需要栈和堆两种机制来管理内存？它们的区别又是什么？</li>
+<li>一个静态的内部类和普通的内部类有什么区别？</li>
+</ul>
+<p>了解上面这些内容之后，接下来，我们来具体看看什么是作用域。</p>
+<h2 id="作用域-scope">作用域（Scope）</h2>
+<p>作用域是指计算机语言中变量、函数、类等起作用的范围，我们来看一个具体的例子。</p>
+<p>下面这段代码是用C语言写的，我们在全局以及函数fun中分别声明了a和b两个变量，然后在代码里对这些变量做了赋值操作：</p>
+<pre><code>/*
+scope.c
+测试作用域。
+ */
+#include &lt;stdio.h&gt;
+
+int a = 1;
+
+void fun()
+{
+    a = 2;
+    //b = 3;   //出错，不知道b是谁
+    int a = 3; //允许声明一个同名的变量吗？
+    int b = a; //这里的a是哪个？
+    printf("in fun: a=%d b=%d \n", a, b);
+}
+
+int b = 4; //b的作用域从这里开始
+
+int main(int argc, char **argv){
+    printf("main--1: a=%d b=%d \n", a, b);
+
+    fun();
+    printf("main--2: a=%d b=%d \n", a, b);
+
+    //用本地变量覆盖全局变量
+    int a = 5;
+    int b = 5;
+    printf("main--3: a=%d b=%d \n", a, b);
+
+    //测试块作用域
+    if (a &gt; 0){
+        int b = 3; //允许在块里覆盖外面的变量
+        printf("main--4: a=%d b=%d \n", a, b);
+    }
+    else{
+        int b = 4; //跟if块里的b是两个不同的变量
+        printf("main--5: a=%d b=%d \n", a, b);
+    }
+
+    printf("main--6: a=%d b=%d \n", a, b);
+}
+</code></pre>
+<p>这段代码编译后运行，结果是：</p>
+<pre><code>main--1: a=1 b=4 
+in fun: a=3 b=3 
+main--2: a=2 b=4 
+main--3: a=5 b=5 
+main--4: a=5 b=3 
+main--6: a=5 b=5 
+</code></pre>
+<p>我们可以得出这样的规律：</p>
+<ul>
+<li>变量的作用域有大有小，外部变量在函数内可以访问，而函数中的本地变量，只有本地才可以访问。</li>
+<li>变量的作用域，从声明以后开始。</li>
+<li>在函数里，我们可以声明跟外部变量相同名称的变量，这个时候就覆盖了外部变量。</li>
+</ul>
+<p>下面这张图直观地显示了示例代码中各个变量的作用域：</p>
+<p><img alt="" src="assets/2cc667a2d7e947b5a42cd8fd524d2901.jpg"/></p>
+<p>另外，C语言里还有块作用域的概念，就是用花括号包围的语句，if和else后面就跟着这样的语句块。块作用域的特征跟函数作用域的特征相似，都可以访问外部变量，也可以用本地变量覆盖掉外部变量。</p>
+<p>你可能会问：“其他语言也有块作用域吗？特征是一样的吗？”其实，各个语言在这方面的设计机制是不同的。比如，下面这段用Java写的代码里，我们用了一个if语句块，并且在if部分、else部分和外部分别声明了一个变量c：</p>
+<pre><code>/**
+ * Scope.java
+ * 测试Java的作用域
+ */
+public class ScopeTest{
+
+    public static void main(String args[]){
+        int a = 1;
+        int b = 2;
+
+        if (a &gt; 0){
+            //int b = 3; //不允许声明与外部变量同名的变量
+            int c = 3;
+        }
+        else{
+            int c = 4;   //允许声明另一个c，各有各的作用域
+        }
+        
+        int c = 5;  //这里也可以声明一个新的c
+    }
+}
+</code></pre>
+<p>你能看到，Java的块作用域跟C语言的块作用域是不同的，它不允许块作用域里的变量覆盖外部变量。那么和C、Java写起来很像的JavaScript呢？来看一看下面这段测试JavaScript作用域的代码：</p>
+<pre><code>/**
+ * Scope.js
+ * 测试JavaScript的作用域
+ */
+var a = 5;
+var b = 5;
+console.log("1: a=%d b=%d", a, b);
+
+if (a &gt; 0) {
+    a = 4;
+    console.log("2: a=%d b=%d", a, b);
+    var b = 3; //看似声明了一个新变量，其实还是引用的外部变量
+    console.log("3: a=%d b=%d", a, b);
+}
+else {
+    var b = 4;
+    console.log("4: a=%d b=%d", a, b);
+}
+
+console.log("5: a=%d b=%d", a, b);
+
+for (var b = 0; b&lt; 2; b++){  //这里是否能声明一个新变量，用于for循环？
+    console.log("6-%d: a=%d b=%d",b, a, b);
+}
+
+console.log("7: a=%d b=%d", a, b);
+</code></pre>
+<p>这段代码编译后运行，结果是：</p>
+<pre><code>1: a=5 b=5
+2: a=4 b=5
+3: a=4 b=3
+5: a=4 b=3
+6-0: a=4 b=0
+6-1: a=4 b=1
+7: a=4 b=2
+</code></pre>
+<p>你可以看到，JavaScript是没有块作用域的。我们在块里和for语句试图重新定义变量b，语法上是允许的，但我们每次用到的其实是同一个变量。</p>
+<p>对比了三种语言的作用域特征之后，你是否发现原来看上去差不多的语法，内部机理却不同？这种不同其实是语义差别的一个例子。<strong>你要注意的是，现在我们讲的很多内容都已经属于语义的范畴了，对作用域的分析就是语义分析的任务之一。</strong></p>
+<h2 id="生存期-extent">生存期（Extent）</h2>
+<p>了解了什么是作用域之后，我们再理解一下跟它紧密相关的生存期。它是变量可以访问的时间段，也就是从分配内存给它，到收回它的内存之间的时间。</p>
+<p>在前面几个示例程序中，变量的生存期跟作用域是一致的。出了作用域，生存期也就结束了，变量所占用的内存也就被释放了。这是本地变量的标准特征，这些本地变量是用栈来管理的。</p>
+<p>但也有一些情况，变量的生存期跟语法上的作用域不一致，比如在堆中申请的内存，退出作用域以后仍然会存在。</p>
+<p>下面这段C语言的示例代码中，fun函数返回了一个整数的指针。出了函数以后，本地变量b就消失了，这个指针所占用的内存（&amp;b）就收回了，其中&amp;b是取b的地址，这个地址是指向栈里的一小块空间，因为b是栈里申请的。在这个栈里的小空间里保存了一个地址，指向在堆里申请的内存。这块内存，也就是用来实际保存数值2的空间，并没有被收回，我们必须手动使用free()函数来收回。</p>
+<pre><code>/*
+extent.c
+测试生存期。
+ */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int * fun(){
+    int * b = (int*)malloc(1*sizeof(int)); //在堆中申请内存
+    *b = 2;  //给该地址赋值2
+   
+    return b;
+}
+
+int main(int argc, char **argv){
+    int * p = fun();
+    *p = 3;
+
+    printf("after called fun: b=%lu *b=%d \n", (unsigned long)p, *p);
+ 
+    free(p);
+}
+</code></pre>
+<p>类似的情况在Java里也有。Java的对象实例缺省情况下是在堆中生成的。下面的示例代码中，从一个方法中返回了对象的引用，我们可以基于这个引用继续修改对象的内容，这证明这个对象的内存并没有被释放：</p>
+<pre><code>/**
+ * Extent2.java
+ * 测试Java的生存期特性
+ */
+public class Extent2{
+ 
+    StringBuffer myMethod(){
+        StringBuffer b = new StringBuffer(); //在堆中生成对象实例
+        b.append("Hello ");
+        System.out.println(System.identityHashCode(b)); //打印内存地址
+        return b;  //返回对象引用，本质是一个内存地址
+    }
+
+    public static void main(String args[]){
+        Extent2 extent2 = new Extent2();
+        StringBuffer c = extent2.myMethod(); //获得对象引用
+        System.out.println(c);
+        c.append("World!");         //修改内存中的内容
+        System.out.println(c);
+
+        //跟在myMethod()中打印的值相同
+        System.out.println(System.identityHashCode(c));
+    }
+}
+</code></pre>
+<p>因为Java对象所采用的内存超出了申请内存时所在的作用域，所以也就没有办法自动收回。所以Java采用的是自动内存管理机制，也就是垃圾回收技术。</p>
+<p>那么为什么说作用域和生存期是计算机语言更加基础的概念呢？其实是因为它们对应到了运行时的内存管理的基本机制。虽然各门语言设计上的特性是不同的，但在运行期的机制都很相似，比如都会用到栈和堆来做内存管理。</p>
+<p>好了，理解了作用域和生存期的原理之后，我们就来实现一下，先来设计一下作用域机制，然后再模拟实现一个栈。</p>
+<h2 id="实现作用域和栈">实现作用域和栈</h2>
+<p>在之前的PlayScript脚本的实现中，处理变量赋值的时候，我们简单地把变量存在一个哈希表里，用变量名去引用，就像下面这样：</p>
+<pre><code>public class SimpleScript {
+    private HashMap&lt;String, Integer&gt; variables = new HashMap&lt;String, Integer&gt;();
+    ...
+}
+</code></pre>
+<p>但如果变量存在多个作用域，这样做就不行了。这时，我们就要设计一个数据结构，区分不同变量的作用域。分析前面的代码，你可以看到作用域是一个树状的结构，比如Scope.c的作用域：</p>
+<p><img alt="" src="assets/696fe18dde9d456b8270567983df39b5.jpg"/></p>
+<p>面向对象的语言不太相同，它不是一棵树，是一片树林，每个类对应一棵树，所以它也没有全局变量。在我们的playscript语言中，我们设计了下面的对象结构来表示Scope：</p>
+<pre><code>//编译过程中产生的变量、函数、类、块，都被称作符号
+public abstract class Symbol {
+    //符号的名称
+    protected String name = null;
+
+    //所属作用域
+    protected Scope enclosingScope = null;
+
+    //可见性，比如public还是private
+    protected int visibility = 0;
+
+    //Symbol关联的AST节点
+    protected ParserRuleContext ctx = null;
+}
+
+//作用域
+public abstract class Scope extends Symbol{
+    // 该Scope中的成员，包括变量、方法、类等。
+    protected List&lt;Symbol&gt; symbols = new LinkedList&lt;Symbol&gt;();
+}
+
+//块作用域
+public class BlockScope extends Scope{
+    ...
+}
+
+//函数作用域
+public class Function extends Scope implements FunctionType{
+    ...  
+}
+
+//类作用域
+public class Class extends Scope implements Type{
+    ...
+}
+</code></pre>
+<p>目前我们划分了三种作用域，分别是块作用域（Block）、函数作用域（Function）和类作用域（Class）。</p>
+<p>我们在解释执行playscript的AST的时候，需要建立起作用域的树结构，对作用域的分析过程是语义分析的一部分。也就是说，并不是有了AST，我们马上就可以运行它，在运行之前，我们还要做语义分析，比如对作用域做分析，让每个变量都能做正确的引用，这样才能正确地执行这个程序。</p>
+<p>解决了作用域的问题以后，再来看看如何解决生存期的问题。还是看Scope.c的代码，随着代码的执行，各个变量的生存期表现如下：</p>
+<ul>
+<li>进入程序，全局变量逐一生效；</li>
+<li>进入main函数，main函数里的变量顺序生效；</li>
+<li>进入fun函数，fun函数里的变量顺序生效；</li>
+<li>退出fun函数，fun函数里的变量失效；</li>
+<li>进入if语句块，if语句块里的变量顺序生效；</li>
+<li>退出if语句块，if语句块里的变量失效；</li>
+<li>退出main函数，main函数里的变量失效；</li>
+<li>退出程序，全局变量失效。</li>
+</ul>
+<p>通过下面这张图，你能直观地看到运行过程中栈的变化：</p>
+<p><img alt="" src="assets/e2ae6f39158b46b68371dd5f308d264f.jpg"/></p>
+<p>代码执行时进入和退出一个个作用域的过程，可以用栈来实现。每进入一个作用域，就往栈里压入一个数据结构，这个数据结构叫做<strong>栈桢（Stack Frame）</strong>。栈桢能够保存当前作用域的所有本地变量的值，当退出这个作用域的时候，这个栈桢就被弹出，里面的变量也就失效了。</p>
+<p>你可以看到，栈的机制能够有效地使用内存，变量超出作用域的时候，就没有用了，就可以从内存中丢弃。我在ASTEvaluator.java中，用下面的数据结构来表示栈和栈桢，其中的PlayObject通过一个HashMap来保存各个变量的值：</p>
+<pre><code>private Stack&lt;StackFrame&gt; stack = new Stack&lt;StackFrame&gt;();
+
+public class StackFrame {
+    //该frame所对应的scope
+    Scope scope = null;
+
+    //enclosingScope所对应的frame
+    StackFrame parentFrame = null;
+
+    //实际存放变量的地方
+    PlayObject object = null;
+}
+
+public class PlayObject {
+    //成员变量
+    protected Map&lt;Variable, Object&gt; fields = new HashMap&lt;Variable, Object&gt;();
+}
+</code></pre>
+<p>目前，我们只是在概念上模仿栈桢，当我们用Java语言实现的时候，PlayObject对象是存放在堆里的，Java的所有对象都是存放在堆里的，只有基础数据类型，比如int和对象引用是放在栈里的。虽然只是模仿，这不妨碍我们建立栈桢的概念，在后端技术部分，我们会实现真正意义上的栈桢。</p>
+<p>要注意的是，栈的结构和Scope的树状结构是不一致的。也就是说，栈里的上一级栈桢，不一定是Scope的父节点。要访问上一级Scope中的变量数据，要顺着栈桢的parentFrame去找。我在上图中展现了这种情况，在调用fun函数的时候，栈里一共有三个栈桢：全局栈桢、main()函数栈桢和fun()函数栈桢，其中main()函数栈桢的parentFrame和fun()函数栈桢的parentFrame都是全局栈桢。</p>
+<h2 id="实现块作用域">实现块作用域</h2>
+<p>目前，我们已经做好了作用域和栈，在这之后，就能实现很多功能了，比如让if语句和for循环语句使用块作用域和本地变量。以for语句为例，visit方法里首先为它生成一个栈桢，并加入到栈中，运行完毕之后，再从栈里弹出：</p>
+<pre><code>BlockScope scope = (BlockScope) cr.node2Scope.get(ctx);  //获得Scope
+StackFrame frame = new StackFrame(scope);  //创建一个栈桢
+pushStack(frame);    //加入栈中
+
+...
+
+//运行完毕，弹出栈
+stack.pop();
+</code></pre>
+<p>当我们在代码中需要获取某个变量的值的时候，首先在当前桢中寻找。找不到的话，就到上一级作用域对应的桢中去找：</p>
+<pre><code>StackFrame f = stack.peek();       //获取栈顶的桢
+PlayObject valueContainer = null;
+while (f != null) {
+    //看变量是否属于当前栈桢里
+    if (f.scope.containsSymbol(variable)){ 
+        valueContainer = f.object;
+        break;
+    }
+    //从上一级scope对应的栈桢里去找  
+    f = f.parentFrame;
+}
+</code></pre>
+<p>运行下面的测试代码，你会看到在执行完for循环以后，我们仍然可以声明另一个变量i，跟for循环中的i互不影响，这证明它们确实属于不同的作用域：</p>
+<pre><code>String script = "int age = 44; for(int i = 0;i&lt;10;i++) { age = age + 2;} int i = 8;";
+</code></pre>
+<p>进一步的，我们可以实现对函数的支持。</p>
+<h2 id="实现函数功能">实现函数功能</h2>
+<p>先来看一下与函数有关的语法：</p>
+<pre><code>//函数声明
+functionDeclaration
+    : typeTypeOrVoid? IDENTIFIER formalParameters ('[' ']')*
+      functionBody
+    ;
+//函数体
+functionBody
+    : block
+    | ';'
+    ;
+//类型或void
+typeTypeOrVoid
+    : typeType
+    | VOID
+    ;
+//函数所有参数
+formalParameters
+    : '(' formalParameterList? ')'
+    ;
+//参数列表
+formalParameterList
+    : formalParameter (',' formalParameter)* (',' lastFormalParameter)?
+    | lastFormalParameter
+    ;
+//单个参数
+formalParameter
+    : variableModifier* typeType variableDeclaratorId
+    ;
+//可变参数数量情况下，最后一个参数
+lastFormalParameter
+    : variableModifier* typeType '...' variableDeclaratorId
+    ;
+//函数调用    
+functionCall
+    : IDENTIFIER '(' expressionList? ')'
+    | THIS '(' expressionList? ')'
+    | SUPER '(' expressionList? ')'
+    ;
+</code></pre>
+<p>在函数里，我们还要考虑一个额外的因素：<strong>参数。</strong>在函数内部，参数变量跟普通的本地变量在使用时没什么不同，在运行期，它们也像本地变量一样，保存在栈桢里。</p>
+<p>我们设计一个对象来代表函数的定义，它包括参数列表和返回值的类型：</p>
+<pre><code>public class Function extends Scope implements FunctionType{
+    // 参数
+    protected List&lt;Variable&gt; parameters = new LinkedList&lt;Variable&gt;();
+
+    //返回值
+    protected Type returnType = null;
+    
+    ...
+}
+</code></pre>
+<p>在调用函数时，我们实际上做了三步工作：</p>
+<ul>
+<li>建立一个栈桢；</li>
+<li>计算所有参数的值，并放入栈桢；</li>
+<li>执行函数声明中的函数体。</li>
+</ul>
+<p>我把相关代码放在了下面，你可以看一下：</p>
+<pre><code>//函数声明的AST节点
+FunctionDeclarationContext functionCode = (FunctionDeclarationContext) function.ctx;
+
+//创建栈桢
+functionObject = new FunctionObject(function);
+StackFrame functionFrame = new StackFrame(functionObject);
+
+// 计算实参的值
+List&lt;Object&gt; paramValues = new LinkedList&lt;Object&gt;();
+if (ctx.expressionList() != null) {
+    for (ExpressionContext exp : ctx.expressionList().expression()) {
+        Object value = visitExpression(exp);
+        if (value instanceof LValue) {
+            value = ((LValue) value).getValue();
+        }
+        paramValues.add(value);
+    }
+}
+
+//根据形参的名称，在栈桢中添加变量
+if (functionCode.formalParameters().formalParameterList() != null) {
+    for (int i = 0; i &lt; functionCode.formalParameters().formalParameterList().formalParameter().size(); i++) {
+        FormalParameterContext param = functionCode.formalParameters().formalParameterList().formalParameter(i);
+        LValue lValue = (LValue) visitVariableDeclaratorId(param.variableDeclaratorId());
+        lValue.setValue(paramValues.get(i));
+    }
+}
+
+// 调用方法体
+rtn = visitFunctionDeclaration(functionCode);
+
+// 运行完毕，弹出栈
+stack.pop();
+</code></pre>
+<p>你可以用playscript测试一下函数执行的效果，看看参数传递和作用域的效果：</p>
+<pre><code>String script = "int b= 10; int myfunc(int a) {return a+b+3;} myfunc(2);";
+</code></pre>
+<h2 id="课程小结">课程小结</h2>
+<p>本节课，我带你实现了块作用域和函数，还跟你一起探究了计算机语言的两个底层概念：作用域和生存期。你要知道：</p>
+<ul>
+<li>对作用域的分析是语义分析的一项工作。Antlr能够完成很多词法分析和语法分析的工作，但语义分析工作需要我们自己做。</li>
+<li>变量的生存期涉及运行期的内存管理，也引出了栈桢和堆的概念，我会在编译器后端技术时进一步阐述。</li>
+</ul>
+<p>我建议你在学习新语言的时候，先了解它在作用域和生存期上的特点，然后像示例程序那样做几个例子，借此你会更快理解语言的设计思想。比如，为什么需要命名空间这个特性？全局变量可能带来什么问题？类的静态成员与普通成员有什么区别？等等。</p>
+<p>下一讲，我们会尝试实现面向对象特性，看看面向对象语言在语义上是怎么设计的，以及在运行期有什么特点。</p>
+<h2 id="一课一思">一课一思</h2>
+<p>既然我强调了作用域和生存期的重要性，那么在你熟悉的语言中，有哪些特性是能用作用域和生存期的概念做更基础的解读呢？比如，面向对象的语言中，对象成员的作用域和生存期是怎样的？欢迎在留言区与大家一起交流。</p>
+<p>最后，感谢你的阅读，如果这篇文章让你有所收获，也欢迎你将它分享给更多的朋友。</p>
+<p>今天讲的功能照样能在playscript-java项目中找到示例代码，其中还有用playscript写的脚本，你可以多玩一玩。</p>
+<ul>
+<li>playscript-java（项目目录）： <a href="https://gitee.com/richard-gong/PlayWithCompiler/tree/master/playscript-java" target="_blank">码云</a> <a href="https://github.com/RichardGong/PlayWithCompiler/tree/master/playscript-java" target="_blank">GitHub</a></li>
+<li>PlayScript.java（入口程序）：<a href="https://gitee.com/richard-gong/PlayWithCompiler/blob/master/playscript-java/src/main/play/PlayScript.java" target="_blank">码云</a> <a href="https://github.com/RichardGong/PlayWithCompiler/blob/master/playscript-java/src/main/play/PlayScript.java" target="_blank">GitHub</a></li>
+<li>PlayScript.g4（语法规则）：<a href="https://gitee.com/richard-gong/PlayWithCompiler/blob/master/playscript-java/src/main/play/PlayScript.g4" target="_blank">码云</a> <a href="https://github.com/RichardGong/PlayWithCompiler/blob/master/playscript-java/src/main/play/PlayScript.g4" target="_blank">GitHub</a></li>
+<li>ASTEvaluator.java（解释器）：<a href="https://gitee.com/richard-gong/PlayWithCompiler/blob/master/playscript-java/src/main/play/ASTEvaluator.java" target="_blank">码云</a> <a href="https://github.com/RichardGong/PlayWithCompiler/blob/master/playscript-java/src/main/play/ASTEvaluator.java" target="_blank">GitHub</a></li>
+<li>BlockScope.play（演示块作用域）：<a href="https://gitee.com/richard-gong/PlayWithCompiler/blob/master/playscript-java/src/examples/BlockScope.play" target="_blank">码云</a> <a href="https://github.com/RichardGong/PlayWithCompiler/blob/master/playscript-java/src/examples/BlockScope.play" target="_blank">GitHub</a></li>
+<li>function.play（演示基础函数功能）：<a href="https://gitee.com/richard-gong/PlayWithCompiler/blob/master/playscript-java/src/examples/function.play" target="_blank">码云</a> <a href="https://github.com/RichardGong/PlayWithCompiler/blob/master/playscript-java/src/examples/function.play" target="_blank">GitHub</a></li>
+<li>lab/scope目录（各种语言的作用域测试）：<a href="https://gitee.com/richard-gong/PlayWithCompiler/tree/master/lab/scope" target="_blank">码云</a> <a href="https://github.com/RichardGong/PlayWithCompiler/tree/master/lab/scope" target="_blank">GitHub</a></li>
+</ul>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#f5999999ccc1c4c4c5c2b59298949c99db969a98" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935835376c646fce',t:'MTc0NTUyNTA0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
