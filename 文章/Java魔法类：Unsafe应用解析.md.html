@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="Java魔法类：Unsafe应用解析" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>Java魔法类：Unsafe应用解析 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/AQS%20%e4%b8%87%e5%ad%97%e5%9b%be%e6%96%87%e5%85%a8%e9%9d%a2%e8%a7%a3%e6%9e%90.md.html" id="AQS 万字图文全面解析.md.html">AQS 万字图文全面解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Docker%20%e9%95%9c%e5%83%8f%e6%9e%84%e5%bb%ba%e5%8e%9f%e7%90%86%e5%8f%8a%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90.md.html" id="Docker 镜像构建原理及源码分析.md.html">Docker 镜像构建原理及源码分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/ElasticSearch%20%e5%b0%8f%e7%99%bd%e4%bb%8e%e5%85%a5%e9%97%a8%e5%88%b0%e7%b2%be%e9%80%9a.md.html" id="ElasticSearch 小白从入门到精通.md.html">ElasticSearch 小白从入门到精通.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/JVM%20CPU%20Profiler%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e5%8f%8a%e6%ba%90%e7%a0%81%e6%b7%b1%e5%ba%a6%e8%a7%a3%e6%9e%90.md.html" id="JVM CPU Profiler技术原理及源码深度解析.md.html">JVM CPU Profiler技术原理及源码深度解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/JVM%20%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e5%99%a8.md.html" id="JVM 垃圾收集器.md.html">JVM 垃圾收集器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/JVM%20%e9%9d%a2%e8%af%95%e7%9a%84%2030%20%e4%b8%aa%e7%9f%a5%e8%af%86%e7%82%b9.md.html" id="JVM 面试的 30 个知识点.md.html">JVM 面试的 30 个知识点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%20IO%20%e4%bd%93%e7%b3%bb%e3%80%81%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e5%a4%a7%e6%80%bb%e7%bb%93.md.html" id="Java IO 体系、线程模型大总结.md.html">Java IO 体系、线程模型大总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%20NIO%e6%b5%85%e6%9e%90.md.html" id="Java NIO浅析.md.html">Java NIO浅析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%20%e9%9d%a2%e8%af%95%e9%a2%98%e9%9b%86%e9%94%a6%ef%bc%88%e7%bd%91%e7%bb%9c%e7%af%87%ef%bc%89.md.html" id="Java 面试题集锦（网络篇）.md.html">Java 面试题集锦（网络篇）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java-%e7%9b%b4%e6%8e%a5%e5%86%85%e5%ad%98%20DirectMemory%20%e8%af%a6%e8%a7%a3.md.html" id="Java-直接内存 DirectMemory 详解.md.html">Java-直接内存 DirectMemory 详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%e4%b8%ad9%e7%a7%8d%e5%b8%b8%e8%a7%81%e7%9a%84CMS%20GC%e9%97%ae%e9%a2%98%e5%88%86%e6%9e%90%e4%b8%8e%e8%a7%a3%e5%86%b3%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="Java中9种常见的CMS GC问题分析与解决（上）.md.html">Java中9种常见的CMS GC问题分析与解决（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%e4%b8%ad9%e7%a7%8d%e5%b8%b8%e8%a7%81%e7%9a%84CMS%20GC%e9%97%ae%e9%a2%98%e5%88%86%e6%9e%90%e4%b8%8e%e8%a7%a3%e5%86%b3%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="Java中9种常见的CMS GC问题分析与解决（下）.md.html">Java中9种常见的CMS GC问题分析与解决（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%e4%b8%ad%e7%9a%84SPI.md.html" id="Java中的SPI.md.html">Java中的SPI.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%e4%b8%ad%e7%9a%84ThreadLocal.md.html" id="Java中的ThreadLocal.md.html">Java中的ThreadLocal.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%e7%ba%bf%e7%a8%8b%e6%b1%a0%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86%e5%8f%8a%e5%85%b6%e5%9c%a8%e7%be%8e%e5%9b%a2%e4%b8%9a%e5%8a%a1%e4%b8%ad%e7%9a%84%e5%ae%9e%e8%b7%b5.md.html" id="Java线程池实现原理及其在美团业务中的实践.md.html">Java线程池实现原理及其在美团业务中的实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Java%e9%ad%94%e6%b3%95%e7%b1%bb%ef%bc%9aUnsafe%e5%ba%94%e7%94%a8%e8%a7%a3%e6%9e%90.md.html" id="Java魔法类：Unsafe应用解析.md.html">Java魔法类：Unsafe应用解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Kafka%20%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb%e7%ac%94%e8%ae%b0.md.html" id="Kafka 源码阅读笔记.md.html">Kafka 源码阅读笔记.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Kafka%e3%80%81ActiveMQ%e3%80%81RabbitMQ%e3%80%81RocketMQ%20%e5%8c%ba%e5%88%ab%e4%bb%a5%e5%8f%8a%e9%ab%98%e5%8f%af%e7%94%a8%e5%8e%9f%e7%90%86.md.html" id="Kafka、ActiveMQ、RabbitMQ、RocketMQ 区别以及高可用原理.md.html">Kafka、ActiveMQ、RabbitMQ、RocketMQ 区别以及高可用原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%c2%b7%20%e5%bc%95%e6%93%8e%e7%89%b9%e6%80%a7%20%c2%b7%20InnoDB%20Buffer%20Pool.md.html" id="MySQL · 引擎特性 · InnoDB Buffer Pool.md.html">MySQL · 引擎特性 · InnoDB Buffer Pool.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%c2%b7%20%e5%bc%95%e6%93%8e%e7%89%b9%e6%80%a7%20%c2%b7%20InnoDB%20IO%e5%ad%90%e7%b3%bb%e7%bb%9f.md.html" id="MySQL · 引擎特性 · InnoDB IO子系统.md.html">MySQL · 引擎特性 · InnoDB IO子系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%c2%b7%20%e5%bc%95%e6%93%8e%e7%89%b9%e6%80%a7%20%c2%b7%20InnoDB%20%e4%ba%8b%e5%8a%a1%e7%b3%bb%e7%bb%9f.md.html" id="MySQL · 引擎特性 · InnoDB 事务系统.md.html">MySQL · 引擎特性 · InnoDB 事务系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%c2%b7%20%e5%bc%95%e6%93%8e%e7%89%b9%e6%80%a7%20%c2%b7%20InnoDB%20%e5%90%8c%e6%ad%a5%e6%9c%ba%e5%88%b6.md.html" id="MySQL · 引擎特性 · InnoDB 同步机制.md.html">MySQL · 引擎特性 · InnoDB 同步机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%c2%b7%20%e5%bc%95%e6%93%8e%e7%89%b9%e6%80%a7%20%c2%b7%20InnoDB%20%e6%95%b0%e6%8d%ae%e9%a1%b5%e8%a7%a3%e6%9e%90.md.html" id="MySQL · 引擎特性 · InnoDB 数据页解析.md.html">MySQL · 引擎特性 · InnoDB 数据页解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%c2%b7%20%e5%bc%95%e6%93%8e%e7%89%b9%e6%80%a7%20%c2%b7%20InnoDB%e5%b4%a9%e6%ba%83%e6%81%a2%e5%a4%8d.md.html" id="MySQL · 引擎特性 · InnoDB崩溃恢复.md.html">MySQL · 引擎特性 · InnoDB崩溃恢复.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%c2%b7%20%e5%bc%95%e6%93%8e%e7%89%b9%e6%80%a7%20%c2%b7%20%e4%b8%b4%e6%97%b6%e8%a1%a8%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf.md.html" id="MySQL · 引擎特性 · 临时表那些事儿.md.html">MySQL · 引擎特性 · 临时表那些事儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%20%e5%8d%8a%e5%90%8c%e6%ad%a5%e5%a4%8d%e5%88%b6.md.html" id="MySQL 主从复制 半同步复制.md.html">MySQL 主从复制 半同步复制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%20%e5%9f%ba%e4%ba%8eGTID%e5%a4%8d%e5%88%b6.md.html" id="MySQL 主从复制 基于GTID复制.md.html">MySQL 主从复制 基于GTID复制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6.md.html" id="MySQL 主从复制.md.html">MySQL 主从复制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e4%ba%8b%e5%8a%a1%e6%97%a5%e5%bf%97%28redo%20log%e5%92%8cundo%20log%29.md.html" id="MySQL 事务日志(redo log和undo log).md.html">MySQL 事务日志(redo log和undo log).md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e4%ba%bf%e7%ba%a7%e5%88%ab%e6%95%b0%e6%8d%ae%e8%bf%81%e7%a7%bb%e5%ae%9e%e6%88%98%e4%bb%a3%e7%a0%81%e5%88%86%e4%ba%ab.md.html" id="MySQL 亿级别数据迁移实战代码分享.md.html">MySQL 亿级别数据迁移实战代码分享.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e4%bb%8e%e4%b8%80%e6%9d%a1%e6%95%b0%e6%8d%ae%e8%af%b4%e8%b5%b7-InnoDB%e8%a1%8c%e5%ad%98%e5%82%a8%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84.md.html" id="MySQL 从一条数据说起-InnoDB行存储数据结构.md.html">MySQL 从一条数据说起-InnoDB行存储数据结构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e5%9c%b0%e5%9f%ba%e5%9f%ba%e7%a1%80%ef%bc%9a%e4%ba%8b%e5%8a%a1%e5%92%8c%e9%94%81%e7%9a%84%e9%9d%a2%e7%ba%b1.md.html" id="MySQL 地基基础：事务和锁的面纱.md.html">MySQL 地基基础：事务和锁的面纱.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e5%9c%b0%e5%9f%ba%e5%9f%ba%e7%a1%80%ef%bc%9a%e6%95%b0%e6%8d%ae%e5%ad%97%e5%85%b8.md.html" id="MySQL 地基基础：数据字典.md.html">MySQL 地基基础：数据字典.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e5%9c%b0%e5%9f%ba%e5%9f%ba%e7%a1%80%ef%bc%9a%e6%95%b0%e6%8d%ae%e5%ba%93%e5%ad%97%e7%ac%a6%e9%9b%86.md.html" id="MySQL 地基基础：数据库字符集.md.html">MySQL 地基基础：数据库字符集.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96%ef%bc%9a%e7%a2%8e%e7%89%87%e6%95%b4%e7%90%86.md.html" id="MySQL 性能优化：碎片整理.md.html">MySQL 性能优化：碎片整理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e6%95%85%e9%9a%9c%e8%af%8a%e6%96%ad%ef%bc%9a%e4%b8%80%e4%b8%aa%20ALTER%20TALBE%20%e6%89%a7%e8%a1%8c%e4%ba%86%e5%be%88%e4%b9%85%ef%bc%8c%e4%bd%a0%e6%85%8c%e4%b8%8d%e6%85%8c%ef%bc%9f.md.html" id="MySQL 故障诊断：一个 ALTER TALBE 执行了很久，你慌不慌？.md.html">MySQL 故障诊断：一个 ALTER TALBE 执行了很久，你慌不慌？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e6%95%85%e9%9a%9c%e8%af%8a%e6%96%ad%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e6%97%a5%e5%bf%97%e4%b8%ad%e8%bd%bb%e6%9d%be%e5%ae%9a%e4%bd%8d%e5%a4%a7%e4%ba%8b%e5%8a%a1.md.html" id="MySQL 故障诊断：如何在日志中轻松定位大事务.md.html">MySQL 故障诊断：如何在日志中轻松定位大事务.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e6%95%85%e9%9a%9c%e8%af%8a%e6%96%ad%ef%bc%9a%e6%95%99%e4%bd%a0%e5%bf%ab%e9%80%9f%e5%ae%9a%e4%bd%8d%e5%8a%a0%e9%94%81%e7%9a%84%20SQL.md.html" id="MySQL 故障诊断：教你快速定位加锁的 SQL.md.html">MySQL 故障诊断：教你快速定位加锁的 SQL.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e6%97%a5%e5%bf%97%e8%af%a6%e8%a7%a3.md.html" id="MySQL 日志详解.md.html">MySQL 日志详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%20%e7%9a%84%e5%8d%8a%e5%90%8c%e6%ad%a5%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="MySQL 的半同步是什么？.md.html">MySQL 的半同步是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%e4%b8%ad%e7%9a%84%e4%ba%8b%e5%8a%a1%e5%92%8cMVCC.md.html" id="MySQL中的事务和MVCC.md.html">MySQL中的事务和MVCC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%e4%ba%8b%e5%8a%a1_%e4%ba%8b%e5%8a%a1%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab%e8%af%a6%e8%a7%a3.md.html" id="MySQL事务_事务隔离级别详解.md.html">MySQL事务_事务隔离级别详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%e4%bc%98%e5%8c%96%ef%bc%9a%e4%bc%98%e5%8c%96%20select%20count%28%29.md.html" id="MySQL优化：优化 select count().md.html">MySQL优化：优化 select count().md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%e5%85%b1%e4%ba%ab%e9%94%81%e3%80%81%e6%8e%92%e4%bb%96%e9%94%81%e3%80%81%e6%82%b2%e8%a7%82%e9%94%81%e3%80%81%e4%b9%90%e8%a7%82%e9%94%81.md.html" id="MySQL共享锁、排他锁、悲观锁、乐观锁.md.html">MySQL共享锁、排他锁、悲观锁、乐观锁.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/MySQL%e7%9a%84MVCC%ef%bc%88%e5%a4%9a%e7%89%88%e6%9c%ac%e5%b9%b6%e5%8f%91%e6%8e%a7%e5%88%b6%ef%bc%89.md.html" id="MySQL的MVCC（多版本并发控制）.md.html">MySQL的MVCC（多版本并发控制）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/QingStor%20%e5%af%b9%e8%b1%a1%e5%ad%98%e5%82%a8%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%e5%8f%8a%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5.md.html" id="QingStor 对象存储架构设计及最佳实践.md.html">QingStor 对象存储架构设计及最佳实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/RocketMQ%20%e9%9d%a2%e8%af%95%e9%a2%98%e9%9b%86%e9%94%a6.md.html" id="RocketMQ 面试题集锦.md.html">RocketMQ 面试题集锦.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/SnowFlake%20%e9%9b%aa%e8%8a%b1%e7%ae%97%e6%b3%95%e7%94%9f%e6%88%90%e5%88%86%e5%b8%83%e5%bc%8f%20ID.md.html" id="SnowFlake 雪花算法生成分布式 ID.md.html">SnowFlake 雪花算法生成分布式 ID.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Spring%20Boot%202.x%20%e7%bb%93%e5%90%88%20k8s%20%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84.md.html" id="Spring Boot 2.x 结合 k8s 实现分布式微服务架构.md.html">Spring Boot 2.x 结合 k8s 实现分布式微服务架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Spring%20Boot%20%e6%95%99%e7%a8%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bc%80%e5%8f%91%e4%b8%80%e4%b8%aa%20starter.md.html" id="Spring Boot 教程：如何开发一个 starter.md.html">Spring Boot 教程：如何开发一个 starter.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Spring%20MVC%20%e5%8e%9f%e7%90%86.md.html" id="Spring MVC 原理.md.html">Spring MVC 原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Spring%20MyBatis%e5%92%8cSpring%e6%95%b4%e5%90%88%e7%9a%84%e5%a5%a5%e7%a7%98.md.html" id="Spring MyBatis和Spring整合的奥秘.md.html">Spring MyBatis和Spring整合的奥秘.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Spring%20%e5%b8%ae%e5%8a%a9%e4%bd%a0%e6%9b%b4%e5%a5%bd%e7%9a%84%e7%90%86%e8%a7%a3Spring%e5%be%aa%e7%8e%af%e4%be%9d%e8%b5%96.md.html" id="Spring 帮助你更好的理解Spring循环依赖.md.html">Spring 帮助你更好的理解Spring循环依赖.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Spring%20%e5%be%aa%e7%8e%af%e4%be%9d%e8%b5%96%e5%8f%8a%e8%a7%a3%e5%86%b3%e6%96%b9%e5%bc%8f.md.html" id="Spring 循环依赖及解决方式.md.html">Spring 循环依赖及解决方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Spring%e4%b8%ad%e7%9c%bc%e8%8a%b1%e7%bc%ad%e4%b9%b1%e7%9a%84BeanDefinition.md.html" id="Spring中眼花缭乱的BeanDefinition.md.html">Spring中眼花缭乱的BeanDefinition.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/Vert.x%20%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8.md.html" id="Vert.x 基础入门.md.html">Vert.x 基础入门.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/eBay%20%e7%9a%84%20Elasticsearch%20%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98%e5%ae%9e%e8%b7%b5.md.html" id="eBay 的 Elasticsearch 性能调优实践.md.html">eBay 的 Elasticsearch 性能调优实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e4%b8%8d%e5%8f%af%e4%b8%8d%e8%af%b4%e7%9a%84Java%e2%80%9c%e9%94%81%e2%80%9d%e4%ba%8b.md.html" id="不可不说的Java“锁”事.md.html">不可不说的Java“锁”事.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e4%ba%92%e8%81%94%e7%bd%91%e5%b9%b6%e5%8f%91%e9%99%90%e6%b5%81%e5%ae%9e%e6%88%98.md.html" id="互联网并发限流实战.md.html">互联网并发限流实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e4%bb%8eReentrantLock%e7%9a%84%e5%ae%9e%e7%8e%b0%e7%9c%8bAQS%e7%9a%84%e5%8e%9f%e7%90%86%e5%8f%8a%e5%ba%94%e7%94%a8.md.html" id="从ReentrantLock的实现看AQS的原理及应用.md.html">从ReentrantLock的实现看AQS的原理及应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e4%bb%8eSpringCloud%e5%bc%80%e5%a7%8b%ef%bc%8c%e8%81%8a%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84.md.html" id="从SpringCloud开始，聊微服务架构.md.html">从SpringCloud开始，聊微服务架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%85%a8%e9%9d%a2%e4%ba%86%e8%a7%a3%20JDK%20%e7%ba%bf%e7%a8%8b%e6%b1%a0%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="全面了解 JDK 线程池实现原理.md.html">全面了解 JDK 线程池实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%88%86%e5%b8%83%e5%bc%8f%e4%b8%80%e8%87%b4%e6%80%a7%e7%90%86%e8%ae%ba%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="分布式一致性理论与算法.md.html">分布式一致性理论与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%88%86%e5%b8%83%e5%bc%8f%e4%b8%80%e8%87%b4%e6%80%a7%e7%ae%97%e6%b3%95%20Raft.md.html" id="分布式一致性算法 Raft.md.html">分布式一致性算法 Raft.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%88%86%e5%b8%83%e5%bc%8f%e5%94%af%e4%b8%80%20ID%20%e8%a7%a3%e6%9e%90.md.html" id="分布式唯一 ID 解析.md.html">分布式唯一 ID 解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%88%86%e5%b8%83%e5%bc%8f%e9%93%be%e8%b7%af%e8%bf%bd%e8%b8%aa%ef%bc%9a%e9%9b%86%e7%be%a4%e7%ae%a1%e7%90%86%e8%ae%be%e8%ae%a1.md.html" id="分布式链路追踪：集群管理设计.md.html">分布式链路追踪：集群管理设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%8a%a8%e6%80%81%e4%bb%a3%e7%90%86%e7%a7%8d%e7%b1%bb%e5%8f%8a%e5%8e%9f%e7%90%86%ef%bc%8c%e4%bd%a0%e7%9f%a5%e9%81%93%e5%a4%9a%e5%b0%91%ef%bc%9f.md.html" id="动态代理种类及原理，你知道多少？.md.html">动态代理种类及原理，你知道多少？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%93%8d%e5%ba%94%e5%bc%8f%e6%9e%b6%e6%9e%84%e4%b8%8e%20RxJava%20%e5%9c%a8%e6%9c%89%e8%b5%9e%e9%9b%b6%e5%94%ae%e7%9a%84%e5%ae%9e%e8%b7%b5.md.html" id="响应式架构与 RxJava 在有赞零售的实践.md.html">响应式架构与 RxJava 在有赞零售的实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%a4%a7%e6%95%b0%e6%8d%ae%e7%ae%97%e6%b3%95%e2%80%94%e2%80%94%e5%b8%83%e9%9a%86%e8%bf%87%e6%bb%a4%e5%99%a8.md.html" id="大数据算法——布隆过滤器.md.html">大数据算法——布隆过滤器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%a6%82%e4%bd%95%e4%bc%98%e9%9b%85%e5%9c%b0%e8%ae%b0%e5%bd%95%e6%93%8d%e4%bd%9c%e6%97%a5%e5%bf%97%ef%bc%9f.md.html" id="如何优雅地记录操作日志？.md.html">如何优雅地记录操作日志？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e4%b8%80%e4%b8%aa%e4%ba%bf%e7%ba%a7%e6%b6%88%e6%81%af%e9%87%8f%e7%9a%84%20IM%20%e7%b3%bb%e7%bb%9f.md.html" id="如何设计一个亿级消息量的 IM 系统.md.html">如何设计一个亿级消息量的 IM 系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%bc%82%e6%ad%a5%e7%bd%91%e7%bb%9c%e6%a8%a1%e5%9e%8b.md.html" id="异步网络模型.md.html">异步网络模型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%bd%93%e6%88%91%e4%bb%ac%e5%9c%a8%e8%ae%a8%e8%ae%baCQRS%e6%97%b6%ef%bc%8c%e6%88%91%e4%bb%ac%e5%9c%a8%e8%ae%a8%e8%ae%ba%e4%ba%9b%e7%a5%9e%e9%a9%ac%ef%bc%9f.md.html" id="当我们在讨论CQRS时，我们在讨论些神马？.md.html">当我们在讨论CQRS时，我们在讨论些神马？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e5%bd%bb%e5%ba%95%e7%90%86%e8%a7%a3%20MySQL%20%e7%9a%84%e7%b4%a2%e5%bc%95%e6%9c%ba%e5%88%b6.md.html" id="彻底理解 MySQL 的索引机制.md.html">彻底理解 MySQL 的索引机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e6%9c%80%e5%85%a8%e7%9a%84%20116%20%e9%81%93%20Redis%20%e9%9d%a2%e8%af%95%e9%a2%98%e8%a7%a3%e7%ad%94.md.html" id="最全的 116 道 Redis 面试题解答.md.html">最全的 116 道 Redis 面试题解答.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e6%9c%89%e8%b5%9e%e6%9d%83%e9%99%90%e7%b3%bb%e7%bb%9f%28SAM%29.md.html" id="有赞权限系统(SAM).md.html">有赞权限系统(SAM).md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e6%9c%89%e8%b5%9e%e9%9b%b6%e5%94%ae%e4%b8%ad%e5%8f%b0%e5%bb%ba%e8%ae%be%e6%96%b9%e6%b3%95%e7%9a%84%e6%8e%a2%e7%b4%a2%e4%b8%8e%e5%ae%9e%e8%b7%b5.md.html" id="有赞零售中台建设方法的探索与实践.md.html">有赞零售中台建设方法的探索与实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e6%9c%8d%e5%8a%a1%e6%b3%a8%e5%86%8c%e4%b8%8e%e5%8f%91%e7%8e%b0%e5%8e%9f%e7%90%86%e5%89%96%e6%9e%90%ef%bc%88Eureka%e3%80%81Zookeeper%e3%80%81Nacos%ef%bc%89.md.html" id="服务注册与发现原理剖析（Eureka、Zookeeper、Nacos）.md.html">服务注册与发现原理剖析（Eureka、Zookeeper、Nacos）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e6%b7%b1%e5%85%a5%e6%b5%85%e5%87%baCache.md.html" id="深入浅出Cache.md.html">深入浅出Cache.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20MySQL%20%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0.md.html" id="深入理解 MySQL 底层实现.md.html">深入理解 MySQL 底层实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e6%bc%ab%e7%94%bb%e8%ae%b2%e8%a7%a3%20git%20rebase%20VS%20git%20merge.md.html" id="漫画讲解 git rebase VS git merge.md.html">漫画讲解 git rebase VS git merge.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e7%94%9f%e6%88%90%e6%b5%8f%e8%a7%88%e5%99%a8%e5%94%af%e4%b8%80%e7%a8%b3%e5%ae%9a%20ID%20%e7%9a%84%e6%8e%a2%e7%b4%a2.md.html" id="生成浏览器唯一稳定 ID 的探索.md.html">生成浏览器唯一稳定 ID 的探索.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e7%bc%93%e5%ad%98%20%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e7%bc%93%e5%ad%98%e4%b8%8e%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%8f%8c%e5%86%99%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9f.md.html" id="缓存 如何保证缓存与数据库的双写一致性？.md.html">缓存 如何保证缓存与数据库的双写一致性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e7%bd%91%e6%98%93%e4%b8%a5%e9%80%89%e6%80%8e%e4%b9%88%e5%81%9a%e5%85%a8%e9%93%be%e8%b7%af%e7%9b%91%e6%8e%a7%e7%9a%84%ef%bc%9f.md.html" id="网易严选怎么做全链路监控的？.md.html">网易严选怎么做全链路监控的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e7%be%8e%e5%9b%a2%e4%b8%87%e4%ba%bf%e7%ba%a7%20KV%20%e5%ad%98%e5%82%a8%e6%9e%b6%e6%9e%84%e4%b8%8e%e5%ae%9e%e8%b7%b5.md.html" id="美团万亿级 KV 存储架构与实践.md.html">美团万亿级 KV 存储架构与实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e7%be%8e%e5%9b%a2%e7%82%b9%e8%af%84Kubernetes%e9%9b%86%e7%be%a4%e7%ae%a1%e7%90%86%e5%ae%9e%e8%b7%b5.md.html" id="美团点评Kubernetes集群管理实践.md.html">美团点评Kubernetes集群管理实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e7%be%8e%e5%9b%a2%e7%99%be%e4%ba%bf%e8%a7%84%e6%a8%a1API%e7%bd%91%e5%85%b3%e6%9c%8d%e5%8a%a1Shepherd%e7%9a%84%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0.md.html" id="美团百亿规模API网关服务Shepherd的设计与实现.md.html">美团百亿规模API网关服务Shepherd的设计与实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e8%a7%a3%e8%af%bb%e3%80%8a%e9%98%bf%e9%87%8c%e5%b7%b4%e5%b7%b4%20Java%20%e5%bc%80%e5%8f%91%e6%89%8b%e5%86%8c%e3%80%8b%e8%83%8c%e5%90%8e%e7%9a%84%e6%80%9d%e8%80%83.md.html" id="解读《阿里巴巴 Java 开发手册》背后的思考.md.html">解读《阿里巴巴 Java 开发手册》背后的思考.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e8%ae%a4%e8%af%86%20MySQL%20%e5%92%8c%20Redis%20%e7%9a%84%e6%95%b0%e6%8d%ae%e4%b8%80%e8%87%b4%e6%80%a7%e9%97%ae%e9%a2%98.md.html" id="认识 MySQL 和 Redis 的数据一致性问题.md.html">认识 MySQL 和 Redis 的数据一致性问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e8%bf%9b%e9%98%b6%ef%bc%9aDockerfile%20%e9%ab%98%e9%98%b6%e4%bd%bf%e7%94%a8%e6%8c%87%e5%8d%97%e5%8f%8a%e9%95%9c%e5%83%8f%e4%bc%98%e5%8c%96.md.html" id="进阶：Dockerfile 高阶使用指南及镜像优化.md.html">进阶：Dockerfile 高阶使用指南及镜像优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e9%93%81%e6%80%bb%e5%9c%a8%e7%94%a8%e7%9a%84%e9%ab%98%e6%80%a7%e8%83%bd%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98%e8%ae%a1%e7%ae%97%e6%a1%86%e6%9e%b6%20Geode.md.html" id="铁总在用的高性能分布式缓存计算框架 Geode.md.html">铁总在用的高性能分布式缓存计算框架 Geode.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e9%98%bf%e9%87%8c%e4%ba%91PolarDB%e5%8f%8a%e5%85%b6%e5%85%b1%e4%ba%ab%e5%ad%98%e5%82%a8PolarFS%e6%8a%80%e6%9c%af%e5%ae%9e%e7%8e%b0%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="阿里云PolarDB及其共享存储PolarFS技术实现分析（上）.md.html">阿里云PolarDB及其共享存储PolarFS技术实现分析（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e9%98%bf%e9%87%8c%e4%ba%91PolarDB%e5%8f%8a%e5%85%b6%e5%85%b1%e4%ba%ab%e5%ad%98%e5%82%a8PolarFS%e6%8a%80%e6%9c%af%e5%ae%9e%e7%8e%b0%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="阿里云PolarDB及其共享存储PolarFS技术实现分析（下）.md.html">阿里云PolarDB及其共享存储PolarFS技术实现分析（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e9%9d%a2%e8%af%95%e6%9c%80%e5%b8%b8%e8%a2%ab%e9%97%ae%e7%9a%84%20Java%20%e5%90%8e%e7%ab%af%e9%a2%98.md.html" id="面试最常被问的 Java 后端题.md.html">面试最常被问的 Java 后端题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e9%a2%86%e5%9f%9f%e9%a9%b1%e5%8a%a8%e8%ae%be%e8%ae%a1%e5%9c%a8%e4%ba%92%e8%81%94%e7%bd%91%e4%b8%9a%e5%8a%a1%e5%bc%80%e5%8f%91%e4%b8%ad%e7%9a%84%e5%ae%9e%e8%b7%b5.md.html" id="领域驱动设计在互联网业务开发中的实践.md.html">领域驱动设计在互联网业务开发中的实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e9%a2%86%e5%9f%9f%e9%a9%b1%e5%8a%a8%e8%ae%be%e8%ae%a1%e7%9a%84%e8%8f%b1%e5%bd%a2%e5%af%b9%e7%a7%b0%e6%9e%b6%e6%9e%84.md.html" id="领域驱动设计的菱形对称架构.md.html">领域驱动设计的菱形对称架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e6%96%87%e7%ab%a0/%e9%ab%98%e6%95%88%e6%9e%84%e5%bb%ba%20Docker%20%e9%95%9c%e5%83%8f%e7%9a%84%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5.md.html" id="高效构建 Docker 镜像的最佳实践.md.html">高效构建 Docker 镜像的最佳实践.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="Java魔法类：Unsafe应用解析" id="title">Java魔法类：Unsafe应用解析</h1>
+<div><h2 id="前言">前言</h2>
+<p>Unsafe是位于sun.misc包下的一个类，主要提供一些用于执行低级别、不安全操作的方法，如直接访问系统内存资源、自主管理内存资源等，这些方法在提升Java运行效率、增强Java语言底层资源操作能力方面起到了很大的作用。但由于Unsafe类使Java语言拥有了类似C语言指针一样操作内存空间的能力，这无疑也增加了程序发生相关指针问题的风险。在程序中过度、不正确使用Unsafe类会使得程序出错的概率变大，使得Java这种安全的语言变得不再“安全”，因此对Unsafe的使用一定要慎重。</p>
+<p>注：本文对sun.misc.Unsafe公共API功能及相关应用场景进行介绍。</p>
+<h2 id="基本介绍">基本介绍</h2>
+<p>如下Unsafe源码所示，Unsafe类为一单例实现，提供静态方法getUnsafe获取Unsafe实例，当且仅当调用getUnsafe方法的类为引导类加载器所加载时才合法，否则抛出SecurityException异常。</p>
+<pre><code class="language-java">public final class Unsafe {
+  // 单例对象
+  private static final Unsafe theUnsafe;
+
+  private Unsafe() {
+  }
+  @CallerSensitive
+  public static Unsafe getUnsafe() {
+    Class var0 = Reflection.getCallerClass();
+    // 仅在引导类加载器`BootstrapClassLoader`加载时才合法
+    if(!VM.isSystemDomainLoader(var0.getClassLoader())) {    
+      throw new SecurityException("Unsafe");
+    } else {
+      return theUnsafe;
+    }
+  }
+}
+</code></pre>
+<p>那如若想使用这个类，该如何获取其实例？有如下两个可行方案。</p>
+<p>其一，从<code>getUnsafe</code>方法的使用限制条件出发，通过Java命令行命令<code>-Xbootclasspath/a</code>把调用Unsafe相关方法的类A所在jar包路径追加到默认的bootstrap路径中，使得A被引导类加载器加载，从而通过<code>Unsafe.getUnsafe</code>方法安全的获取Unsafe实例。</p>
+<pre><code class="language-bash">java -Xbootclasspath/a: ${path}   // 其中path为调用Unsafe相关方法的类所在jar包路径 
+</code></pre>
+<p>其二，通过反射获取单例对象theUnsafe。</p>
+<pre><code class="language-java">private static Unsafe reflectGetUnsafe() {
+    try {
+      Field field = Unsafe.class.getDeclaredField("theUnsafe");
+      field.setAccessible(true);
+      return (Unsafe) field.get(null);
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+      return null;
+    }
+}
+</code></pre>
+<h2 id="功能介绍">功能介绍</h2>
+<p><img alt="img" src="assets/f182555953e29cec76497ebaec526fd1297846.png"/></p>
+<p>如上图所示，Unsafe提供的API大致可分为内存操作、CAS、Class相关、对象操作、线程调度、系统信息获取、内存屏障、数组操作等几类，下面将对其相关方法和应用场景进行详细介绍。</p>
+<h3 id="内存操作">内存操作</h3>
+<p>这部分主要包含堆外内存的分配、拷贝、释放、给定地址值操作等方法。</p>
+<pre><code class="language-java">//分配内存, 相当于C++的malloc函数
+public native long allocateMemory(long bytes);
+//扩充内存
+public native long reallocateMemory(long address, long bytes);
+//释放内存
+public native void freeMemory(long address);
+//在给定的内存块中设置值
+public native void setMemory(Object o, long offset, long bytes, byte value);
+//内存拷贝
+public native void copyMemory(Object srcBase, long srcOffset, Object destBase, long destOffset, long bytes);
+//获取给定地址值，忽略修饰限定符的访问限制。与此类似操作还有: getInt，getDouble，getLong，getChar等
+public native Object getObject(Object o, long offset);
+//为给定地址设置值，忽略修饰限定符的访问限制，与此类似操作还有: putInt,putDouble，putLong，putChar等
+public native void putObject(Object o, long offset, Object x);
+//获取给定地址的byte类型的值（当且仅当该内存地址为allocateMemory分配时，此方法结果为确定的）
+public native byte getByte(long address);
+//为给定地址设置byte类型的值（当且仅当该内存地址为allocateMemory分配时，此方法结果才是确定的）
+public native void putByte(long address, byte x);
+</code></pre>
+<p>通常，我们在Java中创建的对象都处于堆内内存（heap）中，堆内内存是由JVM所管控的Java进程内存，并且它们遵循JVM的内存管理机制，JVM会采用垃圾回收机制统一管理堆内存。与之相对的是堆外内存，存在于JVM管控之外的内存区域，Java中对堆外内存的操作，依赖于Unsafe提供的操作堆外内存的native方法。</p>
+<h4 id="使用堆外内存的原因">使用堆外内存的原因</h4>
+<ul>
+<li>对垃圾回收停顿的改善。由于堆外内存是直接受操作系统管理而不是JVM，所以当我们使用堆外内存时，即可保持较小的堆内内存规模。从而在GC时减少回收停顿对于应用的影响。</li>
+<li>提升程序I/O操作的性能。通常在I/O通信过程中，会存在堆内内存到堆外内存的数据拷贝操作，对于需要频繁进行内存间数据拷贝且生命周期较短的暂存数据，都建议存储到堆外内存。</li>
+</ul>
+<h4 id="典型应用">典型应用</h4>
+<p>DirectByteBuffer是Java用于实现堆外内存的一个重要类，通常用在通信过程中做缓冲池，如在Netty、MINA等NIO框架中应用广泛。DirectByteBuffer对于堆外内存的创建、使用、销毁等逻辑均由Unsafe提供的堆外内存API来实现。</p>
+<p>下图为DirectByteBuffer构造函数，创建DirectByteBuffer的时候，通过Unsafe.allocateMemory分配内存、Unsafe.setMemory进行内存初始化，而后构建Cleaner对象用于跟踪DirectByteBuffer对象的垃圾回收，以实现当DirectByteBuffer被垃圾回收时，分配的堆外内存一起被释放。</p>
+<p><img alt="img" src="assets/5eb082d2e4baf2d993ce75747fc35de6486751.png"/></p>
+<p>那么如何通过构建垃圾回收追踪对象Cleaner实现堆外内存释放呢？</p>
+<p>Cleaner继承自Java四大引用类型之一的虚引用PhantomReference（众所周知，无法通过虚引用获取与之关联的对象实例，且当对象仅被虚引用引用时，在任何发生GC的时候，其均可被回收），通常PhantomReference与引用队列ReferenceQueue结合使用，可以实现虚引用关联对象被垃圾回收时能够进行系统通知、资源清理等功能。如下图所示，当某个被Cleaner引用的对象将被回收时，JVM垃圾收集器会将此对象的引用放入到对象引用中的pending链表中，等待Reference-Handler进行相关处理。其中，Reference-Handler为一个拥有最高优先级的守护线程，会循环不断的处理pending链表中的对象引用，执行Cleaner的clean方法进行相关清理工作。</p>
+<p><img alt="img" src="assets/9efac865a875c32cf570489332be5d0f131298.png"/></p>
+<p>所以当DirectByteBuffer仅被Cleaner引用（即为虚引用）时，其可以在任意GC时段被回收。当DirectByteBuffer实例对象被回收时，在Reference-Handler线程操作中，会调用Cleaner的clean方法根据创建Cleaner时传入的Deallocator来进行堆外内存的释放。</p>
+<p><img alt="img" src="assets/66e616c6db18202578c561649facac8d387390.png"/></p>
+<h3 id="cas相关">CAS相关</h3>
+<p>如下源代码释义所示，这部分主要为CAS相关操作的方法。</p>
+<pre><code class="language-java">/**
+	*  CAS
+  * @param o         包含要修改field的对象
+  * @param offset    对象中某field的偏移量
+  * @param expected  期望值
+  * @param update    更新值
+  * @return          true | false
+  */
+public final native boolean compareAndSwapObject(Object o, long offset,  Object expected, Object update);
+
+public final native boolean compareAndSwapInt(Object o, long offset, int expected,int update);
+  
+public final native boolean compareAndSwapLong(Object o, long offset, long expected, long update);
+</code></pre>
+<p>什么是CAS? 即比较并替换，实现并发算法时常用到的一种技术。CAS操作包含三个操作数——内存位置、预期原值及新值。执行CAS操作的时候，将内存位置的值与预期原值比较，如果相匹配，那么处理器会自动将该位置值更新为新值，否则，处理器不做任何操作。我们都知道，CAS是一条CPU的原子指令（cmpxchg指令），不会造成所谓的数据不一致问题，Unsafe提供的CAS方法（如compareAndSwapXXX）底层实现即为CPU指令cmpxchg。</p>
+<h4 id="典型应用-1">典型应用</h4>
+<p>CAS在java.util.concurrent.atomic相关类、Java AQS、CurrentHashMap等实现上有非常广泛的应用。如下图所示，AtomicInteger的实现中，静态字段valueOffset即为字段value的内存偏移地址，valueOffset的值在AtomicInteger初始化时，在静态代码块中通过Unsafe的objectFieldOffset方法获取。在AtomicInteger中提供的线程安全方法中，通过字段valueOffset的值可以定位到AtomicInteger对象中value的内存地址，从而可以根据CAS实现对value字段的原子操作。</p>
+<p><img alt="img" src="assets/3bacb938ca6e63d6c79c2bb48d3f608f189412.png"/></p>
+<p>下图为某个AtomicInteger对象自增操作前后的内存示意图，对象的基地址baseAddress=“0x110000”，通过baseAddress+valueOffset得到value的内存地址valueAddress=“0x11000c”；然后通过CAS进行原子性的更新操作，成功则返回，否则继续重试，直到更新成功为止。</p>
+<p><img alt="img" src="assets/6e8b1fe5d5993d17a4c5b69bb72ac51d89826.png"/></p>
+<h3 id="线程调度">线程调度</h3>
+<p>这部分，包括线程挂起、恢复、锁机制等方法。</p>
+<pre><code class="language-java">//取消阻塞线程
+public native void unpark(Object thread);
+//阻塞线程
+public native void park(boolean isAbsolute, long time);
+//获得对象锁（可重入锁）
+@Deprecated
+public native void monitorEnter(Object o);
+//释放对象锁
+@Deprecated
+public native void monitorExit(Object o);
+//尝试获取对象锁
+@Deprecated
+public native boolean tryMonitorEnter(Object o);
+</code></pre>
+<p>如上源码说明中，方法park、unpark即可实现线程的挂起与恢复，将一个线程进行挂起是通过park方法实现的，调用park方法后，线程将一直阻塞直到超时或者中断等条件出现；unpark可以终止一个挂起的线程，使其恢复正常。</p>
+<h4 id="典型应用-2">典型应用</h4>
+<p>Java锁和同步器框架的核心类AbstractQueuedSynchronizer，就是通过调用<code>LockSupport.park()</code>和<code>LockSupport.unpark()</code>实现线程的阻塞和唤醒的，而LockSupport的park、unpark方法实际是调用Unsafe的park、unpark方式来实现。</p>
+<h3 id="class相关">Class相关</h3>
+<p>此部分主要提供Class和它的静态字段的操作相关方法，包含静态字段内存定位、定义类、定义匿名类、检验&amp;确保初始化等。</p>
+<pre><code class="language-java">//获取给定静态字段的内存地址偏移量，这个值对于给定的字段是唯一且固定不变的
+public native long staticFieldOffset(Field f);
+//获取一个静态类中给定字段的对象指针
+public native Object staticFieldBase(Field f);
+//判断是否需要初始化一个类，通常在获取一个类的静态属性的时候（因为一个类如果没初始化，它的静态属性也不会初始化）使用。 当且仅当ensureClassInitialized方法不生效时返回false。
+public native boolean shouldBeInitialized(Class&lt;?&gt; c);
+//检测给定的类是否已经初始化。通常在获取一个类的静态属性的时候（因为一个类如果没初始化，它的静态属性也不会初始化）使用。
+public native void ensureClassInitialized(Class&lt;?&gt; c);
+//定义一个类，此方法会跳过JVM的所有安全检查，默认情况下，ClassLoader（类加载器）和ProtectionDomain（保护域）实例来源于调用者
+public native Class&lt;?&gt; defineClass(String name, byte[] b, int off, int len, ClassLoader loader, ProtectionDomain protectionDomain);
+//定义一个匿名类
+public native Class&lt;?&gt; defineAnonymousClass(Class&lt;?&gt; hostClass, byte[] data, Object[] cpPatches);
+</code></pre>
+<h4 id="典型应用-3">典型应用</h4>
+<p>从Java 8开始，JDK使用invokedynamic及VM Anonymous Class结合来实现Java语言层面上的Lambda表达式。</p>
+<ul>
+<li><strong>invokedynamic</strong>： invokedynamic是Java 7为了实现在JVM上运行动态语言而引入的一条新的虚拟机指令，它可以实现在运行期动态解析出调用点限定符所引用的方法，然后再执行该方法，invokedynamic指令的分派逻辑是由用户设定的引导方法决定。</li>
+<li><strong>VM Anonymous Class</strong>：可以看做是一种模板机制，针对于程序动态生成很多结构相同、仅若干常量不同的类时，可以先创建包含常量占位符的模板类，而后通过Unsafe.defineAnonymousClass方法定义具体类时填充模板的占位符生成具体的匿名类。生成的匿名类不显式挂在任何ClassLoader下面，只要当该类没有存在的实例对象、且没有强引用来引用该类的Class对象时，该类就会被GC回收。故而VM Anonymous Class相比于Java语言层面的匿名内部类无需通过ClassClassLoader进行类加载且更易回收。</li>
+</ul>
+<p>在Lambda表达式实现中，通过invokedynamic指令调用引导方法生成调用点，在此过程中，会通过ASM动态生成字节码，而后利用Unsafe的defineAnonymousClass方法定义实现相应的函数式接口的匿名类，然后再实例化此匿名类，并返回与此匿名类中函数式方法的方法句柄关联的调用点；而后可以通过此调用点实现调用相应Lambda表达式定义逻辑的功能。下面以如下图所示的Test类来举例说明。</p>
+<p><img alt="img" src="assets/7707d035eb5f04314b3684ff91dddb1663516.png"/></p>
+<p>Test类编译后的class文件反编译后的结果如下图一所示（删除了对本文说明无意义的部分），我们可以从中看到main方法的指令实现、invokedynamic指令调用的引导方法BootstrapMethods、及静态方法<code>lambda$main$0</code>（实现了Lambda表达式中字符串打印逻辑）等。在引导方法执行过程中，会通过Unsafe.defineAnonymousClass生成如下图二所示的实现Consumer接口的匿名类。其中，accept方法通过调用Test类中的静态方法<code>lambda$main$0</code>来实现Lambda表达式中定义的逻辑。而后执行语句<code>consumer.accept（"lambda"）</code>其实就是调用下图二所示的匿名类的accept方法。</p>
+<p><img alt="img" src="assets/1038d53959701093db6c655e4a342e30456249.png"/></p>
+<h3 id="对象操作">对象操作</h3>
+<p>此部分主要包含对象成员属性相关操作及非常规的对象实例化方式等相关方法。</p>
+<pre><code class="language-java">//返回对象成员属性在内存地址相对于此对象的内存地址的偏移量
+public native long objectFieldOffset(Field f);
+//获得给定对象的指定地址偏移量的值，与此类似操作还有：getInt，getDouble，getLong，getChar等
+public native Object getObject(Object o, long offset);
+//给定对象的指定地址偏移量设值，与此类似操作还有：putInt，putDouble，putLong，putChar等
+public native void putObject(Object o, long offset, Object x);
+//从对象的指定偏移量处获取变量的引用，使用volatile的加载语义
+public native Object getObjectVolatile(Object o, long offset);
+//存储变量的引用到对象的指定的偏移量处，使用volatile的存储语义
+public native void putObjectVolatile(Object o, long offset, Object x);
+//有序、延迟版本的putObjectVolatile方法，不保证值的改变被其他线程立即看到。只有在field被volatile修饰符修饰时有效
+public native void putOrderedObject(Object o, long offset, Object x);
+//绕过构造方法、初始化代码来创建对象
+public native Object allocateInstance(Class&lt;?&gt; cls) throws InstantiationException;
+</code></pre>
+<h4 id="典型应用-4">典型应用</h4>
+<ul>
+<li><strong>常规对象实例化方式</strong>：我们通常所用到的创建对象的方式，从本质上来讲，都是通过new机制来实现对象的创建。但是，new机制有个特点就是当类只提供有参的构造函数且无显示声明无参构造函数时，则必须使用有参构造函数进行对象构造，而使用有参构造函数时，必须传递相应个数的参数才能完成对象实例化。</li>
+<li><strong>非常规的实例化方式</strong>：而Unsafe中提供allocateInstance方法，仅通过Class对象就可以创建此类的实例对象，而且不需要调用其构造函数、初始化代码、JVM安全检查等。它抑制修饰符检测，也就是即使构造器是private修饰的也能通过此方法实例化，只需提类对象即可创建相应的对象。由于这种特性，allocateInstance在java.lang.invoke、Objenesis（提供绕过类构造器的对象生成方式）、Gson（反序列化时用到）中都有相应的应用。</li>
+</ul>
+<p>如下图所示，在Gson反序列化时，如果类有默认构造函数，则通过反射调用默认构造函数创建实例，否则通过UnsafeAllocator来实现对象实例的构造，UnsafeAllocator通过调用Unsafe的allocateInstance实现对象的实例化，保证在目标类无默认构造函数时，反序列化不够影响。</p>
+<p><img alt="img" src="assets/b9fe6ab772d03f30cd48009920d56948514676.png"/></p>
+<h3 id="数组相关">数组相关</h3>
+<p>这部分主要介绍与数据操作相关的arrayBaseOffset与arrayIndexScale这两个方法，两者配合起来使用，即可定位数组中每个元素在内存中的位置。</p>
+<pre><code class="language-java">//返回数组中第一个元素的偏移地址
+public native int arrayBaseOffset(Class&lt;?&gt; arrayClass);
+//返回数组中一个元素占用的大小
+public native int arrayIndexScale(Class&lt;?&gt; arrayClass);
+</code></pre>
+<h4 id="典型应用-5">典型应用</h4>
+<p>这两个与数据操作相关的方法，在java.util.concurrent.atomic 包下的AtomicIntegerArray（可以实现对Integer数组中每个元素的原子性操作）中有典型的应用，如下图AtomicIntegerArray源码所示，通过Unsafe的arrayBaseOffset、arrayIndexScale分别获取数组首元素的偏移地址base及单个元素大小因子scale。后续相关原子性操作，均依赖于这两个值进行数组中元素的定位，如下图二所示的getAndAdd方法即通过checkedByteOffset方法获取某数组元素的偏移地址，而后通过CAS实现原子性操作。</p>
+<p><img alt="img" src="assets/160366b0fb2079ad897f6d6b1cb349cd426237.png"/></p>
+<h3 id="内存屏障">内存屏障</h3>
+<p>在Java 8中引入，用于定义内存屏障（也称内存栅栏，内存栅障，屏障指令等，是一类同步屏障指令，是CPU或编译器在对内存随机访问的操作中的一个同步点，使得此点之前的所有读写操作都执行后才可以开始执行此点之后的操作），避免代码重排序。</p>
+<pre><code class="language-java">//内存屏障，禁止load操作重排序。屏障前的load操作不能被重排序到屏障后，屏障后的load操作不能被重排序到屏障前
+public native void loadFence();
+//内存屏障，禁止store操作重排序。屏障前的store操作不能被重排序到屏障后，屏障后的store操作不能被重排序到屏障前
+public native void storeFence();
+//内存屏障，禁止load、store操作重排序
+public native void fullFence();
+</code></pre>
+<h4 id="典型应用-6">典型应用</h4>
+<p>在Java 8中引入了一种锁的新机制——StampedLock，它可以看成是读写锁的一个改进版本。StampedLock提供了一种乐观读锁的实现，这种乐观读锁类似于无锁的操作，完全不会阻塞写线程获取写锁，从而缓解读多写少时写线程“饥饿”现象。由于StampedLock提供的乐观读锁不阻塞写线程获取读锁，当线程共享变量从主内存load到线程工作内存时，会存在数据不一致问题，所以当使用StampedLock的乐观读锁时，需要遵从如下图用例中使用的模式来确保数据的一致性。</p>
+<p><img alt="img" src="assets/839ad79686d06583296f3abf1bec27e3320222.png"/></p>
+<p>如上图用例所示计算坐标点Point对象，包含点移动方法move及计算此点到原点的距离的方法distanceFromOrigin。在方法distanceFromOrigin中，首先，通过tryOptimisticRead方法获取乐观读标记；然后从主内存中加载点的坐标值 (x,y)；而后通过StampedLock的validate方法校验锁状态，判断坐标点(x,y)从主内存加载到线程工作内存过程中，主内存的值是否已被其他线程通过move方法修改，如果validate返回值为true，证明(x, y)的值未被修改，可参与后续计算；否则，需加悲观读锁，再次从主内存加载(x,y)的最新值，然后再进行距离计算。其中，校验锁状态这步操作至关重要，需要判断锁状态是否发生改变，从而判断之前copy到线程工作内存中的值是否与主内存的值存在不一致。</p>
+<p>下图为StampedLock.validate方法的源码实现，通过锁标记与相关常量进行位运算、比较来校验锁状态，在校验逻辑之前，会通过Unsafe的loadFence方法加入一个load内存屏障，目的是避免上图用例中步骤②和StampedLock.validate中锁状态校验运算发生重排序导致锁状态校验不准确的问题。</p>
+<p><img alt="img" src="assets/256f54b037d07df53408b5eea9436b34135955.png"/></p>
+<h3 id="系统相关">系统相关</h3>
+<p>这部分包含两个获取系统相关信息的方法。</p>
+<pre><code class="language-java">//返回系统指针的大小。返回值为4（32位系统）或 8（64位系统）。
+public native int addressSize();  
+//内存页的大小，此值为2的幂次方。
+public native int pageSize();
+</code></pre>
+<h4 id="典型应用-7">典型应用</h4>
+<p>如下图所示的代码片段，为java.nio下的工具类Bits中计算待申请内存所需内存页数量的静态方法，其依赖于Unsafe中pageSize方法获取系统内存页大小实现后续计算逻辑。</p>
+<p><img alt="img" src="assets/262470b0c3e79b8f4f7b0c0280b1cc5362454.png"/></p>
+<h2 id="结语">结语</h2>
+<p>本文对Java中的sun.misc.Unsafe的用法及应用场景进行了基本介绍，我们可以看到Unsafe提供了很多便捷、有趣的API方法。即便如此，由于Unsafe中包含大量自主操作内存的方法，如若使用不当，会对程序带来许多不可控的灾难。因此对它的使用我们需要慎之又慎。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/9b8c96f96a0f/src/share/classes/sun/misc/Unsafe.java" target="_blank">OpenJDK Unsafe source</a></li>
+<li><a href="http://mishadoff.com/blog/java-magic-part-4-sun-dot-misc-dot-unsafe" target="_blank">Java Magic. Part 4: sun.misc.Unsafe</a></li>
+<li><a href="https://www.zhihu.com/question/51132462" target="_blank">JVM crashes at libjvm.so</a></li>
+<li><a href="https://www.cnblogs.com/throwable/p/9139947.html" target="_blank">Java中神奇的双刃剑–Unsafe</a></li>
+<li><a href="http://lovestblog.cn/blog/2015/05/12/direct-buffer/" target="_blank">JVM源码分析之堆外内存完全解读</a></li>
+<li><a href="https://www.jianshu.com/p/007052ee3773" target="_blank">堆外内存 之 DirectByteBuffer 详解</a></li>
+<li>《深入理解Java虚拟机（第2版）》</li>
+</ul>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#ff939393c6cbcececfc8bf98929e9693d19c9092" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935359fb59a407b7',t:'MTc0NTQ3NDEyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
