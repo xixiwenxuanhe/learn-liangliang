@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="35  Linux 的 IO 模式：selectpollepoll 有什么区别？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>35  Linux 的 IO 模式：selectpollepoll 有什么区别？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20%e4%b8%ba%e4%bb%80%e4%b9%88%e5%a4%a7%e5%8e%82%e9%9d%a2%e8%af%95%e5%bf%85%e8%80%83%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="00 开篇词  为什么大厂面试必考操作系统？.md.html">00 开篇词  为什么大厂面试必考操作系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/00%20%e8%af%be%e5%89%8d%e5%bf%85%e8%af%bb%20%20%e6%9e%84%e5%bb%ba%e7%9f%a5%e8%af%86%e4%bd%93%e7%b3%bb%ef%bc%8c%e5%8f%af%e4%bb%a5%e8%bf%99%e6%a0%b7%e5%81%9a%ef%bc%81.md.html" id="00 课前必读  构建知识体系，可以这样做！.md.html">00 课前必读  构建知识体系，可以这样做！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/01%20%20%e8%ae%a1%e7%ae%97%e6%9c%ba%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9a%e2%80%9c%e5%a6%82%e4%bd%95%e6%8a%8a%e7%a8%8b%e5%ba%8f%e5%86%99%e5%a5%bd%e2%80%9d%e8%bf%99%e4%b8%aa%e9%97%ae%e9%a2%98%e6%98%af%e5%8f%af%e8%ae%a1%e7%ae%97%e7%9a%84%e5%90%97%ef%bc%9f.md.html" id="01  计算机是什么：“如何把程序写好”这个问题是可计算的吗？.md.html">01  计算机是什么：“如何把程序写好”这个问题是可计算的吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/02%20%20%e7%a8%8b%e5%ba%8f%e7%9a%84%e6%89%a7%e8%a1%8c%ef%bc%9a%e7%9b%b8%e6%af%94%2032%20%e4%bd%8d%ef%bc%8c64%20%e4%bd%8d%e7%9a%84%e4%bc%98%e5%8a%bf%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="02  程序的执行：相比 32 位，64 位的优势是什么？（上）.md.html">02  程序的执行：相比 32 位，64 位的优势是什么？（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/03%20%20%e7%a8%8b%e5%ba%8f%e7%9a%84%e6%89%a7%e8%a1%8c%ef%bc%9a%e7%9b%b8%e6%af%94%2032%20%e4%bd%8d%ef%bc%8c64%20%e4%bd%8d%e7%9a%84%e4%bc%98%e5%8a%bf%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="03  程序的执行：相比 32 位，64 位的优势是什么？（下）.md.html">03  程序的执行：相比 32 位，64 位的优势是什么？（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/04%20%20%e6%9e%84%e9%80%a0%e5%a4%8d%e6%9d%82%e7%9a%84%e7%a8%8b%e5%ba%8f%ef%bc%9a%e5%b0%86%e4%b8%80%e4%b8%aa%e9%80%92%e5%bd%92%e5%87%bd%e6%95%b0%e8%bd%ac%e6%88%90%e9%9d%9e%e9%80%92%e5%bd%92%e5%87%bd%e6%95%b0%e7%9a%84%e9%80%9a%e7%94%a8%e6%96%b9%e6%b3%95.md.html" id="04  构造复杂的程序：将一个递归函数转成非递归函数的通用方法.md.html">04  构造复杂的程序：将一个递归函数转成非递归函数的通用方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/05%20%20%e5%ad%98%e5%82%a8%e5%99%a8%e5%88%86%e7%ba%a7%ef%bc%9aL1%20Cache%20%e6%af%94%e5%86%85%e5%ad%98%e5%92%8c%20SSD%20%e5%bf%ab%e5%a4%9a%e5%b0%91%e5%80%8d%ef%bc%9f.md.html" id="05  存储器分级：L1 Cache 比内存和 SSD 快多少倍？.md.html">05  存储器分级：L1 Cache 比内存和 SSD 快多少倍？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/05%20%281%29%20%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="05 (1) 加餐  练习题详解（一）.md.html">05 (1) 加餐  练习题详解（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/06%20%20%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84%e5%92%8c%e6%96%87%e4%bb%b6%e7%ae%a1%e7%90%86%e6%8c%87%e4%bb%a4%ef%bc%9arm%20%20-rf%20%e6%8c%87%e4%bb%a4%e7%9a%84%e4%bd%9c%e7%94%a8%e6%98%af%ef%bc%9f.md.html" id="06  目录结构和文件管理指令：rm  -rf 指令的作用是？.md.html">06  目录结构和文件管理指令：rm  -rf 指令的作用是？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/07%20%20%e8%bf%9b%e7%a8%8b%e3%80%81%e9%87%8d%e5%ae%9a%e5%90%91%e5%92%8c%e7%ae%a1%e9%81%93%e6%8c%87%e4%bb%a4%ef%bc%9axargs%20%e6%8c%87%e4%bb%a4%e7%9a%84%e4%bd%9c%e7%94%a8%e6%98%af%ef%bc%9f.md.html" id="07  进程、重定向和管道指令：xargs 指令的作用是？.md.html">07  进程、重定向和管道指令：xargs 指令的作用是？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/08%20%20%e7%94%a8%e6%88%b7%e5%92%8c%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86%e6%8c%87%e4%bb%a4%ef%bc%9a%20%e8%af%b7%e7%ae%80%e8%bf%b0%20Linux%20%e6%9d%83%e9%99%90%e5%88%92%e5%88%86%e7%9a%84%e5%8e%9f%e5%88%99%ef%bc%9f.md.html" id="08  用户和权限管理指令： 请简述 Linux 权限划分的原则？.md.html">08  用户和权限管理指令： 请简述 Linux 权限划分的原则？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/09%20%20Linux%20%e4%b8%ad%e7%9a%84%e7%bd%91%e7%bb%9c%e6%8c%87%e4%bb%a4%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9f%a5%e7%9c%8b%e4%b8%80%e4%b8%aa%e5%9f%9f%e5%90%8d%e6%9c%89%e5%93%aa%e4%ba%9b%20NS%20%e8%ae%b0%e5%bd%95%ef%bc%9f.md.html" id="09  Linux 中的网络指令：如何查看一个域名有哪些 NS 记录？.md.html">09  Linux 中的网络指令：如何查看一个域名有哪些 NS 记录？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/10%20%20%e8%bd%af%e4%bb%b6%e7%9a%84%e5%ae%89%e8%a3%85%ef%bc%9a%20%e7%bc%96%e8%af%91%e5%ae%89%e8%a3%85%e5%92%8c%e5%8c%85%e7%ae%a1%e7%90%86%e5%99%a8%e5%ae%89%e8%a3%85%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%e5%92%8c%e5%8a%a3%e5%8a%bf%ef%bc%9f.md.html" id="10  软件的安装： 编译安装和包管理器安装有什么优势和劣势？.md.html">10  软件的安装： 编译安装和包管理器安装有什么优势和劣势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/11%20%20%e9%ab%98%e7%ba%a7%e6%8a%80%e5%b7%a7%e4%b9%8b%e6%97%a5%e5%bf%97%e5%88%86%e6%9e%90%ef%bc%9a%e5%88%a9%e7%94%a8%20Linux%20%e6%8c%87%e4%bb%a4%e5%88%86%e6%9e%90%20Web%20%e6%97%a5%e5%bf%97.md.html" id="11  高级技巧之日志分析：利用 Linux 指令分析 Web 日志.md.html">11  高级技巧之日志分析：利用 Linux 指令分析 Web 日志.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/12%20%20%e9%ab%98%e7%ba%a7%e6%8a%80%e5%b7%a7%e4%b9%8b%e9%9b%86%e7%be%a4%e9%83%a8%e7%bd%b2%ef%bc%9a%e5%88%a9%e7%94%a8%20Linux%20%e6%8c%87%e4%bb%a4%e5%90%8c%e6%97%b6%e5%9c%a8%e5%a4%9a%e5%8f%b0%e6%9c%ba%e5%99%a8%e9%83%a8%e7%bd%b2%e7%a8%8b%e5%ba%8f.md.html" id="12  高级技巧之集群部署：利用 Linux 指令同时在多台机器部署程序.md.html">12  高级技巧之集群部署：利用 Linux 指令同时在多台机器部署程序.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/12%20%281%29%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e4%ba%8c%ef%bc%89.md.html" id="12 (1)加餐  练习题详解（二）.md.html">12 (1)加餐  练习题详解（二）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/13%20%20%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%86%85%e6%a0%b8%ef%bc%9aLinux%20%e5%86%85%e6%a0%b8%e5%92%8c%20Windows%20%e5%86%85%e6%a0%b8%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="13  操作系统内核：Linux 内核和 Windows 内核有什么区别？.md.html">13  操作系统内核：Linux 内核和 Windows 内核有什么区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/14%20%20%e7%94%a8%e6%88%b7%e6%80%81%e5%92%8c%e5%86%85%e6%a0%b8%e6%80%81%ef%bc%9a%e7%94%a8%e6%88%b7%e6%80%81%e7%ba%bf%e7%a8%8b%e5%92%8c%e5%86%85%e6%a0%b8%e6%80%81%e7%ba%bf%e7%a8%8b%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="14  用户态和内核态：用户态线程和内核态线程有什么区别？.md.html">14  用户态和内核态：用户态线程和内核态线程有什么区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/15%20%20%e4%b8%ad%e6%96%ad%e5%92%8c%e4%b8%ad%e6%96%ad%e5%90%91%e9%87%8f%ef%bc%9aJavajs%20%e7%ad%89%e8%af%ad%e8%a8%80%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8f%af%e4%bb%a5%e6%8d%95%e8%8e%b7%e5%88%b0%e9%94%ae%e7%9b%98%e8%be%93%e5%85%a5%ef%bc%9f.md.html" id="15  中断和中断向量：Javajs 等语言为什么可以捕获到键盘输入？.md.html">15  中断和中断向量：Javajs 等语言为什么可以捕获到键盘输入？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/16%20%20WinMacUnixLinux%20%e7%9a%84%e5%8c%ba%e5%88%ab%e5%92%8c%e8%81%94%e7%b3%bb%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%20Debian%20%e6%bc%8f%e6%b4%9e%e6%8e%92%e5%90%8d%e7%ac%ac%e4%b8%80%e8%bf%98%e8%bf%99%e4%b9%88%e5%a4%9a%e4%ba%ba%e7%94%a8%ef%bc%9f.md.html" id="16  WinMacUnixLinux 的区别和联系：为什么 Debian 漏洞排名第一还这么多人用？.md.html">16  WinMacUnixLinux 的区别和联系：为什么 Debian 漏洞排名第一还这么多人用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/16%20%281%29%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e4%b8%89%ef%bc%89.md.html" id="16 (1)加餐  练习题详解（三）.md.html">16 (1)加餐  练习题详解（三）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/17%20%20%e8%bf%9b%e7%a8%8b%e5%92%8c%e7%ba%bf%e7%a8%8b%ef%bc%9a%e8%bf%9b%e7%a8%8b%e7%9a%84%e5%bc%80%e9%94%80%e6%af%94%e7%ba%bf%e7%a8%8b%e5%a4%a7%e5%9c%a8%e4%ba%86%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="17  进程和线程：进程的开销比线程大在了哪里？.md.html">17  进程和线程：进程的开销比线程大在了哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/18%20%20%e9%94%81%e3%80%81%e4%bf%a1%e5%8f%b7%e9%87%8f%e5%92%8c%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8e%a7%e5%88%b6%e5%90%8c%e4%b8%80%e6%97%b6%e9%97%b4%e5%8f%aa%e6%9c%89%202%20%e4%b8%aa%e7%ba%bf%e7%a8%8b%e8%bf%90%e8%a1%8c%ef%bc%9f.md.html" id="18  锁、信号量和分布式锁：如何控制同一时间只有 2 个线程运行？.md.html">18  锁、信号量和分布式锁：如何控制同一时间只有 2 个线程运行？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/19%20%20%e4%b9%90%e8%a7%82%e9%94%81%e3%80%81%e5%8c%ba%e5%9d%97%e9%93%be%ef%bc%9a%e9%99%a4%e4%ba%86%e4%b8%8a%e9%94%81%e8%bf%98%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b9%b6%e5%8f%91%e6%8e%a7%e5%88%b6%e6%96%b9%e6%b3%95%ef%bc%9f.md.html" id="19  乐观锁、区块链：除了上锁还有哪些并发控制方法？.md.html">19  乐观锁、区块链：除了上锁还有哪些并发控制方法？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/20%20%20%e7%ba%bf%e7%a8%8b%e7%9a%84%e8%b0%83%e5%ba%a6%ef%bc%9a%e7%ba%bf%e7%a8%8b%e8%b0%83%e5%ba%a6%e9%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%e6%96%b9%e6%b3%95%ef%bc%9f.md.html" id="20  线程的调度：线程调度都有哪些方法？.md.html">20  线程的调度：线程调度都有哪些方法？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/21%20%20%e5%93%b2%e5%ad%a6%e5%ae%b6%e5%b0%b1%e9%a4%90%e9%97%ae%e9%a2%98%ef%bc%9a%e4%bb%80%e4%b9%88%e6%83%85%e5%86%b5%e4%b8%8b%e4%bc%9a%e8%a7%a6%e5%8f%91%e9%a5%a5%e9%a5%bf%e5%92%8c%e6%ad%bb%e9%94%81%ef%bc%9f.md.html" id="21  哲学家就餐问题：什么情况下会触发饥饿和死锁？.md.html">21  哲学家就餐问题：什么情况下会触发饥饿和死锁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/22%20%20%e8%bf%9b%e7%a8%8b%e9%97%b4%e9%80%9a%e4%bf%a1%ef%bc%9a%20%e8%bf%9b%e7%a8%8b%e9%97%b4%e9%80%9a%e4%bf%a1%e9%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%e6%96%b9%e6%b3%95%ef%bc%9f.md.html" id="22  进程间通信： 进程间通信都有哪些方法？.md.html">22  进程间通信： 进程间通信都有哪些方法？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/23%20%20%e5%88%86%e6%9e%90%e6%9c%8d%e5%8a%a1%e7%9a%84%e7%89%b9%e6%80%a7%ef%bc%9a%e6%88%91%e7%9a%84%e6%9c%8d%e5%8a%a1%e5%ba%94%e8%af%a5%e5%bc%80%e5%a4%9a%e5%b0%91%e4%b8%aa%e8%bf%9b%e7%a8%8b%e3%80%81%e5%a4%9a%e5%b0%91%e4%b8%aa%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="23  分析服务的特性：我的服务应该开多少个进程、多少个线程？.md.html">23  分析服务的特性：我的服务应该开多少个进程、多少个线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/23%20%281%29%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e5%9b%9b%ef%bc%89.md.html" id="23 (1)加餐  练习题详解（四）.md.html">23 (1)加餐  练习题详解（四）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/24%20%20%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%20%ef%bc%9a%e4%b8%80%e4%b8%aa%e7%a8%8b%e5%ba%8f%e6%9c%80%e5%a4%9a%e8%83%bd%e4%bd%bf%e7%94%a8%e5%a4%9a%e5%b0%91%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="24  虚拟内存 ：一个程序最多能使用多少内存？.md.html">24  虚拟内存 ：一个程序最多能使用多少内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/25%20%20%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%e5%8d%95%e5%85%83%ef%bc%9a%20%e4%bb%80%e4%b9%88%e6%83%85%e5%86%b5%e4%b8%8b%e4%bd%bf%e7%94%a8%e5%a4%a7%e5%86%85%e5%ad%98%e5%88%86%e9%a1%b5%ef%bc%9f.md.html" id="25  内存管理单元： 什么情况下使用大内存分页？.md.html">25  内存管理单元： 什么情况下使用大内存分页？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/26%20%20%e7%bc%93%e5%ad%98%e7%bd%ae%e6%8d%a2%e7%ae%97%e6%b3%95%ef%bc%9a%20LRU%20%e7%94%a8%e4%bb%80%e4%b9%88%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e5%ae%9e%e7%8e%b0%e6%9b%b4%e5%90%88%e7%90%86%ef%bc%9f.md.html" id="26  缓存置换算法： LRU 用什么数据结构实现更合理？.md.html">26  缓存置换算法： LRU 用什么数据结构实现更合理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/27%20%20%e5%86%85%e5%ad%98%e5%9b%9e%e6%94%b6%e4%b8%8a%e7%af%87%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e5%86%85%e5%ad%98%e7%9a%84%e5%be%aa%e7%8e%af%e5%bc%95%e7%94%a8%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="27  内存回收上篇：如何解决内存的循环引用问题？.md.html">27  内存回收上篇：如何解决内存的循环引用问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/28%20%20%e5%86%85%e5%ad%98%e5%9b%9e%e6%94%b6%e4%b8%8b%e7%af%87%ef%bc%9a%e4%b8%89%e8%89%b2%e6%a0%87%e8%ae%b0-%e6%b8%85%e9%99%a4%e7%ae%97%e6%b3%95%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f.md.html" id="28  内存回收下篇：三色标记-清除算法是怎么回事？.md.html">28  内存回收下篇：三色标记-清除算法是怎么回事？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/28%20%281%29%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e4%ba%94%ef%bc%89.md.html" id="28 (1)加餐  练习题详解（五）.md.html">28 (1)加餐  练习题详解（五）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/29%20%20Linux%20%e4%b8%8b%e7%9a%84%e5%90%84%e4%b8%aa%e7%9b%ae%e5%bd%95%e6%9c%89%e4%bb%80%e4%b9%88%e4%bd%9c%e7%94%a8%ef%bc%9f.md.html" id="29  Linux 下的各个目录有什么作用？.md.html">29  Linux 下的各个目录有什么作用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/30%20%20%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e7%9a%84%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0%ef%bc%9aFAT%e3%80%81NTFS%20%e5%92%8c%20Ext3%20%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="30  文件系统的底层实现：FAT、NTFS 和 Ext3 有什么区别？.md.html">30  文件系统的底层实现：FAT、NTFS 和 Ext3 有什么区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/31%20%20%e6%95%b0%e6%8d%ae%e5%ba%93%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%ae%9e%e4%be%8b%ef%bc%9aMySQL%20%e4%b8%ad%20B%20%e6%a0%91%e5%92%8c%20B+%20%e6%a0%91%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="31  数据库文件系统实例：MySQL 中 B 树和 B+ 树有什么区别？.md.html">31  数据库文件系统实例：MySQL 中 B 树和 B+ 树有什么区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/32%20%20HDFS%20%e4%bb%8b%e7%bb%8d%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f.md.html" id="32  HDFS 介绍：分布式文件系统是怎么回事？.md.html">32  HDFS 介绍：分布式文件系统是怎么回事？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/32%20%281%29%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e5%85%ad%ef%bc%89.md.html" id="32 (1)加餐  练习题详解（六）.md.html">32 (1)加餐  练习题详解（六）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/33%20%20%e4%ba%92%e8%81%94%e7%bd%91%e5%8d%8f%e8%ae%ae%e7%be%a4%ef%bc%88TCPIP%ef%bc%89%ef%bc%9a%e5%a4%9a%e8%b7%af%e5%a4%8d%e7%94%a8%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f.md.html" id="33  互联网协议群（TCPIP）：多路复用是怎么回事？.md.html">33  互联网协议群（TCPIP）：多路复用是怎么回事？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/34%20%20UDP%20%e5%8d%8f%e8%ae%ae%ef%bc%9aUDP%20%e5%92%8c%20TCP%20%e7%9b%b8%e6%af%94%e5%bf%ab%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="34  UDP 协议：UDP 和 TCP 相比快在哪里？.md.html">34  UDP 协议：UDP 和 TCP 相比快在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/35%20%20Linux%20%e7%9a%84%20IO%20%e6%a8%a1%e5%bc%8f%ef%bc%9aselectpollepoll%20%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="35  Linux 的 IO 模式：selectpollepoll 有什么区别？.md.html">35  Linux 的 IO 模式：selectpollepoll 有什么区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/36%20%20%e5%85%ac%e7%a7%81%e9%92%a5%e4%bd%93%e7%b3%bb%e5%92%8c%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8%ef%bc%9a%e4%bb%80%e4%b9%88%e6%98%af%e4%b8%ad%e9%97%b4%e4%ba%ba%e6%94%bb%e5%87%bb%ef%bc%9f.md.html" id="36  公私钥体系和网络安全：什么是中间人攻击？.md.html">36  公私钥体系和网络安全：什么是中间人攻击？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/36%20%281%29%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e4%b8%83%ef%bc%89.md.html" id="36 (1)加餐  练习题详解（七）.md.html">36 (1)加餐  练习题详解（七）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/37%20%20%e8%99%9a%e6%8b%9f%e5%8c%96%e6%8a%80%e6%9c%af%e4%bb%8b%e7%bb%8d%ef%bc%9aVMware%20%e5%92%8c%20Docker%20%e7%9a%84%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="37  虚拟化技术介绍：VMware 和 Docker 的区别？.md.html">37  虚拟化技术介绍：VMware 和 Docker 的区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/38%20%20%e5%ae%b9%e5%99%a8%e7%bc%96%e6%8e%92%e6%8a%80%e6%9c%af%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8%20K8s%20%e5%92%8c%20Docker%20Swarm%20%e7%ae%a1%e7%90%86%e5%be%ae%e6%9c%8d%e5%8a%a1%ef%bc%9f.md.html" id="38  容器编排技术：如何利用 K8s 和 Docker Swarm 管理微服务？.md.html">38  容器编排技术：如何利用 K8s 和 Docker Swarm 管理微服务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/39%20%20Linux%20%e6%9e%b6%e6%9e%84%e4%bc%98%e7%a7%80%e5%9c%a8%e5%93%aa%e9%87%8c.md.html" id="39  Linux 架构优秀在哪里.md.html">39  Linux 架构优秀在哪里.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/40%20%20%e5%95%86%e4%b8%9a%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%ef%bc%9a%e7%94%b5%e5%95%86%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e6%98%af%e4%b8%8d%e6%98%af%e4%b8%80%e4%b8%aa%e5%99%b1%e5%a4%b4%ef%bc%9f.md.html" id="40  商业操作系统：电商操作系统是不是一个噱头？.md.html">40  商业操作系统：电商操作系统是不是一个噱头？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/40%20%281%29%e5%8a%a0%e9%a4%90%20%20%e7%bb%83%e4%b9%a0%e9%a2%98%e8%af%a6%e8%a7%a3%ef%bc%88%e5%85%ab%ef%bc%89.md.html" id="40 (1)加餐  练习题详解（八）.md.html">40 (1)加餐  练习题详解（八）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%87%8d%e5%ad%a6%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f-%e5%ae%8c/41%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e8%ae%ba%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e5%8f%91%e5%b1%95%e2%80%94%e2%80%94%e4%bf%a1%e4%bb%b0%e3%80%81%e9%80%89%e6%8b%a9%e5%92%8c%e5%8d%9a%e5%bc%88.md.html" id="41 结束语  论程序员的发展——信仰、选择和博弈.md.html">41 结束语  论程序员的发展——信仰、选择和博弈.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="35  Linux 的 IO 模式：selectpollepoll 有什么区别？" id="title">35  Linux 的 IO 模式：selectpollepoll 有什么区别？</h1>
+<div><p>我们总是想方设法地提升系统的性能。操作系统层面不能给予处理业务逻辑太多帮助，但对于 I/O 性能，操作系统可以通过底层的优化，帮助应用做到极致。</p>
+<p>这一讲我将和你一起讨论 I/O 模型。为了引发你更多的思考，我将同步/异步、阻塞/非阻塞等概念滞后讲解。<strong>我们先回到一个最基本的问题：如果有一台服务器，需要响应大量的请求，操作系统如何去架构以适应这样高并发的诉求</strong>。</p>
+<p>说到架构，就离不开操作系统提供给应用程序的系统调用。我们今天要介绍的 select/poll/epoll 刚好是操作系统提供给应用的三类处理 I/O 的系统调用。这三类系统调用有非常强的代表性，这一讲我会围绕它们，以及处理并发和 I/O 多路复用，为你讲解操作系统的 I/O 模型。</p>
+<h3 id="从网卡到操作系统">从网卡到操作系统</h3>
+<p>为了弄清楚高并发网络场景是如何处理的，我们先来看一个最基本的内容：<strong>当数据到达网卡之后，操作系统会做哪些事情</strong>？</p>
+<p>网络数据到达网卡之后，首先需要把数据拷贝到内存。拷贝到内存的工作往往不需要消耗 CPU 资源，而是通过 DMA 模块直接进行内存映射。之所以这样做，是因为网卡没有大量的内存空间，只能做简单的缓冲，所以必须赶紧将它们保存下来。</p>
+<p>Linux 中用一个双向链表作为缓冲区，你可以观察下图中的 Buffer，看上去像一个有很多个凹槽的线性结构，每个凹槽（节点）可以存储一个封包，这个封包可以从网络层看（IP 封包），也可以从传输层看（TCP 封包）。操作系统不断地从 Buffer 中取出数据，数据通过一个协议栈，你可以把它理解成很多个协议的集合。协议栈中数据封包找到对应的协议程序处理完之后，就会形成 Socket 文件。</p>
+<p><img alt="1111.png" src="assets/Cip5yGABb8uAECMGAAERrnFoSrI090.png">!</img></p>
+<p>如果高并发的请求量级实在太大，有可能把 Buffer 占满，此时，操作系统就会拒绝服务。网络上有一种著名的攻击叫作<strong>拒绝服务攻击</strong>，就是利用的这个原理。<strong>操作系统拒绝服务，实际上是一种保护策略。通过拒绝服务，避免系统内部应用因为并发量太大而雪崩</strong>。</p>
+<p>如上图所示，传入网卡的数据被我称为 Frames。一个 Frame 是数据链路层的传输单位（或封包）。现代的网卡通常使用 DMA 技术，将 Frame 写入缓冲区（Buffer），然后在触发 CPU 中断交给操作系统处理。操作系统从缓冲区中不断取出 Frame，通过协进栈（具体的协议）进行还原。</p>
+<p>在 UNIX 系的操作系统中，一个 Socket 文件内部类似一个双向的管道。因此，非常适用于进程间通信。在网络当中，本质上并没有发生变化。网络中的 Socket 一端连接 Buffer， 一端连接应用——也就是进程。网卡的数据会进入 Buffer，Buffer 经过协议栈的处理形成 Socket 结构。通过这样的设计，进程读取 Socket 文件，可以从 Buffer 中对应节点读走数据。</p>
+<p>对于 TCP 协议，Socket 文件可以用源端口、目标端口、源 IP、目标 IP 进行区别。不同的 Socket 文件，对应着 Buffer 中的不同节点。进程们读取数据的时候从 Buffer 中读取，写入数据的时候向 Buffer 中写入。通过这样一种结构，无论是读和写，进程都可以快速定位到自己对应的节点。</p>
+<p>以上就是我们对操作系统和网络接口交互的一个基本讨论。接下来，我们讨论一下作为一个编程模型的 Socket。</p>
+<h3 id="socket-编程模型">Socket 编程模型</h3>
+<p>通过前面讲述，我们知道 Socket 在操作系统中，有一个非常具体的从 Buffer 到文件的实现。但是对于进程而言，Socket 更多是一种编程的模型。接下来我们讨论作为编程模型的 Socket。</p>
+<p><img alt="Lark20210115-150702.png" src="assets/Ciqc1GABP3OAHezqAABndlGAu9c457.png"/></p>
+<p>如上图所示，Socket 连接了应用和协议，如果应用层的程序想要传输数据，就创建一个 Socket。应用向 Socket 中写入数据，相当于将数据发送给了另一个应用。应用从 Socket 中读取数据，相当于接收另一个应用发送的数据。而具体的操作就是由 Socket 进行封装。具体来说，<strong>对于 UNIX 系的操作系统，是利用 Socket 文件系统，Socket 是一种特殊的文件——每个都是一个双向的管道。一端是应用，一端是缓冲</strong>区。</p>
+<p>那么作为一个服务端的应用，如何知道有哪些 Socket 呢？也就是，哪些客户端连接过来了呢？这是就需要一种特殊类型的 Socket，也就是服务端 Socket 文件。</p>
+<p><img alt="Lark20210115-150706.png" src="assets/Ciqc1GABP3qADKbBAAB564sk120429.png"/></p>
+<p>如上图所示，当有客户端连接服务端时，服务端 Socket 文件中会写入这个客户端 Socket 的文件描述符。进程可以通过 accept() 方法，从服务端 Socket 文件中读出客户端的 Socket 文件描述符，从而拿到客户端的 Socket 文件。</p>
+<p>程序员实现一个网络服务器的时候，会先手动去创建一个服务端 Socket 文件。服务端的 Socket 文件依然会存在操作系统内核之中，并且会绑定到某个 IP 地址和端口上。以后凡是发送到这台机器、目标 IP 地址和端口号的连接请求，在形成了客户端 Socket 文件之后，文件的文件描述符都会被写入到服务端的 Socket 文件中。应用只要调用 accept 方法，就可以拿到这些客户端的 Socket 文件描述符，这样服务端的应用就可以方便地知道有哪些客户端连接了进来。</p>
+<p>而每个客户端对这个应用而言，都是一个文件描述符。如果需要读取某个客户端的数据，就读取这个客户端对应的 Socket 文件。如果要向某个特定的客户端发送数据，就写入这个客户端的 Socket 文件。</p>
+<p>以上就是 Socket 的编程模型。</p>
+<h3 id="i-o-多路复用">I/O 多路复用</h3>
+<p>在上面的讨论当中，进程拿到了它关注的所有 Socket，也称作关注的集合（Intersting Set）。如下图所示，这种过程相当于进程从所有的 Socket 中，筛选出了自己关注的一个子集，但是这时还有一个问题没有解决：<strong>进程如何监听关注集合的状态变化，比如说在有数据进来，如何通知到这个进程</strong>？</p>
+<p><img alt="Lark20210115-150708.png" src="assets/Ciqc1GABP4OAdKBcAACAbVkbI0g191.png"/></p>
+<p>其实更准确地说，一个线程需要处理所有关注的 Socket 产生的变化，或者说消息。实际上一个线程要处理很多个文件的 I/O。<strong>所有关注的 Socket 状态发生了变化，都由一个线程去处理，构成了 I/O 的多路复用问题</strong>。如下图所示：</p>
+<p><img alt="Lark20210115-150711.png" src="assets/Ciqc1GABP4uAW8-dAAB_SubmZ4Q301.png"/></p>
+<p>处理 I/O 多路复用的问题，需要操作系统提供内核级别的支持。Linux 下有三种提供 I/O 多路复用的 API，分别是：</p>
+<ul>
+<li>select</li>
+<li>poll</li>
+<li>epoll</li>
+</ul>
+<p>如下图所示，内核了解网络的状态。因此不难知道具体发生了什么消息，比如内核知道某个 Socket 文件状态发生了变化。但是内核如何知道该把哪个消息给哪个进程呢？</p>
+<p><img alt="Lark20210115-150654.png" src="assets/Ciqc1GABP5KAVSWVAAFSurtl2bU931.png"/></p>
+<p><strong>一个 Socket 文件，可以由多个进程使用；而一个进程，也可以使用多个 Socket 文件</strong>。进程和 Socket 之间是多对多的关系。<strong>另一方面，一个 Socket 也会有不同的事件类型</strong>。因此操作系统很难判断，将哪样的事件给哪个进程。</p>
+<p>这样<strong>在进程内部就需要一个数据结构来描述自己会关注哪些 Socket 文件的哪些事件（读、写、异常等</strong>）。通常有两种考虑方向，<strong>一种是利用线性结构</strong>，比如说数组、链表等，这类结构的查询需要遍历。每次内核产生一种消息，就遍历这个线性结构。看看这个消息是不是进程关注的？<strong>另一种是索引结构</strong>，内核发生了消息可以通过索引结构马上知道这个消息进程关不关注。</p>
+<h4 id="select">select()</h4>
+<p>select 和 poll 都采用线性结构，select 允许用户传入 3 个集合。如下面这段程序所示：</p>
+<pre><code>fd_set read_fd_set, write_fd_set, error_fd_set;
+
+while(true) {
+
+  select(..., &amp;read_fd_set, &amp;write_fd_set, &amp;error_fd_set); 
+
+}
+</code></pre>
+<p><strong>每次 select 操作会阻塞当前线程，在阻塞期间所有操作系统产生的每个消息，都会通过遍历的手段查看是否在 3 个集合当中</strong>。上面程序<code>read_fd_set</code>中放入的是当数据可以读取时进程关心的 Socket；<code>write_fd_set</code>是当数据可以写入时进程关心的 Socket；<code>error_fd_set</code>是当发生异常时进程关心的 Socket。</p>
+<p><strong>用户程序可以根据不同集合中是否有某个 Socket 判断发生的消息类型，</strong>程序如下所示：</p>
+<pre><code>fd_set read_fd_set, write_fd_set, error_fd_set;
+
+while(true) {
+
+  select(..., &amp;read_fd_set, &amp;write_fd_set, &amp;error_fd_set); 
+
+  for (i = 0; i &lt; FD_SETSIZE; ++i)
+
+        if (FD_ISSET (i, &amp;read_fd_set)){
+
+          // Socket可以读取
+
+        } else if(FD_ISSET(i, &amp;write_fd_set)) {
+
+          // Socket可以写入
+
+        } else if(FD_ISSET(i, &amp;error_fd_set)) {
+
+          // Socket发生错误
+
+        } 
+
+}
+</code></pre>
+<p>上面程序中的 FD_SETSIZE 是一个系统的默认设置，通常是 1024。可以看出，select 模式能够一次处理的文件描述符是有上限的，也就是 FD_SETSIZE。当并发请求过多的时候， select 就无能为力了。但是对单台机器而言，1024 个并发已经是一个非常大的流量了。</p>
+<p>接下来我给出一个完整的、用 select 实现的服务端程序供你参考，如下所示：</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+#include &lt;errno.h&gt;
+
+#include &lt;stdlib.h&gt;
+
+#include &lt;unistd.h&gt;
+
+#include &lt;sys/types.h&gt;
+
+#include &lt;sys/Socket.h&gt;
+
+#include &lt;netinet/in.h&gt;
+
+#include &lt;netdb.h&gt;
+
+#define PORT    5555
+
+#define MAXMSG  512
+
+int
+
+read_from_client (int filedes)
+
+{
+
+  char buffer[MAXMSG];
+
+  int nbytes;
+
+  nbytes = read (filedes, buffer, MAXMSG);
+
+  if (nbytes &lt; 0)
+
+    {
+
+      /* Read error. */
+
+      perror ("read");
+
+      exit (EXIT_FAILURE);
+
+    }
+
+  else if (nbytes == 0)
+
+    /* End-of-file. */
+
+    return -1;
+
+  else
+
+    {
+
+      /* Data read. */
+
+      fprintf (stderr, "Server: got message: `%s'\n", buffer);
+
+      return 0;
+
+    }
+
+}
+
+int
+
+main (void)
+
+{
+
+  extern int make_Socket (uint16_t port);
+
+  int sock;
+
+  fd_set active_fd_set, read_fd_set;
+
+  int i;
+
+  struct sockaddr_in clientname;
+
+  size_t size;
+
+  /* Create the Socket and set it up to accept connections. */
+
+  sock = make_Socket (PORT);
+
+  if (listen (sock, 1) &lt; 0)
+
+    {
+
+      perror ("listen");
+
+      exit (EXIT_FAILURE);
+
+    }
+
+  /* Initialize the set of active Sockets. */
+
+  FD_ZERO (&amp;active_fd_set);
+
+  FD_SET (sock, &amp;active_fd_set);
+
+  while (1)
+
+    {
+
+      /* Block until input arrives on one or more active Sockets. */
+
+      read_fd_set = active_fd_set;
+
+      if (select (FD_SETSIZE, &amp;read_fd_set, NULL, NULL, NULL) &lt; 0)
+
+        {
+
+          perror ("select");
+
+          exit (EXIT_FAILURE);
+
+        }
+
+      /* Service all the Sockets with input pending. */
+
+      for (i = 0; i &lt; FD_SETSIZE; ++i)
+
+        if (FD_ISSET (i, &amp;read_fd_set))
+
+          {
+
+            if (i == sock)
+
+              {
+
+                /* Connection request on original Socket. */
+
+                int new;
+
+                size = sizeof (clientname);
+
+                new = accept (sock,
+
+                              (struct sockaddr *) &amp;clientname,
+
+                              &amp;size);
+
+                if (new &lt; 0)
+
+                  {
+
+                    perror ("accept");
+
+                    exit (EXIT_FAILURE);
+
+                  }
+
+                fprintf (stderr,
+
+                         "Server: connect from host %s, port %hd.\n",
+
+                         inet_ntoa (clientname.sin_addr),
+
+                         ntohs (clientname.sin_port));
+
+                FD_SET (new, &amp;active_fd_set);
+
+              }
+
+            else
+
+              {
+
+                /* Data arriving on an already-connected Socket. */
+
+                if (read_from_client (i) &lt; 0)
+
+                  {
+
+                    close (i);
+
+                    FD_CLR (i, &amp;active_fd_set);
+
+                  }
+
+              }
+
+          }
+
+    }
+
+}
+</code></pre>
+<h4 id="poll">poll()</h4>
+<p>从写程序的角度来看，select 并不是一个很好的编程模型。一个好的编程模型应该直达本质，当网络请求发生状态变化的时候，核心是会发生事件。<strong>一个好的编程模型应该是直接抽象成消息：用户不需要用 select 来设置自己的集合，而是可以通过系统的 API 直接拿到对应的消息，从而处理对应的文件描述符</strong>。</p>
+<p>比如下面这段伪代码就是一个更好的编程模型，具体的分析如下：</p>
+<ul>
+<li>poll 是一个阻塞调用，它将某段时间内操作系统内发生的且进程关注的消息告知用户程序；</li>
+<li>用户程序通过直接调用 poll 函数拿到消息；</li>
+<li>poll 函数的第一个参数告知内核 poll 关注哪些 Socket 及消息类型；</li>
+<li>poll 调用后，经过一段时间的等待（阻塞），就拿到了是一个消息的数组；</li>
+<li>通过遍历这个数组中的消息，能够知道关联的文件描述符和消息的类型；</li>
+<li>通过消息类型判断接下来该进行读取还是写入操作；</li>
+<li>通过文件描述符，可以进行实际地读、写、错误处理。</li>
+</ul>
+<pre><code>while(true) {
+
+  events = poll(fds, ...)
+
+  for(evt in events) {
+
+    fd = evt.fd;
+
+    type = evt.revents;
+
+    if(type &amp; POLLIN ) {
+
+       // 有数据需要读，读取fd中的数据
+
+    } else if(type &amp; POLLOUT) {
+
+       // 可以写入数据
+
+    } 
+
+    else ...
+
+  }
+
+}
+</code></pre>
+<p>poll 虽然优化了编程模型，但是从性能角度分析，它和 select 差距不大。因为内核在产生一个消息之后，依然需要遍历 poll 关注的所有文件描述符来确定这条消息是否跟用户程序相关。</p>
+<h4 id="epoll">epoll</h4>
+<p>为了解决上述问题，<strong>epoll 通过更好的方案实现了从操作系统订阅消息。epoll 将进程关注的文件描述符存入一棵二叉搜索树，通常是红黑树的实现</strong>。在这棵红黑树当中，Key 是 Socket 的编号，值是这个 Socket 关注的消息。因此，当内核发生了一个事件：比如 Socket 编号 1000 可以读取。这个时候，可以马上从红黑树中找到进程是否关注这个事件。</p>
+<p><strong>另外当有关注的事件发生时，epoll 会先放到一个队列当中。当用户调用</strong><code>epoll_wait</code>时候，就会从队列中返回一个消息。epoll 函数本身是一个构造函数，只用来创建红黑树和队列结构。<code>epoll_wait</code>调用后，如果队列中没有消息，也可以马上返回。因此<code>epoll</code>是一个非阻塞模型。</p>
+<p><strong>总结一下，select/poll 是阻塞模型，epoll 是非阻塞模型</strong>。<strong>当然，并不是说非阻塞模型性能就更好。在多数情况下，epoll 性能更好是因为内部有红黑树的实现</strong>。</p>
+<p>最后我再贴一段用 epoll 实现的 Socket 服务给你做参考，这段程序的作者将这段代码放到了 Public Domain，你以后看到公有领域的代码可以放心地使用。</p>
+<p>下面这段程序跟之前 select 的原理一致，对于每一个新的客户端连接，都使用 accept 拿到这个连接的文件描述符，并且创建一个客户端的 Socket。然后通过<code>epoll_ctl</code>将客户端的文件描述符和关注的消息类型放入 epoll 的红黑树。操作系统每次监测到一个新的消息产生，就会通过红黑树对比这个消息是不是进程关注的（当然这段代码你看不到，因为它在内核程序中）。</p>
+<p><strong>非阻塞模型的核心价值，并不是性能更好。当真的高并发来临的时候，所有的 CPU 资源，所有的网络资源可能都会被用完。这个时候无论是阻塞还是非阻塞，结果都不会相差太大</strong>。（前提是程序没有写错）。</p>
+<p><code>epoll</code>有 2 个最大的优势：</p>
+<ol>
+<li>内部使用红黑树减少了内核的比较操作；</li>
+<li>对于程序员而言，非阻塞的模型更容易处理各种各样的情况。程序员习惯了写出每一条语句就可以马上得到结果，这样不容易出 Bug。</li>
+</ol>
+<pre><code>// Asynchronous Socket server - accepting multiple clients concurrently,
+
+	// multiplexing the connections with epoll.
+
+	//
+
+	// Eli Bendersky [http://eli.thegreenplace.net]
+
+	// This code is in the public domain.
+
+	#include &lt;assert.h&gt;
+
+	#include &lt;errno.h&gt;
+
+	#include &lt;stdbool.h&gt;
+
+	#include &lt;stdint.h&gt;
+
+	#include &lt;stdio.h&gt;
+
+	#include &lt;stdlib.h&gt;
+
+	#include &lt;string.h&gt;
+
+	#include &lt;sys/epoll.h&gt;
+
+	#include &lt;sys/Socket.h&gt;
+
+	#include &lt;sys/types.h&gt;
+
+	#include &lt;unistd.h&gt;
+
+	
+
+	#include "utils.h"
+
+	
+
+	#define MAXFDS 16 * 1024
+
+	
+
+	typedef enum { INITIAL_ACK, WAIT_FOR_MSG, IN_MSG } ProcessingState;
+
+	
+
+	#define SENDBUF_SIZE 1024
+
+	
+
+	typedef struct {
+
+	  ProcessingState state;
+
+	  uint8_t sendbuf[SENDBUF_SIZE];
+
+	  int sendbuf_end;
+
+	  int sendptr;
+
+	} peer_state_t;
+
+	
+
+	// Each peer is globally identified by the file descriptor (fd) it's connected
+
+	// on. As long as the peer is connected, the fd is unique to it. When a peer
+
+	// disconnects, a new peer may connect and get the same fd. on_peer_connected
+
+	// should initialize the state properly to remove any trace of the old peer on
+
+	// the same fd.
+
+	peer_state_t global_state[MAXFDS];
+
+	
+
+	// Callbacks (on_XXX functions) return this status to the main loop; the status
+
+	// instructs the loop about the next steps for the fd for which the callback was
+
+	// invoked.
+
+	// want_read=true means we want to keep monitoring this fd for reading.
+
+	// want_write=true means we want to keep monitoring this fd for writing.
+
+	// When both are false it means the fd is no longer needed and can be closed.
+
+	typedef struct {
+
+	  bool want_read;
+
+	  bool want_write;
+
+	} fd_status_t;
+
+	
+
+	// These constants make creating fd_status_t values less verbose.
+
+	const fd_status_t fd_status_R = {.want_read = true, .want_write = false};
+
+	const fd_status_t fd_status_W = {.want_read = false, .want_write = true};
+
+	const fd_status_t fd_status_RW = {.want_read = true, .want_write = true};
+
+	const fd_status_t fd_status_NORW = {.want_read = false, .want_write = false};
+
+	
+
+	fd_status_t on_peer_connected(int sockfd, const struct sockaddr_in* peer_addr,
+
+	                              socklen_t peer_addr_len) {
+
+	  assert(sockfd &lt; MAXFDS);
+
+	  report_peer_connected(peer_addr, peer_addr_len);
+
+	
+
+	  // Initialize state to send back a '*' to the peer immediately.
+
+	  peer_state_t* peerstate = &amp;global_state[sockfd];
+
+	  peerstate-&gt;state = INITIAL_ACK;
+
+	  peerstate-&gt;sendbuf[0] = '*';
+
+	  peerstate-&gt;sendptr = 0;
+
+	  peerstate-&gt;sendbuf_end = 1;
+
+	
+
+	  // Signal that this Socket is ready for writing now.
+
+	  return fd_status_W;
+
+	}
+
+	
+
+	fd_status_t on_peer_ready_recv(int sockfd) {
+
+	  assert(sockfd &lt; MAXFDS);
+
+	  peer_state_t* peerstate = &amp;global_state[sockfd];
+
+	
+
+	  if (peerstate-&gt;state == INITIAL_ACK ||
+
+	      peerstate-&gt;sendptr &lt; peerstate-&gt;sendbuf_end) {
+
+	    // Until the initial ACK has been sent to the peer, there's nothing we
+
+	    // want to receive. Also, wait until all data staged for sending is sent to
+
+	    // receive more data.
+
+	    return fd_status_W;
+
+	  }
+
+	
+
+	  uint8_t buf[1024];
+
+	  int nbytes = recv(sockfd, buf, sizeof buf, 0);
+
+	  if (nbytes == 0) {
+
+	    // The peer disconnected.
+
+	    return fd_status_NORW;
+
+	  } else if (nbytes &lt; 0) {
+
+	    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+
+	      // The Socket is not *really* ready for recv; wait until it is.
+
+	      return fd_status_R;
+
+	    } else {
+
+	      perror_die("recv");
+
+	    }
+
+	  }
+
+	  bool ready_to_send = false;
+
+	  for (int i = 0; i &lt; nbytes; ++i) {
+
+	    switch (peerstate-&gt;state) {
+
+	    case INITIAL_ACK:
+
+	      assert(0 &amp;&amp; "can't reach here");
+
+	      break;
+
+	    case WAIT_FOR_MSG:
+
+	      if (buf[i] == '^') {
+
+	        peerstate-&gt;state = IN_MSG;
+
+	      }
+
+	      break;
+
+	    case IN_MSG:
+
+	      if (buf[i] == '$') {
+
+	        peerstate-&gt;state = WAIT_FOR_MSG;
+
+	      } else {
+
+	        assert(peerstate-&gt;sendbuf_end &lt; SENDBUF_SIZE);
+
+	        peerstate-&gt;sendbuf[peerstate-&gt;sendbuf_end++] = buf[i] + 1;
+
+	        ready_to_send = true;
+
+	      }
+
+	      break;
+
+	    }
+
+	  }
+
+	  // Report reading readiness iff there's nothing to send to the peer as a
+
+	  // result of the latest recv.
+
+	  return (fd_status_t){.want_read = !ready_to_send,
+
+	                       .want_write = ready_to_send};
+
+	}
+
+	
+
+	fd_status_t on_peer_ready_send(int sockfd) {
+
+	  assert(sockfd &lt; MAXFDS);
+
+	  peer_state_t* peerstate = &amp;global_state[sockfd];
+
+	
+
+	  if (peerstate-&gt;sendptr &gt;= peerstate-&gt;sendbuf_end) {
+
+	    // Nothing to send.
+
+	    return fd_status_RW;
+
+	  }
+
+	  int sendlen = peerstate-&gt;sendbuf_end - peerstate-&gt;sendptr;
+
+	  int nsent = send(sockfd, &amp;peerstate-&gt;sendbuf[peerstate-&gt;sendptr], sendlen, 0);
+
+	  if (nsent == -1) {
+
+	    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+
+	      return fd_status_W;
+
+	    } else {
+
+	      perror_die("send");
+
+	    }
+
+	  }
+
+	  if (nsent &lt; sendlen) {
+
+	    peerstate-&gt;sendptr += nsent;
+
+	    return fd_status_W;
+
+	  } else {
+
+	    // Everything was sent successfully; reset the send queue.
+
+	    peerstate-&gt;sendptr = 0;
+
+	    peerstate-&gt;sendbuf_end = 0;
+
+	
+
+	    // Special-case state transition in if we were in INITIAL_ACK until now.
+
+	    if (peerstate-&gt;state == INITIAL_ACK) {
+
+	      peerstate-&gt;state = WAIT_FOR_MSG;
+
+	    }
+
+	
+
+	    return fd_status_R;
+
+	  }
+
+	}
+
+	
+
+	int main(int argc, const char** argv) {
+
+	  setvbuf(stdout, NULL, _IONBF, 0);
+
+	
+
+	  int portnum = 9090;
+
+	  if (argc &gt;= 2) {
+
+	    portnum = atoi(argv[1]);
+
+	  }
+
+	  printf("Serving on port %d\n", portnum);
+
+	
+
+	  int listener_sockfd = listen_inet_Socket(portnum);
+
+	  make_Socket_non_blocking(listener_sockfd);
+
+	
+
+	  int epollfd = epoll_create1(0);
+
+	  if (epollfd &lt; 0) {
+
+	    perror_die("epoll_create1");
+
+	  }
+
+	
+
+	  struct epoll_event accept_event;
+
+	  accept_event.data.fd = listener_sockfd;
+
+	  accept_event.events = EPOLLIN;
+
+	  if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listener_sockfd, &amp;accept_event) &lt; 0) {
+
+	    perror_die("epoll_ctl EPOLL_CTL_ADD");
+
+	  }
+
+	
+
+	  struct epoll_event* events = calloc(MAXFDS, sizeof(struct epoll_event));
+
+	  if (events == NULL) {
+
+	    die("Unable to allocate memory for epoll_events");
+
+	  }
+
+	
+
+	  while (1) {
+
+	    int nready = epoll_wait(epollfd, events, MAXFDS, -1);
+
+	    for (int i = 0; i &lt; nready; i++) {
+
+	      if (events[i].events &amp; EPOLLERR) {
+
+	        perror_die("epoll_wait returned EPOLLERR");
+
+	      }
+
+	
+
+	      if (events[i].data.fd == listener_sockfd) {
+
+	        // The listening Socket is ready; this means a new peer is connecting.
+
+	
+
+	        struct sockaddr_in peer_addr;
+
+	        socklen_t peer_addr_len = sizeof(peer_addr);
+
+	        int newsockfd = accept(listener_sockfd, (struct sockaddr*)&amp;peer_addr,
+
+	                               &amp;peer_addr_len);
+
+	        if (newsockfd &lt; 0) {
+
+	          if (errno == EAGAIN || errno == EWOULDBLOCK) {
+
+	            // This can happen due to the nonblocking Socket mode; in this
+
+	            // case don't do anything, but print a notice (since these events
+
+	            // are extremely rare and interesting to observe...)
+
+	            printf("accept returned EAGAIN or EWOULDBLOCK\n");
+
+	          } else {
+
+	            perror_die("accept");
+
+	          }
+
+	        } else {
+
+	          make_Socket_non_blocking(newsockfd);
+
+	          if (newsockfd &gt;= MAXFDS) {
+
+	            die("Socket fd (%d) &gt;= MAXFDS (%d)", newsockfd, MAXFDS);
+
+	          }
+
+	
+
+	          fd_status_t status =
+
+	              on_peer_connected(newsockfd, &amp;peer_addr, peer_addr_len);
+
+	          struct epoll_event event = {0};
+
+	          event.data.fd = newsockfd;
+
+	          if (status.want_read) {
+
+	            event.events |= EPOLLIN;
+
+	          }
+
+	          if (status.want_write) {
+
+	            event.events |= EPOLLOUT;
+
+	          }
+
+	
+
+	          if (epoll_ctl(epollfd, EPOLL_CTL_ADD, newsockfd, &amp;event) &lt; 0) {
+
+	            perror_die("epoll_ctl EPOLL_CTL_ADD");
+
+	          }
+
+	        }
+
+	      } else {
+
+	        // A peer Socket is ready.
+
+	        if (events[i].events &amp; EPOLLIN) {
+
+	          // Ready for reading.
+
+	          int fd = events[i].data.fd;
+
+	          fd_status_t status = on_peer_ready_recv(fd);
+
+	          struct epoll_event event = {0};
+
+	          event.data.fd = fd;
+
+	          if (status.want_read) {
+
+	            event.events |= EPOLLIN;
+
+	          }
+
+	          if (status.want_write) {
+
+	            event.events |= EPOLLOUT;
+
+	          }
+
+	          if (event.events == 0) {
+
+	            printf("Socket %d closing\n", fd);
+
+	            if (epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL) &lt; 0) {
+
+	              perror_die("epoll_ctl EPOLL_CTL_DEL");
+
+	            }
+
+	            close(fd);
+
+	          } else if (epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &amp;event) &lt; 0) {
+
+	            perror_die("epoll_ctl EPOLL_CTL_MOD");
+
+	          }
+
+	        } else if (events[i].events &amp; EPOLLOUT) {
+
+	          // Ready for writing.
+
+	          int fd = events[i].data.fd;
+
+	          fd_status_t status = on_peer_ready_send(fd);
+
+	          struct epoll_event event = {0};
+
+	          event.data.fd = fd;
+
+	
+
+	          if (status.want_read) {
+
+	            event.events |= EPOLLIN;
+
+	          }
+
+	          if (status.want_write) {
+
+	            event.events |= EPOLLOUT;
+
+	          }
+
+	          if (event.events == 0) {
+
+	            printf("Socket %d closing\n", fd);
+
+	            if (epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL) &lt; 0) {
+
+	              perror_die("epoll_ctl EPOLL_CTL_DEL");
+
+	            }
+
+	            close(fd);
+
+	          } else if (epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &amp;event) &lt; 0) {
+
+	            perror_die("epoll_ctl EPOLL_CTL_MOD");
+
+	          }
+
+	        }
+
+	      }
+
+	    }
+
+	  }
+
+	
+
+	  return 0;
+
+	}
+</code></pre>
+<h3 id="重新思考-i-o-模型">重新思考：I/O 模型</h3>
+<p>在上面的模型当中，select/poll 是阻塞（Blocking）模型，epoll 是非阻塞（Non-Blocking）模型。<strong>阻塞和非阻塞强调的是线程的状态</strong>，所以阻塞就是触发了线程的阻塞状态，线程阻塞了就停止执行，并且切换到其他线程去执行，直到触发中断再回来。</p>
+<p>还有一组概念是同步（Synchrounous）和异步（Asynchrounous），select/poll/epoll 三者都是同步调用。</p>
+<p><strong>同步强调的是顺序，</strong>所谓同步调用，就是可以确定程序执行的顺序的调用。比如说执行一个调用，知道调用返回之前下一行代码不会执行。这种顺序是确定的情况，就是同步。</p>
+<p>而异步调用则恰恰相反，<strong>异步调用不明确执行顺序</strong>。比如说一个回调函数，不知道何时会回来。异步调用会加大程序员的负担，因为我们习惯顺序地思考程序。因此，我们还会发明像协程的 yield 、迭代器等将异步程序转为同步程序。</p>
+<p>由此可见，<strong>非阻塞不一定是异步，阻塞也未必就是同步</strong>。比如一个带有回调函数的方法，阻塞了线程 100 毫秒，又提供了回调函数，那这个方法是异步阻塞。例如下面的伪代码：</p>
+<pre><code>asleep(100ms, () -&gt; {
+
+  // 100ms 或更多后到这里
+
+  // ...do some thing
+
+})
+
+// 100 ms 后到这里
+</code></pre>
+<h3 id="总结">总结</h3>
+<p>总结下，操作系统给大家提供各种各样的 API，是希望满足各种各样程序架构的诉求。但总体诉求其实是一致的：希望程序员写的单机代码，能够在多线程甚至分布式的环境下执行。这样你就不需要再去学习复杂的并发控制算法。从这个角度去看，非阻塞加上同步的编程模型确实省去了我们编程过程当中的很多思考。</p>
+<p>但可惜的是，至少在今天这个时代，<strong>多线程、并发编程依然是程序员们的必修课</strong>。因此你在思考 I/O 模型的时候，还是需要结合自己的业务特性及系统自身的架构特点，进行选择。<strong>I/O 模型并不是选择效率，而是选择编程的手段</strong>。试想一个所有资源都跑满了的服务器，并不会因为是异步或者非阻塞模型就获得更高的吞吐量。</p>
+<p><strong>那么通过以上的学习，你现在可以尝试来回答本讲关联的面试题目：select/poll/epoll 有什么区别</strong>？</p>
+<p>【<strong>解析</strong>】这三者都是处理 I/O 多路复用的编程手段。select/poll 模型是一种阻塞模型，epoll 是非阻塞模型。select/poll 内部使用线性结构存储进程关注的 Socket 集合，因此每次内核要判断某个消息是否发送给 select/poll 需要遍历进程关注的 Socket 集合。</p>
+<p>而 epoll 不同，epoll 内部使用二叉搜索树（红黑树），用 Socket 编号作为索引，用关注的事件类型作为值，这样内核可以在非常快的速度下就判断某个消息是否需要发送给使用 epoll 的线程。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#bcd0d0d085888d8d8c8bfcdbd1ddd5d092dfd3d1" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357c9fb9e273b14',t:'MTc0NTUyMDY1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
