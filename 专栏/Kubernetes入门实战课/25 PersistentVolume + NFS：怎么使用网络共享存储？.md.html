@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="25 PersistentVolume + NFS：怎么使用网络共享存储？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>25 PersistentVolume + NFS：怎么使用网络共享存储？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%bf%8e%e9%9a%be%e8%80%8c%e4%b8%8a%ef%bc%8c%e5%81%9a%e4%ba%91%e5%8e%9f%e7%94%9f%e6%97%b6%e4%bb%a3%e7%9a%84%e5%bc%84%e6%bd%ae%e5%84%bf.md.html" id="00 开篇词 迎难而上，做云原生时代的弄潮儿.md.html">00 开篇词 迎难而上，做云原生时代的弄潮儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/00%20%e8%af%be%e5%89%8d%e5%87%86%e5%a4%87%20%e5%8a%a8%e6%89%8b%e5%ae%9e%e8%b7%b5%e6%89%8d%e6%98%af%e6%9c%80%e5%a5%bd%e7%9a%84%e5%ad%a6%e4%b9%a0%e6%96%b9%e5%bc%8f.md.html" id="00 课前准备 动手实践才是最好的学习方式.md.html">00 课前准备 动手实践才是最好的学习方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/01%20%e5%88%9d%e8%af%86%e5%ae%b9%e5%99%a8%ef%bc%9a%e4%b8%87%e4%ba%8b%e5%bc%80%e5%a4%b4%e9%9a%be.md.html" id="01 初识容器：万事开头难.md.html">01 初识容器：万事开头难.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%a2%ab%e9%9a%94%e7%a6%bb%e7%9a%84%e8%bf%9b%e7%a8%8b%ef%bc%9a%e4%b8%80%e8%b5%b7%e6%9d%a5%e7%9c%8b%e7%9c%8b%e5%ae%b9%e5%99%a8%e7%9a%84%e6%9c%ac%e8%b4%a8.md.html" id="02 被隔离的进程：一起来看看容器的本质.md.html">02 被隔离的进程：一起来看看容器的本质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/03%20%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9a%e4%bc%9a%e4%ba%86%e8%bf%99%e4%ba%9b%e4%bd%a0%e5%b0%b1%e6%98%afDocker%e9%ab%98%e6%89%8b.md.html" id="03 容器化的应用：会了这些你就是Docker高手.md.html">03 容器化的应用：会了这些你就是Docker高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%88%9b%e5%bb%ba%e5%ae%b9%e5%99%a8%e9%95%9c%e5%83%8f%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e6%ad%a3%e7%a1%ae%e3%80%81%e9%ab%98%e6%95%88%e7%9a%84Dockerfile.md.html" id="04 创建容器镜像：如何编写正确、高效的Dockerfile.md.html">04 创建容器镜像：如何编写正确、高效的Dockerfile.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/05%20%e9%95%9c%e5%83%8f%e4%bb%93%e5%ba%93%ef%bc%9a%e8%af%a5%e6%80%8e%e6%a0%b7%e7%94%a8%e5%a5%bdDocker%20Hub%e8%bf%99%e4%b8%aa%e5%ae%9d%e8%97%8f.md.html" id="05 镜像仓库：该怎样用好Docker Hub这个宝藏.md.html">05 镜像仓库：该怎样用好Docker Hub这个宝藏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%93%e7%a0%b4%e6%ac%a1%e5%85%83%e5%a3%81%ef%bc%9a%e5%ae%b9%e5%99%a8%e8%af%a5%e5%a6%82%e4%bd%95%e4%b8%8e%e5%a4%96%e7%95%8c%e4%ba%92%e8%81%94%e4%ba%92%e9%80%9a.md.html" id="06 打破次元壁：容器该如何与外界互联互通.md.html">06 打破次元壁：容器该如何与外界互联互通.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/07%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acDocker.md.html" id="07 实战演练：玩转Docker.md.html">07 实战演练：玩转Docker.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/08%20%e8%a7%86%e9%a2%91%ef%bc%9a%e5%85%a5%e9%97%a8%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="08 视频：入门篇实操总结.md.html">08 视频：入门篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/09%20%e8%b5%b0%e8%bf%91%e4%ba%91%e5%8e%9f%e7%94%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e6%9c%ac%e6%9c%ba%e6%90%ad%e5%bb%ba%e5%b0%8f%e5%b7%a7%e5%ae%8c%e5%a4%87%e7%9a%84Kubernetes%e7%8e%af%e5%a2%83.md.html" id="09 走近云原生：如何在本机搭建小巧完备的Kubernetes环境.md.html">09 走近云原生：如何在本机搭建小巧完备的Kubernetes环境.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/10%20%e8%87%aa%e5%8a%a8%e5%8c%96%e7%9a%84%e8%bf%90%e7%bb%b4%e7%ae%a1%e7%90%86%ef%bc%9a%e6%8e%a2%e7%a9%b6Kubernetes%e5%b7%a5%e4%bd%9c%e6%9c%ba%e5%88%b6%e7%9a%84%e5%a5%a5%e7%a7%98.md.html" id="10 自动化的运维管理：探究Kubernetes工作机制的奥秘.md.html">10 自动化的运维管理：探究Kubernetes工作机制的奥秘.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/11%20YAML%ef%bc%9aKubernetes%e4%b8%96%e7%95%8c%e9%87%8c%e7%9a%84%e9%80%9a%e7%94%a8%e8%af%ad.md.html" id="11 YAML：Kubernetes世界里的通用语.md.html">11 YAML：Kubernetes世界里的通用语.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/12%20Pod%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e8%bf%99%e4%b8%aaKubernetes%e9%87%8c%e6%9c%80%e6%a0%b8%e5%bf%83%e7%9a%84%e6%a6%82%e5%bf%b5%ef%bc%9f.md.html" id="12 Pod：如何理解这个Kubernetes里最核心的概念？.md.html">12 Pod：如何理解这个Kubernetes里最核心的概念？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/13%20Job_CronJob%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%9b%b4%e6%8e%a5%e7%94%a8Pod%e6%9d%a5%e5%a4%84%e7%90%86%e4%b8%9a%e5%8a%a1%ef%bc%9f.md.html" id="13 Job_CronJob：为什么不直接用Pod来处理业务？.md.html">13 Job_CronJob：为什么不直接用Pod来处理业务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/14%20ConfigMap_Secret%ef%bc%9a%e6%80%8e%e6%a0%b7%e9%85%8d%e7%bd%ae%e3%80%81%e5%ae%9a%e5%88%b6%e6%88%91%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="14 ConfigMap_Secret：怎样配置、定制我的应用.md.html">14 ConfigMap_Secret：怎样配置、定制我的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%881%ef%bc%89.md.html" id="15 实战演练：玩转Kubernetes（1）.md.html">15 实战演练：玩转Kubernetes（1）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/16%20%e8%a7%86%e9%a2%91%ef%bc%9a%e5%88%9d%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="16 视频：初级篇实操总结.md.html">16 视频：初级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/17%20%e6%9b%b4%e7%9c%9f%e5%ae%9e%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%ef%bc%9a%e5%ae%9e%e9%99%85%e6%90%ad%e5%bb%ba%e5%a4%9a%e8%8a%82%e7%82%b9%e7%9a%84Kubernetes%e9%9b%86%e7%be%a4.md.html" id="17 更真实的云原生：实际搭建多节点的Kubernetes集群.md.html">17 更真实的云原生：实际搭建多节点的Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/18%20Deployment%ef%bc%9a%e8%ae%a9%e5%ba%94%e7%94%a8%e6%b0%b8%e4%b8%8d%e5%ae%95%e6%9c%ba.md.html" id="18 Deployment：让应用永不宕机.md.html">18 Deployment：让应用永不宕机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/19%20Daemonset%ef%bc%9a%e5%bf%a0%e5%ae%9e%e5%8f%af%e9%9d%a0%e7%9a%84%e7%9c%8b%e9%97%a8%e7%8b%97.md.html" id="19 Daemonset：忠实可靠的看门狗.md.html">19 Daemonset：忠实可靠的看门狗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/20%20Service%ef%bc%9a%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e7%9a%84%e5%ba%94%e5%af%b9%e4%b9%8b%e9%81%93.md.html" id="20 Service：微服务架构的应对之道.md.html">20 Service：微服务架构的应对之道.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/21%20Ingress%ef%bc%9a%e9%9b%86%e7%be%a4%e8%bf%9b%e5%87%ba%e6%b5%81%e9%87%8f%e7%9a%84%e6%80%bb%e7%ae%a1.md.html" id="21 Ingress：集群进出流量的总管.md.html">21 Ingress：集群进出流量的总管.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/22%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%882%ef%bc%89.md.html" id="22 实战演练：玩转Kubernetes（2）.md.html">22 实战演练：玩转Kubernetes（2）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/23%20%e8%a7%86%e9%a2%91%ef%bc%9a%e4%b8%ad%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="23 视频：中级篇实操总结.md.html">23 视频：中级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/24%20PersistentVolume%ef%bc%9a%e6%80%8e%e4%b9%88%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e6%8c%81%e4%b9%85%e5%8c%96%e7%9a%84%e9%9a%be%e9%a2%98%ef%bc%9f.md.html" id="24 PersistentVolume：怎么解决数据持久化的难题？.md.html">24 PersistentVolume：怎么解决数据持久化的难题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/25%20PersistentVolume%20+%20NFS%ef%bc%9a%e6%80%8e%e4%b9%88%e4%bd%bf%e7%94%a8%e7%bd%91%e7%bb%9c%e5%85%b1%e4%ba%ab%e5%ad%98%e5%82%a8%ef%bc%9f.md.html" id="25 PersistentVolume + NFS：怎么使用网络共享存储？.md.html">25 PersistentVolume + NFS：怎么使用网络共享存储？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/26%20StatefulSet%ef%bc%9a%e6%80%8e%e4%b9%88%e7%ae%a1%e7%90%86%e6%9c%89%e7%8a%b6%e6%80%81%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9f.md.html" id="26 StatefulSet：怎么管理有状态的应用？.md.html">26 StatefulSet：怎么管理有状态的应用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/27%20%e6%bb%9a%e5%8a%a8%e6%9b%b4%e6%96%b0%ef%bc%9a%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e5%b9%b3%e6%bb%91%e7%9a%84%e5%ba%94%e7%94%a8%e5%8d%87%e7%ba%a7%e9%99%8d%e7%ba%a7%ef%bc%9f.md.html" id="27 滚动更新：如何做到平滑的应用升级降级？.md.html">27 滚动更新：如何做到平滑的应用升级降级？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%ba%94%e7%94%a8%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9Pod%e8%bf%90%e8%a1%8c%e5%be%97%e6%9b%b4%e5%81%a5%e5%ba%b7%ef%bc%9f.md.html" id="28 应用保障：如何让Pod运行得更健康？.md.html">28 应用保障：如何让Pod运行得更健康？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/29%20%e9%9b%86%e7%be%a4%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%90%8d%e5%ad%97%e7%a9%ba%e9%97%b4%e5%88%86%e9%9a%94%e7%b3%bb%e7%bb%9f%e8%b5%84%e6%ba%90%ef%bc%9f.md.html" id="29 集群管理：如何用名字空间分隔系统资源？.md.html">29 集群管理：如何用名字空间分隔系统资源？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/30%20%e7%b3%bb%e7%bb%9f%e7%9b%91%e6%8e%a7%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Metrics%20Server%e5%92%8cPrometheus%ef%bc%9f.md.html" id="30 系统监控：如何使用Metrics Server和Prometheus？.md.html">30 系统监控：如何使用Metrics Server和Prometheus？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/31%20%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%ef%bc%9aCNI%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f%e5%8f%88%e6%98%af%e6%80%8e%e4%b9%88%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="31 网络通信：CNI是怎么回事？又是怎么工作的？.md.html">31 网络通信：CNI是怎么回事？又是怎么工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/32%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%883%ef%bc%89.md.html" id="32 实战演练：玩转Kubernetes（3）.md.html">32 实战演练：玩转Kubernetes（3）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/33%20%e8%a7%86%e9%a2%91%ef%bc%9a%e9%ab%98%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="33 视频：高级篇实操总结.md.html">33 视频：高级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%90%20docker-compose%ef%bc%9a%e5%8d%95%e6%9c%ba%e7%8e%af%e5%a2%83%e4%b8%8b%e7%9a%84%e5%ae%b9%e5%99%a8%e7%bc%96%e6%8e%92%e5%b7%a5%e5%85%b7.md.html" id="加餐 docker-compose：单机环境下的容器编排工具.md.html">加餐 docker-compose：单机环境下的容器编排工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%90%20%e8%b0%88%e8%b0%88Kong%20Ingress%20Controller.md.html" id="加餐 谈谈Kong Ingress Controller.md.html">加餐 谈谈Kong Ingress Controller.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%98%af%e7%bb%88%e7%82%b9%ef%bc%8c%e6%9b%b4%e6%98%af%e8%b5%b7%e7%82%b9.md.html" id="结束语 是终点，更是起点.md.html">结束语 是终点，更是起点.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="25 PersistentVolume + NFS：怎么使用网络共享存储？" id="title">25 PersistentVolume + NFS：怎么使用网络共享存储？</h1>
+<div><p>你好，我是Chrono。</p>
+<p>在上节课里我们看到了Kubernetes里的持久化存储对象PersistentVolume、PersistentVolumeClaim、StorageClass，把它们联合起来就可以为Pod挂载一块“虚拟盘”，让Pod在其中任意读写数据。</p>
+<p>不过当时我们使用的是HostPath，存储卷只能在本机使用，而Kubernetes里的Pod经常会在集群里“漂移”，所以这种方式不是特别实用。</p>
+<p>要想让存储卷真正能被Pod任意挂载，我们需要变更存储的方式，不能限定在本地磁盘，而是要改成<strong>网络存储</strong>，这样Pod无论在哪里运行，只要知道IP地址或者域名，就可以通过网络通信访问存储设备。</p>
+<p>网络存储是一个非常热门的应用领域，有很多知名的产品，比如AWS、Azure、Ceph，Kubernetes还专门定义了CSI（Container Storage Interface）规范，不过这些存储类型的安装、使用都比较复杂，在我们的实验环境里部署难度比较高。</p>
+<p>所以今天的这次课里，我选择了相对来说比较简单的NFS系统（Network File System），以它为例讲解如何在Kubernetes里使用网络存储，以及静态存储卷和动态存储卷的概念。</p>
+<h2 id="如何安装nfs服务器">如何安装NFS服务器</h2>
+<p>作为一个经典的网络存储系统，NFS有着近40年的发展历史，基本上已经成为了各种UNIX系统的标准配置，Linux自然也提供对它的支持。</p>
+<p>NFS采用的是Client/Server架构，需要选定一台主机作为Server，安装NFS服务端；其他要使用存储的主机作为Client，安装NFS客户端工具。</p>
+<p>所以接下来，我们在自己的Kubernetes集群里再增添一台名字叫Storage的服务器，在上面安装NFS，实现网络存储、共享网盘的功能。<strong>不过这台Storage也只是一个逻辑概念，我们在实际安装部署的时候完全可以把它合并到集群里的某台主机里</strong>，比如这里我就复用了[第17讲]里的Console。</p>
+<p>新的网络架构如下图所示：</p>
+<p><img alt="图片" src="assets/786e13af0e2f62f9cd73f5ab555a4507.jpg"/></p>
+<p>在Ubuntu系统里安装NFS服务端很容易，使用apt即可：</p>
+<pre><code>sudo apt -y install nfs-kernel-server
+</code></pre>
+<p>安装好之后，你需要给NFS指定一个存储位置，也就是网络共享目录。一般来说，应该建立一个专门的 <code>/data</code> 目录，这里为了简单起见，我就使用了<strong>临时目录 <code>/tmp/nfs</code></strong>：</p>
+<pre><code>mkdir -p /tmp/nfs
+</code></pre>
+<p>接下来你需要配置NFS访问共享目录，修改 <code>/etc/exports</code>，指定目录名、允许访问的网段，还有权限等参数。这些规则比较琐碎，和我们的Kubernetes课程关联不大，我就不详细解释了，你只要把下面这行加上就行，注意目录名和IP地址要改成和自己的环境一致：</p>
+<pre><code>/tmp/nfs 192.168.10.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
+</code></pre>
+<p><strong>改好之后，需要用 <code>exportfs -ra</code> 通知NFS，让配置生效</strong>，再用 <code>exportfs -v</code> 验证效果：</p>
+<pre><code>sudo exportfs -ra
+sudo exportfs -v
+</code></pre>
+<p><img alt="图片" src="assets/0cd8889ee51c6d8a8947f6bd615d6bd1.png"/></p>
+<p>现在，你就可以使用 <code>systemctl</code> 来启动NFS服务器了：</p>
+<pre><code>sudo systemctl start  nfs-server
+sudo systemctl enable nfs-server
+sudo systemctl status nfs-server
+</code></pre>
+<p><img alt="图片" src="assets/29fb58f93f0e764ca8309ed9eff5175a.png"/></p>
+<p>你还可以使用命令 <code>showmount</code> 来检查NFS的网络挂载情况：</p>
+<pre><code>showmount -e 127.0.0.1
+</code></pre>
+<p><img alt="图片" src="assets/905ea675a49daef860d21b41a668d6d2.png"/></p>
+<h2 id="如何安装nfs客户端">如何安装NFS客户端</h2>
+<p>有了NFS服务器之后，为了让Kubernetes集群能够访问NFS存储服务，我们还需要在每个节点上都安装NFS客户端。</p>
+<p>这项工作只需要一条apt命令，不需要额外的配置：</p>
+<pre><code>sudo apt -y install nfs-common
+</code></pre>
+<p>同样，在节点上可以用 <code>showmount</code> 检查NFS能否正常挂载，注意IP地址要写成NFS服务器的地址，我在这里就是“192.168.10.208”：</p>
+<p><img alt="图片" src="assets/7ed89f8468d6d4fa315a6d456f2eee9c.png"/></p>
+<p>现在让我们尝试手动挂载一下NFS网络存储，先创建一个目录 <code>/tmp/test</code> 作为挂载点：</p>
+<pre><code>mkdir -p /tmp/test
+</code></pre>
+<p>然后用命令 <code>mount</code> 把NFS服务器的共享目录挂载到刚才创建的本地目录上：</p>
+<pre><code>sudo mount -t nfs 192.168.10.208:/tmp/nfs /tmp/test
+</code></pre>
+<p>最后测试一下，我们在 <code>/tmp/test</code> 里随便创建一个文件，比如 <code>x.yml</code>：</p>
+<pre><code>touch /tmp/test/x.yml
+</code></pre>
+<p>再回到NFS服务器，检查共享目录 <code>/tmp/nfs</code>，应该会看到也出现了一个同样的文件 <code>x.yml</code>，这就说明NFS安装成功了。之后集群里的任意节点，只要通过NFS客户端，就能把数据写入NFS服务器，实现网络存储。</p>
+<h2 id="如何使用nfs存储卷">如何使用NFS存储卷</h2>
+<p>现在我们已经为Kubernetes配置好了NFS存储系统，就可以使用它来创建新的PV存储对象了。</p>
+<p>先来手工分配一个存储卷，需要指定 <code>storageClassName</code> 是 <code>nfs</code>，而 <code>accessModes</code> 可以设置成 <code>ReadWriteMany</code>，这是由NFS的特性决定的，它<strong>支持多个节点同时访问一个共享目录</strong>。</p>
+<p>因为这个存储卷是NFS系统，所以我们还需要在YAML里添加 <code>nfs</code> 字段，指定NFS服务器的IP地址和共享目录名。</p>
+<p>这里我在NFS服务器的 <code>/tmp/nfs</code> 目录里又创建了一个新的目录 <code>1g-pv</code>，表示分配了1GB的可用存储空间，相应的，PV里的 <code>capacity</code> 也要设置成同样的数值，也就是 <code>1Gi</code>。</p>
+<p>把这些字段都整理好后，我们就得到了一个使用NFS网络存储的YAML描述文件：</p>
+<pre><code>apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-1g-pv
+
+spec:
+  storageClassName: nfs
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 1Gi
+
+  nfs:
+    path: /tmp/nfs/1g-pv
+    server: 192.168.10.208
+</code></pre>
+<p>现在就可以用命令 <code>kubectl apply</code> 来创建PV对象，再用 <code>kubectl get pv</code> 查看它的状态：</p>
+<pre><code>kubectl apply -f nfs-static-pv.yml
+kubectl get pv
+</code></pre>
+<p><img alt="图片" src="assets/3bb0be2483e92467d3cac14fbc635739.png"/></p>
+<p><strong>再次提醒你注意，<code>spec.nfs</code> 里的IP地址一定要正确，路径一定要存在（事先创建好）</strong>，否则Kubernetes按照PV的描述会无法挂载NFS共享目录，PV就会处于“pending”状态无法使用。</p>
+<p>有了PV，我们就可以定义申请存储的PVC对象了，它的内容和PV差不多，但不涉及NFS存储的细节，只需要用 <code>resources.request</code> 来表示希望要有多大的容量，这里我写成1GB，和PV的容量相同：</p>
+<pre><code>apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-static-pvc
+
+spec:
+  storageClassName: nfs
+  accessModes:
+    - ReadWriteMany
+
+  resources:
+    requests:
+      storage: 1Gi
+</code></pre>
+<p>创建PVC对象之后，Kubernetes就会根据PVC的描述，找到最合适的PV，把它们“绑定”在一起，也就是存储分配成功：</p>
+<p><img alt="图片" src="assets/a7bbcc5dce117f9872cee3f08e6a6c8c.png"/></p>
+<p>我们再创建一个Pod，把PVC挂载成它的一个volume，具体的做法和[上节课]是一样的，用 <code>persistentVolumeClaim</code> 指定PVC的名字就可以了：</p>
+<pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-static-pod
+
+spec:
+  volumes:
+  - name: nfs-pvc-vol
+    persistentVolumeClaim:
+      claimName: nfs-static-pvc
+
+  containers:
+    - name: nfs-pvc-test
+      image: nginx:alpine
+      ports:
+      - containerPort: 80
+
+      volumeMounts:
+        - name: nfs-pvc-vol
+          mountPath: /tmp
+</code></pre>
+<p>Pod、PVC、PV和NFS存储的关系可以用下图来形象地表示，你可以对比一下HostPath PV的用法，看看有什么不同：</p>
+<p><img alt="图片" src="assets/2a21d16b028afdea4f525439bd8f06a7.jpg"/></p>
+<p>因为我们在PV/PVC里指定了 <code>storageClassName</code> 是 <code>nfs</code>，节点上也安装了NFS客户端，所以Kubernetes就会自动执行NFS挂载动作，把NFS的共享目录 <code>/tmp/nfs/1g-pv</code> 挂载到Pod里的 <code>/tmp</code>，完全不需要我们去手动管理。</p>
+<p>最后还是测试一下，用 <code>kubectl apply</code> 创建Pod之后，我们用 <code>kubectl exec</code> 进入Pod，再试着操作NFS共享目录：</p>
+<p><img alt="图片" src="assets/bbc244b6cd21b71f50807864718d8990.png"/></p>
+<p>退出Pod，再看一下NFS服务器的 <code>/tmp/nfs/1g-pv</code> 目录，你就会发现Pod里创建的文件确实写入了共享目录：</p>
+<p><img alt="图片" src="assets/87cdc722da478db6f938db4d424be0d0.png"/></p>
+<p>而且更好的是，因为NFS是一个网络服务，不会受Pod调度位置的影响，所以只要网络通畅，这个PV对象就会一直可用，数据也就实现了真正的持久化存储。</p>
+<h2 id="如何部署nfs-provisoner">如何部署NFS Provisoner</h2>
+<p>现在有了NFS这样的网络存储系统，你是不是认为Kubernetes里的数据持久化问题就已经解决了呢？</p>
+<p>对于这个问题，我觉得可以套用一句现在的流行语：“解决了，但没有完全解决。”</p>
+<p>说它“解决了”，是因为网络存储系统确实能够让集群里的Pod任意访问，数据在Pod销毁后仍然存在，新创建的Pod可以再次挂载，然后读取之前写入的数据，整个过程完全是自动化的。</p>
+<p>说它“没有完全解决”，是因为<strong>PV还是需要人工管理</strong>，必须要由系统管理员手动维护各种存储设备，再根据开发需求逐个创建PV，而且PV的大小也很难精确控制，容易出现空间不足或者空间浪费的情况。</p>
+<p>在我们的这个实验环境里，只有很少的PV需求，管理员可以很快分配PV存储卷，但是在一个大集群里，每天可能会有几百几千个应用需要PV存储，如果仍然用人力来管理分配存储，管理员很可能会忙得焦头烂额，导致分配存储的工作大量积压。</p>
+<p>那么能不能让创建PV的工作也实现自动化呢？或者说，让计算机来代替人类来分配存储卷呢？</p>
+<p>这个在Kubernetes里就是“<strong>动态存储卷</strong>”的概念，它可以用StorageClass绑定一个Provisioner对象，而这个Provisioner就是一个能够自动管理存储、创建PV的应用，代替了原来系统管理员的手工劳动。</p>
+<p>有了“动态存储卷”的概念，前面我们讲的手工创建的PV就可以称为“静态存储卷”。</p>
+<p>目前，Kubernetes里每类存储设备都有相应的Provisioner对象，对于NFS来说，它的Provisioner就是“NFS subdir external provisioner”，你可以在GitHub上找到这个项目（<a href="https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner" target="_blank">https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner</a>）。</p>
+<p>NFS Provisioner也是以Pod的形式运行在Kubernetes里的，<strong>在GitHub的 <code>deploy</code> 目录里是部署它所需的YAML文件，一共有三个，分别是rbac.yaml、class.yaml和deployment.yaml</strong>。</p>
+<p>不过这三个文件只是示例，想在我们的集群里真正运行起来还要修改其中的两个文件。</p>
+<p>第一个要修改的是rbac.yaml，它使用的是默认的 <code>default</code> 名字空间，应该把它改成其他的名字空间，避免与普通应用混在一起，你可以用“查找替换”的方式把它统一改成 <code>kube-system</code>。</p>
+<p>第二个要修改的是deployment.yaml，它要修改的地方比较多。首先要把名字空间改成和rbac.yaml一样，比如是 <code>kube-system</code>，然后重点要修改 <code>volumes</code> 和 <code>env</code> 里的IP地址和共享目录名，必须和集群里的NFS服务器配置一样。</p>
+<p>按照我们当前的环境设置，就应该把IP地址改成 <code>192.168.10.208</code>，目录名改成 <code>/tmp/nfs</code>：</p>
+<pre><code>spec:
+  template:
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+		  ...
+          env:
+            - name: PROVISIONER_NAME
+              value: k8s-sigs.io/nfs-subdir-external-provisioner
+            - name: NFS_SERVER
+              value: 192.168.10.208        #改IP地址
+            - name: NFS_PATH
+              value: /tmp/nfs              #改共享目录名
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: 192.168.10.208         #改IP地址
+            Path: /tmp/nfs                 #改共享目录名
+</code></pre>
+<p>还有一件麻烦事，deployment.yaml的镜像仓库用的是gcr.io，拉取很困难，而国内的镜像网站上偏偏还没有它，为了让实验能够顺利进行，我不得不“曲线救国”，把它的镜像转存到了Docker Hub上。</p>
+<p>所以你还需要把镜像的名字由原来的“k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2”改成“chronolaw/nfs-subdir-external-provisioner:v4.0.2”，其实也就是变动一下镜像的用户名而已。</p>
+<p>把这两个YAML修改好之后，我们就可以在Kubernetes里创建NFS Provisioner了：</p>
+<pre><code>kubectl apply -f rbac.yaml
+kubectl apply -f class.yaml
+kubectl apply -f deployment.yaml
+</code></pre>
+<p>使用命令 <code>kubectl get</code>，再加上名字空间限定 <code>-n kube-system</code>，就可以看到NFS Provisioner在Kubernetes里运行起来了。</p>
+<p><img alt="图片" src="assets/35758cbe60ddf264bcf59d703fd4986d.png"/></p>
+<h2 id="如何使用nfs动态存储卷">如何使用NFS动态存储卷</h2>
+<p>比起静态存储卷，动态存储卷的用法简单了很多。因为有了Provisioner，我们就不再需要手工定义PV对象了，只需要在PVC里指定StorageClass对象，它再关联到Provisioner。</p>
+<p>我们来看一下NFS默认的StorageClass定义：</p>
+<pre><code>apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-client
+
+provisioner: k8s-sigs.io/nfs-subdir-external-provisioner 
+parameters:
+  archiveOnDelete: "false"
+</code></pre>
+<p>YAML里的关键字段是 <code>provisioner</code>，它指定了应该使用哪个Provisioner。另一个字段 <code>parameters</code> 是调节Provisioner运行的参数，需要参考文档来确定具体值，在这里的 <code>archiveOnDelete: "false"</code> 就是自动回收存储空间。</p>
+<p>理解了StorageClass的YAML之后，你也可以不使用默认的StorageClass，而是根据自己的需求，任意定制具有不同存储特性的StorageClass，比如添加字段 <code>onDelete: "retain"</code> 暂时保留分配的存储，之后再手动删除：</p>
+<pre><code>apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-client-retained
+
+provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+parameters:
+  onDelete: "retain"
+</code></pre>
+<p>接下来我们定义一个PVC，向系统申请10MB的存储空间，使用的StorageClass是默认的 <code>nfs-client</code>：</p>
+<pre><code>apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-dyn-10m-pvc
+
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteMany
+
+  resources:
+    requests:
+      storage: 10Mi
+</code></pre>
+<p>写好了PVC，我们还是在Pod里用 <code>volumes</code> 和 <code>volumeMounts</code> 挂载，然后Kubernetes就会自动找到NFS Provisioner，在NFS的共享目录上创建出合适的PV对象：</p>
+<pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-dyn-pod
+
+spec:
+  volumes:
+  - name: nfs-dyn-10m-vol
+    persistentVolumeClaim:
+      claimName: nfs-dyn-10m-pvc
+
+  containers:
+    - name: nfs-dyn-test
+      image: nginx:alpine
+      ports:
+      - containerPort: 80
+
+      volumeMounts:
+        - name: nfs-dyn-10m-vol
+          mountPath: /tmp
+</code></pre>
+<p>使用 <code>kubectl apply</code> 创建好PVC和Pod，让我们来查看一下集群里的PV状态：</p>
+<p><img alt="图片" src="assets/570d73409db1edc757yy10e6aba56ebb.png"/></p>
+<p>从截图你可以看到，虽然我们没有直接定义PV对象，但由于有NFS Provisioner，它就自动创建一个PV，大小刚好是在PVC里申请的10MB。</p>
+<p>如果你这个时候再去NFS服务器上查看共享目录，也会发现多出了一个目录，名字与这个自动创建的PV一样，但加上了名字空间和PVC的前缀：</p>
+<p><img alt="图片" src="assets/a9b6942b824bc9f7841850ee15yy68ea.png"/></p>
+<p>我还是把Pod、PVC、StorageClass和Provisioner的关系画成了一张图，你可以清楚地看出来这些对象的关联关系，还有Pod是如何最终找到存储设备的：</p>
+<p><img alt="图片" src="assets/e3905990be6fb8739fb51a4ab9856f1e.jpg"/></p>
+<h2 id="小结">小结</h2>
+<p>好了，今天的这节课里我们继续学习PV/PVC，引入了网络存储系统，以NFS为例研究了静态存储卷和动态存储卷的用法，其中的核心对象是StorageClass和Provisioner。</p>
+<p>我再小结一下今天的要点：</p>
+<ol>
+<li>在Kubernetes集群里，网络存储系统更适合数据持久化，NFS是最容易使用的一种网络存储系统，要事先安装好服务端和客户端。</li>
+<li>可以编写PV手工定义NFS静态存储卷，要指定NFS服务器的IP地址和共享目录名。</li>
+<li>使用NFS动态存储卷必须要部署相应的Provisioner，在YAML里正确配置NFS服务器。</li>
+<li>动态存储卷不需要手工定义PV，而是要定义StorageClass，由关联的Provisioner自动创建PV完成绑定。</li>
+</ol>
+<h2 id="课下作业">课下作业</h2>
+<p>最后是课下作业时间，给你留两个思考题：</p>
+<ol>
+<li>动态存储卷相比静态存储卷有什么好处？有没有缺点？</li>
+<li>StorageClass在动态存储卷的分配过程中起到了什么作用？</li>
+</ol>
+<p>期待你的思考。如果觉得有收获，也欢迎你分享给朋友一起讨论。我们下节课再见。</p>
+<p><img alt="图片" src="assets/2022f24dcc6a3d76214bbc59c3bd2aff.jpg"/></p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#3c50505005080d0d0c0b7c5b515d5550125f5351" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358652adc910817',t:'MTc0NTUyNzAxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="30 系统监控：如何使用Metrics Server和Prometheus？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>30 系统监控：如何使用Metrics Server和Prometheus？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%bf%8e%e9%9a%be%e8%80%8c%e4%b8%8a%ef%bc%8c%e5%81%9a%e4%ba%91%e5%8e%9f%e7%94%9f%e6%97%b6%e4%bb%a3%e7%9a%84%e5%bc%84%e6%bd%ae%e5%84%bf.md.html" id="00 开篇词 迎难而上，做云原生时代的弄潮儿.md.html">00 开篇词 迎难而上，做云原生时代的弄潮儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/00%20%e8%af%be%e5%89%8d%e5%87%86%e5%a4%87%20%e5%8a%a8%e6%89%8b%e5%ae%9e%e8%b7%b5%e6%89%8d%e6%98%af%e6%9c%80%e5%a5%bd%e7%9a%84%e5%ad%a6%e4%b9%a0%e6%96%b9%e5%bc%8f.md.html" id="00 课前准备 动手实践才是最好的学习方式.md.html">00 课前准备 动手实践才是最好的学习方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/01%20%e5%88%9d%e8%af%86%e5%ae%b9%e5%99%a8%ef%bc%9a%e4%b8%87%e4%ba%8b%e5%bc%80%e5%a4%b4%e9%9a%be.md.html" id="01 初识容器：万事开头难.md.html">01 初识容器：万事开头难.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%a2%ab%e9%9a%94%e7%a6%bb%e7%9a%84%e8%bf%9b%e7%a8%8b%ef%bc%9a%e4%b8%80%e8%b5%b7%e6%9d%a5%e7%9c%8b%e7%9c%8b%e5%ae%b9%e5%99%a8%e7%9a%84%e6%9c%ac%e8%b4%a8.md.html" id="02 被隔离的进程：一起来看看容器的本质.md.html">02 被隔离的进程：一起来看看容器的本质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/03%20%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9a%e4%bc%9a%e4%ba%86%e8%bf%99%e4%ba%9b%e4%bd%a0%e5%b0%b1%e6%98%afDocker%e9%ab%98%e6%89%8b.md.html" id="03 容器化的应用：会了这些你就是Docker高手.md.html">03 容器化的应用：会了这些你就是Docker高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%88%9b%e5%bb%ba%e5%ae%b9%e5%99%a8%e9%95%9c%e5%83%8f%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e6%ad%a3%e7%a1%ae%e3%80%81%e9%ab%98%e6%95%88%e7%9a%84Dockerfile.md.html" id="04 创建容器镜像：如何编写正确、高效的Dockerfile.md.html">04 创建容器镜像：如何编写正确、高效的Dockerfile.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/05%20%e9%95%9c%e5%83%8f%e4%bb%93%e5%ba%93%ef%bc%9a%e8%af%a5%e6%80%8e%e6%a0%b7%e7%94%a8%e5%a5%bdDocker%20Hub%e8%bf%99%e4%b8%aa%e5%ae%9d%e8%97%8f.md.html" id="05 镜像仓库：该怎样用好Docker Hub这个宝藏.md.html">05 镜像仓库：该怎样用好Docker Hub这个宝藏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%93%e7%a0%b4%e6%ac%a1%e5%85%83%e5%a3%81%ef%bc%9a%e5%ae%b9%e5%99%a8%e8%af%a5%e5%a6%82%e4%bd%95%e4%b8%8e%e5%a4%96%e7%95%8c%e4%ba%92%e8%81%94%e4%ba%92%e9%80%9a.md.html" id="06 打破次元壁：容器该如何与外界互联互通.md.html">06 打破次元壁：容器该如何与外界互联互通.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/07%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acDocker.md.html" id="07 实战演练：玩转Docker.md.html">07 实战演练：玩转Docker.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/08%20%e8%a7%86%e9%a2%91%ef%bc%9a%e5%85%a5%e9%97%a8%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="08 视频：入门篇实操总结.md.html">08 视频：入门篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/09%20%e8%b5%b0%e8%bf%91%e4%ba%91%e5%8e%9f%e7%94%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e6%9c%ac%e6%9c%ba%e6%90%ad%e5%bb%ba%e5%b0%8f%e5%b7%a7%e5%ae%8c%e5%a4%87%e7%9a%84Kubernetes%e7%8e%af%e5%a2%83.md.html" id="09 走近云原生：如何在本机搭建小巧完备的Kubernetes环境.md.html">09 走近云原生：如何在本机搭建小巧完备的Kubernetes环境.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/10%20%e8%87%aa%e5%8a%a8%e5%8c%96%e7%9a%84%e8%bf%90%e7%bb%b4%e7%ae%a1%e7%90%86%ef%bc%9a%e6%8e%a2%e7%a9%b6Kubernetes%e5%b7%a5%e4%bd%9c%e6%9c%ba%e5%88%b6%e7%9a%84%e5%a5%a5%e7%a7%98.md.html" id="10 自动化的运维管理：探究Kubernetes工作机制的奥秘.md.html">10 自动化的运维管理：探究Kubernetes工作机制的奥秘.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/11%20YAML%ef%bc%9aKubernetes%e4%b8%96%e7%95%8c%e9%87%8c%e7%9a%84%e9%80%9a%e7%94%a8%e8%af%ad.md.html" id="11 YAML：Kubernetes世界里的通用语.md.html">11 YAML：Kubernetes世界里的通用语.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/12%20Pod%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e8%bf%99%e4%b8%aaKubernetes%e9%87%8c%e6%9c%80%e6%a0%b8%e5%bf%83%e7%9a%84%e6%a6%82%e5%bf%b5%ef%bc%9f.md.html" id="12 Pod：如何理解这个Kubernetes里最核心的概念？.md.html">12 Pod：如何理解这个Kubernetes里最核心的概念？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/13%20Job_CronJob%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%9b%b4%e6%8e%a5%e7%94%a8Pod%e6%9d%a5%e5%a4%84%e7%90%86%e4%b8%9a%e5%8a%a1%ef%bc%9f.md.html" id="13 Job_CronJob：为什么不直接用Pod来处理业务？.md.html">13 Job_CronJob：为什么不直接用Pod来处理业务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/14%20ConfigMap_Secret%ef%bc%9a%e6%80%8e%e6%a0%b7%e9%85%8d%e7%bd%ae%e3%80%81%e5%ae%9a%e5%88%b6%e6%88%91%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="14 ConfigMap_Secret：怎样配置、定制我的应用.md.html">14 ConfigMap_Secret：怎样配置、定制我的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%881%ef%bc%89.md.html" id="15 实战演练：玩转Kubernetes（1）.md.html">15 实战演练：玩转Kubernetes（1）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/16%20%e8%a7%86%e9%a2%91%ef%bc%9a%e5%88%9d%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="16 视频：初级篇实操总结.md.html">16 视频：初级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/17%20%e6%9b%b4%e7%9c%9f%e5%ae%9e%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%ef%bc%9a%e5%ae%9e%e9%99%85%e6%90%ad%e5%bb%ba%e5%a4%9a%e8%8a%82%e7%82%b9%e7%9a%84Kubernetes%e9%9b%86%e7%be%a4.md.html" id="17 更真实的云原生：实际搭建多节点的Kubernetes集群.md.html">17 更真实的云原生：实际搭建多节点的Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/18%20Deployment%ef%bc%9a%e8%ae%a9%e5%ba%94%e7%94%a8%e6%b0%b8%e4%b8%8d%e5%ae%95%e6%9c%ba.md.html" id="18 Deployment：让应用永不宕机.md.html">18 Deployment：让应用永不宕机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/19%20Daemonset%ef%bc%9a%e5%bf%a0%e5%ae%9e%e5%8f%af%e9%9d%a0%e7%9a%84%e7%9c%8b%e9%97%a8%e7%8b%97.md.html" id="19 Daemonset：忠实可靠的看门狗.md.html">19 Daemonset：忠实可靠的看门狗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/20%20Service%ef%bc%9a%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e7%9a%84%e5%ba%94%e5%af%b9%e4%b9%8b%e9%81%93.md.html" id="20 Service：微服务架构的应对之道.md.html">20 Service：微服务架构的应对之道.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/21%20Ingress%ef%bc%9a%e9%9b%86%e7%be%a4%e8%bf%9b%e5%87%ba%e6%b5%81%e9%87%8f%e7%9a%84%e6%80%bb%e7%ae%a1.md.html" id="21 Ingress：集群进出流量的总管.md.html">21 Ingress：集群进出流量的总管.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/22%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%882%ef%bc%89.md.html" id="22 实战演练：玩转Kubernetes（2）.md.html">22 实战演练：玩转Kubernetes（2）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/23%20%e8%a7%86%e9%a2%91%ef%bc%9a%e4%b8%ad%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="23 视频：中级篇实操总结.md.html">23 视频：中级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/24%20PersistentVolume%ef%bc%9a%e6%80%8e%e4%b9%88%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e6%8c%81%e4%b9%85%e5%8c%96%e7%9a%84%e9%9a%be%e9%a2%98%ef%bc%9f.md.html" id="24 PersistentVolume：怎么解决数据持久化的难题？.md.html">24 PersistentVolume：怎么解决数据持久化的难题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/25%20PersistentVolume%20+%20NFS%ef%bc%9a%e6%80%8e%e4%b9%88%e4%bd%bf%e7%94%a8%e7%bd%91%e7%bb%9c%e5%85%b1%e4%ba%ab%e5%ad%98%e5%82%a8%ef%bc%9f.md.html" id="25 PersistentVolume + NFS：怎么使用网络共享存储？.md.html">25 PersistentVolume + NFS：怎么使用网络共享存储？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/26%20StatefulSet%ef%bc%9a%e6%80%8e%e4%b9%88%e7%ae%a1%e7%90%86%e6%9c%89%e7%8a%b6%e6%80%81%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9f.md.html" id="26 StatefulSet：怎么管理有状态的应用？.md.html">26 StatefulSet：怎么管理有状态的应用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/27%20%e6%bb%9a%e5%8a%a8%e6%9b%b4%e6%96%b0%ef%bc%9a%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e5%b9%b3%e6%bb%91%e7%9a%84%e5%ba%94%e7%94%a8%e5%8d%87%e7%ba%a7%e9%99%8d%e7%ba%a7%ef%bc%9f.md.html" id="27 滚动更新：如何做到平滑的应用升级降级？.md.html">27 滚动更新：如何做到平滑的应用升级降级？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%ba%94%e7%94%a8%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9Pod%e8%bf%90%e8%a1%8c%e5%be%97%e6%9b%b4%e5%81%a5%e5%ba%b7%ef%bc%9f.md.html" id="28 应用保障：如何让Pod运行得更健康？.md.html">28 应用保障：如何让Pod运行得更健康？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/29%20%e9%9b%86%e7%be%a4%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%90%8d%e5%ad%97%e7%a9%ba%e9%97%b4%e5%88%86%e9%9a%94%e7%b3%bb%e7%bb%9f%e8%b5%84%e6%ba%90%ef%bc%9f.md.html" id="29 集群管理：如何用名字空间分隔系统资源？.md.html">29 集群管理：如何用名字空间分隔系统资源？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/30%20%e7%b3%bb%e7%bb%9f%e7%9b%91%e6%8e%a7%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Metrics%20Server%e5%92%8cPrometheus%ef%bc%9f.md.html" id="30 系统监控：如何使用Metrics Server和Prometheus？.md.html">30 系统监控：如何使用Metrics Server和Prometheus？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/31%20%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%ef%bc%9aCNI%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f%e5%8f%88%e6%98%af%e6%80%8e%e4%b9%88%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="31 网络通信：CNI是怎么回事？又是怎么工作的？.md.html">31 网络通信：CNI是怎么回事？又是怎么工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/32%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%883%ef%bc%89.md.html" id="32 实战演练：玩转Kubernetes（3）.md.html">32 实战演练：玩转Kubernetes（3）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/33%20%e8%a7%86%e9%a2%91%ef%bc%9a%e9%ab%98%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="33 视频：高级篇实操总结.md.html">33 视频：高级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%90%20docker-compose%ef%bc%9a%e5%8d%95%e6%9c%ba%e7%8e%af%e5%a2%83%e4%b8%8b%e7%9a%84%e5%ae%b9%e5%99%a8%e7%bc%96%e6%8e%92%e5%b7%a5%e5%85%b7.md.html" id="加餐 docker-compose：单机环境下的容器编排工具.md.html">加餐 docker-compose：单机环境下的容器编排工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%90%20%e8%b0%88%e8%b0%88Kong%20Ingress%20Controller.md.html" id="加餐 谈谈Kong Ingress Controller.md.html">加餐 谈谈Kong Ingress Controller.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%98%af%e7%bb%88%e7%82%b9%ef%bc%8c%e6%9b%b4%e6%98%af%e8%b5%b7%e7%82%b9.md.html" id="结束语 是终点，更是起点.md.html">结束语 是终点，更是起点.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="30 系统监控：如何使用Metrics Server和Prometheus？" id="title">30 系统监控：如何使用Metrics Server和Prometheus？</h1>
+<div><p>你好，我是Chrono。</p>
+<p>在前面的两节课里，我们学习了对Pod和对集群的一些管理方法，其中的要点就是设置资源配额，让Kubernetes用户能公平合理地利用系统资源。</p>
+<p>虽然有了这些方法，但距离我们把Pod和集群管好用好还缺少一个很重要的方面——集群的可观测性。也就是说，我们希望给集群也安装上“检查探针”，观察到集群的资源利用率和其他指标，让集群的整体运行状况对我们“透明可见”，这样才能更准确更方便地做好集群的运维工作。</p>
+<p>但是观测集群是不能用“探针”这种简单的方式的，所以今天我就带你一起来看看Kubernetes为集群提供的两种系统级别的监控项目：Metrics Server和Prometheus，以及基于它们的水平自动伸缩对象HorizontalPodAutoscaler。</p>
+<h2 id="metrics-server">Metrics Server</h2>
+<p>如果你对Linux系统有所了解的话，也许知道有一个命令 <code>top</code> 能够实时显示当前系统的CPU和内存利用率，它是性能分析和调优的基本工具，非常有用。<strong>Kubernetes也提供了类似的命令，就是 <code>kubectl top</code>，不过默认情况下这个命令不会生效，必须要安装一个插件Metrics Server才可以。</strong></p>
+<p>Metrics Server是一个专门用来收集Kubernetes核心资源指标（metrics）的工具，它定时从所有节点的kubelet里采集信息，但是对集群的整体性能影响极小，每个节点只大约会占用1m的CPU和2MB的内存，所以性价比非常高。</p>
+<p>下面的<a href="https://kubernetes.io/zh-cn/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/#metrics-server" target="_blank">这张图</a>来自Kubernetes官网，你可以对Metrics Server的工作方式有个大概了解：它调用kubelet的API拿到节点和Pod的指标，再把这些信息交给apiserver，这样kubectl、HPA就可以利用apiserver来读取指标了：</p>
+<p><img alt="图片" src="assets/8f4a22788c03b06377cabe791c67989e.png"/></p>
+<p>在Metrics Server的项目网址（<a href="https://github.com/kubernetes-sigs/metrics-server" target="_blank">https://github.com/kubernetes-sigs/metrics-server</a>）可以看到它的说明文档和安装步骤，不过如果你已经按照[第17讲]用kubeadm搭建了Kubernetes集群，就已经具备了全部前提条件，接下来只需要几个简单的操作就可以完成安装。</p>
+<p>Metrics Server的所有依赖都放在了一个YAML描述文件里，你可以使用wget或者curl下载：</p>
+<pre><code>wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+</code></pre>
+<p>但是在 <code>kubectl apply</code> 创建对象之前，我们还有两个准备工作要做。</p>
+<p><strong>第一个工作，是修改YAML文件</strong>。你需要在Metrics Server的Deployment对象里，加上一个额外的运行参数 <code>--kubelet-insecure-tls</code>，也就是这样：</p>
+<pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-server
+  namespace: kube-system
+spec:
+  ... ... 
+  template:
+    spec:
+      containers:
+      - args:
+        - --kubelet-insecure-tls
+        ... ... 
+</code></pre>
+<p>这是因为Metrics Server默认使用TLS协议，要验证证书才能与kubelet实现安全通信，而我们的实验环境里没有这个必要，加上这个参数可以让我们的部署工作简单很多（生产环境里就要慎用）。</p>
+<p><strong>第二个工作，是预先下载Metrics Server的镜像。</strong>看这个YAML文件，你会发现Metrics Server的镜像仓库用的是gcr.io，下载很困难。好在它也有国内的镜像网站，你可以用[第17讲]里的办法，下载后再改名，然后把镜像加载到集群里的节点上。</p>
+<p>这里我给出一段Shell脚本代码，供你参考：</p>
+<pre><code>repo=registry.aliyuncs.com/google_containers
+
+name=k8s.gcr.io/metrics-server/metrics-server:v0.6.1
+src_name=metrics-server:v0.6.1
+
+docker pull $repo/$src_name
+
+docker tag $repo/$src_name $name
+docker rmi $repo/$src_name
+</code></pre>
+<p>两个准备工作都完成之后，我们就可以使用YAML部署Metrics Server了：</p>
+<pre><code>kubectl apply -f components.yaml
+</code></pre>
+<p>Metrics Server属于名字空间“kube-system”，可以用 <code>kubectl get pod</code> 加上 <code>-n</code> 参数查看它是否正常运行：</p>
+<pre><code>kubectl get pod -n kube-system
+</code></pre>
+<p><img alt="图片" src="assets/b93124cbc1b7d98b7c4f055f0723bf93.png"/></p>
+<p>现在有了Metrics Server插件，我们就可以使用命令 <code>kubectl top</code> 来查看Kubernetes集群当前的资源状态了。它有<strong>两个子命令，<code>node</code> 查看节点的资源使用率，<code>pod</code> 查看Pod的资源使用率</strong>。</p>
+<p>由于Metrics Server收集信息需要时间，我们必须等一小会儿才能执行命令，查看集群里节点和Pod状态：</p>
+<pre><code>kubectl top node
+kubectl top pod -n kube-system
+</code></pre>
+<p><img alt="图片" src="assets/d450b7e01f5f47ac56335f6c69707e61.png"/></p>
+<p>从这个截图里你可以看到：</p>
+<ul>
+<li>集群里两个节点CPU使用率都不高，分别是8%和4%，但内存用的很多，master节点用了差不多一半（48%），而worker节点几乎用满了（89%）。</li>
+<li>名字空间“kube-system”里有很多Pod，其中apiserver最消耗资源，使用了75m的CPU和363MB的内存。</li>
+</ul>
+<h2 id="horizontalpodautoscaler">HorizontalPodAutoscaler</h2>
+<p>有了Metrics Server，我们就可以轻松地查看集群的资源使用状况了，不过它另外一个更重要的功能是辅助实现应用的“<strong>水平自动伸缩</strong>”。</p>
+<p>在[第18讲]里我们提到有一个命令 <code>kubectl scale</code>，可以任意增减Deployment部署的Pod数量，也就是水平方向的“扩容”和“缩容”。但是手动调整应用实例数量还是比较麻烦的，需要人工参与，也很难准确把握时机，难以及时应对生产环境中突发的大流量，所以最好能把这个“扩容”“缩容”也变成自动化的操作。</p>
+<p>Kubernetes为此就定义了一个新的API对象，叫做“<strong>HorizontalPodAutoscaler</strong>”，简称是“<strong>hpa</strong>”。顾名思义，它是专门用来自动伸缩Pod数量的对象，适用于Deployment和StatefulSet，但不能用于DaemonSet（原因很明显吧）。</p>
+<p>HorizontalPodAutoscaler的能力完全基于Metrics Server，它从Metrics Server获取当前应用的运行指标，主要是CPU使用率，再依据预定的策略增加或者减少Pod的数量。</p>
+<p>下面我们就来看看该怎么使用HorizontalPodAutoscaler，首先要定义Deployment和Service，创建一个Nginx应用，作为自动伸缩的目标对象：</p>
+<pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ngx-hpa-dep
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ngx-hpa-dep
+
+  template:
+    metadata:
+      labels:
+        app: ngx-hpa-dep
+    spec:
+      containers:
+      - image: nginx:alpine
+        name: nginx
+        ports:
+        - containerPort: 80
+
+        resources:
+          requests:
+            cpu: 50m
+            memory: 10Mi
+          limits:
+            cpu: 100m
+            memory: 20Mi
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ngx-hpa-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ngx-hpa-dep
+</code></pre>
+<p>在这个YAML里我只部署了一个Nginx实例，名字是 <code>ngx-hpa-dep</code>。<strong>注意在它的</strong> <code>spec</code> <strong>里一定要用 <code>resources</code> 字段写清楚资源配额</strong>，否则HorizontalPodAutoscaler会无法获取Pod的指标，也就无法实现自动化扩缩容。</p>
+<p>接下来我们要用命令 <code>kubectl autoscale</code> 创建一个HorizontalPodAutoscaler的样板YAML文件，它有三个参数：</p>
+<ul>
+<li>min，Pod数量的最小值，也就是缩容的下限。</li>
+<li>max，Pod数量的最大值，也就是扩容的上限。</li>
+<li>cpu-percent，CPU使用率指标，当大于这个值时扩容，小于这个值时缩容。</li>
+</ul>
+<p>好，现在我们就来为刚才的Nginx应用创建HorizontalPodAutoscaler，指定Pod数量最少2个，最多10个，CPU使用率指标设置的小一点，5%，方便我们观察扩容现象：</p>
+<pre><code>export out="--dry-run=client -o yaml"              # 定义Shell变量
+kubectl autoscale deploy ngx-hpa-dep --min=2 --max=10 --cpu-percent=5 $out
+</code></pre>
+<p>得到的YAML描述文件就是这样：</p>
+<pre><code>apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ngx-hpa
+
+spec:
+  maxReplicas: 10
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ngx-hpa-dep
+  targetCPUUtilizationPercentage: 5
+</code></pre>
+<p>我们再使用命令 <code>kubectl apply</code> 创建这个HorizontalPodAutoscaler后，它会发现Deployment里的实例只有1个，不符合min定义的下限的要求，就先扩容到2个：</p>
+<p><img alt="图片" src="assets/3ec01a9746274ac28b10d612f1512a6c.png"/></p>
+<p>从这张截图里你可以看到，HorizontalPodAutoscaler会根据YAML里的描述，找到要管理的Deployment，把Pod数量调整成2个，再通过Metrics Server不断地监测Pod的CPU使用率。</p>
+<p>下面我们来给Nginx加上压力流量，运行一个测试Pod，使用的镜像是“<strong>httpd:alpine</strong>”，它里面有HTTP性能测试工具ab（Apache Bench）：</p>
+<pre><code>kubectl run test -it --image=httpd:alpine -- sh
+</code></pre>
+<p><img alt="图片" src="assets/d058182500cb83ac3e3c9cc01a42c9bd.png"/></p>
+<p>然后我们向Nginx发送一百万个请求，持续1分钟，再用 <code>kubectl get hpa</code> 来观察HorizontalPodAutoscaler的运行状况：</p>
+<pre><code>ab -c 10 -t 60 -n 1000000 'http://ngx-hpa-svc/'
+</code></pre>
+<p><img alt="图片" src="assets/6538ecd78118fabeb8d7c8f4fbabdbb4.png"/></p>
+<p>因为Metrics Server大约每15秒采集一次数据，所以HorizontalPodAutoscaler的自动化扩容和缩容也是按照这个时间点来逐步处理的。</p>
+<p>当它发现目标的CPU使用率超过了预定的5%后，就会以2的倍数开始扩容，一直到数量上限，然后持续监控一段时间，如果CPU使用率回落，就会再缩容到最小值。</p>
+<h2 id="prometheus">Prometheus</h2>
+<p>显然，有了Metrics Server和HorizontalPodAutoscaler的帮助，我们的应用管理工作又轻松了一些。不过，Metrics Server能够获取的指标还是太少了，只有CPU和内存，想要监控到更多更全面的应用运行状况，还得请出这方面的权威项目“<strong>Prometheus</strong>”。</p>
+<p>其实，Prometheus的历史比Kubernetes还要早一些，它最初是由Google的离职员工在2012年创建的开源项目，灵感来源于Borg配套的BorgMon监控系统。后来在2016年，Prometheus作为第二个项目加入了CNCF，并在2018年继Kubernetes之后顺利毕业，成为了CNCF的不折不扣的“二当家”，也是云原生监控领域的“事实标准”。</p>
+<p><img alt="图片" src="assets/69f4b76ca7323433cyy28574f1ee9358.png"/></p>
+<p>和Kubernetes一样，Prometheus也是一个庞大的系统，我们这里就只做一个简略的介绍。</p>
+<p>下面的<a href="https://prometheus.io/docs/introduction/overview/" target="_blank">这张图</a>是Prometheus官方的架构图，几乎所有文章在讲Prometheus的时候必然要拿出来，所以我也没办法“免俗”：</p>
+<p><img alt="图片" src="assets/e62cebb3acc995246f203d698dfdc964.png"/></p>
+<p>Prometheus系统的核心是它的Server，里面有一个时序数据库TSDB，用来存储监控数据，另一个组件Retrieval使用拉取（Pull）的方式从各个目标收集数据，再通过HTTP Server把这些数据交给外界使用。</p>
+<p>在Prometheus Server之外还有三个重要的组件：</p>
+<ul>
+<li>Push Gateway，用来适配一些特殊的监控目标，把默认的Pull模式转变为Push模式。</li>
+<li>Alert Manager，告警中心，预先设定规则，发现问题时就通过邮件等方式告警。</li>
+<li>Grafana是图形化界面，可以定制大量直观的监控仪表盘。</li>
+</ul>
+<p>由于同属于CNCF，所以Prometheus自然就是“云原生”，在Kubernetes里运行是顺理成章的事情。不过它包含的组件实在是太多，部署起来有点麻烦，这里我选用了“<strong>kube-prometheus</strong>”项目（<a href="https://github.com/prometheus-operator/kube-prometheus/" target="_blank">https://github.com/prometheus-operator/kube-prometheus/</a>），感觉操作起来比较容易些。</p>
+<p>下面就跟着我来在Kubernetes实验环境里体验一下Prometheus吧。</p>
+<p>我们先要下载kube-prometheus的源码包，当前的最新版本是0.11：</p>
+<pre><code>wget https://github.com/prometheus-operator/kube-prometheus/archive/refs/tags/v0.11.0.tar.gz
+</code></pre>
+<p>解压缩后，Prometheus部署相关的YAML文件都在 <code>manifests</code> 目录里，有近100个，你可以先大概看一下。</p>
+<p>和Metrics Server一样，我们也必须要做一些准备工作，才能够安装Prometheus。</p>
+<p>第一步，是修改 <code>prometheus-service.yaml</code>、<code>grafana-service.yaml</code>。</p>
+<p>这两个文件定义了Prometheus和Grafana服务对象，我们可以给它们添加 <code>type: NodePort</code>（参考[第20讲]），这样就可以直接通过节点的IP地址访问（当然你也可以配置成Ingress）。</p>
+<p><strong>第二步，是修改 <code>kubeStateMetrics-deployment.yaml</code>、<code>prometheusAdapter-deployment.yaml</code>，因为它们里面有两个存放在gcr.io的镜像，必须解决下载镜像的问题。</strong></p>
+<p>但很遗憾，我没有在国内网站上找到它们的下载方式，为了能够顺利安装，只能把它们下载后再上传到Docker Hub上。所以你需要修改镜像名字，把前缀都改成 <code>chronolaw</code>：</p>
+<pre><code>image: k8s.gcr.io/kube-state-metrics/kube-state-metrics:v2.5.0
+image: k8s.gcr.io/prometheus-adapter/prometheus-adapter:v0.9.1
+
+image: chronolaw/kube-state-metrics:v2.5.0
+image: chronolaw/prometheus-adapter:v0.9.1
+</code></pre>
+<p>这两个准备工作完成之后，我们要执行两个 <code>kubectl create</code> 命令来部署Prometheus，先是 <code>manifests/setup</code> 目录，创建名字空间等基本对象，然后才是 <code>manifests</code> 目录：</p>
+<pre><code>kubectl create -f manifests/setup
+kubectl create -f manifests
+</code></pre>
+<p>Prometheus的对象都在名字空间“<strong>monitoring</strong>”里，创建之后可以用 <code>kubectl get</code> 来查看状态：</p>
+<p><img alt="图片" src="assets/1b4a1a1313ede9058b348c13a1020c09.png"/></p>
+<p>确定这些Pod都运行正常，我们再来看看它对外的服务端口：</p>
+<pre><code>kubectl get svc -n monitoring
+</code></pre>
+<p><img alt="图片" src="assets/4c423a203a688271d9d08b15a6782d59.png"/></p>
+<p>前面修改了Grafana和Prometheus的Service对象，所以这两个服务就在节点上开了端口，Grafana是“30358”，Prometheus有两个端口，其中“9090”对应的“30827”是Web端口。</p>
+<p>在浏览器里输入节点的IP地址（我这里是“<a href="http://192.168.10.210" target="_blank">http://192.168.10.210</a>”），再加上端口号“30827”，我们就能看到Prometheus自带的Web界面，：</p>
+<p><img alt="图片" src="assets/1b73040e258dfa8776c2a0a657a885dc.png"/></p>
+<p>Web界面上有一个查询框，可以使用PromQL来查询指标，生成可视化图表，比如在这个截图里我就选择了“node_memory_Active_bytes”这个指标，意思是当前正在使用的内存容量。</p>
+<p>Prometheus的Web界面比较简单，通常只用来调试、测试，不适合实际监控。我们再来看Grafana，访问节点的端口“30358”（我这里是“<a href="http://192.168.10.210:30358" target="_blank">http://192.168.10.210:30358</a>”），它会要求你先登录，默认的用户名和密码都是“<strong>admin</strong>”：</p>
+<p><img alt="图片" src="assets/a2614b09347b3436c317644374c36e31.png"/></p>
+<p>Grafana内部已经预置了很多强大易用的仪表盘，你可以在左侧菜单栏的“Dashboards - Browse”里任意挑选一个：</p>
+<p><img alt="图片" src="assets/23ddb3db05e36c2da4a8f8067366f55a.png"/></p>
+<p>比如我选择了“Kubernetes / Compute Resources / Namespace (Pods)”这个仪表盘，就会出来一个非常漂亮图表，比Metrics Server的 <code>kubectl top</code> 命令要好看得多，各种数据一目了然：</p>
+<p><img alt="图片" src="assets/1f6ccc0b6d358c29419276fbf74e38bd.png"/></p>
+<p>关于Prometheus就暂时介绍到这里，再往下讲可能就要偏离我们的Kubernetes主题了，如果你对它感兴趣的话，可以课后再去它的<a href="https://prometheus.io/" target="_blank">官网</a>上看文档，或者参考其他的学习资料。</p>
+<h2 id="小结">小结</h2>
+<p>在云原生时代，系统的透明性和可观测性是非常重要的。今天我们一起学习了Kubernetes里的两个系统监控项目：命令行方式的Metrics Server、图形化界面的Prometheus，利用好它们就可以让我们随时掌握Kubernetes集群的运行状态，做到“明察秋毫”。</p>
+<p>再简单小结一下今天的内容：</p>
+<ol>
+<li>Metrics Server是一个Kubernetes插件，能够收集系统的核心资源指标，相关的命令是 <code>kubectl top</code>。</li>
+<li>Prometheus是云原生监控领域的“事实标准”，用PromQL语言来查询数据，配合Grafana可以展示直观的图形界面，方便监控。</li>
+<li>HorizontalPodAutoscaler实现了应用的自动水平伸缩功能，它从Metrics Server获取应用的运行指标，再实时调整Pod数量，可以很好地应对突发流量。</li>
+</ol>
+<h2 id="课下作业">课下作业</h2>
+<p>最后是课下作业时间，给你留两个思考题：</p>
+<ol>
+<li>部署了HorizontalPodAutoscaler之后，如果再执行 <code>kubectl scale</code> 手动扩容会发生什么呢？</li>
+<li>你有过应用监控的经验吗？应该关注哪些重要的指标呢？</li>
+</ol>
+<p>非常期待在留言区看到你的发言，同我同其他同学一起讨论。我们下节课再见。</p>
+<p><img alt="图片" src="assets/ff8b9d4fdcd5d227a58391f215761601.jpg"/></p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#f19d9d9dc8c5c0c0c1c6b1969c90989ddf929e9c" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93586677ad89201c',t:'MTc0NTUyNzA2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

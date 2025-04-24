@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="24 PersistentVolume：怎么解决数据持久化的难题？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>24 PersistentVolume：怎么解决数据持久化的难题？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%bf%8e%e9%9a%be%e8%80%8c%e4%b8%8a%ef%bc%8c%e5%81%9a%e4%ba%91%e5%8e%9f%e7%94%9f%e6%97%b6%e4%bb%a3%e7%9a%84%e5%bc%84%e6%bd%ae%e5%84%bf.md.html" id="00 开篇词 迎难而上，做云原生时代的弄潮儿.md.html">00 开篇词 迎难而上，做云原生时代的弄潮儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/00%20%e8%af%be%e5%89%8d%e5%87%86%e5%a4%87%20%e5%8a%a8%e6%89%8b%e5%ae%9e%e8%b7%b5%e6%89%8d%e6%98%af%e6%9c%80%e5%a5%bd%e7%9a%84%e5%ad%a6%e4%b9%a0%e6%96%b9%e5%bc%8f.md.html" id="00 课前准备 动手实践才是最好的学习方式.md.html">00 课前准备 动手实践才是最好的学习方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/01%20%e5%88%9d%e8%af%86%e5%ae%b9%e5%99%a8%ef%bc%9a%e4%b8%87%e4%ba%8b%e5%bc%80%e5%a4%b4%e9%9a%be.md.html" id="01 初识容器：万事开头难.md.html">01 初识容器：万事开头难.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%a2%ab%e9%9a%94%e7%a6%bb%e7%9a%84%e8%bf%9b%e7%a8%8b%ef%bc%9a%e4%b8%80%e8%b5%b7%e6%9d%a5%e7%9c%8b%e7%9c%8b%e5%ae%b9%e5%99%a8%e7%9a%84%e6%9c%ac%e8%b4%a8.md.html" id="02 被隔离的进程：一起来看看容器的本质.md.html">02 被隔离的进程：一起来看看容器的本质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/03%20%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9a%e4%bc%9a%e4%ba%86%e8%bf%99%e4%ba%9b%e4%bd%a0%e5%b0%b1%e6%98%afDocker%e9%ab%98%e6%89%8b.md.html" id="03 容器化的应用：会了这些你就是Docker高手.md.html">03 容器化的应用：会了这些你就是Docker高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%88%9b%e5%bb%ba%e5%ae%b9%e5%99%a8%e9%95%9c%e5%83%8f%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e6%ad%a3%e7%a1%ae%e3%80%81%e9%ab%98%e6%95%88%e7%9a%84Dockerfile.md.html" id="04 创建容器镜像：如何编写正确、高效的Dockerfile.md.html">04 创建容器镜像：如何编写正确、高效的Dockerfile.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/05%20%e9%95%9c%e5%83%8f%e4%bb%93%e5%ba%93%ef%bc%9a%e8%af%a5%e6%80%8e%e6%a0%b7%e7%94%a8%e5%a5%bdDocker%20Hub%e8%bf%99%e4%b8%aa%e5%ae%9d%e8%97%8f.md.html" id="05 镜像仓库：该怎样用好Docker Hub这个宝藏.md.html">05 镜像仓库：该怎样用好Docker Hub这个宝藏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/06%20%e6%89%93%e7%a0%b4%e6%ac%a1%e5%85%83%e5%a3%81%ef%bc%9a%e5%ae%b9%e5%99%a8%e8%af%a5%e5%a6%82%e4%bd%95%e4%b8%8e%e5%a4%96%e7%95%8c%e4%ba%92%e8%81%94%e4%ba%92%e9%80%9a.md.html" id="06 打破次元壁：容器该如何与外界互联互通.md.html">06 打破次元壁：容器该如何与外界互联互通.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/07%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acDocker.md.html" id="07 实战演练：玩转Docker.md.html">07 实战演练：玩转Docker.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/08%20%e8%a7%86%e9%a2%91%ef%bc%9a%e5%85%a5%e9%97%a8%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="08 视频：入门篇实操总结.md.html">08 视频：入门篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/09%20%e8%b5%b0%e8%bf%91%e4%ba%91%e5%8e%9f%e7%94%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e6%9c%ac%e6%9c%ba%e6%90%ad%e5%bb%ba%e5%b0%8f%e5%b7%a7%e5%ae%8c%e5%a4%87%e7%9a%84Kubernetes%e7%8e%af%e5%a2%83.md.html" id="09 走近云原生：如何在本机搭建小巧完备的Kubernetes环境.md.html">09 走近云原生：如何在本机搭建小巧完备的Kubernetes环境.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/10%20%e8%87%aa%e5%8a%a8%e5%8c%96%e7%9a%84%e8%bf%90%e7%bb%b4%e7%ae%a1%e7%90%86%ef%bc%9a%e6%8e%a2%e7%a9%b6Kubernetes%e5%b7%a5%e4%bd%9c%e6%9c%ba%e5%88%b6%e7%9a%84%e5%a5%a5%e7%a7%98.md.html" id="10 自动化的运维管理：探究Kubernetes工作机制的奥秘.md.html">10 自动化的运维管理：探究Kubernetes工作机制的奥秘.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/11%20YAML%ef%bc%9aKubernetes%e4%b8%96%e7%95%8c%e9%87%8c%e7%9a%84%e9%80%9a%e7%94%a8%e8%af%ad.md.html" id="11 YAML：Kubernetes世界里的通用语.md.html">11 YAML：Kubernetes世界里的通用语.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/12%20Pod%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e8%bf%99%e4%b8%aaKubernetes%e9%87%8c%e6%9c%80%e6%a0%b8%e5%bf%83%e7%9a%84%e6%a6%82%e5%bf%b5%ef%bc%9f.md.html" id="12 Pod：如何理解这个Kubernetes里最核心的概念？.md.html">12 Pod：如何理解这个Kubernetes里最核心的概念？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/13%20Job_CronJob%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%9b%b4%e6%8e%a5%e7%94%a8Pod%e6%9d%a5%e5%a4%84%e7%90%86%e4%b8%9a%e5%8a%a1%ef%bc%9f.md.html" id="13 Job_CronJob：为什么不直接用Pod来处理业务？.md.html">13 Job_CronJob：为什么不直接用Pod来处理业务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/14%20ConfigMap_Secret%ef%bc%9a%e6%80%8e%e6%a0%b7%e9%85%8d%e7%bd%ae%e3%80%81%e5%ae%9a%e5%88%b6%e6%88%91%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="14 ConfigMap_Secret：怎样配置、定制我的应用.md.html">14 ConfigMap_Secret：怎样配置、定制我的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%881%ef%bc%89.md.html" id="15 实战演练：玩转Kubernetes（1）.md.html">15 实战演练：玩转Kubernetes（1）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/16%20%e8%a7%86%e9%a2%91%ef%bc%9a%e5%88%9d%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="16 视频：初级篇实操总结.md.html">16 视频：初级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/17%20%e6%9b%b4%e7%9c%9f%e5%ae%9e%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%ef%bc%9a%e5%ae%9e%e9%99%85%e6%90%ad%e5%bb%ba%e5%a4%9a%e8%8a%82%e7%82%b9%e7%9a%84Kubernetes%e9%9b%86%e7%be%a4.md.html" id="17 更真实的云原生：实际搭建多节点的Kubernetes集群.md.html">17 更真实的云原生：实际搭建多节点的Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/18%20Deployment%ef%bc%9a%e8%ae%a9%e5%ba%94%e7%94%a8%e6%b0%b8%e4%b8%8d%e5%ae%95%e6%9c%ba.md.html" id="18 Deployment：让应用永不宕机.md.html">18 Deployment：让应用永不宕机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/19%20Daemonset%ef%bc%9a%e5%bf%a0%e5%ae%9e%e5%8f%af%e9%9d%a0%e7%9a%84%e7%9c%8b%e9%97%a8%e7%8b%97.md.html" id="19 Daemonset：忠实可靠的看门狗.md.html">19 Daemonset：忠实可靠的看门狗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/20%20Service%ef%bc%9a%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84%e7%9a%84%e5%ba%94%e5%af%b9%e4%b9%8b%e9%81%93.md.html" id="20 Service：微服务架构的应对之道.md.html">20 Service：微服务架构的应对之道.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/21%20Ingress%ef%bc%9a%e9%9b%86%e7%be%a4%e8%bf%9b%e5%87%ba%e6%b5%81%e9%87%8f%e7%9a%84%e6%80%bb%e7%ae%a1.md.html" id="21 Ingress：集群进出流量的总管.md.html">21 Ingress：集群进出流量的总管.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/22%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%882%ef%bc%89.md.html" id="22 实战演练：玩转Kubernetes（2）.md.html">22 实战演练：玩转Kubernetes（2）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/23%20%e8%a7%86%e9%a2%91%ef%bc%9a%e4%b8%ad%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="23 视频：中级篇实操总结.md.html">23 视频：中级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/24%20PersistentVolume%ef%bc%9a%e6%80%8e%e4%b9%88%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e6%8c%81%e4%b9%85%e5%8c%96%e7%9a%84%e9%9a%be%e9%a2%98%ef%bc%9f.md.html" id="24 PersistentVolume：怎么解决数据持久化的难题？.md.html">24 PersistentVolume：怎么解决数据持久化的难题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/25%20PersistentVolume%20+%20NFS%ef%bc%9a%e6%80%8e%e4%b9%88%e4%bd%bf%e7%94%a8%e7%bd%91%e7%bb%9c%e5%85%b1%e4%ba%ab%e5%ad%98%e5%82%a8%ef%bc%9f.md.html" id="25 PersistentVolume + NFS：怎么使用网络共享存储？.md.html">25 PersistentVolume + NFS：怎么使用网络共享存储？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/26%20StatefulSet%ef%bc%9a%e6%80%8e%e4%b9%88%e7%ae%a1%e7%90%86%e6%9c%89%e7%8a%b6%e6%80%81%e7%9a%84%e5%ba%94%e7%94%a8%ef%bc%9f.md.html" id="26 StatefulSet：怎么管理有状态的应用？.md.html">26 StatefulSet：怎么管理有状态的应用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/27%20%e6%bb%9a%e5%8a%a8%e6%9b%b4%e6%96%b0%ef%bc%9a%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e5%b9%b3%e6%bb%91%e7%9a%84%e5%ba%94%e7%94%a8%e5%8d%87%e7%ba%a7%e9%99%8d%e7%ba%a7%ef%bc%9f.md.html" id="27 滚动更新：如何做到平滑的应用升级降级？.md.html">27 滚动更新：如何做到平滑的应用升级降级？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%ba%94%e7%94%a8%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9Pod%e8%bf%90%e8%a1%8c%e5%be%97%e6%9b%b4%e5%81%a5%e5%ba%b7%ef%bc%9f.md.html" id="28 应用保障：如何让Pod运行得更健康？.md.html">28 应用保障：如何让Pod运行得更健康？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/29%20%e9%9b%86%e7%be%a4%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%90%8d%e5%ad%97%e7%a9%ba%e9%97%b4%e5%88%86%e9%9a%94%e7%b3%bb%e7%bb%9f%e8%b5%84%e6%ba%90%ef%bc%9f.md.html" id="29 集群管理：如何用名字空间分隔系统资源？.md.html">29 集群管理：如何用名字空间分隔系统资源？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/30%20%e7%b3%bb%e7%bb%9f%e7%9b%91%e6%8e%a7%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Metrics%20Server%e5%92%8cPrometheus%ef%bc%9f.md.html" id="30 系统监控：如何使用Metrics Server和Prometheus？.md.html">30 系统监控：如何使用Metrics Server和Prometheus？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/31%20%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%ef%bc%9aCNI%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f%e5%8f%88%e6%98%af%e6%80%8e%e4%b9%88%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="31 网络通信：CNI是怎么回事？又是怎么工作的？.md.html">31 网络通信：CNI是怎么回事？又是怎么工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/32%20%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83%ef%bc%9a%e7%8e%a9%e8%bd%acKubernetes%ef%bc%883%ef%bc%89.md.html" id="32 实战演练：玩转Kubernetes（3）.md.html">32 实战演练：玩转Kubernetes（3）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/33%20%e8%a7%86%e9%a2%91%ef%bc%9a%e9%ab%98%e7%ba%a7%e7%af%87%e5%ae%9e%e6%93%8d%e6%80%bb%e7%bb%93.md.html" id="33 视频：高级篇实操总结.md.html">33 视频：高级篇实操总结.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%90%20docker-compose%ef%bc%9a%e5%8d%95%e6%9c%ba%e7%8e%af%e5%a2%83%e4%b8%8b%e7%9a%84%e5%ae%b9%e5%99%a8%e7%bc%96%e6%8e%92%e5%b7%a5%e5%85%b7.md.html" id="加餐 docker-compose：单机环境下的容器编排工具.md.html">加餐 docker-compose：单机环境下的容器编排工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e5%8a%a0%e9%a4%90%20%e8%b0%88%e8%b0%88Kong%20Ingress%20Controller.md.html" id="加餐 谈谈Kong Ingress Controller.md.html">加餐 谈谈Kong Ingress Controller.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%e5%85%a5%e9%97%a8%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%98%af%e7%bb%88%e7%82%b9%ef%bc%8c%e6%9b%b4%e6%98%af%e8%b5%b7%e7%82%b9.md.html" id="结束语 是终点，更是起点.md.html">结束语 是终点，更是起点.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="24 PersistentVolume：怎么解决数据持久化的难题？" id="title">24 PersistentVolume：怎么解决数据持久化的难题？</h1>
+<div><p>你好，我是Chrono。</p>
+<p>经过了“初级篇”和“中级篇”的学习，相信你对Kubernetes的认识已经比较全面了，那么在接下来的“高级篇”里，我们再进一步，探索Kubernetes更深层次的知识点和更高级的应用技巧。</p>
+<p>今天就先从PersistentVolume讲起。</p>
+<p>早在[第14讲]介绍ConfigMap/Secret的时候，我们就遇到过Kubernetes里的Volume存储卷的概念，它使用字段 <code>volumes</code> 和 <code>volumeMounts</code>，相当于是给Pod挂载了一个“虚拟盘”，把配置信息以文件的形式注入进Pod供进程使用。</p>
+<p>不过，那个时候的Volume只能存放较少的数据，离真正的“虚拟盘”还差得很远。</p>
+<p>今天我们就一起来了解Volume的高级用法，看看Kubernetes管理存储资源的API对象PersistentVolume、PersistentVolumeClaim、StorageClass，然后使用本地磁盘来创建实际可用的存储卷。</p>
+<h2 id="什么是persistentvolume">什么是PersistentVolume</h2>
+<p>在刚完成的“中级篇”实战中（[22讲]），我们在Kubernetes集群里搭建了WordPress网站，但其中存在一个很严重的问题：Pod没有持久化功能，导致MariaDB无法“永久”存储数据。</p>
+<p>因为Pod里的容器是由镜像产生的，而镜像文件本身是只读的，进程要读写磁盘只能用一个临时的存储空间，一旦Pod销毁，临时存储也就会立即回收释放，数据也就丢失了。</p>
+<p>为了保证即使Pod销毁后重建数据依然存在，我们就需要找出一个解决方案，让Pod用上真正的“虚拟盘”。怎么办呢？</p>
+<p>其实，Kubernetes的Volume对数据存储已经给出了一个很好的抽象，它只是定义了有这么一个“存储卷”，而这个“存储卷”是什么类型、有多大容量、怎么存储，我们都可以自由发挥。Pod不需要关心那些专业、复杂的细节，只要设置好 <code>volumeMounts</code>，就可以把Volume加载进容器里使用。</p>
+<p>所以，Kubernetes就顺着Volume的概念，延伸出了<strong>PersistentVolume</strong>对象，它专门用来表示持久存储设备，但隐藏了存储的底层实现，我们只需要知道它能安全可靠地保管数据就可以了（由于PersistentVolume这个词很长，一般都把它简称为PV）。</p>
+<p>那么，集群里的PV都从哪里来呢？</p>
+<p><strong>作为存储的抽象，PV实际上就是一些存储设备、文件系统</strong>，比如Ceph、GlusterFS、NFS，甚至是本地磁盘，管理它们已经超出了Kubernetes的能力范围，所以，一般会由系统管理员单独维护，然后再在Kubernetes里创建对应的PV。</p>
+<p>要注意的是，PV属于集群的系统资源，是和Node平级的一种对象，Pod对它没有管理权，只有使用权。</p>
+<h2 id="什么是persistentvolumeclaim-storageclass">什么是PersistentVolumeClaim/StorageClass</h2>
+<p>现在有了PV，我们是不是可以直接在Pod里挂载使用了呢？</p>
+<p>还不行。因为不同存储设备的差异实在是太大了：有的速度快，有的速度慢；有的可以共享读写，有的只能独占读写；有的容量小，只有几百MB，有的容量大到TB、PB级别……</p>
+<p>这么多种存储设备，只用一个PV对象来管理还是有点太勉强了，不符合“单一职责”的原则，让Pod直接去选择PV也很不灵活。于是Kubernetes就又增加了两个新对象，<strong>PersistentVolumeClaim</strong>和<strong>StorageClass</strong>，用的还是“中间层”的思想，把存储卷的分配管理过程再次细化。</p>
+<p>我们看这两个新对象。</p>
+<p>PersistentVolumeClaim，简称PVC，从名字上看比较好理解，就是用来向Kubernetes申请存储资源的。PVC是给Pod使用的对象，它相当于是Pod的代理，代表Pod向系统申请PV。一旦资源申请成功，Kubernetes就会把PV和PVC关联在一起，这个动作叫做“<strong>绑定</strong>”（bind）。</p>
+<p>但是，系统里的存储资源非常多，如果要PVC去直接遍历查找合适的PV也很麻烦，所以就要用到StorageClass。</p>
+<p>StorageClass的作用有点像[第21讲]里的IngressClass，它抽象了特定类型的存储系统（比如Ceph、NFS），在PVC和PV之间充当“协调人”的角色，帮助PVC找到合适的PV。也就是说它可以简化Pod挂载“虚拟盘”的过程，让Pod看不到PV的实现细节。</p>
+<p><img alt="图片" src="assets/5e21d007a6152ec9594919300c2b6e22.jpg"/></p>
+<p>如果看到这里，你觉得还是差点理解也不要着急，我们找个生活中的例子来类比一下。毕竟和常用的CPU、内存比起来，我们对存储系统的认识还是比较少的，所以Kubernetes里，PV、PVC和StorageClass这三个新概念也不是特别好掌握。</p>
+<p>看例子，假设你在公司里想要10张纸打印资料，于是你给前台打电话讲清楚了需求。</p>
+<ul>
+<li>“打电话”这个动作，就相当于PVC，向Kubernetes申请存储资源。</li>
+<li>前台里有各种牌子的办公用纸，大小、规格也不一样，这就相当于StorageClass。</li>
+<li>前台根据你的需要，挑选了一个品牌，再从库存里拿出一包A4纸，可能不止10张，但也能够满足要求，就在登记表上新添了一条记录，写上你在某天申领了办公用品。这个过程就是PVC到PV的绑定。</li>
+<li>而最后到你手里的A4纸包，就是PV存储对象。</li>
+</ul>
+<p>好，大概了解了这些API对象，我们接下来可以结合YAML描述和实际操作再慢慢体会。</p>
+<h2 id="如何使用yaml描述persistentvolume">如何使用YAML描述PersistentVolume</h2>
+<p>Kubernetes里有很多种类型的PV，我们先看看最容易的本机存储“<strong>HostPath</strong>”，它和Docker里挂载本地目录的 <code>-v</code> 参数非常类似，可以用它来初步认识一下PV的用法。</p>
+<p>因为Pod会在集群的任意节点上运行，所以首先，我们要作为系统管理员在每个节点上创建一个目录，它将会作为本地存储卷挂载到Pod里。</p>
+<p>为了省事，我就在 <code>/tmp</code> 里建立名字是 <code>host-10m-pv</code> 的目录，表示一个只有10MB容量的存储设备。</p>
+<p>有了存储，我们就可以使用YAML来描述这个PV对象了。</p>
+<p>不过很遗憾，你不能用 <code>kubectl create</code> 直接创建PV对象，<strong>只能用 <code>kubectl api-resources</code>、<code>kubectl explain</code> 查看PV的字段说明，手动编写PV 的YAML描述文件</strong>。</p>
+<p>下面我给出一个YAML示例，你可以把它作为样板，编辑出自己的PV：</p>
+<pre><code>apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: host-10m-pv
+
+spec:
+  storageClassName: host-test
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 10Mi
+  hostPath:
+    path: /tmp/host-10m-pv/
+</code></pre>
+<p>PV对象的文件头部分很简单，还是API对象的“老一套”，我就不再详细解释了，重点看它的 <code>spec</code> 部分，每个字段都很重要，描述了存储的详细信息。</p>
+<p>“<strong>storageClassName</strong>”就是刚才说过的，对存储类型的抽象StorageClass。这个PV是我们手动管理的，名字可以任意起，这里我写的是 <code>host-test</code>，你也可以把它改成 <code>manual</code>、<code>hand-work</code> 之类的词汇。</p>
+<p>“<strong>accessModes</strong>”定义了存储设备的访问模式，简单来说就是虚拟盘的读写权限，和Linux的文件访问模式差不多，目前Kubernetes里有3种：</p>
+<ul>
+<li>ReadWriteOnce：存储卷可读可写，但只能被一个节点上的Pod挂载。</li>
+<li>ReadOnlyMany：存储卷只读不可写，可以被任意节点上的Pod多次挂载。</li>
+<li>ReadWriteMany：存储卷可读可写，也可以被任意节点上的Pod多次挂载。</li>
+</ul>
+<p>你要注意，这3种访问模式限制的对象是节点而不是Pod，因为存储是系统级别的概念，不属于Pod里的进程。</p>
+<p>显然，本地目录只能是在本机使用，所以这个PV使用了 <code>ReadWriteOnce</code>。</p>
+<p>第三个字段“<strong>capacity</strong>”就很好理解了，表示存储设备的容量，这里我设置为10MB。</p>
+<p>再次提醒你注意，Kubernetes里定义存储容量使用的是国际标准，我们日常习惯使用的KB/MB/GB的基数是1024，要写成Ki/Mi/Gi，一定要小心不要写错了，否则单位不一致实际容量就会对不上。</p>
+<p>最后一个字段“<strong>hostPath</strong>”最简单，它指定了存储卷的本地路径，也就是我们在节点上创建的目录。</p>
+<p>用这些字段把PV的类型、访问模式、容量、存储位置都描述清楚，一个存储设备就创建好了。</p>
+<h2 id="如何使用yaml描述persistentvolumeclaim">如何使用YAML描述PersistentVolumeClaim</h2>
+<p>有了PV，就表示集群里有了这么一个持久化存储可以供Pod使用，我们需要再定义PVC对象，向Kubernetes申请存储。</p>
+<p>下面这份YAML就是一个PVC，要求使用一个5MB的存储设备，访问模式是 <code>ReadWriteOnce</code>：</p>
+<pre><code>apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: host-5m-pvc
+
+spec:
+  storageClassName: host-test
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Mi
+</code></pre>
+<p>PVC的内容与PV很像，但它不表示实际的存储，而是一个“申请”或者“声明”，spec里的字段描述的是对存储的“期望状态”。</p>
+<p>所以PVC里的 <code>storageClassName</code>、<code>accessModes</code> 和PV是一样的，<strong>但不会有字段 <code>capacity</code>，而是要用 <code>resources.request</code> 表示希望要有多大的容量</strong>。</p>
+<p>这样，Kubernetes就会根据PVC里的描述，去找能够匹配StorageClass和容量的PV，然后把PV和PVC“绑定”在一起，实现存储的分配，和前面打电话要A4纸的过程差不多。</p>
+<h2 id="如何在kubernetes里使用persistentvolume">如何在Kubernetes里使用PersistentVolume</h2>
+<p>现在我们已经准备好了PV和PVC，就可以让Pod实现持久化存储了。</p>
+<p>首先需要用 <code>kubectl apply</code> 创建PV对象：</p>
+<pre><code>kubectl apply -f host-path-pv.yml
+</code></pre>
+<p>然后用 <code>kubectl get</code> 查看它的状态：</p>
+<pre><code>kubectl get pv
+</code></pre>
+<p><img alt="图片" src="assets/5ca80e12c71d162f5707d37bf6009c37.png"/></p>
+<p>从截图里我们可以看到，这个PV的容量是10MB，访问模式是RWO（ReadWriteOnce），StorageClass是我们自己定义的 <code>host-test</code>，状态显示的是 <code>Available</code>，也就是处于可用状态，可以随时分配给Pod使用。</p>
+<p>接下来我们创建PVC，申请存储资源：</p>
+<pre><code>kubectl apply -f host-path-pvc.yml
+kubectl get pvc
+</code></pre>
+<p><img alt="图片" src="assets/fd6f1cb75f5d349860928594db29a11f.png"/></p>
+<p>一旦PVC对象创建成功，Kubernetes就会立即通过StorageClass、resources等条件在集群里查找符合要求的PV，如果找到合适的存储对象就会把它俩“绑定”在一起。</p>
+<p>PVC对象申请的是5MB，但现在系统里只有一个10MB的PV，没有更合适的对象，所以Kubernetes也只能把这个PV分配出去，多出的容量就算是“福利”了。</p>
+<p>你会看到这两个对象的状态都是 <code>Bound</code>，也就是说存储申请成功，PVC的实际容量就是PV的容量10MB，而不是最初申请的容量5MB。</p>
+<p>那么，如果我们把PVC的申请容量改大一些会怎么样呢？比如改成100MB：</p>
+<p><img alt="图片" src="assets/25241a47c63cf629b88590ba1773710c.png"/></p>
+<p>你会看到PVC会一直处于 <code>Pending</code> 状态，这意味着Kubernetes在系统里没有找到符合要求的存储，无法分配资源，只能等有满足要求的PV才能完成绑定。</p>
+<h2 id="如何为pod挂载persistentvolume">如何为Pod挂载PersistentVolume</h2>
+<p>PV和PVC绑定好了，有了持久化存储，现在我们就可以为Pod挂载存储卷。用法和[第14讲]里差不多，先要在 <code>spec.volumes</code> 定义存储卷，然后在 <code>containers.volumeMounts</code> 挂载进容器。</p>
+<p>不过因为我们用的是PVC，所以<strong>要在 <code>volumes</code> 里用字段 <code>persistentVolumeClaim</code> 指定PVC的名字</strong>。</p>
+<p>下面就是Pod的YAML描述文件，把存储卷挂载到了Nginx容器的 <code>/tmp</code> 目录：</p>
+<pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: host-pvc-pod
+
+spec:
+  volumes:
+  - name: host-pvc-vol
+    persistentVolumeClaim:
+      claimName: host-5m-pvc
+
+  containers:
+    - name: ngx-pvc-pod
+      image: nginx:alpine
+      ports:
+      - containerPort: 80
+      volumeMounts:
+      - name: host-pvc-vol
+        mountPath: /tmp
+</code></pre>
+<p>我把Pod和PVC/PV的关系画成了图（省略了字段accessModes），你可以从图里看出它们是如何联系起来的：</p>
+<p><img alt="图片" src="assets/a4d709808a0ef729604c884c50748bd8.jpg"/></p>
+<p>现在我们创建这个Pod，查看它的状态：</p>
+<pre><code>kubectl apply -f host-path-pod.yml
+kubectl get pod -o wide
+</code></pre>
+<p><img alt="图片" src="assets/d4a2771c2c32597a4e5e2e60823c159d.png"/></p>
+<p>它被Kubernetes调到了worker节点上，那么PV是否确实挂载成功了呢？让我们用 <code>kubectl exec</code> 进入容器，执行一些命令看看：</p>
+<p><img alt="图片" src="assets/c42a618688eee98555cda33c5c1d6824.png"/></p>
+<p>容器的 <code>/tmp</code> 目录里生成了一个 <code>a.txt</code> 的文件，根据PV的定义，它就应该落在worker节点的磁盘上，所以我们就登录worker节点检查一下：</p>
+<p><img alt="图片" src="assets/9dc40b80e2e4edb2d9449e2d43b02ac4.png"/></p>
+<p>你会看到确实在worker节点的本地目录有一个 <code>a.txt</code> 的文件，再对一下时间，就可以确认是刚才在Pod里生成的文件。</p>
+<p>因为Pod产生的数据已经通过PV存在了磁盘上，所以如果Pod删除后再重新创建，挂载存储卷时会依然使用这个目录，数据保持不变，也就实现了持久化存储。</p>
+<p>不过还有一点小问题，因为这个PV是HostPath类型，只在本节点存储，如果Pod重建时被调度到了其他节点上，那么即使加载了本地目录，也不会是之前的存储位置，持久化功能也就失效了。</p>
+<p>所以，HostPath类型的PV一般用来做测试，或者是用于DaemonSet这样与节点关系比较密切的应用，我们下节课再讲实现真正任意的数据持久化。</p>
+<h2 id="小结">小结</h2>
+<p>好了，今天我们一起学习了Kubernetes里应对持久化存储的解决方案，一共有三个API对象，分别是PersistentVolume、PersistentVolumeClaim、StorageClass。它们管理的是集群里的存储资源，简单来说就是磁盘，Pod必须通过它们才能够实现数据持久化。</p>
+<p>再小结一下今天的主要内容：</p>
+<ol>
+<li>PersistentVolume简称为PV，是Kubernetes对存储设备的抽象，由系统管理员维护，需要描述清楚存储设备的类型、访问模式、容量等信息。</li>
+<li>PersistentVolumeClaim简称为PVC，代表Pod向系统申请存储资源，它声明对存储的要求，Kubernetes会查找最合适的PV然后绑定。</li>
+<li>StorageClass抽象特定类型的存储系统，归类分组PV对象，用来简化PV/PVC的绑定过程。</li>
+<li>HostPath是最简单的一种PV，数据存储在节点本地，速度快但不能跟随Pod迁移。</li>
+</ol>
+<h2 id="课下作业">课下作业</h2>
+<p>最后是课下作业时间，给你留两个思考题：</p>
+<ol>
+<li>HostPath类型的PV要求节点上必须有相应的目录，如果这个目录不存在（比如忘记创建了）会怎么样呢？</li>
+<li>你对使用PV/PVC/StorageClass这三个对象来分配存储的流程有什么看法？它们的抽象是好还是坏？</li>
+</ol>
+<p>进阶高手是需要自驱的，在这最后的高级篇，非常期待看到你的思考。我们下节课再见。</p>
+<p><img alt="图片" src="assets/25a1d7b3e9841c886781afb44b351341.jpg"/></p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#d9b5b5b5e0ede8e8e9ee99beb4b8b0b5f7bab6b4" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935864e4fe63d6ed',t:'MTc0NTUyNjk5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
