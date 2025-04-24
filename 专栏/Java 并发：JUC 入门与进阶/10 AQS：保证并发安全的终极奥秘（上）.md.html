@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="10 AQS：保证并发安全的终极奥秘（上）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>10 AQS：保证并发安全的终极奥秘（上） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/01%20%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%88%9d%e9%98%b6%ef%bc%9a%e8%a7%a3%e8%b0%9c%e5%a4%9a%e7%ba%bf%e7%a8%8b%e4%b8%96%e7%95%8c.md.html" id="01 多线程初阶：解谜多线程世界.md.html">01 多线程初阶：解谜多线程世界.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/02%20%e7%ba%bf%e7%a8%8b%e6%b1%a0%e6%8e%8c%e6%95%85%ef%bc%9a%e7%ae%a1%e7%90%86%e5%b9%b6%e5%8f%91%e7%9a%84%e7%a7%98%e7%b1%8d.md.html" id="02 线程池掌故：管理并发的秘籍.md.html">02 线程池掌故：管理并发的秘籍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/03%20%e9%94%81%e7%9a%84%e5%a5%a5%e7%a7%98%ef%bc%9asynchronized%20%e7%9a%84%e7%a7%98%e5%af%86.md.html" id="03 锁的奥秘：synchronized 的秘密.md.html">03 锁的奥秘：synchronized 的秘密.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/04%20%e9%94%81%e7%9a%84%e5%a5%a5%e7%a7%98%ef%bc%9aLock%20%e6%8e%a5%e5%8f%a3%e7%9a%84%e7%a7%98%e5%af%86.md.html" id="04 锁的奥秘：Lock 接口的秘密.md.html">04 锁的奥秘：Lock 接口的秘密.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/05%20%e6%8e%a7%e5%88%b6%e5%b9%b6%e5%8f%91%e6%b5%81%e7%a8%8b%ef%bc%8c%e5%b9%b6%e5%8f%91%e7%9a%84%e5%b7%a7%e5%a6%99%e7%bc%96%e7%bb%87.md.html" id="05 控制并发流程，并发的巧妙编织.md.html">05 控制并发流程，并发的巧妙编织.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/06%20ThreadLocal%20%e4%b9%8b%e7%8f%8d%e5%ae%9d%ef%bc%9a%e7%ba%bf%e7%a8%8b%e7%9a%84%e9%9a%90%e7%a7%98%e5%ae%9d%e5%ba%93.md.html" id="06 ThreadLocal 之珍宝：线程的隐秘宝库.md.html">06 ThreadLocal 之珍宝：线程的隐秘宝库.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/07%20CAS%ef%bc%9a%e6%af%94%e8%82%a9%e8%80%8c%e7%ab%8b%e7%9a%84%e5%8e%9f%e5%ad%90%e9%ad%94%e6%b3%95.md.html" id="07 CAS：比肩而立的原子魔法.md.html">07 CAS：比肩而立的原子魔法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/08%20%e5%ae%b9%e5%99%a8%e7%9a%84%e9%ad%94%e5%8a%9b%ef%bc%9a%e5%b9%b6%e5%8f%91%e4%b8%96%e7%95%8c%e7%9a%84%e5%ae%9d%e5%ba%93.md.html" id="08 容器的魔力：并发世界的宝库.md.html">08 容器的魔力：并发世界的宝库.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/09%20%e7%bb%93%e6%9e%9c%e5%a6%82%e4%bd%95%ef%bc%9f%e7%ba%bf%e7%a8%8b%e7%9a%84%e7%a7%98%e5%af%86%e5%91%8a%e7%99%bd.md.html" id="09 结果如何？线程的秘密告白.md.html">09 结果如何？线程的秘密告白.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/10%20AQS%ef%bc%9a%e4%bf%9d%e8%af%81%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e7%9a%84%e7%bb%88%e6%9e%81%e5%a5%a5%e7%a7%98%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="10 AQS：保证并发安全的终极奥秘（上）.md.html">10 AQS：保证并发安全的终极奥秘（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/11%20AQS%ef%bc%9a%e4%bf%9d%e8%af%81%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e7%9a%84%e7%bb%88%e6%9e%81%e5%a5%a5%e7%a7%98%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="11 AQS：保证并发安全的终极奥秘（中）.md.html">11 AQS：保证并发安全的终极奥秘（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/12%20AQS%ef%bc%9a%e4%bf%9d%e8%af%81%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e7%9a%84%e7%bb%88%e6%9e%81%e5%a5%a5%e7%a7%98%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12 AQS：保证并发安全的终极奥秘（下）.md.html">12 AQS：保证并发安全的终极奥秘（下）.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="10 AQS：保证并发安全的终极奥秘（上）" id="title">10 AQS：保证并发安全的终极奥秘（上）</h1>
+<div><p>我们在前几章节充分学习了如何使用门闩、信号量、锁等手段去保证并发安全，本章节我们将深入分析这些保证并发安全的工具的实现。</p>
+<p>在日常开发中，若某一逻辑频繁重复使用，我们通常将其封装成工具类。类似地，AQS（AbstractQueuedSynchronizer）本质上也可视为一种工具类。</p>
+<p>我们之前学习的 ReentrantLock、 CountDownLatch、 Semaphore 等工具类，共同具有一个特性，即能够限制同时执行某一任务逻辑的数量。在开发中，我们一般会将这个控制任务并发数量的功能抽象出来，可以使 ReentrantLock、 CountDownLatch、 Semaphore 等工具类的实现更加简洁。实际上，Java 并发包（JUC）正是采用了这种设计方式。</p>
+<p>在学习 AQS 之前，我们需要事先说明，AQS 并不是一个类似于前面学到的锁、累加器一样的东西，你学完了就直接应用在项目上，AQS 更像是对我们前面所学的一个深入的补充，针对我们前面所学将它的原理搞清楚。</p>
+<p>AQS 是 Java 并发包的核心，它的理念和设计思想贯穿于 Java 中许多并发工具和框架，如 ReentrantLock、Semaphore、CountDownLatch 等。通过学习 AQS，你可以更深入地理解并发编程的机制和原理。</p>
+<p>后续我们将以 ReentrantLock 作为切入点来讲述 AQS 的思想。</p>
+<h2 id="一-aqs-在-reentrantlock-的应用">一、AQS 在 ReentrantLock 的应用</h2>
+<p>首先，我们分析所谓的 AQS 是如何运用在 ReentrantLock 中的。</p>
+<p>我们要知道，AQS 在 Java 中对应的实现为 <code>java.util.concurrent.locks.AbstractQueuedSynchronizer</code>，它的定义方式为：</p>
+<pre><code class="language-java">public abstract class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer implements java.io.Serializable {}
+</code></pre>
+<p>从定义上看，它是一个抽象类，那么就必然存在不同的实现方式，我们以 ReentrantLock 作为切入点。</p>
+<h3 id="1-aqs-在-reentrantlock-的使用方式">1. AQS 在 ReentrantLock 的使用方式</h3>
+<p>我们通过 ReentrantLock.lock() 进入，看看它是如何利用 AQS 的：</p>
+<pre><code class="language-java">  public void lock() {
+      sync.lock();
+  }
+</code></pre>
+<p>我们这里能够看到，它是调用了一个 <strong>sync.lock()</strong> 来实现的加锁操作。我们进入到 <strong>sync</strong>，它是一个 ReentrantLock 的内部类，定义为：</p>
+<pre><code class="language-java">abstract static class Sync extends AbstractQueuedSynchronizer {}
+</code></pre>
+<p>可以看到，它还是一个抽象类，那么对于它的实现如下图所示：</p>
+<p><img alt="aaaa.png" src="assets/170f7bd77bfd44588d24fe7a631683e1_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>从上图的名字上可以看出来，Sync 类对于 AQS 有两种实现：<code>java.util.concurrent.locks.ReentrantLock.NonfairSync</code>和<code>java.util.concurrent.locks.ReentrantLock.FairSync</code>。</p>
+<p>它们都是 <code>ReentrantLock</code> 的内部类，我们在前文学习过，<code>ReentrantLock</code> 有两种加锁方式，一个是公平锁，一个是非公平锁，那么从名字就能看出来，这两种实现对应了 Lock 加锁的两种方式。这一点在 <code>ReentrantLock</code> 的声明中也能够看出来：</p>
+<pre><code class="language-java">  public ReentrantLock(boolean fair) {
+      sync = fair ? new FairSync() : new NonfairSync();
+  }
+</code></pre>
+<p>好，学习到这里，我们知道了 ReentrantLock 锁是如何定义 AQS 的，我们来使用一张图来描述 ReentrantLock 对于 AQS 的应用：</p>
+<p><img alt="AQS在ReentrantLock的应用.jpg" src="assets/a10c897f0a754093827371d0be27da6c_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>我们分析下上图，在 ReetrantLock 中存在加锁和解锁两个方法，这两个方法是借助 Sync 这个内部类来完成的。Sync 这个内部类实现了 AQS 抽象类，并实现了公平锁和非公平锁两种加锁方式！</p>
+<p>简单来说，ReetrantLock 的加解锁功能其实是基于 Sync 的两个实现类来完成的。具体 Sync 的实现类做了什么，我们在后面进行分析。</p>
+<h3 id="2-加锁时-sync-做了什么">2. 加锁时 Sync 做了什么？</h3>
+<p>我们先以<code>公平锁</code>为例。</p>
+<p>基于前面所学，我们需要进入到 <code>FairSync</code> 中，查看它对于 Sync 的 lock 方法的实现：</p>
+<pre><code class="language-java">final void lock() {
+    acquire(1);
+}
+</code></pre>
+<p>可以看到，<code>FairSync</code> 的实现直接调用了 AQS 的 acquire 方法，且传递的参数是 1。我们进入到 AQS 的 acquire 方法：</p>
+<pre><code class="language-java">  public final void acquire(int arg) {
+      if (!tryAcquire(arg) &amp;&amp; acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+          selfInterrupt();
+  }
+</code></pre>
+<p>在判断条件中，我们是能够看到三个方法的（tryAcquire、addWaiter、acquireQueued），下面针对这三个方法进行针对性的讲解。</p>
+<p><strong>1. tryAcquire</strong></p>
+<p>tryAcquire 会直接调用具体的实现，也就是公平锁的 <strong>FairSync#tryAcquire</strong> 方法。我们查看其源码：</p>
+<pre><code class="language-java">protected final boolean tryAcquire(int acquires) {
+    //获取当前的线程
+    final Thread current = Thread.currentThread();
+    //获取当前的加锁状态 在ReentrantLock中，state=0的时候是没有加锁，state=1的时候是加锁状态
+    int c = getState();
+    if (c == 0) {
+        // 没有人占用锁的时候，因为是公平锁，所以优先判断队列中是否存在排队的
+        // 如果没有排队的，直接使用CAS进行加锁，将0 替换为 1，
+        if (!hasQueuedPredecessors() &amp;&amp;
+            compareAndSetState(0, acquires)) {
+            // 将当前线程设置到exclusiveOwnerThread变量，表示这个线程持有锁
+            setExclusiveOwnerThread(current);
+            //返回加锁成功
+            return true;
+        }
+    }
+    //我们在前面讲过，ReentrantLock是可重入锁，当前面逻辑加锁失败，则判断是不是当前线程持有的锁，如果是当前线程持有锁，则符合可重入规则
+    else if (current == getExclusiveOwnerThread()) {
+        //将state 累加  由 1  变成 2
+        int nextc = c + acquires;
+        if (nextc &lt; 0)
+            throw new Error("Maximum lock count exceeded");
+        setState(nextc);
+        return true;
+    }
+    //如果存在排队任务，或者CAS变换state的值失败，则证明当前不能加锁，直接返回false加锁失败
+    return false;
+}
+</code></pre>
+<p>上面代码的注释能够印证出我们前面所学的，公平锁、可重入锁、CAS 的特性。</p>
+<ul>
+<li>首先进行加锁的时候，因为公平锁的原因，会先判断等待队列中是否存在任务。如果存在，就不能去加锁，需要去排队！如果没有排队的任务，那么就开始使用 CAS 进行加锁，此时可能会出现其他线程也在加锁，如果其他线程加锁成功，那么此时 CAS 就会返回 false。</li>
+<li>假设上面的加锁条件全部满足，就能够加锁成功，它会将 state 变为 1，将当前线程设置到一个变量中去，并且为了保证重入锁的特性，将当前线程保存到变量中，表示这个线程持有这把锁。</li>
+<li>如果上面的加锁条件不满足，不会第一时间就返回加锁失败，因为 ReentrantLock 是可重入锁，所以在加锁失败后，会判断当前持有锁的线程和所需要加锁的线程是不是一个，如果是一个就附和可重入锁的特性，那么就把加锁数量 +1，同时返回加锁成功。</li>
+<li>如果全部都不满足，则直接返回 false，加锁失败。</li>
+</ul>
+<p>我们使用一个图来理解这个流程：</p>
+<p><img alt="AQS公平锁尝试获取锁.png" src="assets/74d8dcb9731942068b37e0015eaccdb3_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>可以看到，其实所谓的加锁其实就是操作 State 变量的值！</p>
+<p><strong>2. addWaiter</strong></p>
+<p>按照 Java <code>&amp;&amp;</code> 的逻辑，!A &amp;&amp; B，当 A 成立后，会开始判断 B，也就是说，当 tryAcquire 方法加锁失败返回 false 后，就会执行 acquireQueued 方法，对照方法就是 <code>acquireQueued(addWaiter(Node.EXCLUSIVE), arg)</code>。</p>
+<p>线程加锁失败后，会开始进行入队操作，也就是 <strong>addWaiter</strong> 方法。AQS 的队列与传统队列不同，AQS 的队列是一个双向链表，排队的线程都是用 next 指向下一个节点任务。head 节点可能为空，因为当第一个任务入队的时候，会初始化 head 节点，head 节点内线程数据为空，但是 head 节点的 next 会指向第一个等待线程，它的结构如下：</p>
+<p><img alt="AQS等待队列结构.jpg" src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7a12097211f644a08fa8546c69cbe5d7~tplv-k3u1fbpfcp-jj-mark:1890:0:0:0:q75.awebp"/></p>
+<p>当一个任务入队的时候，它会将入队节点设置为 tail，将原本的 tail 节点设为当前节点的下一级节点，具体的操作我们看源码：</p>
+<pre><code class="language-java">private Node addWaiter(Node mode) {
+    //创建一个node节点 排它锁的mode = null
+    Node node = new Node(Thread.currentThread(), mode);
+    // 获取当前的尾节点
+    Node pred = tail;
+    if (pred != null) {
+        //将当前节点的上一个节点设置为尾节点
+        node.prev = pred;
+        // cas替换 将当前节点设置为tail节点
+        if (compareAndSetTail(pred, node)) {
+            //将当前的尾节点的下一节点设为当前追加的节点
+            pred.next = node;
+            return node;
+        }
+    }
+    //针对第一个任务初始化head节点操作
+    enq(node);
+    return node;
+}
+</code></pre>
+<p>上述代码的操作就是一个任务追加的全过程，当一个任务想要追加的时候，需要先获取当前队列中的 tail 节点，然后将当前需要追加的节点的上一节点指针设置为 tail 节点，将 tail 节点的下一节点指针设置为当前节点，然后将当前追加的节点设置为 tail 节点，至此完成双向链表的追加操作。</p>
+<p>至于空 head 节点的初始化，这里需要介绍一下，不然后续实现中你不知道 head 哪里来的。我们需要关注 addWaiter 方法中的 <code>enq(node);</code>，因为第一次节点入队，因为 tail 为 null ，实际的入队操作是由 enq 方法来做的。</p>
+<pre><code class="language-java">  private Node enq(final Node node) {
+      for (;;) {
+          //获取尾节点
+          Node t = tail;
+          //当尾节点为空（第一次设置）
+          //第一次的话，因为还没有追加过节点，所以tail肯定为空
+          if (t == null) {
+              //使用cas创建一个线程数据为空的node，放到head中
+              if (compareAndSetHead(new Node()))
+                  //因为此时只有一个节点，所以这个空节点即是头也是尾
+                  tail = head;
+          } else {
+              //后续就和addWaiter方法一样了，主要是吧当前节点追加到这个空的head节点后面。
+              node.prev = t;
+              if (compareAndSetTail(t, node)) {
+                  t.next = node;
+                  return t;
+              }
+          }
+      }
+  }
+</code></pre>
+<p>当第一个等待线程进入到队列的时候，实际的入队操作是由 enq 方法来做的，enq 方法初始化了 head 节点 、tail 节点，并将当前节点追加到 tail 节点后面。</p>
+<p><strong>3. acquireQueued</strong></p>
+<p>当入队操作完成之后，我们就要将当前线程挂起了，具体就是在 <strong>acquireQueued</strong> 中来做的。我们先分析源码：</p>
+<pre><code class="language-java">  final boolean acquireQueued(final Node node, int arg) {
+      boolean failed = true;
+      try {
+          boolean interrupted = false;
+          for (;;) {
+              //获取当前节点的前置节点
+              final Node p = node.predecessor();
+              //如果当前节点的前置节点是head节点的时候，当前节点就排在第一个，所以这里会去尝试获取一次锁，万一锁被释放了，
+              //这里直接就获取到了，不需要调用系统级的阻塞。
+              if (p == head &amp;&amp; tryAcquire(arg)) {
+                  //如果获取到了锁，则将当前的节点设置为头节点
+                  setHead(node);
+                  //将原先的头节点的后置节点设置为null ，为了jvm gc考虑的，保证原先的头节点能够被及时回收
+                  p.next = null;
+                  failed = false;
+                  return interrupted;
+              }
+              //如果没有拿到锁，则开始检查并更新获取失败节点的状态。如果线程阻塞，返回true
+              if (shouldParkAfterFailedAcquire(p, node) &amp;&amp; parkAndCheckInterrupt())
+                  //检查是否被中断，如果被中断则返回true， 由selfInterrupt()方法进行当前线程的中断操作
+                  interrupted = true;
+          }
+      } finally {
+          if (failed)
+              cancelAcquire(node);
+      }
+  }
+</code></pre>
+<p>到这里，这个方法我们也分析得差不多了。它的功能很简单，主要就是如果自己排在 head 节点之后，就尝试获取下锁做一次二次检查，检查上一个节点是否已经释放了锁，万一不需要阻塞就可以直接获取到锁，就可以节省一部分性能。</p>
+<p>我们需要再来分析一下 shouldParkAfterFailedAcquire 和 parkAndCheckInterrupt，这样整个加锁的动作就被我们分析完了。</p>
+<p><strong>shouldParkAfterFailedAcquire 方法</strong></p>
+<pre><code class="language-java">  private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+      //获取前置节点状态
+      int ws = pred.waitStatus;
+      //当前置节点状态为等待信号唤醒的时候
+      if (ws == Node.SIGNAL)
+          //直接放心大胆的阻塞，因为明显前置节点还在执行任务或者阻塞的状态
+          return true;
+      if (ws &gt; 0) {
+          do { 
+              //开始遍历整条链路，将取消的任务全部剔除掉，保证队列的连续性
+              node.prev = pred = pred.prev;
+          } while (pred.waitStatus &gt; 0);
+          pred.next = node;
+      } else {
+          //初始化前面的节点为 Node.SIGNAL 等待唤醒的状态
+          compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
+      }
+      return false;
+  }
+</code></pre>
+<p>这里针对节点状态（waitStatus）做出一个说明。</p>
+<blockquote>
+<ul>
+<li>默认为 0，表示初始状态。</li>
+<li><code>Node.CANCELLED(1)</code>：表示当前结点已取消调度。当 tmeout 或被中断（响应中断的情况下），会触发变更为此状态，进入该状态后的结点将不会再变化。</li>
+<li><code>Node.SIGNAL(-1)</code>：表示后继结点在等待当前结点唤醒。后继结点入队时，会将前继结点的状态更新为 SIGNAL。</li>
+<li><code>Node.CONDITION-2)</code>：表示结点等待在 Condition 上，当其他线程调用了 Condition 的 signal() 方法后，CONDITION 状态的结点将从等待队列转移到同步队列中，等待获取同步锁。</li>
+<li><code>Node.PROPAGATE(-3)</code>：共享模式下，前继结点不仅会唤醒其后继结点，同时也可能会唤醒后继的后继结点。</li>
+</ul>
+</blockquote>
+<p>了解了这些状态之后，<strong>shouldParkAfterFailedAcquire</strong> 方法总共做了三件事。</p>
+<ul>
+<li>当发现前置节点是等待信号的状态的时候，证明前置节点还在执行任务或者阻塞的状态，此时可以放心返回，让程序阻塞，因为自己无论如何也执行不了。</li>
+<li>当前置节点的状态大于 0 的时候，也就是 <code>Node.CANCELLED</code> 的时候，证明前置节点被取消等待锁了，此时开始遍历整条双向列表，重置链路状态，将已经取消的全部删除掉。</li>
+<li>当前置节点状态为 0 的时候，初始化前置节点的状态为等待唤醒的状态（<code>Node.SIGNAL</code>）。</li>
+</ul>
+<p><strong>parkAndCheckInterrupt 方法</strong></p>
+<p>当 <strong>shouldParkAfterFailedAcquire</strong> 方法返回 true 的时候，证明此时加锁条件不满足，可以阻塞了。于是，开始调用系统内核进行阻塞：</p>
+<pre><code class="language-java">  private final boolean parkAndCheckInterrupt() {
+      LockSupport.park(this);
+      return Thread.interrupted();
+  }
+</code></pre>
+<p>逻辑十分简单，<code>LockSupport.park(this);</code> 的源码不做具体分析，已经涉及到了操作系统，该方法的具体作用如下：</p>
+<ul>
+<li><strong>阻塞当前线程：</strong> 调用 <code>park</code> 方法将导致当前线程进入等待状态，暂停执行。线程会在这里等待，直到被显式地唤醒。</li>
+<li><strong>与对象关联：</strong> <code>park</code> 方法可以关联一个对象。在这里，<code>this</code> 参数表示将当前线程与当前对象关联起来。这意味着，如果其他线程调用 <code>LockSupport.unpark(this)</code> 方法并传入相同的对象，那么被关联的线程将被唤醒。</li>
+<li><strong>与 unpark 搭配使用：</strong> <code>LockSupport</code> 类还提供了 <code>unpark</code> 方法，可以用于显式地唤醒被 <code>park</code> 阻塞的线程。通过关联对象，可以选择性地唤醒具体的线程。</li>
+</ul>
+<p><code>LockSupport.park(this)</code> 是用于阻塞当前线程的方法，它通常与 <code>LockSupport.unpark</code> 配合使用，实现线程之间的协同操作。这种方式相比于传统的 <code>wait</code> 和 <code>notify</code> 机制更加灵活，因为<code>LockSupport</code>可以直接与线程关联，而不用处于同一个对象监视器（对象监视器类似 <code>synchronized(o)</code> 里面那个 o，就是对象监视器的对象）。</p>
+<p>总的来说，<strong>acquireQueued 主要任务就是将等待的队列调用系统阻塞方法进行阻塞，等待唤醒。</strong></p>
+<p>此时阻塞之后，for 循环被阻塞，等待解锁成功后，循环继续，就会重新进入到判断前置节点是否是 head 节点，如果是就尝试获取锁的逻辑中。</p>
+<p>我们至此针对于加锁操作分析了它的主要源码，我们使用图来总结一下，看一个简化版的加锁逻辑：</p>
+<p><img alt="AQS加锁总结简化板.jpg" src="assets/6b10815bd06c408da9b3e6aabad53324_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>简单来说，加锁无非就是通过 CAS 去改变 State 的值，等于 0 且能改变成功就加锁成功，如果改变失败，就入队后阻塞。详细流程图如下：</p>
+<p><img alt="AQS公平锁加锁总结详细.jpg" src="assets/3f7a5daa75354a38ab2105a9274b4d9e_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<h3 id="3-解锁时-sync-做了什么">3. 解锁时 Sync 做了什么？</h3>
+<p>在上文分析了 AQS 进行加锁的原理以及源码，接下来我们将介绍解锁的原理。</p>
+<p>我们可以直接进入到<code>java.util.concurrent.locks.AbstractQueuedSynchronizer#release</code>中：</p>
+<pre><code class="language-java">public final boolean release(int arg) {
+    //尝试释放锁，当为可重入锁的时候，不将锁全部释放为0 会返回false
+    if (tryRelease(arg)) {
+        //释放锁成功后 获取头节点
+        Node h = head;
+        if (h != null &amp;&amp; h.waitStatus != 0)
+            //唤醒head节点后的节点
+            unparkSuccessor(h);
+        //返回释放锁成功
+        return true;
+    }
+    return false;
+}
+</code></pre>
+<p>可以看到，当释放锁成功后，会尝试调用 unparkSuccessor 唤醒等待队列中 head 之后的节点。这里先分析解锁成功后的动作：</p>
+<ul>
+<li>首先会获取 head 节点，因为我们前面分析过，等待队列是一个双向列表，所以，通过 head 节点就能获取到下一个要执行的节点（公平锁）。</li>
+<li>尝试唤醒 head 节点后的等待任务，我们查看 <code>unparkSuccessor</code> 的源码：</li>
+</ul>
+<pre><code class="language-java">private void unparkSuccessor(Node node) {
+    //获取head节点当前的状态
+    int ws = node.waitStatus;
+    //如果节点的状态是 Node.SIGNAL
+    if (ws &lt; 0)
+        //使用CAS将状态更改为初始化的0
+        compareAndSetWaitStatus(node, ws, 0);
+    //获取head节点的下一个节点
+    Node s = node.next;
+    //判断当前的节点是否被取消
+    if (s == null || s.waitStatus &gt; 0) {
+        s = null;
+        //任务如果被取消，则再次遍历链表，剔除失效的任务
+        for (Node t = tail; t != null &amp;&amp; t != node; t = t.prev)
+            if (t.waitStatus &lt;= 0)
+                s = t;
+    }
+    if (s != null)
+        //调用系统级命令进行解锁操作
+        LockSupport.unpark(s.thread);
+}
+</code></pre>
+<p>我们在前文分析过，等待队列中的节点都调用了 <code>LockSupport.park(this)</code> 进行了阻塞，这里如果能够解锁成功后就需要接触对应线程的阻塞，传递对应的线程将对应的线程进行取消阻塞，使线程能够真正执行。</p>
+<p>接下来分析是如何解锁的，我们带着两个问题看这个源码：</p>
+<ol>
+<li>如何解锁的？</li>
+<li>什么时候解锁成功/失败？</li>
+</ol>
+<p>我们进入到 <code>java.util.concurrent.locks.ReentrantLock.Sync#tryRelease</code> 方法中：</p>
+<pre><code class="language-java">protected final boolean tryRelease(int releases) {
+    //将当前的状态 - 1
+    int c = getState() - releases;
+    //如果解锁的线程与持有锁的线程不是一个 直接报错
+    if (Thread.currentThread() != getExclusiveOwnerThread())
+        throw new IllegalMonitorStateException();
+    boolean free = false;
+    //当加锁次数-1后等于0 
+    if (c == 0) {
+        //设置解锁成功
+        free = true;
+         //将持有锁的线程设置为null
+        setExclusiveOwnerThread(null);
+    }
+    //使用cas 变更当前state的值
+    setState(c);
+    return free;
+}
+</code></pre>
+<p>我们就上面两个问题根据源码给出答复。</p>
+<ol>
+<li>解锁就是对 state 进行减一操作（重入次数 -1），当 state = 0 的时候，就将持有锁的线程设置为 null，且返回解锁的结果。</li>
+<li>因为 <code>ReentrantLock</code> 是可重入锁，一个线程多次获取锁，state 的数量会大于 1，当解锁的时候，必须当前<strong>线程解锁次数 = 加锁次数</strong>才能解锁成功，否则解锁失败。</li>
+<li>无论是解锁成功与否，都必须将当前 state 的数量使用 CAS 更新为最新的。</li>
+</ol>
+<p>至此，公平锁的解锁逻辑我们也分析完了，看下解锁的整体流程：</p>
+<p><img alt="AQS公平锁的解锁流程.png" src="assets/c567aed10d0c4eeab16d0d459cf4dae5_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>解锁成功后，会调用 head 节点后的等到任务的 unPark 解锁线程，使得阻塞的线程重新开始循环获取锁的操作，直到获取锁成功。</p>
+<h2 id="二-总结">二、总结</h2>
+<p>我们在本章节中根据源码详细分析了 ReentrantLock 的公平锁对于 AQS 的应用，对于加锁和解锁操作重点就是操作 AQS 中的 state 状态，可重入锁的情况下，相同线程每加一次锁都会对 state 进行加一操作，每一次解锁都会执行减一操作。当 state 为 0 的时候，证明是无锁状态。</p>
+<p>加锁成功后，后续所有获取锁的任务都会进入到等待队列中的双向列表中，同时调用 park 进行线程阻塞，等待解锁成功后调用 unPark 进行终止阻塞，重新执行加锁逻辑。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#fd919191c4c9cccccdcabd9a909c9491d39e9290" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358f594cb42c960',t:'MTc0NTUzMjkyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

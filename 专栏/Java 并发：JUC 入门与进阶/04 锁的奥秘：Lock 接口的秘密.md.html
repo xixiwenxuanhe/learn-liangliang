@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="04 锁的奥秘：Lock 接口的秘密" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>04 锁的奥秘：Lock 接口的秘密 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/01%20%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%88%9d%e9%98%b6%ef%bc%9a%e8%a7%a3%e8%b0%9c%e5%a4%9a%e7%ba%bf%e7%a8%8b%e4%b8%96%e7%95%8c.md.html" id="01 多线程初阶：解谜多线程世界.md.html">01 多线程初阶：解谜多线程世界.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/02%20%e7%ba%bf%e7%a8%8b%e6%b1%a0%e6%8e%8c%e6%95%85%ef%bc%9a%e7%ae%a1%e7%90%86%e5%b9%b6%e5%8f%91%e7%9a%84%e7%a7%98%e7%b1%8d.md.html" id="02 线程池掌故：管理并发的秘籍.md.html">02 线程池掌故：管理并发的秘籍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/03%20%e9%94%81%e7%9a%84%e5%a5%a5%e7%a7%98%ef%bc%9asynchronized%20%e7%9a%84%e7%a7%98%e5%af%86.md.html" id="03 锁的奥秘：synchronized 的秘密.md.html">03 锁的奥秘：synchronized 的秘密.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/04%20%e9%94%81%e7%9a%84%e5%a5%a5%e7%a7%98%ef%bc%9aLock%20%e6%8e%a5%e5%8f%a3%e7%9a%84%e7%a7%98%e5%af%86.md.html" id="04 锁的奥秘：Lock 接口的秘密.md.html">04 锁的奥秘：Lock 接口的秘密.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/05%20%e6%8e%a7%e5%88%b6%e5%b9%b6%e5%8f%91%e6%b5%81%e7%a8%8b%ef%bc%8c%e5%b9%b6%e5%8f%91%e7%9a%84%e5%b7%a7%e5%a6%99%e7%bc%96%e7%bb%87.md.html" id="05 控制并发流程，并发的巧妙编织.md.html">05 控制并发流程，并发的巧妙编织.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/06%20ThreadLocal%20%e4%b9%8b%e7%8f%8d%e5%ae%9d%ef%bc%9a%e7%ba%bf%e7%a8%8b%e7%9a%84%e9%9a%90%e7%a7%98%e5%ae%9d%e5%ba%93.md.html" id="06 ThreadLocal 之珍宝：线程的隐秘宝库.md.html">06 ThreadLocal 之珍宝：线程的隐秘宝库.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/07%20CAS%ef%bc%9a%e6%af%94%e8%82%a9%e8%80%8c%e7%ab%8b%e7%9a%84%e5%8e%9f%e5%ad%90%e9%ad%94%e6%b3%95.md.html" id="07 CAS：比肩而立的原子魔法.md.html">07 CAS：比肩而立的原子魔法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/08%20%e5%ae%b9%e5%99%a8%e7%9a%84%e9%ad%94%e5%8a%9b%ef%bc%9a%e5%b9%b6%e5%8f%91%e4%b8%96%e7%95%8c%e7%9a%84%e5%ae%9d%e5%ba%93.md.html" id="08 容器的魔力：并发世界的宝库.md.html">08 容器的魔力：并发世界的宝库.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/09%20%e7%bb%93%e6%9e%9c%e5%a6%82%e4%bd%95%ef%bc%9f%e7%ba%bf%e7%a8%8b%e7%9a%84%e7%a7%98%e5%af%86%e5%91%8a%e7%99%bd.md.html" id="09 结果如何？线程的秘密告白.md.html">09 结果如何？线程的秘密告白.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/10%20AQS%ef%bc%9a%e4%bf%9d%e8%af%81%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e7%9a%84%e7%bb%88%e6%9e%81%e5%a5%a5%e7%a7%98%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="10 AQS：保证并发安全的终极奥秘（上）.md.html">10 AQS：保证并发安全的终极奥秘（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/11%20AQS%ef%bc%9a%e4%bf%9d%e8%af%81%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e7%9a%84%e7%bb%88%e6%9e%81%e5%a5%a5%e7%a7%98%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="11 AQS：保证并发安全的终极奥秘（中）.md.html">11 AQS：保证并发安全的终极奥秘（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Java%20%e5%b9%b6%e5%8f%91%ef%bc%9aJUC%20%e5%85%a5%e9%97%a8%e4%b8%8e%e8%bf%9b%e9%98%b6/12%20AQS%ef%bc%9a%e4%bf%9d%e8%af%81%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e7%9a%84%e7%bb%88%e6%9e%81%e5%a5%a5%e7%a7%98%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12 AQS：保证并发安全的终极奥秘（下）.md.html">12 AQS：保证并发安全的终极奥秘（下）.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="04 锁的奥秘：Lock 接口的秘密" id="title">04 锁的奥秘：Lock 接口的秘密</h1>
+<div><p>在上一章节，我们详细学习了<code>synchronized</code>的具体使用，深入了解了类锁和实例锁的应用场景、优劣势以及 JDK 1.6 之后的优化。在本节课中，我们将进一步拓展我们的多线程知识，转向学习 Java 中的<code>Lock</code>接口。</p>
+<p><code>Lock</code>接口提供了一种更加灵活和强大的锁定机制，相较于<code>synchronized</code>，它具有更多的扩展性和控制性。通过<code>Lock</code>接口，我们能够实现更复杂的锁定结构，包括但不限于可重入锁、读写锁以及尝试非阻塞地获取锁等特性。这使得在一些特定场景下，<code>Lock</code>接口能够提供更好的性能和更灵活的线程管理手段。</p>
+<p>在本章中，我们将深入研究<code>Lock</code>接口的使用方式、不同实现类的特性以及与<code>synchronized</code>相比的优势。我们将探讨如何使用<code>Lock</code>接口来确保线程安全，以及在并发编程中如何充分发挥其潜在优势。通过这次学习，希望你能够建立对于<code>Lock</code>接口的扎实理解，并能够在实际应用中灵活运用这一强大的多线程工具。</p>
+<p>在本章节中，我们主要学习 Lock 接口的三个实现：</p>
+<p><img alt="接口实现" src="assets/cf741892a942416597833c115edaaac1_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>上图的三种实现可以大致分为两个大类，后续我们将基于下表中的两个大类展开详细的介绍。</p>
+<table>
+<thead>
+<tr>
+<th><strong>实现</strong></th>
+<th><strong>锁分类</strong></th>
+<th><strong>特性</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ReentrantLock</strong></td>
+<td>可中断锁</td>
+<td>独占、可重入、支持线程在等待锁的过程中响应中断信号</td>
+</tr>
+<tr>
+<td>公平锁</td>
+<td>独占、可重入、按照线程请求锁的顺序分配锁，避免线程饥饿</td>
+<td></td>
+</tr>
+<tr>
+<td>非公平锁</td>
+<td>独占、可重入、不按照线程请求锁的顺序分配锁，允许插队</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>ReentrantReadWriteLock</strong></td>
+<td>读锁</td>
+<td>共享、可重入、允许多个线程同时获取读锁，但阻止写锁</td>
+</tr>
+<tr>
+<td>写锁</td>
+<td>独占、可重入、只允许一个线程获取写锁，阻止其他读写锁的获取</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="一-reentrantlock-锁">一、ReentrantLock 锁</h2>
+<p>ReentrantLock 是 Java 中提供的一种<strong>可重入独占锁</strong>。它实现了 <code>Lock</code> 接口，相较于传统的 synchronized 关键字，ReentrantLock 提供了更多的灵活性和额外的功能。ReentrantLock 在一些高并发场景下可能具有更好的性能，但也因为其太过灵活，使用时需要小心处理、避免复杂性。</p>
+<p>首先，我们简单了解一下<code>ReentrantLock</code>的主要 API :</p>
+<blockquote>
+<ul>
+<li><strong>lock()。</strong> 无限制地等待，只要拿不到锁就死等，直到获取到锁之后才会向下执行，不可被中断。</li>
+<li><strong>tryLock。</strong> 尝试获取锁，能够获取到就返回 true，否则返回 false。</li>
+<li><strong>tryLock(long timeout, TimeUnit unit)。</strong> 尝试等待规定的时间获取锁，到达等待时间后返回是否获取到了锁；它有两个返回时机，等待到了锁和等待时间到了。该方法可以被中断。</li>
+<li><strong>lockInterruptibly()。</strong> 类似于等待时间无限长的 tryLock，也是一个可以被中断的锁 <strong>。</strong></li>
+<li><strong>unlock。</strong> 将获取到的锁进行解锁。</li>
+</ul>
+</blockquote>
+<h3 id="1-基础使用">1. 基础使用</h3>
+<p>我们使用<code>ReentrantLock</code>模拟一个简单的线上购票业务：首先存在一个车票总数，然后开启线程进行购票，要求保证并发购票下，不会出现超卖的现象。</p>
+<p>我们首先进行分析：</p>
+<blockquote>
+<p><strong>在这个场景中，谁是临界区？</strong></p>
+<p>记住一个理论：<strong>多线程会并发修改谁，谁就是临界区数据</strong>。在这个例子中，我们会并发修改车票的剩余数量，那么车票的剩余数量就是临界区数据。</p>
+<p>在开发中，我们一般会对修改临界区的代码段进行加锁控制，以求多线程环境下对于临界区修改的可控性。</p>
+</blockquote>
+<p>我们现在知道了需要对谁进行加锁，那么我们就可以进行代码编写了：</p>
+<pre><code class="language-java">public  class TicketBookingSystem {
+    public  static  void main(String[] args) {
+        TicketCounter ticketCounter = new TicketCounter(20);
+
+        // 创建多个线程进行购票操作
+        Thread thread1 = new Thread(() -&gt; {
+            for (int i = 0; i &lt; 10; i++) {
+                ticketCounter.purchaseTicket(1);
+            }
+        });
+
+        Thread thread2 = new Thread(() -&gt; {
+            for (int i = 0; i &lt; 10; i++) {
+                ticketCounter.purchaseTicket(1);
+            }
+        });
+
+        Thread thread3 = new Thread(() -&gt; {
+            for (int i = 0; i &lt; 10; i++) {
+                ticketCounter.purchaseTicket(1);
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+
+        try {
+            thread1.join();
+            thread2.join();
+            thread3.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // 打印最终剩余车票数量
+        System.out.println( "最后可售门票: " + ticketCounter.getAvailableTickets());
+    }
+}
+
+
+class TicketCounter {
+    /**
+    * 车票的剩余数量
+    */
+     private  int availableTickets;
+    /**
+    * 锁
+    */
+    private  final Lock lock = new ReentrantLock();
+
+    public TicketCounter(int totalTickets) {
+        this.availableTickets = totalTickets;
+    }
+
+    /**
+     * 购票动作
+     *  @param quantity 购票的数目
+     */
+     public  void purchaseTicket(int quantity) {
+        //加锁
+        lock.lock();
+        try {
+            if (availableTickets &gt;= quantity) {
+                //模拟购票所需时间
+                Thread.sleep(500);
+                availableTickets -= quantity;
+                System.out.println(Thread.currentThread().getName() + " 购买 " + quantity + " 票； 剩余的票: " + availableTickets);
+            } else {
+                System.out.println(Thread.currentThread().getName() + " 购买失败，车票不足" );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+             //解锁
+             lock.unlock();
+        }
+    }
+
+    /**
+     * 返回余票的数目
+     *  @return  余票数目
+     */
+     public  int getAvailableTickets() {
+         return availableTickets;
+     }
+}
+</code></pre>
+<p>上述代码中展示了 lock 锁的具体用法，这里需要注意的是：<strong>尽量将 lock() 操作放在 try 的上一行，unLock() 一定要放在 finally 里面；lock() 和 unLock() 一定要成对出现，否则会出现死锁问题！</strong></p>
+<p>ReentrantLock 有两种构造函数，默认为非公平锁：</p>
+<pre><code class="language-java">  Lock lock = new ReentrantLock();
+</code></pre>
+<p>还可以将 ReentrantLock 设置为公平锁模式，这样定义：</p>
+<pre><code class="language-java">  Lock lock = new ReentrantLock(true);
+</code></pre>
+<p><strong>trLock() 与 lock() 不同的是：lock() 在获取不到锁的时候会阻塞等待，直至获取到锁为止！trLock() 是尝试获取锁，无论获取到锁与否都会返回一个值，当获取到锁了返回 true，没有获取到锁返回一个 false，使用方式与 lock() 类似。</strong></p>
+<pre><code class="language-java">public  class TryLockTest {
+
+    public  static  void main(String[] args) throws InterruptedException {
+        Task task = new Task();
+        Thread thread1 = new Thread(task);
+        Thread thread2 = new Thread(task);
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+    }
+
+    private  static  class Task implements Runnable {
+        private  final ReentrantLock lock = new ReentrantLock();
+
+        @Override
+        public  void run() {
+            boolean tryLock = lock.tryLock();
+            if(tryLock) {
+                try{
+                    System.out.println(Thread.currentThread().getName() + "获取到了锁." );
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    lock.unlock();
+                }
+            }else {
+                System.out.println(Thread.currentThread().getName() + "没有抢占到锁." );
+            }
+        }
+    }
+}
+</code></pre>
+<p><strong>tryLock(long timeout, TimeUnit unit)，它与 tryLock() 类似，不同的是，带参数的 tryLock 如果没有获取到锁，不会立即返回值，而是会等待设置的时间，如果等待时间内获取到了锁，则返回 true，没有获取到则返回为 false，而且它可以响应中断信号（有关中断信号后续会详细介绍，这里先学习它的用法）！</strong></p>
+<pre><code class="language-java">public  class TryLockTest2 {
+
+    public  static  void main(String[] args) throws InterruptedException {
+        Task task = new Task();
+        Thread thread1 = new Thread(task);
+        Thread thread2 = new Thread(task);
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+    }
+
+    private  static  class Task implements Runnable {
+        private  final ReentrantLock lock = new ReentrantLock();
+
+        @Override
+        public  void run() {
+            try {
+                boolean tryLock = lock.tryLock(2, TimeUnit.SECONDS);
+                //尝试获取锁
+                if(tryLock) {
+                    try{
+                        System.out.println(Thread.currentThread().getName() + "获取到了锁." );
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        //一定一定不要忘了释放锁
+                        lock.unlock();
+                    }
+                }else {
+                    System.out.println(Thread.currentThread().getName() + "没有抢占到锁." );
+                }
+            }catch (InterruptedException e) {
+                System.out.println( "tryLock被中断" );
+            }
+        }
+    }
+}
+</code></pre>
+<p>我们的这一段代码，演示了如果线程使用<code>lock.tryLock</code>没有获取到锁，则等待两秒，等待期间如果获取到了锁，就返回 true 继续向下执行！</p>
+<p>了解了 ReentrantLock 的使用方式之后，这里我们再学习一些 ReentrantLock 更加深入的使用。</p>
+<h3 id="2-公平锁">2. 公平锁</h3>
+<p>公平锁是一种多线程同步机制，它遵循一种公平策略，确保线程按照请求锁的顺序获得锁。具体来说，如果有多个线程在等待锁，公平锁会按照线程请求锁的顺序授予锁的许可，即<strong>先来先得</strong>的原则。</p>
+<p>公平锁会遵循线程请求锁的顺序，确保等待时间较长的线程优先获得锁。公平锁通常维护一个等待队列，其中包含了等待锁的线程。当锁被释放时，从等待队列中选择下一个线程来获得锁，而不是任意选择一个线程。</p>
+<p>我们可以尝试用一张图来理解公平锁的定义：</p>
+<p><img alt="公平锁.png" src="assets/a44590cfb8904e1baea11f45ba9247dc_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>可以看到，公平锁内部维护了一个<strong>等待队列</strong>，任务会根据请求锁的先后顺序依次进入到队列中，后续这些任务会根据队列的先后顺序去操作临界区。</p>
+<p>公平锁的实现也是基于<code>ReentrantLock</code>，我们上文说过，<code>ReentrantLock</code>默认是非公平锁，如果想要改变它，在定义的时候传递一个 true 即可：</p>
+<pre><code class="language-java">protected final static ReentrantLock LOCK = new ReentrantLock(true);
+</code></pre>
+<p>我们计划设计这样一个需求：现在存在 2 个线程，每一个线程在释放锁之后，再次获取一次锁，因为是公平锁的原因，因此线程在释放锁之后再次获取锁会将自己排在任务队列的队尾。这两个线程的执行顺序如下：</p>
+<p><img alt="公平锁代码结果演示.png" src="assets/dbd5951cd0514891948cc9d59972770e_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>想要演示的结果如上图，我们代码需要按照这样的方式运行，才能达到上图公平锁的特点：</p>
+<p><img alt="公平锁代码演示.png" src="assets/2079af2cf28c4b0196384911912a93c5_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>了解了执行顺序后，我们使用公平锁进行运行任务，看执行结果是否与我们设计的执行顺序一致：</p>
+<pre><code class="language-java">public  class FairLockTest {
+    protected  final  static ReentrantLock LOCK = new ReentrantLock(true);
+
+    public  static  void main(String[] args) throws InterruptedException {
+        Task target = new Task();
+        List&lt;Thread&gt; threadList = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; 2; i++) {
+            Thread thread1 = new Thread(target, "线程" +i);
+            threadList.add(thread1);
+        }
+
+        for (Thread thread : threadList) {
+            Thread.sleep(20);
+            thread.start();
+        }
+
+    }
+
+    private  static  class Task implements Runnable {
+
+        @Override
+        public  void run() {
+            //第一次获取锁
+            LOCK.lock();
+            try {
+                System.out.println(Thread.currentThread().getName() + "获取到了锁." );
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }finally {
+                //第一次释放锁
+                LOCK.unlock();
+            }
+            //第二次获取锁
+            LOCK.lock();
+            try {
+                System.out.println(Thread.currentThread().getName() + "获取到了锁." );
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }finally {
+                //第二次释放锁
+                LOCK.unlock();
+            }
+        }
+    }
+}
+</code></pre>
+<p>执行结果如下:</p>
+<pre><code class="language-txt">线程0获取到了锁.
+线程1获取到了锁.
+线程0获取到了锁.
+线程1获取到了锁.
+</code></pre>
+<p>与我们预期的顺序一致，公平锁最大的特点就是：<strong>它能够保证每一个任务都有机会获取锁，谁先申请锁谁就先执行，谁后申请就去排队，就像我们去银行取钱挂号一样，银行的工作人员会根据挂号的先后顺序依次办理业务！</strong></p>
+<h3 id="3-非公平锁">3. 非公平锁</h3>
+<p><strong>非公平锁与公平锁相反，它不严格遵循公平性原则，而允许在锁释放时，选择任何等待线程来获得锁。</strong></p>
+<p>在操作系统中，线程的唤醒也需要消耗时间，如果在唤醒期间突然来了一个线程，那么非公平锁可以立即分配一个锁，而无须让该线程进入等待队列，直接拿到锁，省略了排队这一步。</p>
+<p>让我们通过一个例子来更好地理解非公平锁的工作原理：</p>
+<blockquote>
+<p>假设你在医院排队缴费，当轮到你缴费时，你正在低头玩手机。在这时，有一个人插到了你前面，他问缴费窗口药房在哪。他得到答复之后就离开了。接着，轮到你缴费。在这个情况下，你会发现，别人插队这件事并没有很影响你的正常流程。</p>
+</blockquote>
+<p>这个例子说明了非公平锁的行为，它允许等待的线程在释放锁后，后面的线程根据某种策略来获取锁，而不是严格按照先来先服务的原则。这可以提高性能，但可能会导致一些线程在某些情况下等待较长时间。</p>
+<p>我们看一下它的定义方式：ReentrantLock 本来就是非公平锁，当然我们也可以显式地指定为 false，false 就是非公平锁。</p>
+<pre><code class="language-java">protected final static ReentrantLock LOCK = new ReentrantLock(false)
+</code></pre>
+<p>我们还是以上面公平锁的例子来说明，由于一个线程会连续获取两次，而非公平锁不会遵循先来后到的原则，所以它会出现以下结果：</p>
+<p><img alt="非公平锁结果.png" src="assets/739bff367bce4a89885f8a3a2823a7fb_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>那么它的线程入队逻辑就变成了下图这样：</p>
+<p><img alt="非公平锁代码逻辑.png" src="assets/e7ad44178c694895ae70443749840eaa_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>我们可以看到它与公平锁存在本质的区别就是<strong>执行顺序</strong>。代码与公平锁的代码一致，我们只需要在构建锁之后，指定为非公平锁即可，由于线程 1 释放锁后会立即再次获取一次锁，所以非公平锁会直接让其获取到锁，而非是唤醒等待队列中的锁：</p>
+<pre><code class="language-java">protected  final  static ReentrantLock LOCK = new ReentrantLock();
+</code></pre>
+<p>非公平锁最大的特点就是当一个任务获取锁的时候，如果恰好前面的线程释放锁，此时当前任务不再进行排队，直接插队执行任务！<strong>非公平锁在高并发场景下，会省略大量的唤醒线程的操作，但是极端情况下会造成等待队列中的任务一直被插队一直执行不了！</strong></p>
+<h3 id="4-可中断锁">4. 可中断锁</h3>
+<p>可中断锁就是线程在等待锁的过程中可以响应中断信号，如果一个线程在等待锁时被中断，它会立即退出等待状态，并抛出 <code>InterruptedException</code>。这种锁的主要目的是提供更好的线程控制，以避免线程在等待锁的过程中无限期地阻塞。</p>
+<p>我们设想这样一种场景：线程 A 在等待锁然后处理任务，结果其他的线程将这个任务处理完毕了，此时线程 A 也就不需要等待锁执行这个任务了，所以我们就需要将这个线程 A 获取锁的过程给停止掉，这就是可中断锁。</p>
+<p>在 ReentrantLock 中，存在两种可中断锁的 API，<code>tryLock(long timeout, TimeUnit unit)</code> 和<code>lockInterruptibly()</code> 。tryLock 的方式在上面已经给过案例了，这里只演示<code>lockInterruptibly</code>：</p>
+<pre><code class="language-java">public  class InterruptReentrantLockTest {
+    protected  final  static ReentrantLock LOCK = new ReentrantLock();
+
+    public  static  void main(String[] args) throws InterruptedException {
+        Task target = new Task();
+        Thread thread1 = new Thread(target, "线程1" );
+        Thread thread2 = new Thread(target, "线程2" );
+
+        thread1.start();
+        //睡眠的原因是先尝试让线程1 获取锁
+        TimeUnit.SECONDS.sleep(1);
+        thread2.start();
+
+        //线程2等待锁的过程中中断等待
+        thread2.interrupt();
+    }
+
+    private  static  class Task implements Runnable {
+
+        @Override
+        public  void run() {
+            try {
+                System.out.println(Thread.currentThread().getName() + "尝试获取锁." );
+                LOCK.lockInterruptibly();
+                try {
+                    System.out.println(Thread.currentThread().getName() + "获取到了锁." );
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }finally {
+                    LOCK.unlock();
+                }
+            } catch (InterruptedException e) {
+                System.out.println(Thread.currentThread().getName() + "等待锁的时候被中断,结束等待." );
+            }
+        }
+    }
+}
+</code></pre>
+<p>可中断锁的特性就是，<strong>它允许人为地将获取锁的过程给强行终止掉</strong>！</p>
+<h2 id="二-reentrantreadwritelock-锁">二、ReentrantReadWriteLock 锁</h2>
+<p>ReentrantReadWriteLock 是读写锁，它可以用于管理多个线程对共享资源的并发访问。与标准的互斥锁不同，读写锁将锁分为两种类型：读锁（<strong>共享锁</strong>）和写锁（<strong>排他锁</strong>）。这种分离的锁类型允许多个线程同时读取共享资源，但在进行写操作时需要排他地获取锁。</p>
+<p>从 ReentrantReadWriteLock 中可以衍生出 ReadLock（读锁）和 WriteLock（写锁）。</p>
+<ul>
+<li>读锁：读锁的类型是共享锁，它允许多个线程同时操作临界区。</li>
+<li>写锁：写锁的类型是排他锁，它允许同时只能有一个线程占有写锁。</li>
+</ul>
+<p>这里需要注意，写锁是独占锁，写锁持有期间，不允许有其他的读锁或者写锁占有。</p>
+<p>简单来说，读锁存在的时候其他线程也可以获取读锁，但是不能获取写锁；写锁存在的时候，其他线程读锁写锁都不允许获取；<code>读锁同时可以有多个，但是写锁同时只能有一个</code>。</p>
+<p>下面我们将针对上述的两种锁类型分别介绍。</p>
+<h3 id="1-读锁">1. 读锁</h3>
+<p>读锁是共享锁，允许多个线程同时持有读锁：</p>
+<pre><code class="language-java">public  class SharedLockTest {
+    private  final  static ReentrantReadWriteLock REENTRANT_READ_WRITE_LOCK = new ReentrantReadWriteLock();
+    /**
+    * 获取读锁
+    */
+     private  final  static ReentrantReadWriteLock.ReadLock READ_LOCK = REENTRANT_READ_WRITE_LOCK.readLock();
+     
+     public  static  void main(String[] args) {
+        Task task = new Task();
+        new Thread(task, "线程1" ).start();
+        new Thread(task, "线程2" ).start();
+        new Thread(task, "线程3" ).start();
+     }
+     private  static  class Task implements Runnable {
+        @Override
+        public  void run() {
+            System.out.println(Thread.currentThread().getName() + "开始获取数据." );
+            READ_LOCK.lock();
+            try {
+                System.out.println(Thread.currentThread().getName() + "开始读取数据." );
+                TimeUnit.SECONDS.sleep(3);
+                System.out.println(Thread.currentThread().getName() + "执行完毕，释放锁." );
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                READ_LOCK.unlock();
+            }
+        }
+    }
+}
+</code></pre>
+<p>执行结果如下：</p>
+<pre><code class="language-txt">线程1开始获取数据.
+线程3开始获取数据.
+线程2开始获取数据.
+线程1开始读取数据.
+线程3开始读取数据.
+线程2开始读取数据.
+线程3执行完毕，释放锁.
+线程1执行完毕，释放锁.
+线程2执行完毕，释放锁.
+</code></pre>
+<p>从结果我们可以看到，3 个线程是同时获取到了读锁，并同时执行的，这符合共享锁的定义。</p>
+<h3 id="2-写锁">2. 写锁</h3>
+<p>写锁是独占锁，同时只有存在一条线程获取到锁，其余锁必须处于等待写锁的释放：</p>
+<pre><code class="language-java">public  class WriteLockTest {
+    private  final  static ReentrantReadWriteLock REENTRANT_READ_WRITE_LOCK = new ReentrantReadWriteLock();
+    /**
+     * 获取写锁
+     */
+    private  final  static ReentrantReadWriteLock.WriteLock WRITE_LOCK = REENTRANT_READ_WRITE_LOCK.writeLock();
+    
+    public  static  void main(String[] args) {
+        Task task = new Task();
+        new Thread(task, "线程1" ).start();
+        new Thread(task, "线程2" ).start();
+        new Thread(task, "线程3" ).start();
+    }
+    private  static  class Task implements Runnable {
+        @Override
+        public  void run() {
+            System.out.println(Thread.currentThread().getName() + "开始获取锁." );
+            WRITE_LOCK.lock();
+            try {
+                System.out.println(Thread.currentThread().getName() + "获取锁成功开始写入数据." );
+                TimeUnit.SECONDS.sleep(3);
+                System.out.println(Thread.currentThread().getName() + "执行完毕，释放锁." );
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                WRITE_LOCK.unlock();
+            }
+        }
+    }
+}
+</code></pre>
+<p>最终的执行结果如下：</p>
+<pre><code class="language-txt">线程2开始获取锁.
+线程2获取锁成功开始写入数据.
+线程1开始获取锁.
+线程3开始获取锁.
+线程2执行完毕，释放锁.
+线程1获取锁成功开始写入数据.
+线程1执行完毕，释放锁.
+线程3获取锁成功开始写入数据.
+线程3执行完毕，释放锁.
+</code></pre>
+<p>从结果中可以看到，写锁是独占锁，不允许其他线程共享。其执行顺序也是必须前一个线程释放锁后，后面的线程才能获取到锁。</p>
+<p>我们上面单独演示了读锁和写锁的使用，下面我们模拟一个售票的功能，以便于你更加清晰地认识读写锁。</p>
+<p>有一个火车购票系统，它有两个功能，可以查询余票和购票。根据功能分析，查询是读操作，适用于读锁；购票时写入，适用于写锁。这里需要注意，读写锁也可以使用公平锁和非公平锁，默认为非公平锁。这里为了方便观察结果，我们暂时将其设置为公平锁（有关它的非公平锁比较特殊，后续我会详细说明），代码如下：</p>
+<pre><code class="language-java">public class BuyTicketReadWriteLock {
+    private final static ReentrantReadWriteLock REENTRANT_READ_WRITE_LOCK = new ReentrantReadWriteLock(true);
+    /**
+     * 获取读锁
+     */
+    private final static ReentrantReadWriteLock.ReadLock READ_LOCK = REENTRANT_READ_WRITE_LOCK.readLock();
+    /**
+     * 获取写锁
+     */
+    private final static ReentrantReadWriteLock.WriteLock WRITE_LOCK = REENTRANT_READ_WRITE_LOCK.writeLock();
+
+    private static class Task {
+        /**
+         * 余票信息
+         */
+        private int remainingVotes;
+
+        public Task(int remainingVotes) {
+            this.remainingVotes = remainingVotes;
+        }
+
+        /**
+         * 购票
+         */
+        public void buyTicket(){
+            System.out.println(Thread.currentThread().getName() + "尝试获取写锁，准备购票.");
+            WRITE_LOCK.lock();
+            try {
+                System.out.println(Thread.currentThread().getName() + "获取到写锁，开始购票.");
+                if(remainingVotes &gt;0) {
+                    remainingVotes--;
+                    Thread.sleep(2000);
+                    System.out.println(Thread.currentThread().getName() + "购票成功，余票减少.");
+                }else {
+                    System.out.println("剩余票数为:" + remainingVotes + "， 购买失败.");
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                WRITE_LOCK.unlock();
+            }
+        }
+
+        /**
+         * 查询票
+         */
+        public void selectTicket(){
+            System.out.println(Thread.currentThread().getName() + "尝试获取读锁，准备查询票.");
+            READ_LOCK.lock();
+            try {
+                System.out.println(Thread.currentThread().getName() + "获取到读锁，当前余票为: " + remainingVotes);
+                Thread.sleep(1000);
+                System.out.println(Thread.currentThread().getName() + "查询成功，释放读锁.");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                READ_LOCK.unlock();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Task task = new Task(4);
+        new Thread(task::selectTicket, "线程1").start();
+        new Thread(task::selectTicket, "线程2").start();
+        new Thread(task::buyTicket, "线程3").start();
+        new Thread(task::selectTicket, "线程4").start();
+    }
+}
+</code></pre>
+<p>执行结果如下：</p>
+<pre><code class="language-txt">线程1尝试获取读锁，准备查询票.
+线程2尝试获取读锁，准备查询票.
+线程1获取到读锁，当前余票为: 4
+线程2获取到读锁，当前余票为: 4
+线程3尝试获取写锁，准备购票.
+线程4尝试获取读锁，准备查询票.
+线程1查询成功，释放读锁.
+线程2查询成功，释放读锁.
+线程3获取到写锁，开始购票.
+线程3购票成功，余票减少.
+线程4获取到读锁，当前余票为: 3
+线程4查询成功，释放读锁.
+</code></pre>
+<p>通过结果我们可以看到，读锁和写锁是不能共存的，当存在读锁的时候，写锁不允许获取锁，但是读锁查询票是可以并发查的，一旦涉及到写锁，就开始独占，剩余的查询需要等待写锁释放才能获取到读锁！</p>
+<h3 id="3-读写锁的公平性">3. 读写锁的公平性</h3>
+<p>读写锁也可以设置为非公平锁，ReentrantReadWriteLock 默认就是非公平锁。ReentrantReadWriteLock 默认使用的是非公平锁，如果需要改变类型，需要在构造方法中修改，如下面的代码，就是将它修改为公平锁：</p>
+<pre><code class="language-java">ReentrantReadWriteLock REENTRANT_READ_WRITE_LOCK = new ReentrantReadWriteLock(true);
+</code></pre>
+<p>非公平读写锁的主要特点是在读锁之间不强制遵守请求顺序，但对于写锁，通常仍然会维护一个队列以确保操作的顺序性。这有助于避免写操作与其他读写操作之间的竞争条件和不一致性。</p>
+<p>大多数的业务场景都是读多写少，假设非公平读写锁插队逻辑和常规的非公平锁一致，那么极端情况下就会出现这样一种情况，<strong>源源不断的读锁过来读取数据，导致写锁迟迟得不到执行！</strong> 所以，<strong>非公平读写锁主要针对读锁的设置</strong>。当锁的等待队列的头部是写锁时，不允许读锁插队，即写锁有更高的优先级。这样可以确保写锁不会长时间等待，以避免写操作的等待时间过长。</p>
+<p>我们使用一张图来帮助你理解：</p>
+<p><img alt="读写锁的公平性.png" src="assets/2f3d141530974116ae43145c8d90dc04_tplv-k3u1fbpfcp-jj-mark_1890_0_0_0_q75.awebp"/></p>
+<p>通过图可以看到，当队头为读锁的时候，允许插队，当队头为写锁的时候，不允许插队。</p>
+<h2 id="三-可重入特性">三、可重入特性</h2>
+<p>我们上面介绍的 ReentrantLock、ReentrantReadWriteLock 都是可重入锁，可重入锁的特性就是<strong>同一个线程可以多次获取已经持有的锁</strong>。</p>
+<p>比如，我们使用 <strong>ReentrantLock</strong>，在一个加锁的方法中调用另外一个加锁的方式，此时内层方法不会进入等待状态而是直接获取到锁：</p>
+<pre><code class="language-java">public class ReentrantLockExample {
+
+    /**
+     * 创建一个可重入锁
+     */
+    private final ReentrantLock lock = new ReentrantLock();
+
+    public static void main(String[] args) {
+        ReentrantLockExample example = new ReentrantLockExample();
+        example.outerMethod();
+    }
+
+    // 外层方法
+    public void outerMethod() {
+        lock.lock(); // 获取锁
+        try {
+            System.out.println("线程："+Thread.currentThread().getName() + "外层加锁成功; 此时加锁次数为:" + lock.getHoldCount());
+            System.out.println("线程："+Thread.currentThread().getName() + "; 外层方法开始执行");
+            innerMethod(); // 调用内层方法
+            System.out.println("线程："+Thread.currentThread().getName() + "; 外层方法执行结束");
+        } finally {
+            lock.unlock(); // 释放锁
+            System.out.println("线程："+Thread.currentThread().getName() + "外层方法释放锁成功; 此时加锁次数为:" + lock.getHoldCount());
+        }
+    }
+
+    // 内层方法
+    public void innerMethod() {
+        //获取锁不会被阻塞
+        lock.lock();
+        try {
+            System.out.println("线程："+Thread.currentThread().getName() + "内层加锁成功; 此时加锁次数为:" + lock.getHoldCount());
+            System.out.println("线程："+Thread.currentThread().getName() + "; 内层方法执行");
+            System.out.println("线程："+Thread.currentThread().getName() + "; 内层方法结束");
+        } finally {
+            lock.unlock(); // 释放锁
+            System.out.println("线程："+Thread.currentThread().getName() + "内层方法释放锁成功; 此时加锁次数为:" + lock.getHoldCount());
+        }
+    }
+}
+</code></pre>
+<p>运行结果如下：</p>
+<pre><code class="language-txt">线程：main外层加锁成功; 此时加锁次数为:1
+线程：main; 外层方法开始执行
+线程：main内层加锁成功; 此时加锁次数为:2
+线程：main; 内层方法执行
+线程：main; 内层方法结束
+线程：main内层方法释放锁成功; 此时加锁次数为:1
+线程：main; 外层方法执行结束
+线程：main外层方法释放锁成功; 此时加锁次数为:0
+</code></pre>
+<p>从结果也可以看出，内层方法是没有等待外层方法的锁释放的，而是直接获取到锁。</p>
+<p><strong>在 ReentrantLock 内部维护了一个加锁的次数，可重入锁每加锁一次，加锁次数 +1，每释放一次锁，加锁次数 -1，当加锁次数为 0 的时候，该线程彻底释放这个锁。可以通过 getHoldCount 来获取加锁次数。</strong></p>
+<h2 id="四-总结">四、总结</h2>
+<p>在本章节中，我们不仅深入研究了<code>Lock</code>接口的基础使用，还从各种特性出发，详细介绍了<code>Lock</code>的两种重要衍生特性。</p>
+<p>首先，我们聚焦于<code>ReentrantLock</code>，它是一种可重入锁，允许线程在持有锁的情况下多次进入同一个锁保护的代码块。我们详细讨论了<code>ReentrantLock</code>的使用方法、锁的获取和释放机制，以及与传统<code>synchronized</code>关键字相比的一些优势，例如更灵活的锁定和可中断性。</p>
+<p>进一步地，我们还探究了<code>ReentrantReadWriteLock</code>，这是由<code>ReentrantLock</code>衍生出的读写锁。我们详细分析了读写锁的设计理念，以及它如何在允许多个线程同时读取数据的同时，确保写操作的互斥性。通过对读写锁的深入了解，我们能够更好地在不同场景下选择适当的锁，以优化程序的并发性能。</p>
+<p>通过本章的学习，相信你对<code>Lock</code>接口及其衍生特性应该有了更全面、深入的认识。这些知识将为你在实际开发中处理复杂的多线程场景提供更灵活、更高效的工具和策略。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#f19d9d9dc8c5c0c0c1c6b1969c90989ddf929e9c" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358f4fe3d92d703',t:'MTc0NTUzMjkwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
