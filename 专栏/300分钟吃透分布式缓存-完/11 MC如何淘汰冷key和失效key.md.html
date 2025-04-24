@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="11 MC如何淘汰冷key和失效key" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>11 MC如何淘汰冷key和失效key </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e5%af%84%e8%af%ad%ef%bc%9a%e7%bc%93%e5%ad%98%ef%bc%8c%e4%bd%a0%e7%9c%9f%e7%9a%84%e7%94%a8%e5%af%b9%e4%ba%86%e5%90%97%ef%bc%9f.md.html" id="00 开篇寄语：缓存，你真的用对了吗？.md.html">00 开篇寄语：缓存，你真的用对了吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/01%20%e4%b8%9a%e5%8a%a1%e6%95%b0%e6%8d%ae%e8%ae%bf%e9%97%ae%e6%80%a7%e8%83%bd%e5%a4%aa%e4%bd%8e%e6%80%8e%e4%b9%88%e5%8a%9e%ef%bc%9f.md.html" id="01 业务数据访问性能太低怎么办？.md.html">01 业务数据访问性能太低怎么办？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/02%20%e5%a6%82%e4%bd%95%e6%a0%b9%e6%8d%ae%e4%b8%9a%e5%8a%a1%e6%9d%a5%e9%80%89%e6%8b%a9%e7%bc%93%e5%ad%98%e6%a8%a1%e5%bc%8f%e5%92%8c%e7%bb%84%e4%bb%b6%ef%bc%9f.md.html" id="02 如何根据业务来选择缓存模式和组件？.md.html">02 如何根据业务来选择缓存模式和组件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/03%20%e8%ae%be%e8%ae%a1%e7%bc%93%e5%ad%98%e6%9e%b6%e6%9e%84%e6%97%b6%e9%9c%80%e8%a6%81%e8%80%83%e9%87%8f%e5%93%aa%e4%ba%9b%e5%9b%a0%e7%b4%a0%ef%bc%9f.md.html" id="03 设计缓存架构时需要考量哪些因素？.md.html">03 设计缓存架构时需要考量哪些因素？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/04%20%e7%bc%93%e5%ad%98%e5%a4%b1%e6%95%88%e3%80%81%e7%a9%bf%e9%80%8f%e5%92%8c%e9%9b%aa%e5%b4%a9%e9%97%ae%e9%a2%98%e6%80%8e%e4%b9%88%e5%a4%84%e7%90%86%ef%bc%9f.md.html" id="04 缓存失效、穿透和雪崩问题怎么处理？.md.html">04 缓存失效、穿透和雪崩问题怎么处理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/05%20%e7%bc%93%e5%ad%98%e6%95%b0%e6%8d%ae%e4%b8%8d%e4%b8%80%e8%87%b4%e5%92%8c%e5%b9%b6%e5%8f%91%e7%ab%9e%e4%ba%89%e6%80%8e%e4%b9%88%e5%a4%84%e7%90%86%ef%bc%9f.md.html" id="05 缓存数据不一致和并发竞争怎么处理？.md.html">05 缓存数据不一致和并发竞争怎么处理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/06%20Hot%20Key%e5%92%8cBig%20Key%e5%bc%95%e5%8f%91%e7%9a%84%e9%97%ae%e9%a2%98%e6%80%8e%e4%b9%88%e5%ba%94%e5%af%b9%ef%bc%9f.md.html" id="06 Hot Key和Big Key引发的问题怎么应对？.md.html">06 Hot Key和Big Key引发的问题怎么应对？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/07%20MC%e4%b8%ba%e4%bd%95%e6%98%af%e5%ba%94%e7%94%a8%e6%9c%80%e5%b9%bf%e6%b3%9b%e7%9a%84%e7%bc%93%e5%ad%98%e7%bb%84%e4%bb%b6%ef%bc%9f.md.html" id="07 MC为何是应用最广泛的缓存组件？.md.html">07 MC为何是应用最广泛的缓存组件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/08%20MC%e7%b3%bb%e7%bb%9f%e6%9e%b6%e6%9e%84%e6%98%af%e5%a6%82%e4%bd%95%e5%b8%83%e5%b1%80%e7%9a%84%ef%bc%9f.md.html" id="08 MC系统架构是如何布局的？.md.html">08 MC系统架构是如何布局的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/09%20MC%e6%98%af%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%92%8c%e7%8a%b6%e6%80%81%e6%9c%ba%e6%9d%a5%e5%a4%84%e7%90%86%e8%af%b7%e6%b1%82%e5%91%bd%e4%bb%a4%e7%9a%84%ef%bc%9f.md.html" id="09 MC是如何使用多线程和状态机来处理请求命令的？.md.html">09 MC是如何使用多线程和状态机来处理请求命令的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/10%20MC%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9a%e4%bd%8dkey%e7%9a%84.md.html" id="10 MC是怎么定位key的.md.html">10 MC是怎么定位key的.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/11%20MC%e5%a6%82%e4%bd%95%e6%b7%98%e6%b1%b0%e5%86%b7key%e5%92%8c%e5%a4%b1%e6%95%88key.md.html" id="11 MC如何淘汰冷key和失效key.md.html">11 MC如何淘汰冷key和失效key.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/12%20%e4%b8%ba%e4%bd%95MC%e8%83%bd%e9%95%bf%e6%9c%9f%e7%bb%b4%e6%8c%81%e9%ab%98%e6%80%a7%e8%83%bd%e8%af%bb%e5%86%99%ef%bc%9f.md.html" id="12 为何MC能长期维持高性能读写？.md.html">12 为何MC能长期维持高性能读写？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/13%20%e5%a6%82%e4%bd%95%e5%ae%8c%e6%95%b4%e5%ad%a6%e4%b9%a0MC%e5%8d%8f%e8%ae%ae%e5%8f%8a%e4%bc%98%e5%8c%96client%e8%ae%bf%e9%97%ae%ef%bc%9f.md.html" id="13 如何完整学习MC协议及优化client访问？.md.html">13 如何完整学习MC协议及优化client访问？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/14%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%97%b6%e4%bb%a3%ef%bc%8cMC%e5%a6%82%e4%bd%95%e5%ba%94%e5%af%b9%e6%96%b0%e7%9a%84%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="14 大数据时代，MC如何应对新的常见问题？.md.html">14 大数据时代，MC如何应对新的常见问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/15%20%e5%a6%82%e4%bd%95%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%e3%80%81%e5%ba%94%e7%94%a8%e5%8f%8a%e6%89%a9%e5%b1%95%20Twemproxy%ef%bc%9f.md.html" id="15 如何深入理解、应用及扩展 Twemproxy？.md.html">15 如何深入理解、应用及扩展 Twemproxy？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/16%20%e5%b8%b8%e7%94%a8%e7%9a%84%e7%bc%93%e5%ad%98%e7%bb%84%e4%bb%b6Redis%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%e7%9a%84%ef%bc%9f.md.html" id="16 常用的缓存组件Redis是如何运行的？.md.html">16 常用的缓存组件Redis是如何运行的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/17%20%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e3%80%81%e9%80%89%e6%8b%a9%e5%b9%b6%e4%bd%bf%e7%94%a8Redis%e7%9a%84%e6%a0%b8%e5%bf%83%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%ef%bc%9f.md.html" id="17 如何理解、选择并使用Redis的核心数据类型？.md.html">17 如何理解、选择并使用Redis的核心数据类型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/18%20Redis%e5%8d%8f%e8%ae%ae%e7%9a%84%e8%af%b7%e6%b1%82%e5%92%8c%e5%93%8d%e5%ba%94%e6%9c%89%e5%93%aa%e4%ba%9b%e2%80%9c%e5%a5%97%e8%b7%af%e2%80%9d%e5%8f%af%e5%be%aa%ef%bc%9f.md.html" id="18 Redis协议的请求和响应有哪些“套路”可循？.md.html">18 Redis协议的请求和响应有哪些“套路”可循？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/19%20Redis%e7%b3%bb%e7%bb%9f%e6%9e%b6%e6%9e%84%e4%b8%ad%e5%90%84%e4%b8%aa%e5%a4%84%e7%90%86%e6%a8%a1%e5%9d%97%e6%98%af%e5%b9%b2%e4%bb%80%e4%b9%88%e7%9a%84%ef%bc%9f.md.html" id="19 Redis系统架构中各个处理模块是干什么的？.md.html">19 Redis系统架构中各个处理模块是干什么的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/20%20Redis%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e6%96%87%e4%bb%b6%e4%ba%8b%e4%bb%b6%e5%92%8c%e6%97%b6%e9%97%b4%e4%ba%8b%e4%bb%b6%ef%bc%9f.md.html" id="20 Redis如何处理文件事件和时间事件？.md.html">20 Redis如何处理文件事件和时间事件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/21%20Redis%e8%af%bb%e5%8f%96%e8%af%b7%e6%b1%82%e6%95%b0%e6%8d%ae%e5%90%8e%ef%bc%8c%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e5%8d%8f%e8%ae%ae%e8%a7%a3%e6%9e%90%e5%92%8c%e5%a4%84%e7%90%86.md.html" id="21 Redis读取请求数据后，如何进行协议解析和处理.md.html">21 Redis读取请求数据后，如何进行协议解析和处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/22%20%e6%80%8e%e4%b9%88%e8%ae%a4%e8%af%86%e5%92%8c%e5%ba%94%e7%94%a8Redis%e5%86%85%e9%83%a8%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9f.md.html" id="22 怎么认识和应用Redis内部数据结构？.md.html">22 怎么认识和应用Redis内部数据结构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/23%20Redis%e6%98%af%e5%a6%82%e4%bd%95%e6%b7%98%e6%b1%b0key%e7%9a%84%ef%bc%9f.md.html" id="23 Redis是如何淘汰key的？.md.html">23 Redis是如何淘汰key的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/24%20Redis%e5%b4%a9%e6%ba%83%e5%90%8e%ef%bc%8c%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e6%95%b0%e6%8d%ae%e6%81%a2%e5%a4%8d%e7%9a%84%ef%bc%9f.md.html" id="24 Redis崩溃后，如何进行数据恢复的？.md.html">24 Redis崩溃后，如何进行数据恢复的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/25%20%20Redis%e6%98%af%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%ae%b9%e6%98%93%e8%b6%85%e6%97%b6%e7%9a%84%e7%b3%bb%e7%bb%9f%e8%b0%83%e7%94%a8%e7%9a%84%ef%bc%9f.md.html" id="25  Redis是如何处理容易超时的系统调用的？.md.html">25  Redis是如何处理容易超时的系统调用的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/26%20%e5%a6%82%e4%bd%95%e5%a4%a7%e5%b9%85%e6%88%90%e5%80%8d%e6%8f%90%e5%8d%87Redis%e5%a4%84%e7%90%86%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 如何大幅成倍提升Redis处理性能？.md.html">26 如何大幅成倍提升Redis处理性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/27%20Redis%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%e7%9a%84%ef%bc%9f.md.html" id="27 Redis是如何进行主从复制的？.md.html">27 Redis是如何进行主从复制的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/28%20%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e9%ab%98%e6%80%a7%e8%83%bd%e3%80%81%e6%98%93%e6%89%a9%e5%b1%95%e7%9a%84Redis%e9%9b%86%e7%be%a4%ef%bc%9f.md.html" id="28 如何构建一个高性能、易扩展的Redis集群？.md.html">28 如何构建一个高性能、易扩展的Redis集群？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/29%20%e4%bb%8e%e5%ae%b9%e5%ba%94%e5%af%b9%e4%ba%bf%e7%ba%a7QPS%e8%ae%bf%e9%97%ae%ef%bc%8cRedis%e8%bf%98%e7%bc%ba%e5%b0%91%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="29 从容应对亿级QPS访问，Redis还缺少什么？.md.html">29 从容应对亿级QPS访问，Redis还缺少什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/30%20%e9%9d%a2%e5%af%b9%e6%b5%b7%e9%87%8f%e6%95%b0%e6%8d%ae%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%97%a0%e6%b3%95%e8%ae%be%e8%ae%a1%e5%87%ba%e5%ae%8c%e7%be%8e%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="30 面对海量数据，为什么无法设计出完美的分布式缓存体系？.md.html">30 面对海量数据，为什么无法设计出完美的分布式缓存体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/31%20%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e8%b6%b3%e5%a4%9f%e5%8f%af%e9%9d%a0%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98%e4%bd%93%e7%b3%bb%ef%bc%8c%e4%bb%a5%e6%bb%a1%e8%b6%b3%e5%a4%a7%e4%b8%ad%e5%9e%8b%e7%a7%bb%e5%8a%a8%e4%ba%92%e8%81%94%e7%bd%91%e7%b3%bb%e7%bb%9f%e7%9a%84%e9%9c%80%e8%a6%81%ef%bc%9f.md.html" id="31 如何设计足够可靠的分布式缓存体系，以满足大中型移动互联网系统的需要？.md.html">31 如何设计足够可靠的分布式缓存体系，以满足大中型移动互联网系统的需要？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/32%20%e4%b8%80%e4%b8%aa%e5%85%b8%e5%9e%8b%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98%e7%b3%bb%e7%bb%9f%e6%98%af%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%ef%bc%9f.md.html" id="32 一个典型的分布式缓存系统是什么样的？.md.html">32 一个典型的分布式缓存系统是什么样的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/33%20%e5%a6%82%e4%bd%95%e4%b8%ba%e7%a7%92%e6%9d%80%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e7%bc%93%e5%ad%98%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="33 如何为秒杀系统设计缓存体系？.md.html">33 如何为秒杀系统设计缓存体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/34%20%e5%a6%82%e4%bd%95%e4%b8%ba%e6%b5%b7%e9%87%8f%e8%ae%a1%e6%95%b0%e5%9c%ba%e6%99%af%e8%ae%be%e8%ae%a1%e7%bc%93%e5%ad%98%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="34 如何为海量计数场景设计缓存体系？.md.html">34 如何为海量计数场景设计缓存体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/300%e5%88%86%e9%92%9f%e5%90%83%e9%80%8f%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98-%e5%ae%8c/35%20%e5%a6%82%e4%bd%95%e4%b8%ba%e7%a4%be%e4%ba%a4feed%e5%9c%ba%e6%99%af%e8%ae%be%e8%ae%a1%e7%bc%93%e5%ad%98%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="35 如何为社交feed场景设计缓存体系？.md.html">35 如何为社交feed场景设计缓存体系？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="11 MC如何淘汰冷key和失效key" id="title">11 MC如何淘汰冷key和失效key</h1>
+<div><p>你好，我是你的缓存课老师陈波，欢迎进入第 11 课时“Memcached 淘汰策略”的学习。</p>
+<h6 id="淘汰策略">淘汰策略</h6>
+<p>Mc 作为缓存组件，意味着 Mc 中只能存储访问最频繁的热数据，一旦存入数据超过内存限制，就需要对 Mc 中的冷 key 进行淘汰工作。Mc 中的 key 基本都会有过期时间，在 key 过期后，出于性能考虑，Mc 并不会立即删除过期的 key，而是由维护线程逐步清理，同时，只有这个失效的 key 被访问时，才会进行删除，从而回收存储空间。所以 Mc 对 key 生命周期的管理，即 Mc 对 key 的淘汰，包括失效和删除回收两个纬度，知识结构如下图所示。</p>
+<p><img alt="img" src="assets/CgoB5l2lMr6ASGzEAACB7rAcaqU851.png"/></p>
+<p>key 的失效，包括 key 在 expire 时间之后的过期，以及用户在 flush_all 之后对所有 key 的过期 2 种方式。</p>
+<p>而 Mc 对 key/value 的删除回收，则有 3 种方式。</p>
+<ol>
+<li>第一种是获取时的惰性删除，即 key 在失效后，不立即删除淘汰，而在获取时，检测 key 的状态，如果失效，才进行真正的删除并回收存储空间。</li>
+<li>第二种方式是在需要对 Item 进行内存分配申请时，如果内存已全部用完，且该 Item 对应的slabclass 没有空闲的 chunk 可用，申请失败，则会对 LRU 队尾进行同步扫描，回收过期失效的 key，如果没有失效的 key，则会强制删除一个 key。</li>
+<li>第三种方式是 LRU 维护线程，不定期扫描 4 个 LRU 队列，对过期 key/value 进行异步淘汰。</li>
+</ol>
+<h6 id="flush-all">flush_all</h6>
+<p>Mc 中，key 失效除了常规的到达过期时间之外，还有一种用 flush_all 的方式进行全部过期。如果缓存数据写入异常，出现大量脏数据，而又没有简单的办法快速找出所有的脏数据，可以用 flush_all 立即让所有数据失效，通过 key 重新从 DB 加载的方式来保证数据的正确性。flush_all 可以让 Mc 节点的所有 key 立即失效，不过，在某些场景下，需要让多个 Mc 节点的数据在某个时间同时失效，这时就可以用 flush_all 的延迟失效指令了。该指令通过 flush_all 指令后面加一个 expiretime 参数，可以让多个 Mc 在某个时间同时失效所有的 key。</p>
+<p>flush_all 后面没有任何参数，等价于 flush_all 0，即立即失效所有的 key。当 Mc 收到 flush_all 指令后，如果是延迟失效，会将全局 setting 中的 oldest_live 设为指定 N 秒后的时间戳，即 N 秒后失效；如果是立即失效，则将全局 setting 中的 oldest_cas 设为当前最大的全局 cas 值。设置完这个全局变量值后，立即返回。因此，在 Mc 通过 flush_all 失效所有 key 时，实际不做任何 key 的删除操作，这些 key ，后续会通过用户请求同步删除，或 LRU 维护线程的异步删除，来完成真正的删除动作。</p>
+<h6 id="惰性删除">惰性删除</h6>
+<p>Mc 中，过期失效 key 的惰性主动删除，是指在 touch、get、gets 等指令处理时，首先需要查询 key，找到 key 所在的 Item，然后校验 key 是否过期，是否被 flush，如果过期或被 flush，则直接进行真正的删除回收操作。</p>
+<p>对于校验 key 过期很容易，直接判断过期时间即可。对于检查 key 是否被 flush，处理逻辑是首先检查 key 的最近访问时间是否小于全局设置中的 oldest_live，如果小于则说明 key 被 flush 了；否则，再检查 key 的 cas 唯一 id 值，如果小于全局设置中的 oldest_cas，说明也被 flush 了。</p>
+<h6 id="内存分配失败-lru-同步淘汰">内存分配失败，LRU 同步淘汰</h6>
+<p>Mc 在插入或变更 key 时，首先会在适合的 slabclass 为新的 key/value 分配一个空闲的 Item 空间，如果分配失败，会同步对该 slabclass 的 COLD LRU 进行队尾元素淘汰，如果淘汰回收成功，则 slabclass 会多一个空闲的 Item，这个 Item 就可以被前面那个 key 来使用。如果 COLD LRU 队列没有 Item 数据，则淘汰失败，此时会对 HOT LRU 进行队尾轮询，如果 key 过期失效则进行淘汰回收，否则进行迁移。</p>
+<h6 id="lru-维护线程-异步淘汰">LRU 维护线程，异步淘汰</h6>
+<p>在 key 进行读取、插入或变更时，同步进行 key 淘汰回收，并不是一种高效的办法，因为淘汰回收操作相比请求处理，也是一个重量级操作，会导致 Mc 性能大幅下降。因此 Mc 额外增加了一个 LRU 维护线程，对过期失效 key 进行回收，在不增加请求负担的情况下，尽快回收失效 key 锁占用的空间。</p>
+<p>前面讲到，Mc 有 64 个 slabclass，其中 1~63 号 slabclass 用于存取 Item 数据。实际上，为了管理过期失效数据，1~63 号 slabclass 还分别对应了 4 个 LRU，分布是 TEMP、HOT、WARM、COLD LRU。所以这就总共有 63*4 = 252 个 LRU。LRU 维护线程，会按策略间断 sleep，待 sleep 结束，就开始对 4 个 LRU 进行队尾清理工作。</p>
+<p>Mc 在新写入 key 时，如果 key 的过期时间小于 61s，就会直接插入到 TEMP LRU 中，如下图所示。TEMP LRU 没有长度限制，可以一直插入，同时因为过期时间短，TEMP LRU 不进行队列内部的搬运和队列间的迁移，确保处理性能最佳。LRU 维护线程在 sleep 完毕后，首先会对 TEMP LRU 队尾进行 500 次轮询，然后在每次轮询时，会进行 5 次小循环。小循环时，首先检查 key是否过期失效，如果失效则进行回收淘汰，然后继续小循环；如果遇到一个没失效的 key，则回收该 key 并退出 TEMP LRU 的清理工作。如果 TEMP LRU 队尾 key 全部失效，维护线程一次可以回收 500*5 共 2500 个失效的 key。</p>
+<p><img alt="img" src="assets/CgotOV2lMr-AaQVZAAC-AitDERU510.png"/></p>
+<p>如下图，MC 在新写入 key 时，如果 key 的过期时间超过 61s，就会直接插入到 HOT LRU。HOT LRU 会有内存限制，每个 HOT LRU 所占内存不得超过所在 slabclass 总实际使用内存的 20%。LRU 维护线程在执行日常维护工作时，首先对 TEMP LRU 进行清理，接下来就会对 HOT LRU 进行维护。HOT LRU 的维护，也是首先轮询 500 次，每次轮询进行 5 次小循环，小循环时，首先检查 key 是否过期失效，如果失效则进行回收淘汰，然后继续小循环。直到遇到没失效的 key。如果这个 key 的状态是 ACTIVE，则迁移到 WARM LRU。对于非 ACTIVE 状态的 key，如果 HOT LRU 内存占用超过限制，则迁移到 COLD LRU，否则进行纾困性清理掉该 key，注意这种纾困性清理操作一般不会发生，一旦发生时，虽然会清理掉该 key，但操作函数此时也认定本次操作回收和清理 keys 数仍然为 0。</p>
+<p><img alt="img" src="assets/CgoB5l2lMr-Adai5AADecNLamqw346.png"/></p>
+<p>如下图，如果 HOT LRU 中回收和迁移的 keys 数为 0，LRU 维护线程会对 WARM LRU 进行轮询。WARM LRU 也有内存限制，每个 WARM LRU 所占内存不得超过所在 slabclass 总实际使用内存的 40%。WARM LRU 的维护，也是首先轮询 500 次，每次轮询进行 5 次小循环，小循环时，首先检查 key 是否过期失效，如果失效则进行回收淘汰，然后继续小循环。直到遇到没失效的 key。如果这个 key 的状态是 ACTIVE，则内部搬运到 LRU 队列头部。对于非 ACTIVE 状态的 key，如果 WARM LRU 内存占用超过限制，则迁移到 COLD LRU，否则进行纾困性清理掉该 key。注意这种纾困性清理操作一般不会发生，一旦发生时，虽然会清理掉该 key，但操作函数此时也认定本次操作回收和清理 keys 数仍然为 0。</p>
+<p><img alt="img" src="assets/CgotOV2lMr-AYNh7AAEBqGNruvU217.png"/></p>
+<p>LRU 维护线程最后会对 COLD LRU 进行维护，如下图。与 TEMP LRU 相同，COLD LRU 也没有长度限制，可以持续存放数据。COLD LRU 的维护，也是首先轮询 500 次，每次轮询进行 5 次小循环，小循环时，首先检查 key 是否过期失效，如果失效则进行回收淘汰，然后继续小循环。直到遇到没失效的 key。如果这个 key 的状态是 ACTIVE，则会迁移到 WARM LRU 队列头部，否则不处理直接返回。</p>
+<p><img alt="img" src="assets/CgoB5l2lMr-AVx39AADL6FNQktQ690.png"/></p>
+<p>LRU 维护线程处理时，TEMP LRU 是在独立循环中进行，其他三个 LRU 在另外一个循环中进行，如果 HOT、WARM、COLD LRU 清理或移动的 keys 数为 0，则那个 500 次的大循环就立即停止。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#0f636363363b3e3e3f384f68626e6663216c6062" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357a17bf9704386',t:'MTc0NTUxODk5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
