@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="15 深入解析Pod对象（二）：使用进阶" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>15 深入解析Pod对象（二）：使用进阶 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e6%89%93%e9%80%9a%e2%80%9c%e5%ae%b9%e5%99%a8%e6%8a%80%e6%9c%af%e2%80%9d%e7%9a%84%e4%bb%bb%e7%9d%a3%e4%ba%8c%e8%84%89.md.html" id="00 开篇词 打通“容器技术”的任督二脉.md.html">00 开篇词 打通“容器技术”的任督二脉.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/01%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%88%9d%e5%87%ba%e8%8c%85%e5%ba%90.md.html" id="01 预习篇 · 小鲸鱼大事记（一）：初出茅庐.md.html">01 预习篇 · 小鲸鱼大事记（一）：初出茅庐.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/02%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%b4%ad%e9%9c%b2%e5%a4%b4%e8%a7%92.md.html" id="02 预习篇 · 小鲸鱼大事记（二）：崭露头角.md.html">02 预习篇 · 小鲸鱼大事记（二）：崭露头角.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/03%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e7%be%a4%e9%9b%84%e5%b9%b6%e8%b5%b7.md.html" id="03 预习篇 · 小鲸鱼大事记（三）：群雄并起.md.html">03 预习篇 · 小鲸鱼大事记（三）：群雄并起.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/04%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%b0%98%e5%9f%83%e8%90%bd%e5%ae%9a.md.html" id="04 预习篇 · 小鲸鱼大事记（四）：尘埃落定.md.html">04 预习篇 · 小鲸鱼大事记（四）：尘埃落定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/05%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e%e8%bf%9b%e7%a8%8b%e8%af%b4%e5%bc%80%e5%8e%bb.md.html" id="05 白话容器基础（一）：从进程说开去.md.html">05 白话容器基础（一）：从进程说开去.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/06%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e9%9a%94%e7%a6%bb%e4%b8%8e%e9%99%90%e5%88%b6.md.html" id="06 白话容器基础（二）：隔离与限制.md.html">06 白话容器基础（二）：隔离与限制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/07%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%e5%ae%b9%e5%99%a8%e9%95%9c%e5%83%8f.md.html" id="07 白话容器基础（三）：深入理解容器镜像.md.html">07 白话容器基础（三）：深入理解容器镜像.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/08%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e9%87%8d%e6%96%b0%e8%ae%a4%e8%af%86Docker%e5%ae%b9%e5%99%a8.md.html" id="08 白话容器基础（四）：重新认识Docker容器.md.html">08 白话容器基础（四）：重新认识Docker容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/09%20%e4%bb%8e%e5%ae%b9%e5%99%a8%e5%88%b0%e5%ae%b9%e5%99%a8%e4%ba%91%ef%bc%9a%e8%b0%88%e8%b0%88Kubernetes%e7%9a%84%e6%9c%ac%e8%b4%a8.md.html" id="09 从容器到容器云：谈谈Kubernetes的本质.md.html">09 从容器到容器云：谈谈Kubernetes的本质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/10%20Kubernetes%e4%b8%80%e9%94%ae%e9%83%a8%e7%bd%b2%e5%88%a9%e5%99%a8%ef%bc%9akubeadm.md.html" id="10 Kubernetes一键部署利器：kubeadm.md.html">10 Kubernetes一键部署利器：kubeadm.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/11%20%e4%bb%8e0%e5%88%b01%ef%bc%9a%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%ae%8c%e6%95%b4%e7%9a%84Kubernetes%e9%9b%86%e7%be%a4.md.html" id="11 从0到1：搭建一个完整的Kubernetes集群.md.html">11 从0到1：搭建一个完整的Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/12%20%e7%89%9b%e5%88%80%e5%b0%8f%e8%af%95%ef%bc%9a%e6%88%91%e7%9a%84%e7%ac%ac%e4%b8%80%e4%b8%aa%e5%ae%b9%e5%99%a8%e5%8c%96%e5%ba%94%e7%94%a8.md.html" id="12 牛刀小试：我的第一个容器化应用.md.html">12 牛刀小试：我的第一个容器化应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/13%20%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e9%9c%80%e8%a6%81Pod%ef%bc%9f.md.html" id="13 为什么我们需要Pod？.md.html">13 为什么我们需要Pod？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/14%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90Pod%e5%af%b9%e8%b1%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5.md.html" id="14 深入解析Pod对象（一）：基本概念.md.html">14 深入解析Pod对象（一）：基本概念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/15%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90Pod%e5%af%b9%e8%b1%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bd%bf%e7%94%a8%e8%bf%9b%e9%98%b6.md.html" id="15 深入解析Pod对象（二）：使用进阶.md.html">15 深入解析Pod对象（二）：使用进阶.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/16%20%e7%bc%96%e6%8e%92%e5%85%b6%e5%ae%9e%e5%be%88%e7%ae%80%e5%8d%95%ef%bc%9a%e8%b0%88%e8%b0%88%e2%80%9c%e6%8e%a7%e5%88%b6%e5%99%a8%e2%80%9d%e6%a8%a1%e5%9e%8b.md.html" id="16 编排其实很简单：谈谈“控制器”模型.md.html">16 编排其实很简单：谈谈“控制器”模型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/17%20%e7%bb%8f%e5%85%b8PaaS%e7%9a%84%e8%ae%b0%e5%bf%86%ef%bc%9a%e4%bd%9c%e4%b8%9a%e5%89%af%e6%9c%ac%e4%b8%8e%e6%b0%b4%e5%b9%b3%e6%89%a9%e5%b1%95.md.html" id="17 经典PaaS的记忆：作业副本与水平扩展.md.html">17 经典PaaS的记忆：作业副本与水平扩展.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/18%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3StatefulSet%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8b%93%e6%89%91%e7%8a%b6%e6%80%81.md.html" id="18 深入理解StatefulSet（一）：拓扑状态.md.html">18 深入理解StatefulSet（一）：拓扑状态.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/19%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3StatefulSet%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%ad%98%e5%82%a8%e7%8a%b6%e6%80%81.md.html" id="19 深入理解StatefulSet（二）：存储状态.md.html">19 深入理解StatefulSet（二）：存储状态.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/20%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3StatefulSet%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%9c%89%e7%8a%b6%e6%80%81%e5%ba%94%e7%94%a8%e5%ae%9e%e8%b7%b5.md.html" id="20 深入理解StatefulSet（三）：有状态应用实践.md.html">20 深入理解StatefulSet（三）：有状态应用实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/21%20%e5%ae%b9%e5%99%a8%e5%8c%96%e5%ae%88%e6%8a%a4%e8%bf%9b%e7%a8%8b%e7%9a%84%e6%84%8f%e4%b9%89%ef%bc%9aDaemonSet.md.html" id="21 容器化守护进程的意义：DaemonSet.md.html">21 容器化守护进程的意义：DaemonSet.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/22%20%e6%92%ac%e5%8a%a8%e7%a6%bb%e7%ba%bf%e4%b8%9a%e5%8a%a1%ef%bc%9aJob%e4%b8%8eCronJob.md.html" id="22 撬动离线业务：Job与CronJob.md.html">22 撬动离线业务：Job与CronJob.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/23%20%e5%a3%b0%e6%98%8e%e5%bc%8fAPI%e4%b8%8eKubernetes%e7%bc%96%e7%a8%8b%e8%8c%83%e5%bc%8f.md.html" id="23 声明式API与Kubernetes编程范式.md.html">23 声明式API与Kubernetes编程范式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/24%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90%e5%a3%b0%e6%98%8e%e5%bc%8fAPI%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aAPI%e5%af%b9%e8%b1%a1%e7%9a%84%e5%a5%a5%e7%a7%98.md.html" id="24 深入解析声明式API（一）：API对象的奥秘.md.html">24 深入解析声明式API（一）：API对象的奥秘.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/25%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90%e5%a3%b0%e6%98%8e%e5%bc%8fAPI%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e5%86%99%e8%87%aa%e5%ae%9a%e4%b9%89%e6%8e%a7%e5%88%b6%e5%99%a8.md.html" id="25 深入解析声明式API（二）：编写自定义控制器.md.html">25 深入解析声明式API（二）：编写自定义控制器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/26%20%e5%9f%ba%e4%ba%8e%e8%a7%92%e8%89%b2%e7%9a%84%e6%9d%83%e9%99%90%e6%8e%a7%e5%88%b6%ef%bc%9aRBAC.md.html" id="26 基于角色的权限控制：RBAC.md.html">26 基于角色的权限控制：RBAC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/27%20%e8%81%aa%e6%98%8e%e7%9a%84%e5%be%ae%e5%88%9b%e6%96%b0%ef%bc%9aOperator%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86%e8%a7%a3%e8%af%bb.md.html" id="27 聪明的微创新：Operator工作原理解读.md.html">27 聪明的微创新：Operator工作原理解读.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/28%20PV%e3%80%81PVC%e3%80%81StorageClass%ef%bc%8c%e8%bf%99%e4%ba%9b%e5%88%b0%e5%ba%95%e5%9c%a8%e8%af%b4%e5%95%a5%ef%bc%9f.md.html" id="28 PV、PVC、StorageClass，这些到底在说啥？.md.html">28 PV、PVC、StorageClass，这些到底在说啥？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/29%20PV%e3%80%81PVC%e4%bd%93%e7%b3%bb%e6%98%af%e4%b8%8d%e6%98%af%e5%a4%9a%e6%ad%a4%e4%b8%80%e4%b8%be%ef%bc%9f%e4%bb%8e%e6%9c%ac%e5%9c%b0%e6%8c%81%e4%b9%85%e5%8c%96%e5%8d%b7%e8%b0%88%e8%b5%b7.md.html" id="29 PV、PVC体系是不是多此一举？从本地持久化卷谈起.md.html">29 PV、PVC体系是不是多此一举？从本地持久化卷谈起.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/30%20%e7%bc%96%e5%86%99%e8%87%aa%e5%b7%b1%e7%9a%84%e5%ad%98%e5%82%a8%e6%8f%92%e4%bb%b6%ef%bc%9aFlexVolume%e4%b8%8eCSI.md.html" id="30 编写自己的存储插件：FlexVolume与CSI.md.html">30 编写自己的存储插件：FlexVolume与CSI.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/31%20%e5%ae%b9%e5%99%a8%e5%ad%98%e5%82%a8%e5%ae%9e%e8%b7%b5%ef%bc%9aCSI%e6%8f%92%e4%bb%b6%e7%bc%96%e5%86%99%e6%8c%87%e5%8d%97.md.html" id="31 容器存储实践：CSI插件编写指南.md.html">31 容器存储实践：CSI插件编写指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/32%20%e6%b5%85%e8%b0%88%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c.md.html" id="32 浅谈容器网络.md.html">32 浅谈容器网络.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/33%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90%e5%ae%b9%e5%99%a8%e8%b7%a8%e4%b8%bb%e6%9c%ba%e7%bd%91%e7%bb%9c.md.html" id="33 深入解析容器跨主机网络.md.html">33 深入解析容器跨主机网络.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/34%20Kubernetes%e7%bd%91%e7%bb%9c%e6%a8%a1%e5%9e%8b%e4%b8%8eCNI%e7%bd%91%e7%bb%9c%e6%8f%92%e4%bb%b6.md.html" id="34 Kubernetes网络模型与CNI网络插件.md.html">34 Kubernetes网络模型与CNI网络插件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/35%20%e8%a7%a3%e8%af%bbKubernetes%e4%b8%89%e5%b1%82%e7%bd%91%e7%bb%9c%e6%96%b9%e6%a1%88.md.html" id="35 解读Kubernetes三层网络方案.md.html">35 解读Kubernetes三层网络方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/36%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4Kubernetes%e5%8f%aa%e6%9c%89soft%20multi-tenancy%ef%bc%9f.md.html" id="36 为什么说Kubernetes只有soft multi-tenancy？.md.html">36 为什么说Kubernetes只有soft multi-tenancy？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/37%20%e6%89%be%e5%88%b0%e5%ae%b9%e5%99%a8%e4%b8%8d%e5%ae%b9%e6%98%93%ef%bc%9aService%e3%80%81DNS%e4%b8%8e%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0.md.html" id="37 找到容器不容易：Service、DNS与服务发现.md.html">37 找到容器不容易：Service、DNS与服务发现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/38%20%e4%bb%8e%e5%a4%96%e7%95%8c%e8%bf%9e%e9%80%9aService%e4%b8%8eService%e8%b0%83%e8%af%95%e2%80%9c%e4%b8%89%e6%9d%bf%e6%96%a7%e2%80%9d.md.html" id="38 从外界连通Service与Service调试“三板斧”.md.html">38 从外界连通Service与Service调试“三板斧”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/39%20%e8%b0%88%e8%b0%88Service%e4%b8%8eIngress.md.html" id="39 谈谈Service与Ingress.md.html">39 谈谈Service与Ingress.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/40%20Kubernetes%e7%9a%84%e8%b5%84%e6%ba%90%e6%a8%a1%e5%9e%8b%e4%b8%8e%e8%b5%84%e6%ba%90%e7%ae%a1%e7%90%86.md.html" id="40 Kubernetes的资源模型与资源管理.md.html">40 Kubernetes的资源模型与资源管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/41%20%e5%8d%81%e5%ad%97%e8%b7%af%e5%8f%a3%e4%b8%8a%e7%9a%84Kubernetes%e9%bb%98%e8%ae%a4%e8%b0%83%e5%ba%a6%e5%99%a8.md.html" id="41 十字路口上的Kubernetes默认调度器.md.html">41 十字路口上的Kubernetes默认调度器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/42%20Kubernetes%e9%bb%98%e8%ae%a4%e8%b0%83%e5%ba%a6%e5%99%a8%e8%b0%83%e5%ba%a6%e7%ad%96%e7%95%a5%e8%a7%a3%e6%9e%90.md.html" id="42 Kubernetes默认调度器调度策略解析.md.html">42 Kubernetes默认调度器调度策略解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/43%20Kubernetes%e9%bb%98%e8%ae%a4%e8%b0%83%e5%ba%a6%e5%99%a8%e7%9a%84%e4%bc%98%e5%85%88%e7%ba%a7%e4%b8%8e%e6%8a%a2%e5%8d%a0%e6%9c%ba%e5%88%b6.md.html" id="43 Kubernetes默认调度器的优先级与抢占机制.md.html">43 Kubernetes默认调度器的优先级与抢占机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/44%20Kubernetes%20GPU%e7%ae%a1%e7%90%86%e4%b8%8eDevice%20Plugin%e6%9c%ba%e5%88%b6.md.html" id="44 Kubernetes GPU管理与Device Plugin机制.md.html">44 Kubernetes GPU管理与Device Plugin机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/45%20%e5%b9%95%e5%90%8e%e8%8b%b1%e9%9b%84%ef%bc%9aSIG-Node%e4%b8%8eCRI.md.html" id="45 幕后英雄：SIG-Node与CRI.md.html">45 幕后英雄：SIG-Node与CRI.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/46%20%e8%a7%a3%e8%af%bb%20CRI%20%e4%b8%8e%20%e5%ae%b9%e5%99%a8%e8%bf%90%e8%a1%8c%e6%97%b6.md.html" id="46 解读 CRI 与 容器运行时.md.html">46 解读 CRI 与 容器运行时.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/47%20%e7%bb%9d%e4%b8%8d%e4%bb%85%e4%bb%85%e6%98%af%e5%ae%89%e5%85%a8%ef%bc%9aKata%20Containers%20%e4%b8%8e%20gVisor.md.html" id="47 绝不仅仅是安全：Kata Containers 与 gVisor.md.html">47 绝不仅仅是安全：Kata Containers 与 gVisor.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/48%20Prometheus%e3%80%81Metrics%20Server%e4%b8%8eKubernetes%e7%9b%91%e6%8e%a7%e4%bd%93%e7%b3%bb.md.html" id="48 Prometheus、Metrics Server与Kubernetes监控体系.md.html">48 Prometheus、Metrics Server与Kubernetes监控体系.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/49%20Custom%20Metrics_%20%e8%ae%a9Auto%20Scaling%e4%b8%8d%e5%86%8d%e2%80%9c%e9%a3%9f%e4%b9%8b%e6%97%a0%e5%91%b3%e2%80%9d.md.html" id="49 Custom Metrics_ 让Auto Scaling不再“食之无味”.md.html">49 Custom Metrics_ 让Auto Scaling不再“食之无味”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/50%20%e8%ae%a9%e6%97%a5%e5%bf%97%e6%97%a0%e5%a4%84%e5%8f%af%e9%80%83%ef%bc%9a%e5%ae%b9%e5%99%a8%e6%97%a5%e5%bf%97%e6%94%b6%e9%9b%86%e4%b8%8e%e7%ae%a1%e7%90%86.md.html" id="50 让日志无处可逃：容器日志收集与管理.md.html">50 让日志无处可逃：容器日志收集与管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/51%20%e8%b0%88%e8%b0%88Kubernetes%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e5%92%8c%e6%9c%aa%e6%9d%a5%e8%b5%b0%e5%90%91.md.html" id="51 谈谈Kubernetes开源社区和未来走向.md.html">51 谈谈Kubernetes开源社区和未来走向.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/52%20%e7%ad%94%e7%96%91%ef%bc%9a%e5%9c%a8%e9%97%ae%e9%a2%98%e4%b8%ad%e8%a7%a3%e5%86%b3%e9%97%ae%e9%a2%98%ef%bc%8c%e5%9c%a8%e6%80%9d%e8%80%83%e4%b8%ad%e4%ba%a7%e7%94%9f%e6%80%9d%e8%80%83.md.html" id="52 答疑：在问题中解决问题，在思考中产生思考.md.html">52 答疑：在问题中解决问题，在思考中产生思考.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%202019%20%e5%b9%b4%ef%bc%8c%e5%ae%b9%e5%99%a8%e6%8a%80%e6%9c%af%e7%94%9f%e6%80%81%e4%bc%9a%e5%8f%91%e7%94%9f%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="特别放送 2019 年，容器技术生态会发生些什么？.md.html">特别放送 2019 年，容器技术生态会发生些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%9f%ba%e4%ba%8e%20Kubernetes%20%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%e5%ba%94%e7%94%a8%e7%ae%a1%e7%90%86%ef%bc%8c%e5%88%b0%e5%ba%95%e5%ba%94%e8%af%a5%e6%80%8e%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="特别放送 基于 Kubernetes 的云原生应用管理，到底应该怎么做？.md.html">特别放送 基于 Kubernetes 的云原生应用管理，到底应该怎么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/%e7%bb%93%e6%9d%9f%e8%af%ad%20Kubernetes%ef%bc%9a%e8%b5%a2%e5%bc%80%e5%8f%91%e8%80%85%e8%b5%a2%e5%a4%a9%e4%b8%8b.md.html" id="结束语 Kubernetes：赢开发者赢天下.md.html">结束语 Kubernetes：赢开发者赢天下.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="15 深入解析Pod对象（二）：使用进阶" id="title">15 深入解析Pod对象（二）：使用进阶</h1>
+<div><p>你好，我是张磊。今天我和你分享的主题是：深入解析Pod对象之使用进阶。</p>
+<p>在上一篇文章中，我深入解析了Pod的API对象，讲解了Pod和Container的关系。</p>
+<p>作为Kubernetes项目里最核心的编排对象，Pod携带的信息非常丰富。其中，资源定义（比如CPU、内存等），以及调度相关的字段，我会在后面专门讲解调度器时再进行深入的分析。在本篇，我们就先从一种特殊的Volume开始，来帮助你更加深入地理解Pod对象各个重要字段的含义。</p>
+<p>这种特殊的Volume，叫作Projected Volume，你可以把它翻译为“投射数据卷”。</p>
+<blockquote>
+<p>备注：Projected Volume是Kubernetes v1.11之后的新特性</p>
+</blockquote>
+<p>这是什么意思呢？</p>
+<p>在Kubernetes中，有几种特殊的Volume，它们存在的意义不是为了存放容器里的数据，也不是用来进行容器和宿主机之间的数据交换。这些特殊Volume的作用，是为容器提供预先定义好的数据。所以，从容器的角度来看，这些Volume里的信息就是仿佛是<strong>被Kubernetes“投射”（Project）进入容器当中的</strong>。这正是Projected Volume的含义。</p>
+<p>到目前为止，Kubernetes支持的Projected Volume一共有四种：</p>
+<ol>
+<li><p>Secret；</p></li>
+<li><p>ConfigMap；</p></li>
+<li><p>Downward API；</p></li>
+<li><p>ServiceAccountToken。</p></li>
+</ol>
+<p>在今天这篇文章中，我首先和你分享的是Secret。它的作用，是帮你把Pod想要访问的加密数据，存放到Etcd中。然后，你就可以通过在Pod的容器里挂载Volume的方式，访问到这些Secret里保存的信息了。</p>
+<p>Secret最典型的使用场景，莫过于存放数据库的Credential信息，比如下面这个例子：</p>
+<pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: test-projected-volume 
+spec:
+  containers:
+  - name: test-secret-volume
+    image: busybox
+    args:
+    - sleep
+    - "86400"
+    volumeMounts:
+    - name: mysql-cred
+      mountPath: "/projected-volume"
+      readOnly: true
+  volumes:
+  - name: mysql-cred
+    projected:
+      sources:
+      - secret:
+          name: user
+      - secret:
+          name: pass
+</code></pre>
+<p>在这个Pod中，我定义了一个简单的容器。它声明挂载的Volume，并不是常见的emptyDir或者hostPath类型，而是projected类型。而这个 Volume的数据来源（sources），则是名为user和pass的Secret对象，分别对应的是数据库的用户名和密码。</p>
+<p>这里用到的数据库的用户名、密码，正是以Secret对象的方式交给Kubernetes保存的。完成这个操作的指令，如下所示：</p>
+<pre><code>$ cat ./username.txt
+admin
+$ cat ./password.txt
+c1oudc0w!
+
+$ kubectl create secret generic user --from-file=./username.txt
+$ kubectl create secret generic pass --from-file=./password.txt
+</code></pre>
+<p>其中，username.txt和password.txt文件里，存放的就是用户名和密码；而user和pass，则是我为Secret对象指定的名字。而我想要查看这些Secret对象的话，只要执行一条kubectl get命令就可以了：</p>
+<pre><code>$ kubectl get secrets
+NAME           TYPE                                DATA      AGE
+user          Opaque                                1         51s
+pass          Opaque                                1         51s
+</code></pre>
+<p>当然，除了使用kubectl create secret指令外，我也可以直接通过编写YAML文件的方式来创建这个Secret对象，比如：</p>
+<pre><code>apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  user: YWRtaW4=
+  pass: MWYyZDFlMmU2N2Rm
+</code></pre>
+<p>可以看到，通过编写YAML文件创建出来的Secret对象只有一个。但它的data字段，却以Key-Value的格式保存了两份Secret数据。其中，“user”就是第一份数据的Key，“pass”是第二份数据的Key。</p>
+<p>需要注意的是，Secret对象要求这些数据必须是经过Base64转码的，以免出现明文密码的安全隐患。这个转码操作也很简单，比如：</p>
+<pre><code>$ echo -n 'admin' | base64
+YWRtaW4=
+$ echo -n '1f2d1e2e67df' | base64
+MWYyZDFlMmU2N2Rm
+</code></pre>
+<p>这里需要注意的是，像这样创建的Secret对象，它里面的内容仅仅是经过了转码，而并没有被加密。在真正的生产环境中，你需要在Kubernetes中开启Secret的加密插件，增强数据的安全性。关于开启Secret加密插件的内容，我会在后续专门讲解Secret的时候，再做进一步说明。</p>
+<p>接下来，我们尝试一下创建这个Pod：</p>
+<pre><code>$ kubectl create -f test-projected-volume.yaml
+</code></pre>
+<p>当Pod变成Running状态之后，我们再验证一下这些Secret对象是不是已经在容器里了：</p>
+<pre><code>$ kubectl exec -it test-projected-volume -- /bin/sh
+$ ls /projected-volume/
+user
+pass
+$ cat /projected-volume/user
+root
+$ cat /projected-volume/pass
+1f2d1e2e67df
+</code></pre>
+<p>从返回结果中，我们可以看到，保存在Etcd里的用户名和密码信息，已经以文件的形式出现在了容器的Volume目录里。而这个文件的名字，就是kubectl create secret指定的Key，或者说是Secret对象的data字段指定的Key。</p>
+<p>更重要的是，像这样通过挂载方式进入到容器里的Secret，一旦其对应的Etcd里的数据被更新，这些Volume里的文件内容，同样也会被更新。其实，<strong>这是kubelet组件在定时维护这些Volume。</strong></p>
+<p>需要注意的是，这个更新可能会有一定的延时。所以<strong>在编写应用程序时，在发起数据库连接的代码处写好重试和超时的逻辑，绝对是个好习惯。</strong></p>
+<p><strong>与Secret类似的是ConfigMap</strong>，它与Secret的区别在于，ConfigMap保存的是不需要加密的、应用所需的配置信息。而ConfigMap的用法几乎与Secret完全相同：你可以使用kubectl create configmap从文件或者目录创建ConfigMap，也可以直接编写ConfigMap对象的YAML文件。</p>
+<p>比如，一个Java应用所需的配置文件（.properties文件），就可以通过下面这样的方式保存在ConfigMap里：</p>
+<pre><code># .properties文件的内容
+$ cat example/ui.properties
+color.good=purple
+color.bad=yellow
+allow.textmode=true
+how.nice.to.look=fairlyNice
+
+# 从.properties文件创建ConfigMap
+$ kubectl create configmap ui-config --from-file=example/ui.properties
+
+# 查看这个ConfigMap里保存的信息(data)
+$ kubectl get configmaps ui-config -o yaml
+apiVersion: v1
+data:
+  ui.properties: |
+    color.good=purple
+    color.bad=yellow
+    allow.textmode=true
+    how.nice.to.look=fairlyNice
+kind: ConfigMap
+metadata:
+  name: ui-config
+  ...
+</code></pre>
+<blockquote>
+<p>备注：kubectl get -o yaml这样的参数，会将指定的Pod API对象以YAML的方式展示出来。</p>
+</blockquote>
+<p><strong>接下来是Downward API</strong>，它的作用是：让Pod里的容器能够直接获取到这个Pod API对象本身的信息。</p>
+<p>举个例子：</p>
+<pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: test-downwardapi-volume
+  labels:
+    zone: us-est-coast
+    cluster: test-cluster1
+    rack: rack-22
+spec:
+  containers:
+    - name: client-container
+      image: k8s.gcr.io/busybox
+      command: ["sh", "-c"]
+      args:
+      - while true; do
+          if [[ -e /etc/podinfo/labels ]]; then
+            echo -en '\n\n'; cat /etc/podinfo/labels; fi;
+          sleep 5;
+        done;
+      volumeMounts:
+        - name: podinfo
+          mountPath: /etc/podinfo
+          readOnly: false
+  volumes:
+    - name: podinfo
+      projected:
+        sources:
+        - downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
+</code></pre>
+<p>在这个Pod的YAML文件中，我定义了一个简单的容器，声明了一个projected类型的Volume。只不过这次Volume的数据来源，变成了Downward API。而这个Downward API Volume，则声明了要暴露Pod的metadata.labels信息给容器。</p>
+<p>通过这样的声明方式，当前Pod的Labels字段的值，就会被Kubernetes自动挂载成为容器里的/etc/podinfo/labels文件。</p>
+<p>而这个容器的启动命令，则是不断打印出/etc/podinfo/labels里的内容。所以，当我创建了这个Pod之后，就可以通过kubectl logs指令，查看到这些Labels字段被打印出来，如下所示：</p>
+<pre><code>$ kubectl create -f dapi-volume.yaml
+$ kubectl logs test-downwardapi-volume
+cluster="test-cluster1"
+rack="rack-22"
+zone="us-est-coast"
+</code></pre>
+<p>目前，Downward API支持的字段已经非常丰富了，比如：</p>
+<pre><code>1. 使用fieldRef可以声明使用:
+spec.nodeName - 宿主机名字
+status.hostIP - 宿主机IP
+metadata.name - Pod的名字
+metadata.namespace - Pod的Namespace
+status.podIP - Pod的IP
+spec.serviceAccountName - Pod的Service Account的名字
+metadata.uid - Pod的UID
+metadata.labels['&lt;KEY&gt;'] - 指定&lt;KEY&gt;的Label值
+metadata.annotations['&lt;KEY&gt;'] - 指定&lt;KEY&gt;的Annotation值
+metadata.labels - Pod的所有Label
+metadata.annotations - Pod的所有Annotation
+
+2. 使用resourceFieldRef可以声明使用:
+容器的CPU limit
+容器的CPU request
+容器的memory limit
+容器的memory request
+</code></pre>
+<p>上面这个列表的内容，随着Kubernetes项目的发展肯定还会不断增加。所以这里列出来的信息仅供参考，你在使用Downward API时，还是要记得去查阅一下官方文档。</p>
+<p>不过，需要注意的是，Downward API能够获取到的信息，<strong>一定是Pod里的容器进程启动之前就能够确定下来的信息</strong>。而如果你想要获取Pod容器运行后才会出现的信息，比如，容器进程的PID，那就肯定不能使用Downward API了，而应该考虑在Pod里定义一个sidecar容器。</p>
+<p>其实，Secret、ConfigMap，以及Downward API这三种Projected Volume定义的信息，大多还可以通过环境变量的方式出现在容器里。但是，通过环境变量获取这些信息的方式，不具备自动更新的能力。所以，一般情况下，我都建议你使用Volume文件的方式获取这些信息。</p>
+<p>在明白了Secret之后，我再为你讲解Pod中一个与它密切相关的概念：Service Account。</p>
+<p>相信你一定有过这样的想法：我现在有了一个Pod，我能不能在这个Pod里安装一个Kubernetes的Client，这样就可以从容器里直接访问并且操作这个Kubernetes的API了呢？</p>
+<p>这当然是可以的。</p>
+<p>不过，你首先要解决API Server的授权问题。</p>
+<p>Service Account对象的作用，就是Kubernetes系统内置的一种“服务账户”，它是Kubernetes进行权限分配的对象。比如，Service Account A，可以只被允许对Kubernetes API进行GET操作，而Service Account B，则可以有Kubernetes API的所有操作权限。</p>
+<p>像这样的Service Account的授权信息和文件，实际上保存在它所绑定的一个特殊的Secret对象里的。这个特殊的Secret对象，就叫作<strong>ServiceAccountToken</strong>。任何运行在Kubernetes集群上的应用，都必须使用这个ServiceAccountToken里保存的授权信息，也就是Token，才可以合法地访问API Server。</p>
+<p>所以说，Kubernetes项目的Projected Volume其实只有三种，因为第四种ServiceAccountToken，只是一种特殊的Secret而已。</p>
+<p>另外，为了方便使用，Kubernetes已经为你提供了一个默认“服务账户”（default Service Account）。并且，任何一个运行在Kubernetes里的Pod，都可以直接使用这个默认的Service Account，而无需显示地声明挂载它。</p>
+<p><strong>这是如何做到的呢？</strong></p>
+<p>当然还是靠Projected Volume机制。</p>
+<p>如果你查看一下任意一个运行在Kubernetes集群里的Pod，就会发现，每一个Pod，都已经自动声明一个类型是Secret、名为default-token-xxxx的Volume，然后 自动挂载在每个容器的一个固定目录上。比如：</p>
+<pre><code>$ kubectl describe pod nginx-deployment-5c678cfb6d-lg9lw
+Containers:
+...
+  Mounts:
+    /var/run/secrets/kubernetes.io/serviceaccount from default-token-s8rbq (ro)
+Volumes:
+  default-token-s8rbq:
+  Type:       Secret (a volume populated by a Secret)
+  SecretName:  default-token-s8rbq
+  Optional:    false
+</code></pre>
+<p>这个Secret类型的Volume，正是默认Service Account对应的ServiceAccountToken。所以说，Kubernetes其实在每个Pod创建的时候，自动在它的spec.volumes部分添加上了默认ServiceAccountToken的定义，然后自动给每个容器加上了对应的volumeMounts字段。这个过程对于用户来说是完全透明的。</p>
+<p>这样，一旦Pod创建完成，容器里的应用就可以直接从这个默认ServiceAccountToken的挂载目录里访问到授权信息和文件。这个容器内的路径在Kubernetes里是固定的，即：/var/run/secrets/kubernetes.io/serviceaccount ，而这个Secret类型的Volume里面的内容如下所示：</p>
+<pre><code>$ ls /var/run/secrets/kubernetes.io/serviceaccount 
+ca.crt namespace  token
+</code></pre>
+<p>所以，你的应用程序只要直接加载这些授权文件，就可以访问并操作Kubernetes API了。而且，如果你使用的是Kubernetes官方的Client包（<code>k8s.io/client-go</code>）的话，它还可以自动加载这个目录下的文件，你不需要做任何配置或者编码操作。</p>
+<p><strong>这种把Kubernetes客户端以容器的方式运行在集群里，然后使用default Service Account自动授权的方式，被称作“InClusterConfig”，也是我最推荐的进行Kubernetes API编程的授权方式。</strong></p>
+<p>当然，考虑到自动挂载默认ServiceAccountToken的潜在风险，Kubernetes允许你设置默认不为Pod里的容器自动挂载这个Volume。</p>
+<p>除了这个默认的Service Account外，我们很多时候还需要创建一些我们自己定义的Service Account，来对应不同的权限设置。这样，我们的Pod里的容器就可以通过挂载这些Service Account对应的ServiceAccountToken，来使用这些自定义的授权信息。在后面讲解为Kubernetes开发插件的时候，我们将会实践到这个操作。</p>
+<p>接下来，我们再来看Pod的另一个重要的配置：容器健康检查和恢复机制。</p>
+<p>在Kubernetes中，你可以为Pod里的容器定义一个健康检查“探针”（Probe）。这样，kubelet就会根据这个Probe的返回值决定这个容器的状态，而不是直接以容器镜像是否运行（来自Docker返回的信息）作为依据。这种机制，是生产环境中保证应用健康存活的重要手段。</p>
+<p>我们一起来看一个Kubernetes文档中的例子。</p>
+<pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: test-liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: busybox
+    args:
+    - /bin/sh
+    - -c
+    - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
+</code></pre>
+<p>在这个Pod中，我们定义了一个有趣的容器。它在启动之后做的第一件事，就是在/tmp目录下创建了一个healthy文件，以此作为自己已经正常运行的标志。而30 s过后，它会把这个文件删除掉。</p>
+<p>与此同时，我们定义了一个这样的livenessProbe（健康检查）。它的类型是exec，这意味着，它会在容器启动后，在容器里面执行一条我们指定的命令，比如：“cat /tmp/healthy”。这时，如果这个文件存在，这条命令的返回值就是0，Pod就会认为这个容器不仅已经启动，而且是健康的。这个健康检查，在容器启动5 s后开始执行（initialDelaySeconds: 5），每5 s执行一次（periodSeconds: 5）。</p>
+<p>现在，让我们来<strong>具体实践一下这个过程</strong>。</p>
+<p>首先，创建这个Pod：</p>
+<pre><code>$ kubectl create -f test-liveness-exec.yaml
+</code></pre>
+<p>然后，查看这个Pod的状态：</p>
+<pre><code>$ kubectl get pod
+NAME                READY     STATUS    RESTARTS   AGE
+test-liveness-exec   1/1       Running   0          10s
+</code></pre>
+<p>可以看到，由于已经通过了健康检查，这个Pod就进入了Running状态。</p>
+<p>而30 s之后，我们再查看一下Pod的Events：</p>
+<pre><code>$ kubectl describe pod test-liveness-exec
+</code></pre>
+<p>你会发现，这个Pod在Events报告了一个异常：</p>
+<pre><code>FirstSeen LastSeen    Count   From            SubobjectPath           Type        Reason      Message
+--------- --------    -----   ----            -------------           --------    ------      -------
+2s        2s      1   {kubelet worker0}   spec.containers{liveness}   Warning     Unhealthy   Liveness probe failed: cat: can't open '/tmp/healthy': No such file or directory
+</code></pre>
+<p>显然，这个健康检查探查到/tmp/healthy已经不存在了，所以它报告容器是不健康的。那么接下来会发生什么呢？</p>
+<p>我们不妨再次查看一下这个Pod的状态：</p>
+<pre><code>$ kubectl get pod test-liveness-exec
+NAME           READY     STATUS    RESTARTS   AGE
+liveness-exec   1/1       Running   1          1m
+</code></pre>
+<p>这时我们发现，Pod并没有进入Failed状态，而是保持了Running状态。这是为什么呢？</p>
+<p>其实，如果你注意到RESTARTS字段从0到1的变化，就明白原因了：这个异常的容器已经被Kubernetes重启了。在这个过程中，Pod保持Running状态不变。</p>
+<p>需要注意的是：Kubernetes中并没有Docker的Stop语义。所以虽然是Restart（重启），但实际却是重新创建了容器。</p>
+<p>这个功能就是Kubernetes里的<strong>Pod恢复机制</strong>，也叫restartPolicy。它是Pod的Spec部分的一个标准字段（pod.spec.restartPolicy），默认值是Always，即：任何时候这个容器发生了异常，它一定会被重新创建。</p>
+<p>但一定要强调的是，Pod的恢复过程，永远都是发生在当前节点上，而不会跑到别的节点上去。事实上，一旦一个Pod与一个节点（Node）绑定，除非这个绑定发生了变化（pod.spec.node字段被修改），否则它永远都不会离开这个节点。这也就意味着，如果这个宿主机宕机了，这个Pod也不会主动迁移到其他节点上去。</p>
+<p>而如果你想让Pod出现在其他的可用节点上，就必须使用Deployment这样的“控制器”来管理Pod，哪怕你只需要一个Pod副本。这就是我在第12篇文章《牛刀小试：我的第一个容器化应用》最后给你留的思考题的答案，即一个单Pod的Deployment与一个Pod最主要的区别。</p>
+<p>而作为用户，你还可以通过设置restartPolicy，改变Pod的恢复策略。除了Always，它还有OnFailure和Never两种情况：</p>
+<ul>
+<li>Always：在任何情况下，只要容器不在运行状态，就自动重启容器；</li>
+<li>OnFailure: 只在容器 异常时才自动重启容器；</li>
+<li>Never: 从来不重启容器。</li>
+</ul>
+<p>在实际使用时，我们需要根据应用运行的特性，合理设置这三种恢复策略。</p>
+<p>比如，一个Pod，它只计算1+1=2，计算完成输出结果后退出，变成Succeeded状态。这时，你如果再用restartPolicy=Always强制重启这个Pod的容器，就没有任何意义了。</p>
+<p>而如果你要关心这个容器退出后的上下文环境，比如容器退出后的日志、文件和目录，就需要将restartPolicy设置为Never。因为一旦容器被自动重新创建，这些内容就有可能丢失掉了（被垃圾回收了）。</p>
+<p>值得一提的是，Kubernetes的官方文档，把restartPolicy和Pod里容器的状态，以及Pod状态的对应关系，<a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#example-states" target="_blank">总结了非常复杂的一大堆情况</a>。实际上，你根本不需要死记硬背这些对应关系，只要记住如下两个基本的设计原理即可：</p>
+<ol>
+<li><p><strong>只要Pod的restartPolicy指定的策略允许重启异常的容器（比如：Always），那么这个Pod就会保持Running状态，并进行容器重启</strong>。否则，Pod就会进入Failed状态 。</p></li>
+<li><p><strong>对于包含多个容器的Pod，只有它里面所有的容器都进入异常状态后，Pod才会进入Failed状态</strong>。在此之前，Pod都是Running状态。此时，Pod的READY字段会显示正常容器的个数，比如：</p>
+<p>$ kubectl get pod test-liveness-exec
+NAME           READY     STATUS    RESTARTS   AGE
+liveness-exec   0/1       Running   1          1m</p></li>
+</ol>
+<p>所以，假如一个Pod里只有一个容器，然后这个容器异常退出了。那么，只有当restartPolicy=Never时，这个Pod才会进入Failed状态。而其他情况下，由于Kubernetes都可以重启这个容器，所以Pod的状态保持Running不变。</p>
+<p>而如果这个Pod有多个容器，仅有一个容器异常退出，它就始终保持Running状态，哪怕即使restartPolicy=Never。只有当所有容器也异常退出之后，这个Pod才会进入Failed状态。</p>
+<p>其他情况，都可以以此类推出来。</p>
+<p>现在，我们一起回到前面提到的livenessProbe上来。</p>
+<p>除了在容器中执行命令外，livenessProbe也可以定义为发起HTTP或者TCP请求的方式，定义格式如下：</p>
+<pre><code>...
+livenessProbe:
+     httpGet:
+       path: /healthz
+       port: 8080
+       httpHeaders:
+       - name: X-Custom-Header
+         value: Awesome
+       initialDelaySeconds: 3
+       periodSeconds: 3
+
+
+    ...
+    livenessProbe:
+      tcpSocket:
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 20
+</code></pre>
+<p>所以，你的Pod其实可以暴露一个健康检查URL（比如/healthz），或者直接让健康检查去检测应用的监听端口。这两种配置方法，在Web服务类的应用中非常常用。</p>
+<p>在Kubernetes的Pod中，还有一个叫readinessProbe的字段。虽然它的用法与livenessProbe类似，但作用却大不一样。readinessProbe检查结果的成功与否，决定的这个Pod是不是能被通过Service的方式访问到，而并不影响Pod的生命周期。这部分内容，我会在讲解Service时重点介绍。</p>
+<p>在讲解了这么多字段之后，想必你对Pod对象的语义和描述能力，已经有了一个初步的感觉。</p>
+<p>这时，你有没有产生这样一个想法：Pod的字段这么多，我又不可能全记住，Kubernetes能不能自动给Pod填充某些字段呢？</p>
+<p>这个需求实际上非常实用。比如，开发人员只需要提交一个基本的、非常简单的Pod YAML，Kubernetes就可以自动给对应的Pod对象加上其他必要的信息，比如labels，annotations，volumes等等。而这些信息，可以是运维人员事先定义好的。</p>
+<p>这么一来，开发人员编写Pod YAML的门槛，就被大大降低了。</p>
+<p>所以，这个叫作PodPreset（Pod预设置）的功能 已经出现在了v1.11版本的Kubernetes中。</p>
+<p>举个例子，现在开发人员编写了如下一个 pod.yaml文件：</p>
+<pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: website
+  labels:
+    app: website
+    role: frontend
+spec:
+  containers:
+    - name: website
+      image: nginx
+      ports:
+        - containerPort: 80
+</code></pre>
+<p>作为Kubernetes的初学者，你肯定眼前一亮：这不就是我最擅长编写的、最简单的Pod嘛。没错，这个YAML文件里的字段，想必你现在闭着眼睛也能写出来。</p>
+<p>可是，如果运维人员看到了这个Pod，他一定会连连摇头：这种Pod在生产环境里根本不能用啊！</p>
+<p>所以，这个时候，运维人员就可以定义一个PodPreset对象。在这个对象中，凡是他想在开发人员编写的Pod里追加的字段，都可以预先定义好。比如这个preset.yaml：</p>
+<pre><code>apiVersion: settings.k8s.io/v1alpha1
+kind: PodPreset
+metadata:
+  name: allow-database
+spec:
+  selector:
+    matchLabels:
+      role: frontend
+  env:
+    - name: DB_PORT
+      value: "6379"
+  volumeMounts:
+    - mountPath: /cache
+      name: cache-volume
+  volumes:
+    - name: cache-volume
+      emptyDir: {}
+</code></pre>
+<p>在这个PodPreset的定义中，首先是一个selector。这就意味着后面这些追加的定义，只会作用于selector所定义的、带有“role: frontend”标签的Pod对象，这就可以防止“误伤”。</p>
+<p>然后，我们定义了一组Pod的Spec里的标准字段，以及对应的值。比如，env里定义了DB_PORT这个环境变量，volumeMounts定义了容器Volume的挂载目录，volumes定义了一个emptyDir的Volume。</p>
+<p>接下来，我们假定运维人员先创建了这个PodPreset，然后开发人员才创建Pod：</p>
+<pre><code>$ kubectl create -f preset.yaml
+$ kubectl create -f pod.yaml
+</code></pre>
+<p>这时，Pod运行起来之后，我们查看一下这个Pod的API对象：</p>
+<pre><code>$ kubectl get pod website -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: website
+  labels:
+    app: website
+    role: frontend
+  annotations:
+    podpreset.admission.kubernetes.io/podpreset-allow-database: "resource version"
+spec:
+  containers:
+    - name: website
+      image: nginx
+      volumeMounts:
+        - mountPath: /cache
+          name: cache-volume
+      ports:
+        - containerPort: 80
+      env:
+        - name: DB_PORT
+          value: "6379"
+  volumes:
+    - name: cache-volume
+      emptyDir: {}
+</code></pre>
+<p>这个时候，我们就可以清楚地看到，这个Pod里多了新添加的labels、env、volumes和volumeMount的定义，它们的配置跟PodPreset的内容一样。此外，这个Pod还被自动加上了一个annotation表示这个Pod对象被PodPreset改动过。</p>
+<p>需要说明的是，<strong>PodPreset里定义的内容，只会在Pod API对象被创建之前追加在这个对象本身上，而不会影响任何Pod的控制器的定义。</strong></p>
+<p>比如，我们现在提交的是一个nginx-deployment，那么这个Deployment对象本身是永远不会被PodPreset改变的，被修改的只是这个Deployment创建出来的所有Pod。这一点请务必区分清楚。</p>
+<p>这里有一个问题：如果你定义了同时作用于一个Pod对象的多个PodPreset，会发生什么呢？</p>
+<p>实际上，Kubernetes项目会帮你合并（Merge）这两个PodPreset要做的修改。而如果它们要做的修改有冲突的话，这些冲突字段就不会被修改。</p>
+<h2 id="总结">总结</h2>
+<p>在今天这篇文章中，我和你详细介绍了Pod对象更高阶的使用方法，希望通过对这些实例的讲解，你可以更深入地理解Pod API对象的各个字段。</p>
+<p>而在学习这些字段的同时，你还应该认真体会一下Kubernetes“一切皆对象”的设计思想：比如应用是Pod对象，应用的配置是ConfigMap对象，应用要访问的密码则是Secret对象。</p>
+<p>所以，也就自然而然地有了PodPreset这样专门用来对Pod进行批量化、自动化修改的工具对象。在后面的内容中，我会为你讲解更多的这种对象，还会和你介绍Kubernetes项目如何围绕着这些对象进行容器编排。</p>
+<p>在本专栏中，Pod对象相关的知识点非常重要，它是接下来Kubernetes能够描述和编排各种复杂应用的基石所在，希望你能够继续多实践、多体会。</p>
+<h2 id="思考题">思考题</h2>
+<p>在没有Kubernetes的时候，你是通过什么方法进行应用的健康检查的？Kubernetes的livenessProbe和readinessProbe提供的几种探测机制，是否能满足你的需求？</p>
+<p>感谢你的收听，欢迎你给我留言，也欢迎分享给更多的朋友一起阅读。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#e5898989dcd1d4d4d5d2a58288848c89cb868a88" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357b6fac9d20cc6',t:'MTc0NTUxOTg3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

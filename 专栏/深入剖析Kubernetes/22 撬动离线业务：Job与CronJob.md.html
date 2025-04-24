@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="22 撬动离线业务：Job与CronJob" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>22 撬动离线业务：Job与CronJob </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e6%89%93%e9%80%9a%e2%80%9c%e5%ae%b9%e5%99%a8%e6%8a%80%e6%9c%af%e2%80%9d%e7%9a%84%e4%bb%bb%e7%9d%a3%e4%ba%8c%e8%84%89.md.html" id="00 开篇词 打通“容器技术”的任督二脉.md.html">00 开篇词 打通“容器技术”的任督二脉.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/01%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%88%9d%e5%87%ba%e8%8c%85%e5%ba%90.md.html" id="01 预习篇 · 小鲸鱼大事记（一）：初出茅庐.md.html">01 预习篇 · 小鲸鱼大事记（一）：初出茅庐.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/02%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%b4%ad%e9%9c%b2%e5%a4%b4%e8%a7%92.md.html" id="02 预习篇 · 小鲸鱼大事记（二）：崭露头角.md.html">02 预习篇 · 小鲸鱼大事记（二）：崭露头角.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/03%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e7%be%a4%e9%9b%84%e5%b9%b6%e8%b5%b7.md.html" id="03 预习篇 · 小鲸鱼大事记（三）：群雄并起.md.html">03 预习篇 · 小鲸鱼大事记（三）：群雄并起.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/04%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e5%b0%8f%e9%b2%b8%e9%b1%bc%e5%a4%a7%e4%ba%8b%e8%ae%b0%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%b0%98%e5%9f%83%e8%90%bd%e5%ae%9a.md.html" id="04 预习篇 · 小鲸鱼大事记（四）：尘埃落定.md.html">04 预习篇 · 小鲸鱼大事记（四）：尘埃落定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/05%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e%e8%bf%9b%e7%a8%8b%e8%af%b4%e5%bc%80%e5%8e%bb.md.html" id="05 白话容器基础（一）：从进程说开去.md.html">05 白话容器基础（一）：从进程说开去.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/06%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e9%9a%94%e7%a6%bb%e4%b8%8e%e9%99%90%e5%88%b6.md.html" id="06 白话容器基础（二）：隔离与限制.md.html">06 白话容器基础（二）：隔离与限制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/07%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%e5%ae%b9%e5%99%a8%e9%95%9c%e5%83%8f.md.html" id="07 白话容器基础（三）：深入理解容器镜像.md.html">07 白话容器基础（三）：深入理解容器镜像.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/08%20%e7%99%bd%e8%af%9d%e5%ae%b9%e5%99%a8%e5%9f%ba%e7%a1%80%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e9%87%8d%e6%96%b0%e8%ae%a4%e8%af%86Docker%e5%ae%b9%e5%99%a8.md.html" id="08 白话容器基础（四）：重新认识Docker容器.md.html">08 白话容器基础（四）：重新认识Docker容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/09%20%e4%bb%8e%e5%ae%b9%e5%99%a8%e5%88%b0%e5%ae%b9%e5%99%a8%e4%ba%91%ef%bc%9a%e8%b0%88%e8%b0%88Kubernetes%e7%9a%84%e6%9c%ac%e8%b4%a8.md.html" id="09 从容器到容器云：谈谈Kubernetes的本质.md.html">09 从容器到容器云：谈谈Kubernetes的本质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/10%20Kubernetes%e4%b8%80%e9%94%ae%e9%83%a8%e7%bd%b2%e5%88%a9%e5%99%a8%ef%bc%9akubeadm.md.html" id="10 Kubernetes一键部署利器：kubeadm.md.html">10 Kubernetes一键部署利器：kubeadm.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/11%20%e4%bb%8e0%e5%88%b01%ef%bc%9a%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%ae%8c%e6%95%b4%e7%9a%84Kubernetes%e9%9b%86%e7%be%a4.md.html" id="11 从0到1：搭建一个完整的Kubernetes集群.md.html">11 从0到1：搭建一个完整的Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/12%20%e7%89%9b%e5%88%80%e5%b0%8f%e8%af%95%ef%bc%9a%e6%88%91%e7%9a%84%e7%ac%ac%e4%b8%80%e4%b8%aa%e5%ae%b9%e5%99%a8%e5%8c%96%e5%ba%94%e7%94%a8.md.html" id="12 牛刀小试：我的第一个容器化应用.md.html">12 牛刀小试：我的第一个容器化应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/13%20%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e9%9c%80%e8%a6%81Pod%ef%bc%9f.md.html" id="13 为什么我们需要Pod？.md.html">13 为什么我们需要Pod？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/14%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90Pod%e5%af%b9%e8%b1%a1%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5.md.html" id="14 深入解析Pod对象（一）：基本概念.md.html">14 深入解析Pod对象（一）：基本概念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/15%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90Pod%e5%af%b9%e8%b1%a1%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bd%bf%e7%94%a8%e8%bf%9b%e9%98%b6.md.html" id="15 深入解析Pod对象（二）：使用进阶.md.html">15 深入解析Pod对象（二）：使用进阶.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/16%20%e7%bc%96%e6%8e%92%e5%85%b6%e5%ae%9e%e5%be%88%e7%ae%80%e5%8d%95%ef%bc%9a%e8%b0%88%e8%b0%88%e2%80%9c%e6%8e%a7%e5%88%b6%e5%99%a8%e2%80%9d%e6%a8%a1%e5%9e%8b.md.html" id="16 编排其实很简单：谈谈“控制器”模型.md.html">16 编排其实很简单：谈谈“控制器”模型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/17%20%e7%bb%8f%e5%85%b8PaaS%e7%9a%84%e8%ae%b0%e5%bf%86%ef%bc%9a%e4%bd%9c%e4%b8%9a%e5%89%af%e6%9c%ac%e4%b8%8e%e6%b0%b4%e5%b9%b3%e6%89%a9%e5%b1%95.md.html" id="17 经典PaaS的记忆：作业副本与水平扩展.md.html">17 经典PaaS的记忆：作业副本与水平扩展.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/18%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3StatefulSet%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8b%93%e6%89%91%e7%8a%b6%e6%80%81.md.html" id="18 深入理解StatefulSet（一）：拓扑状态.md.html">18 深入理解StatefulSet（一）：拓扑状态.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/19%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3StatefulSet%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%ad%98%e5%82%a8%e7%8a%b6%e6%80%81.md.html" id="19 深入理解StatefulSet（二）：存储状态.md.html">19 深入理解StatefulSet（二）：存储状态.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/20%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3StatefulSet%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%9c%89%e7%8a%b6%e6%80%81%e5%ba%94%e7%94%a8%e5%ae%9e%e8%b7%b5.md.html" id="20 深入理解StatefulSet（三）：有状态应用实践.md.html">20 深入理解StatefulSet（三）：有状态应用实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/21%20%e5%ae%b9%e5%99%a8%e5%8c%96%e5%ae%88%e6%8a%a4%e8%bf%9b%e7%a8%8b%e7%9a%84%e6%84%8f%e4%b9%89%ef%bc%9aDaemonSet.md.html" id="21 容器化守护进程的意义：DaemonSet.md.html">21 容器化守护进程的意义：DaemonSet.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/22%20%e6%92%ac%e5%8a%a8%e7%a6%bb%e7%ba%bf%e4%b8%9a%e5%8a%a1%ef%bc%9aJob%e4%b8%8eCronJob.md.html" id="22 撬动离线业务：Job与CronJob.md.html">22 撬动离线业务：Job与CronJob.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/23%20%e5%a3%b0%e6%98%8e%e5%bc%8fAPI%e4%b8%8eKubernetes%e7%bc%96%e7%a8%8b%e8%8c%83%e5%bc%8f.md.html" id="23 声明式API与Kubernetes编程范式.md.html">23 声明式API与Kubernetes编程范式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/24%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90%e5%a3%b0%e6%98%8e%e5%bc%8fAPI%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aAPI%e5%af%b9%e8%b1%a1%e7%9a%84%e5%a5%a5%e7%a7%98.md.html" id="24 深入解析声明式API（一）：API对象的奥秘.md.html">24 深入解析声明式API（一）：API对象的奥秘.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/25%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90%e5%a3%b0%e6%98%8e%e5%bc%8fAPI%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e5%86%99%e8%87%aa%e5%ae%9a%e4%b9%89%e6%8e%a7%e5%88%b6%e5%99%a8.md.html" id="25 深入解析声明式API（二）：编写自定义控制器.md.html">25 深入解析声明式API（二）：编写自定义控制器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/26%20%e5%9f%ba%e4%ba%8e%e8%a7%92%e8%89%b2%e7%9a%84%e6%9d%83%e9%99%90%e6%8e%a7%e5%88%b6%ef%bc%9aRBAC.md.html" id="26 基于角色的权限控制：RBAC.md.html">26 基于角色的权限控制：RBAC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/27%20%e8%81%aa%e6%98%8e%e7%9a%84%e5%be%ae%e5%88%9b%e6%96%b0%ef%bc%9aOperator%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86%e8%a7%a3%e8%af%bb.md.html" id="27 聪明的微创新：Operator工作原理解读.md.html">27 聪明的微创新：Operator工作原理解读.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/28%20PV%e3%80%81PVC%e3%80%81StorageClass%ef%bc%8c%e8%bf%99%e4%ba%9b%e5%88%b0%e5%ba%95%e5%9c%a8%e8%af%b4%e5%95%a5%ef%bc%9f.md.html" id="28 PV、PVC、StorageClass，这些到底在说啥？.md.html">28 PV、PVC、StorageClass，这些到底在说啥？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/29%20PV%e3%80%81PVC%e4%bd%93%e7%b3%bb%e6%98%af%e4%b8%8d%e6%98%af%e5%a4%9a%e6%ad%a4%e4%b8%80%e4%b8%be%ef%bc%9f%e4%bb%8e%e6%9c%ac%e5%9c%b0%e6%8c%81%e4%b9%85%e5%8c%96%e5%8d%b7%e8%b0%88%e8%b5%b7.md.html" id="29 PV、PVC体系是不是多此一举？从本地持久化卷谈起.md.html">29 PV、PVC体系是不是多此一举？从本地持久化卷谈起.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/30%20%e7%bc%96%e5%86%99%e8%87%aa%e5%b7%b1%e7%9a%84%e5%ad%98%e5%82%a8%e6%8f%92%e4%bb%b6%ef%bc%9aFlexVolume%e4%b8%8eCSI.md.html" id="30 编写自己的存储插件：FlexVolume与CSI.md.html">30 编写自己的存储插件：FlexVolume与CSI.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/31%20%e5%ae%b9%e5%99%a8%e5%ad%98%e5%82%a8%e5%ae%9e%e8%b7%b5%ef%bc%9aCSI%e6%8f%92%e4%bb%b6%e7%bc%96%e5%86%99%e6%8c%87%e5%8d%97.md.html" id="31 容器存储实践：CSI插件编写指南.md.html">31 容器存储实践：CSI插件编写指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/32%20%e6%b5%85%e8%b0%88%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c.md.html" id="32 浅谈容器网络.md.html">32 浅谈容器网络.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/33%20%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90%e5%ae%b9%e5%99%a8%e8%b7%a8%e4%b8%bb%e6%9c%ba%e7%bd%91%e7%bb%9c.md.html" id="33 深入解析容器跨主机网络.md.html">33 深入解析容器跨主机网络.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/34%20Kubernetes%e7%bd%91%e7%bb%9c%e6%a8%a1%e5%9e%8b%e4%b8%8eCNI%e7%bd%91%e7%bb%9c%e6%8f%92%e4%bb%b6.md.html" id="34 Kubernetes网络模型与CNI网络插件.md.html">34 Kubernetes网络模型与CNI网络插件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/35%20%e8%a7%a3%e8%af%bbKubernetes%e4%b8%89%e5%b1%82%e7%bd%91%e7%bb%9c%e6%96%b9%e6%a1%88.md.html" id="35 解读Kubernetes三层网络方案.md.html">35 解读Kubernetes三层网络方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/36%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4Kubernetes%e5%8f%aa%e6%9c%89soft%20multi-tenancy%ef%bc%9f.md.html" id="36 为什么说Kubernetes只有soft multi-tenancy？.md.html">36 为什么说Kubernetes只有soft multi-tenancy？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/37%20%e6%89%be%e5%88%b0%e5%ae%b9%e5%99%a8%e4%b8%8d%e5%ae%b9%e6%98%93%ef%bc%9aService%e3%80%81DNS%e4%b8%8e%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0.md.html" id="37 找到容器不容易：Service、DNS与服务发现.md.html">37 找到容器不容易：Service、DNS与服务发现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/38%20%e4%bb%8e%e5%a4%96%e7%95%8c%e8%bf%9e%e9%80%9aService%e4%b8%8eService%e8%b0%83%e8%af%95%e2%80%9c%e4%b8%89%e6%9d%bf%e6%96%a7%e2%80%9d.md.html" id="38 从外界连通Service与Service调试“三板斧”.md.html">38 从外界连通Service与Service调试“三板斧”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/39%20%e8%b0%88%e8%b0%88Service%e4%b8%8eIngress.md.html" id="39 谈谈Service与Ingress.md.html">39 谈谈Service与Ingress.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/40%20Kubernetes%e7%9a%84%e8%b5%84%e6%ba%90%e6%a8%a1%e5%9e%8b%e4%b8%8e%e8%b5%84%e6%ba%90%e7%ae%a1%e7%90%86.md.html" id="40 Kubernetes的资源模型与资源管理.md.html">40 Kubernetes的资源模型与资源管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/41%20%e5%8d%81%e5%ad%97%e8%b7%af%e5%8f%a3%e4%b8%8a%e7%9a%84Kubernetes%e9%bb%98%e8%ae%a4%e8%b0%83%e5%ba%a6%e5%99%a8.md.html" id="41 十字路口上的Kubernetes默认调度器.md.html">41 十字路口上的Kubernetes默认调度器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/42%20Kubernetes%e9%bb%98%e8%ae%a4%e8%b0%83%e5%ba%a6%e5%99%a8%e8%b0%83%e5%ba%a6%e7%ad%96%e7%95%a5%e8%a7%a3%e6%9e%90.md.html" id="42 Kubernetes默认调度器调度策略解析.md.html">42 Kubernetes默认调度器调度策略解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/43%20Kubernetes%e9%bb%98%e8%ae%a4%e8%b0%83%e5%ba%a6%e5%99%a8%e7%9a%84%e4%bc%98%e5%85%88%e7%ba%a7%e4%b8%8e%e6%8a%a2%e5%8d%a0%e6%9c%ba%e5%88%b6.md.html" id="43 Kubernetes默认调度器的优先级与抢占机制.md.html">43 Kubernetes默认调度器的优先级与抢占机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/44%20Kubernetes%20GPU%e7%ae%a1%e7%90%86%e4%b8%8eDevice%20Plugin%e6%9c%ba%e5%88%b6.md.html" id="44 Kubernetes GPU管理与Device Plugin机制.md.html">44 Kubernetes GPU管理与Device Plugin机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/45%20%e5%b9%95%e5%90%8e%e8%8b%b1%e9%9b%84%ef%bc%9aSIG-Node%e4%b8%8eCRI.md.html" id="45 幕后英雄：SIG-Node与CRI.md.html">45 幕后英雄：SIG-Node与CRI.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/46%20%e8%a7%a3%e8%af%bb%20CRI%20%e4%b8%8e%20%e5%ae%b9%e5%99%a8%e8%bf%90%e8%a1%8c%e6%97%b6.md.html" id="46 解读 CRI 与 容器运行时.md.html">46 解读 CRI 与 容器运行时.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/47%20%e7%bb%9d%e4%b8%8d%e4%bb%85%e4%bb%85%e6%98%af%e5%ae%89%e5%85%a8%ef%bc%9aKata%20Containers%20%e4%b8%8e%20gVisor.md.html" id="47 绝不仅仅是安全：Kata Containers 与 gVisor.md.html">47 绝不仅仅是安全：Kata Containers 与 gVisor.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/48%20Prometheus%e3%80%81Metrics%20Server%e4%b8%8eKubernetes%e7%9b%91%e6%8e%a7%e4%bd%93%e7%b3%bb.md.html" id="48 Prometheus、Metrics Server与Kubernetes监控体系.md.html">48 Prometheus、Metrics Server与Kubernetes监控体系.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/49%20Custom%20Metrics_%20%e8%ae%a9Auto%20Scaling%e4%b8%8d%e5%86%8d%e2%80%9c%e9%a3%9f%e4%b9%8b%e6%97%a0%e5%91%b3%e2%80%9d.md.html" id="49 Custom Metrics_ 让Auto Scaling不再“食之无味”.md.html">49 Custom Metrics_ 让Auto Scaling不再“食之无味”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/50%20%e8%ae%a9%e6%97%a5%e5%bf%97%e6%97%a0%e5%a4%84%e5%8f%af%e9%80%83%ef%bc%9a%e5%ae%b9%e5%99%a8%e6%97%a5%e5%bf%97%e6%94%b6%e9%9b%86%e4%b8%8e%e7%ae%a1%e7%90%86.md.html" id="50 让日志无处可逃：容器日志收集与管理.md.html">50 让日志无处可逃：容器日志收集与管理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/51%20%e8%b0%88%e8%b0%88Kubernetes%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e5%92%8c%e6%9c%aa%e6%9d%a5%e8%b5%b0%e5%90%91.md.html" id="51 谈谈Kubernetes开源社区和未来走向.md.html">51 谈谈Kubernetes开源社区和未来走向.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/52%20%e7%ad%94%e7%96%91%ef%bc%9a%e5%9c%a8%e9%97%ae%e9%a2%98%e4%b8%ad%e8%a7%a3%e5%86%b3%e9%97%ae%e9%a2%98%ef%bc%8c%e5%9c%a8%e6%80%9d%e8%80%83%e4%b8%ad%e4%ba%a7%e7%94%9f%e6%80%9d%e8%80%83.md.html" id="52 答疑：在问题中解决问题，在思考中产生思考.md.html">52 答疑：在问题中解决问题，在思考中产生思考.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%202019%20%e5%b9%b4%ef%bc%8c%e5%ae%b9%e5%99%a8%e6%8a%80%e6%9c%af%e7%94%9f%e6%80%81%e4%bc%9a%e5%8f%91%e7%94%9f%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="特别放送 2019 年，容器技术生态会发生些什么？.md.html">特别放送 2019 年，容器技术生态会发生些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%9f%ba%e4%ba%8e%20Kubernetes%20%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%e5%ba%94%e7%94%a8%e7%ae%a1%e7%90%86%ef%bc%8c%e5%88%b0%e5%ba%95%e5%ba%94%e8%af%a5%e6%80%8e%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="特别放送 基于 Kubernetes 的云原生应用管理，到底应该怎么做？.md.html">特别放送 基于 Kubernetes 的云原生应用管理，到底应该怎么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e5%89%96%e6%9e%90Kubernetes/%e7%bb%93%e6%9d%9f%e8%af%ad%20Kubernetes%ef%bc%9a%e8%b5%a2%e5%bc%80%e5%8f%91%e8%80%85%e8%b5%a2%e5%a4%a9%e4%b8%8b.md.html" id="结束语 Kubernetes：赢开发者赢天下.md.html">结束语 Kubernetes：赢开发者赢天下.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="22 撬动离线业务：Job与CronJob" id="title">22 撬动离线业务：Job与CronJob</h1>
+<div><p>你好，我是张磊。今天我和你分享的主题是：撬动离线业务之Job与CronJob。</p>
+<p>在前面的几篇文章中，我和你详细分享了Deployment、StatefulSet，以及DaemonSet这三个编排概念。你有没有发现它们的共同之处呢？</p>
+<p>实际上，它们主要编排的对象，都是“在线业务”，即：Long Running Task（长作业）。比如，我在前面举例时常用的Nginx、Tomcat，以及MySQL等等。这些应用一旦运行起来，除非出错或者停止，它的容器进程会一直保持在Running状态。</p>
+<p>但是，有一类作业显然不满足这样的条件，这就是“离线业务”，或者叫作Batch Job（计算业务）。这种业务在计算完成后就直接退出了，而此时如果你依然用Deployment来管理这种业务的话，就会发现Pod会在计算结束后退出，然后被Deployment Controller不断地重启；而像“滚动更新”这样的编排功能，更无从谈起了。</p>
+<p>所以，早在Borg项目中，Google就已经对作业进行了分类处理，提出了LRS（Long Running Service）和Batch Jobs两种作业形态，对它们进行“分别管理”和“混合调度”。</p>
+<p>不过，在2015年Borg论文刚刚发布的时候，Kubernetes项目并不支持对Batch Job的管理。直到v1.4版本之后，社区才逐步设计出了一个用来描述离线业务的API对象，它的名字就是：Job。</p>
+<p>Job API对象的定义非常简单，我来举个例子，如下所示：</p>
+<pre><code>apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: resouer/ubuntu-bc 
+        command: ["sh", "-c", "echo 'scale=10000; 4*a(1)' | bc -l "]
+      restartPolicy: Never
+  backoffLimit: 4
+</code></pre>
+<p>此时，相信你对Kubernetes的API对象已经不再陌生了。在这个Job的YAML文件里，你肯定一眼就会看到一位“老熟人”：Pod模板，即spec.template字段。</p>
+<p>在这个Pod模板中，我定义了一个Ubuntu镜像的容器（准确地说，是一个安装了bc命令的Ubuntu镜像），它运行的程序是：</p>
+<pre><code>echo "scale=10000; 4*a(1)" | bc -l 
+</code></pre>
+<p>其中，bc命令是Linux里的“计算器”；-l表示，我现在要使用标准数学库；而a(1)，则是调用数学库中的arctangent函数，计算atan(1)。这是什么意思呢？</p>
+<p>中学知识告诉我们：<code>tan(π/4) = 1</code>。所以，<code>4*atan(1)</code>正好就是π，也就是3.1415926…。</p>
+<blockquote>
+<p>备注：如果你不熟悉这个知识也不必担心，我也是在查阅资料后才知道的。</p>
+</blockquote>
+<p>所以，这其实就是一个计算π值的容器。而通过scale=10000，我指定了输出的小数点后的位数是10000。在我的计算机上，这个计算大概用时1分54秒。</p>
+<p>但是，跟其他控制器不同的是，Job对象并不要求你定义一个spec.selector来描述要控制哪些Pod。具体原因，我马上会讲解到。</p>
+<p>现在，我们就可以创建这个Job了：</p>
+<pre><code>$ kubectl create -f job.yaml
+</code></pre>
+<p>在成功创建后，我们来查看一下这个Job对象，如下所示：</p>
+<pre><code>$ kubectl describe jobs/pi
+Name:             pi
+Namespace:        default
+Selector:         controller-uid=c2db599a-2c9d-11e6-b324-0209dc45a495
+Labels:           controller-uid=c2db599a-2c9d-11e6-b324-0209dc45a495
+                  job-name=pi
+Annotations:      &lt;none&gt;
+Parallelism:      1
+Completions:      1
+..
+Pods Statuses:    0 Running / 1 Succeeded / 0 Failed
+Pod Template:
+  Labels:       controller-uid=c2db599a-2c9d-11e6-b324-0209dc45a495
+                job-name=pi
+  Containers:
+   ...
+  Volumes:              &lt;none&gt;
+Events:
+  FirstSeen    LastSeen    Count    From            SubobjectPath    Type        Reason            Message
+  ---------    --------    -----    ----            -------------    --------    ------            -------
+  1m           1m          1        {job-controller }                Normal      SuccessfulCreate  Created pod: pi-rq5rl
+</code></pre>
+<p>可以看到，这个Job对象在创建后，它的Pod模板，被自动加上了一个controller-uid=&lt;一个随机字符串&gt;这样的Label。而这个Job对象本身，则被自动加上了这个Label对应的Selector，从而 保证了Job与它所管理的Pod之间的匹配关系。</p>
+<p>而Job Controller之所以要使用这种携带了UID的Label，就是为了避免不同Job对象所管理的Pod发生重合。需要注意的是，<strong>这种自动生成的Label对用户来说并不友好，所以不太适合推广到Deployment等长作业编排对象上。</strong></p>
+<p>接下来，我们可以看到这个Job创建的Pod进入了Running状态，这意味着它正在计算Pi的值。</p>
+<pre><code>$ kubectl get pods
+NAME                                READY     STATUS    RESTARTS   AGE
+pi-rq5rl                            1/1       Running   0          10s
+</code></pre>
+<p>而几分钟后计算结束，这个Pod就会进入Completed状态：</p>
+<pre><code>$ kubectl get pods
+NAME                                READY     STATUS      RESTARTS   AGE
+pi-rq5rl                            0/1       Completed   0          4m
+</code></pre>
+<p>这也是我们需要在Pod模板中定义restartPolicy=Never的原因：离线计算的Pod永远都不应该被重启，否则它们会再重新计算一遍。</p>
+<blockquote>
+<p>事实上，restartPolicy在Job对象里只允许被设置为Never和OnFailure；而在Deployment对象里，restartPolicy则只允许被设置为Always。</p>
+</blockquote>
+<p>此时，我们通过kubectl logs查看一下这个Pod的日志，就可以看到计算得到的Pi值已经被打印了出来：</p>
+<pre><code>$ kubectl logs pi-rq5rl
+3.141592653589793238462643383279...
+</code></pre>
+<p>这时候，你一定会想到这样一个问题，<strong>如果这个离线作业失败了要怎么办？</strong></p>
+<p>比如，我们在这个例子中<strong>定义了restartPolicy=Never，那么离线作业失败后Job Controller就会不断地尝试创建一个新Pod</strong>，如下所示：</p>
+<pre><code>$ kubectl get pods
+NAME                                READY     STATUS              RESTARTS   AGE
+pi-55h89                            0/1       ContainerCreating   0          2s
+pi-tqbcz                            0/1       Error               0          5s
+</code></pre>
+<p>可以看到，这时候会不断地有新Pod被创建出来。</p>
+<p>当然，这个尝试肯定不能无限进行下去。所以，我们就在Job对象的spec.backoffLimit字段里定义了重试次数为4（即，backoffLimit=4），而这个字段的默认值是6。</p>
+<p>需要注意的是，Job Controller重新创建Pod的间隔是呈指数增加的，即下一次重新创建Pod的动作会分别发生在10 s、20 s、40 s …后。</p>
+<p>而如果你<strong>定义的restartPolicy=OnFailure，那么离线作业失败后，Job Controller就不会去尝试创建新的Pod。但是，它会不断地尝试重启Pod里的容器</strong>。这也正好对应了restartPolicy的含义（你也可以借此机会再回顾一下第15篇文章《深入解析Pod对象（二）：使用进阶》中的相关内容）。</p>
+<p>如前所述，当一个Job的Pod运行结束后，它会进入Completed状态。但是，如果这个Pod因为某种原因一直不肯结束呢？</p>
+<p>在Job的API对象里，有一个spec.activeDeadlineSeconds字段可以设置最长运行时间，比如：</p>
+<pre><code>spec:
+ backoffLimit: 5
+ activeDeadlineSeconds: 100
+</code></pre>
+<p>一旦运行超过了100 s，这个Job的所有Pod都会被终止。并且，你可以在Pod的状态里看到终止的原因是reason: DeadlineExceeded。</p>
+<p>以上，就是一个Job API对象最主要的概念和用法了。不过，离线业务之所以被称为Batch Job，当然是因为它们可以以“Batch”，也就是并行的方式去运行。</p>
+<p>接下来，我就来为你讲解一下Job Controller对并行作业的控制方法。</p>
+<p>在Job对象中，负责并行控制的参数有两个：</p>
+<ol>
+<li><p>spec.parallelism，它定义的是一个Job在任意时间最多可以启动多少个Pod同时运行；</p></li>
+<li><p>spec.completions，它定义的是Job至少要完成的Pod数目，即Job的最小完成数。</p></li>
+</ol>
+<p>这两个参数听起来有点儿抽象，所以我准备了一个例子来帮助你理解。</p>
+<p>现在，我在之前计算Pi值的Job里，添加这两个参数：</p>
+<pre><code>apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  parallelism: 2
+  completions: 4
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: resouer/ubuntu-bc
+        command: ["sh", "-c", "echo 'scale=5000; 4*a(1)' | bc -l "]
+      restartPolicy: Never
+  backoffLimit: 4
+</code></pre>
+<p>这样，我们就指定了这个Job最大的并行数是2，而最小的完成数是4。</p>
+<p>接下来，我们来创建这个Job对象：</p>
+<pre><code>$ kubectl create -f job.yaml
+</code></pre>
+<p>可以看到，这个Job其实也维护了两个状态字段，即DESIRED和SUCCESSFUL，如下所示：</p>
+<pre><code>$ kubectl get job
+NAME      DESIRED   SUCCESSFUL   AGE
+pi        4         0            3s
+</code></pre>
+<p>其中，DESIRED的值，正是completions定义的最小完成数。</p>
+<p>然后，我们可以看到，这个Job首先创建了两个并行运行的Pod来计算Pi：</p>
+<pre><code>$ kubectl get pods
+NAME       READY     STATUS    RESTARTS   AGE
+pi-5mt88   1/1       Running   0          6s
+pi-gmcq5   1/1       Running   0          6s
+</code></pre>
+<p>而在40 s后，这两个Pod相继完成计算。</p>
+<p>这时我们可以看到，每当有一个Pod完成计算进入Completed状态时，就会有一个新的Pod被自动创建出来，并且快速地从Pending状态进入到ContainerCreating状态：</p>
+<pre><code>$ kubectl get pods
+NAME       READY     STATUS    RESTARTS   AGE
+pi-gmcq5   0/1       Completed   0         40s
+pi-84ww8   0/1       Pending   0         0s
+pi-5mt88   0/1       Completed   0         41s
+pi-62rbt   0/1       Pending   0         0s
+
+$ kubectl get pods
+NAME       READY     STATUS    RESTARTS   AGE
+pi-gmcq5   0/1       Completed   0         40s
+pi-84ww8   0/1       ContainerCreating   0         0s
+pi-5mt88   0/1       Completed   0         41s
+pi-62rbt   0/1       ContainerCreating   0         0s
+</code></pre>
+<p>紧接着，Job Controller第二次创建出来的两个并行的Pod也进入了Running状态：</p>
+<pre><code>$ kubectl get pods 
+NAME       READY     STATUS      RESTARTS   AGE
+pi-5mt88   0/1       Completed   0          54s
+pi-62rbt   1/1       Running     0          13s
+pi-84ww8   1/1       Running     0          14s
+pi-gmcq5   0/1       Completed   0          54s
+</code></pre>
+<p>最终，后面创建的这两个Pod也完成了计算，进入了Completed状态。</p>
+<p>这时，由于所有的Pod均已经成功退出，这个Job也就执行完了，所以你会看到它的SUCCESSFUL字段的值变成了4：</p>
+<pre><code>$ kubectl get pods 
+NAME       READY     STATUS      RESTARTS   AGE
+pi-5mt88   0/1       Completed   0          5m
+pi-62rbt   0/1       Completed   0          4m
+pi-84ww8   0/1       Completed   0          4m
+pi-gmcq5   0/1       Completed   0          5m
+
+$ kubectl get job
+NAME      DESIRED   SUCCESSFUL   AGE
+pi        4         4            5m
+</code></pre>
+<p>通过上述Job的DESIRED和SUCCESSFUL字段的关系，我们就可以很容易地理解Job Controller的工作原理了。</p>
+<p>首先，Job Controller控制的对象，直接就是Pod。</p>
+<p>其次，Job Controller在控制循环中进行的调谐（Reconcile）操作，是根据实际在Running状态Pod的数目、已经成功退出的Pod的数目，以及parallelism、completions参数的值共同计算出在这个周期里，应该创建或者删除的Pod数目，然后调用Kubernetes API来执行这个操作。</p>
+<p>以创建Pod为例。在上面计算Pi值的这个例子中，当Job一开始创建出来时，实际处于Running状态的Pod数目=0，已经成功退出的Pod数目=0，而用户定义的completions，也就是最终用户需要的Pod数目=4。</p>
+<p>所以，在这个时刻，需要创建的Pod数目 = 最终需要的Pod数目 - 实际在Running状态Pod数目 - 已经成功退出的Pod数目 = 4 - 0 - 0= 4。也就是说，Job Controller需要创建4个Pod来纠正这个不一致状态。</p>
+<p>可是，我们又定义了这个Job的parallelism=2。也就是说，我们规定了每次并发创建的Pod个数不能超过2个。所以，Job Controller会对前面的计算结果做一个修正，修正后的期望创建的Pod数目应该是：2个。</p>
+<p>这时候，Job Controller就会并发地向kube-apiserver发起两个创建Pod的请求。</p>
+<p>类似地，如果在这次调谐周期里，Job Controller发现实际在Running状态的Pod数目，比parallelism还大，那么它就会删除一些Pod，使两者相等。</p>
+<p>综上所述，Job Controller实际上控制了，作业执行的<strong>并行度</strong>，以及总共需要完成的<strong>任务数</strong>这两个重要参数。而在实际使用时，你需要根据作业的特性，来决定并行度（parallelism）和任务数（completions）的合理取值。</p>
+<p>接下来，我再和你分享三种常用的、使用Job对象的方法。</p>
+<p><strong>第一种用法，也是最简单粗暴的用法：外部管理器+Job模板。</strong></p>
+<p>这种模式的特定用法是：把Job的YAML文件定义为一个“模板”，然后用一个外部工具控制这些“模板”来生成Job。这时，Job的定义方式如下所示：</p>
+<pre><code>apiVersion: batch/v1
+kind: Job
+metadata:
+  name: process-item-$ITEM
+  labels:
+    jobgroup: jobexample
+spec:
+  template:
+    metadata:
+      name: jobexample
+      labels:
+        jobgroup: jobexample
+    spec:
+      containers:
+      - name: c
+        image: busybox
+        command: ["sh", "-c", "echo Processing item $ITEM &amp;&amp; sleep 5"]
+      restartPolicy: Never
+</code></pre>
+<p>可以看到，我们在这个Job的YAML里，定义了$ITEM这样的“变量”。</p>
+<p>所以，在控制这种Job时，我们只要注意如下两个方面即可：</p>
+<ol>
+<li><p>创建Job时，替换掉$ITEM这样的变量；</p></li>
+<li><p>所有来自于同一个模板的Job，都有一个jobgroup: jobexample标签，也就是说这一组Job使用这样一个相同的标识。</p></li>
+</ol>
+<p>而做到第一点非常简单。比如，你可以通过这样一句shell把$ITEM替换掉：</p>
+<pre><code>$ mkdir ./jobs
+$ for i in apple banana cherry
+do
+  cat job-tmpl.yaml | sed "s/\$ITEM/$i/" &gt; ./jobs/job-$i.yaml
+done
+</code></pre>
+<p>这样，一组来自于同一个模板的不同Job的yaml就生成了。接下来，你就可以通过一句kubectl create指令创建这些Job了：</p>
+<pre><code>$ kubectl create -f ./jobs
+$ kubectl get pods -l jobgroup=jobexample
+NAME                        READY     STATUS      RESTARTS   AGE
+process-item-apple-kixwv    0/1       Completed   0          4m
+process-item-banana-wrsf7   0/1       Completed   0          4m
+process-item-cherry-dnfu9   0/1       Completed   0          4m
+</code></pre>
+<p>这个模式看起来虽然很“傻”，但却是Kubernetes社区里使用Job的一个很普遍的模式。</p>
+<p>原因很简单：大多数用户在需要管理Batch Job的时候，都已经有了一套自己的方案，需要做的往往就是集成工作。这时候，Kubernetes项目对这些方案来说最有价值的，就是Job这个API对象。所以，你只需要编写一个外部工具（等同于我们这里的for循环）来管理这些Job即可。</p>
+<p>这种模式最典型的应用，就是TensorFlow社区的KubeFlow项目。</p>
+<p>很容易理解，在这种模式下使用Job对象，completions和parallelism这两个字段都应该使用默认值1，而不应该由我们自行设置。而作业Pod的并行控制，应该完全交由外部工具来进行管理（比如，KubeFlow）。</p>
+<p><strong>第二种用法：拥有固定任务数目的并行Job</strong>。</p>
+<p>这种模式下，我只关心最后是否有指定数目（spec.completions）个任务成功退出。至于执行时的并行度是多少，我并不关心。</p>
+<p>比如，我们这个计算Pi值的例子，就是这样一个典型的、拥有固定任务数目（completions=4）的应用场景。 它的parallelism值是2；或者，你可以干脆不指定parallelism，直接使用默认的并行度（即：1）。</p>
+<p>此外，你还可以使用一个工作队列（Work Queue）进行任务分发。这时，Job的YAML文件定义如下所示：</p>
+<pre><code>apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-wq-1
+spec:
+  completions: 8
+  parallelism: 2
+  template:
+    metadata:
+      name: job-wq-1
+    spec:
+      containers:
+      - name: c
+        image: myrepo/job-wq-1
+        env:
+        - name: BROKER_URL
+          value: amqp://guest:guest@rabbitmq-service:5672
+        - name: QUEUE
+          value: job1
+      restartPolicy: OnFailure
+</code></pre>
+<p>我们可以看到，它的completions的值是：8，这意味着我们总共要处理的任务数目是8个。也就是说，总共会有8个任务会被逐一放入工作队列里（你可以运行一个外部小程序作为生产者，来提交任务）。</p>
+<p>在这个实例中，我选择充当工作队列的是一个运行在Kubernetes里的RabbitMQ。所以，我们需要在Pod模板里定义BROKER_URL，来作为消费者。</p>
+<p>所以，一旦你用kubectl create创建了这个Job，它就会以并发度为2的方式，每两个Pod一组，创建出8个Pod。每个Pod都会去连接BROKER_URL，从RabbitMQ里读取任务，然后各自进行处理。这个Pod里的执行逻辑，我们可以用这样一段伪代码来表示：</p>
+<pre><code>/* job-wq-1的伪代码 */
+queue := newQueue($BROKER_URL, $QUEUE)
+task := queue.Pop()
+process(task)
+exit
+</code></pre>
+<p>可以看到，每个Pod只需要将任务信息读取出来，处理完成，然后退出即可。而作为用户，我只关心最终一共有8个计算任务启动并且退出，只要这个目标达到，我就认为整个Job处理完成了。所以说，这种用法，对应的就是“任务总数固定”的场景。</p>
+<p><strong>第三种用法，也是很常用的一个用法：指定并行度（parallelism），但不设置固定的completions的值。</strong></p>
+<p>此时，你就必须自己想办法，来决定什么时候启动新Pod，什么时候Job才算执行完成。在这种情况下，任务的总数是未知的，所以你不仅需要一个工作队列来负责任务分发，还需要能够判断工作队列已经为空（即：所有的工作已经结束了）。</p>
+<p>这时候，Job的定义基本上没变化，只不过是不再需要定义completions的值了而已：</p>
+<pre><code>apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-wq-2
+spec:
+  parallelism: 2
+  template:
+    metadata:
+      name: job-wq-2
+    spec:
+      containers:
+      - name: c
+        image: gcr.io/myproject/job-wq-2
+        env:
+        - name: BROKER_URL
+          value: amqp://guest:guest@rabbitmq-service:5672
+        - name: QUEUE
+          value: job2
+      restartPolicy: OnFailure
+</code></pre>
+<p>而对应的Pod的逻辑会稍微复杂一些，我可以用这样一段伪代码来描述：</p>
+<pre><code>/* job-wq-2的伪代码 */
+for !queue.IsEmpty($BROKER_URL, $QUEUE) {
+  task := queue.Pop()
+  process(task)
+}
+print("Queue empty, exiting")
+exit
+</code></pre>
+<p>由于任务数目的总数不固定，所以每一个Pod必须能够知道，自己什么时候可以退出。比如，在这个例子中，我简单地以“队列为空”，作为任务全部完成的标志。所以说，这种用法，对应的是“任务总数不固定”的场景。</p>
+<p>不过，在实际的应用中，你需要处理的条件往往会非常复杂。比如，任务完成后的输出、每个任务Pod之间是不是有资源的竞争和协同等等。</p>
+<p>所以，在今天这篇文章中，我就不再展开Job的用法了。因为，在实际场景里，要么干脆就用第一种用法来自己管理作业；要么，这些任务Pod之间的关系就不那么“单纯”，甚至还是“有状态应用”（比如，任务的输入/输出是在持久化数据卷里）。在这种情况下，我在后面要重点讲解的Operator，加上Job对象一起，可能才能更好地满足实际离线任务的编排需求。</p>
+<p>最后，我再来和你分享一个非常有用的Job对象，叫作：CronJob。</p>
+<p>顾名思义，CronJob描述的，正是定时任务。它的API对象，如下所示：</p>
+<pre><code>apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox
+            args:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
+</code></pre>
+<p>在这个YAML文件中，最重要的关键词就是<strong>jobTemplate</strong>。看到它，你一定恍然大悟，原来CronJob是一个Job对象的控制器（Controller）！</p>
+<p>没错，CronJob与Job的关系，正如同Deployment与ReplicaSet的关系一样。CronJob是一个专门用来管理Job对象的控制器。只不过，它创建和删除Job的依据，是schedule字段定义的、一个标准的<a href="https://en.wikipedia.org/wiki/Cron" target="_blank">Unix Cron</a>格式的表达式。</p>
+<p>比如，”*/1 * * * *“。</p>
+<p>这个Cron表达式里*/1中的*表示从0开始，/表示“每”，1表示偏移量。所以，它的意思就是：从0开始，每1个时间单位执行一次。</p>
+<p>那么，时间单位又是什么呢？</p>
+<p>Cron表达式中的五个部分分别代表：分钟、小时、日、月、星期。</p>
+<p>所以，上面这句Cron表达式的意思是：从当前开始，每分钟执行一次。</p>
+<p>而这里要执行的内容，就是jobTemplate定义的Job了。</p>
+<p>所以，这个CronJob对象在创建1分钟后，就会有一个Job产生了，如下所示：</p>
+<pre><code>$ kubectl create -f ./cronjob.yaml
+cronjob "hello" created
+
+# 一分钟后
+$ kubectl get jobs
+NAME               DESIRED   SUCCESSFUL   AGE
+hello-4111706356   1         1         2s
+</code></pre>
+<p>此时，CronJob对象会记录下这次Job执行的时间：</p>
+<pre><code>$ kubectl get cronjob hello
+NAME      SCHEDULE      SUSPEND   ACTIVE    LAST-SCHEDULE
+hello     */1 * * * *   False     0         Thu, 6 Sep 2018 14:34:00 -070
+</code></pre>
+<p>需要注意的是，由于定时任务的特殊性，很可能某个Job还没有执行完，另外一个新Job就产生了。这时候，你可以通过spec.concurrencyPolicy字段来定义具体的处理策略。比如：</p>
+<ol>
+<li><p>concurrencyPolicy=Allow，这也是默认情况，这意味着这些Job可以同时存在；</p></li>
+<li><p>concurrencyPolicy=Forbid，这意味着不会创建新的Pod，该创建周期被跳过；</p></li>
+<li><p>concurrencyPolicy=Replace，这意味着新产生的Job会替换旧的、没有执行完的Job。</p></li>
+</ol>
+<p>而如果某一次Job创建失败，这次创建就会被标记为“miss”。当在指定的时间窗口内，miss的数目达到100时，那么CronJob会停止再创建这个Job。</p>
+<p>这个时间窗口，可以由spec.startingDeadlineSeconds字段指定。比如startingDeadlineSeconds=200，意味着在过去200 s里，如果miss的数目达到了100次，那么这个Job就不会被创建执行了。</p>
+<h2 id="总结">总结</h2>
+<p>在今天这篇文章中，我主要和你分享了Job这个离线业务的编排方法，讲解了completions和parallelism字段的含义，以及Job Controller的执行原理。</p>
+<p>紧接着，我通过实例和你分享了Job对象三种常见的使用方法。但是，根据我在社区和生产环境中的经验，大多数情况下用户还是更倾向于自己控制Job对象。所以，相比于这些固定的“模式”，掌握Job的API对象，和它各个字段的准确含义会更加重要。</p>
+<p>最后，我还介绍了一种Job的控制器，叫作：CronJob。这也印证了我在前面的分享中所说的：用一个对象控制另一个对象，是Kubernetes编排的精髓所在。</p>
+<h2 id="思考题">思考题</h2>
+<p>根据Job控制器的工作原理，如果你定义的parallelism比completions还大的话，比如：</p>
+<pre><code> parallelism: 4
+ completions: 2
+</code></pre>
+<p>那么，这个Job最开始创建的时候，会同时启动几个Pod呢？原因是什么？</p>
+<p>感谢你的收听，欢迎你给我留言，也欢迎分享给更多的朋友一起阅读。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#deb2b2b2e7eaefefeee99eb9b3bfb7b2f0bdb1b3" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357b754fc236a53',t:'MTc0NTUxOTg5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
