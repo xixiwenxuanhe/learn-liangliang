@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="08  管道过滤：如何基于 Spring Security 过滤器扩展安全性？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>08  管道过滤：如何基于 Spring Security 过滤器扩展安全性？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%20Spring%20Security%ef%bc%8c%e4%b8%ba%e4%bd%a0%e7%9a%84%e5%ba%94%e7%94%a8%e5%ae%89%e5%85%a8%e4%b8%8e%e8%81%8c%e4%b8%9a%e4%b9%8b%e8%b7%af%e4%bf%9d%e9%a9%be%e6%8a%a4%e8%88%aa.md.html" id="00 开篇词  Spring Security，为你的应用安全与职业之路保驾护航.md.html">00 开篇词  Spring Security，为你的应用安全与职业之路保驾护航.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/01%20%20%e9%a1%b6%e7%ba%a7%e6%a1%86%e6%9e%b6%ef%bc%9aSpring%20Security%20%e6%98%af%e4%b8%80%e6%ac%be%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e5%ae%89%e5%85%a8%e6%80%a7%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="01  顶级框架：Spring Security 是一款什么样的安全性框架？.md.html">01  顶级框架：Spring Security 是一款什么样的安全性框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/02%20%20%e7%94%a8%e6%88%b7%e8%ae%a4%e8%af%81%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%20Spring%20Security%20%e6%9e%84%e5%bb%ba%e7%94%a8%e6%88%b7%e8%ae%a4%e8%af%81%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="02  用户认证：如何使用 Spring Security 构建用户认证体系？.md.html">02  用户认证：如何使用 Spring Security 构建用户认证体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/03%20%20%e8%ae%a4%e8%af%81%e4%bd%93%e7%b3%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Spring%20Security%20%e7%94%a8%e6%88%b7%e8%ae%a4%e8%af%81%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="03  认证体系：如何深入理解 Spring Security 用户认证机制？.md.html">03  认证体系：如何深入理解 Spring Security 用户认证机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/04%20%20%e5%af%86%e7%a0%81%e5%ae%89%e5%85%a8%ef%bc%9aSpring%20Security%20%e4%b8%ad%e5%8c%85%e5%90%ab%e5%93%aa%e4%ba%9b%e5%8a%a0%e8%a7%a3%e5%af%86%e6%8a%80%e6%9c%af%ef%bc%9f.md.html" id="04  密码安全：Spring Security 中包含哪些加解密技术？.md.html">04  密码安全：Spring Security 中包含哪些加解密技术？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/05%20%20%e8%ae%bf%e9%97%ae%e6%8e%88%e6%9d%83%ef%bc%9a%e5%a6%82%e4%bd%95%e5%af%b9%e8%af%b7%e6%b1%82%e7%9a%84%e5%ae%89%e5%85%a8%e8%ae%bf%e9%97%ae%e8%bf%87%e7%a8%8b%e8%bf%9b%e8%a1%8c%e6%9c%89%e6%95%88%e9%85%8d%e7%bd%ae%ef%bc%9f.md.html" id="05  访问授权：如何对请求的安全访问过程进行有效配置？.md.html">05  访问授权：如何对请求的安全访问过程进行有效配置？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/06%20%20%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%89%96%e6%9e%90%20Spring%20Security%20%e7%9a%84%e6%8e%88%e6%9d%83%e5%8e%9f%e7%90%86%ef%bc%9f.md.html" id="06  权限管理：如何剖析 Spring Security 的授权原理？.md.html">06  权限管理：如何剖析 Spring Security 的授权原理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/07%20%20%e6%a1%88%e4%be%8b%e5%ae%9e%e6%88%98%ef%bc%9a%e4%bd%bf%e7%94%a8%20Spring%20Security%20%e5%9f%ba%e7%a1%80%e5%8a%9f%e8%83%bd%e4%bf%9d%e6%8a%a4%20Web%20%e5%ba%94%e7%94%a8.md.html" id="07  案例实战：使用 Spring Security 基础功能保护 Web 应用.md.html">07  案例实战：使用 Spring Security 基础功能保护 Web 应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/08%20%20%e7%ae%a1%e9%81%93%e8%bf%87%e6%bb%a4%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8e%20Spring%20Security%20%e8%bf%87%e6%bb%a4%e5%99%a8%e6%89%a9%e5%b1%95%e5%ae%89%e5%85%a8%e6%80%a7%ef%bc%9f.md.html" id="08  管道过滤：如何基于 Spring Security 过滤器扩展安全性？.md.html">08  管道过滤：如何基于 Spring Security 过滤器扩展安全性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/09%20%20%e6%94%bb%e5%87%bb%e5%ba%94%e5%af%b9%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%20CSRF%20%e4%bf%9d%e6%8a%a4%e5%92%8c%e8%b7%a8%e5%9f%9f%20CORS%ef%bc%9f.md.html" id="09  攻击应对：如何实现 CSRF 保护和跨域 CORS？.md.html">09  攻击应对：如何实现 CSRF 保护和跨域 CORS？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/10%20%20%e5%85%a8%e5%b1%80%e6%96%b9%e6%b3%95%ef%bc%9a%e5%a6%82%e4%bd%95%e7%a1%ae%e4%bf%9d%e6%96%b9%e6%b3%95%e7%ba%a7%e5%88%ab%e7%9a%84%e5%ae%89%e5%85%a8%e8%ae%bf%e9%97%ae%ef%bc%9f.md.html" id="10  全局方法：如何确保方法级别的安全访问？.md.html">10  全局方法：如何确保方法级别的安全访问？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/11%20%20%e6%a1%88%e4%be%8b%e5%ae%9e%e6%88%98%ef%bc%9a%e4%bd%bf%e7%94%a8%20Spring%20Security%20%e9%ab%98%e7%ba%a7%e4%b8%bb%e9%a2%98%e4%bf%9d%e6%8a%a4%20Web%20%e5%ba%94%e7%94%a8.md.html" id="11  案例实战：使用 Spring Security 高级主题保护 Web 应用.md.html">11  案例实战：使用 Spring Security 高级主题保护 Web 应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/12%20%20%e5%bc%80%e6%94%be%e5%8d%8f%e8%ae%ae%ef%bc%9aOAuth2%20%e5%8d%8f%e8%ae%ae%e8%a7%a3%e5%86%b3%e7%9a%84%e6%98%af%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="12  开放协议：OAuth2 协议解决的是什么问题？.md.html">12  开放协议：OAuth2 协议解决的是什么问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/13%20%20%e6%8e%88%e6%9d%83%e4%bd%93%e7%b3%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%20OAuth2%20%e6%8e%88%e6%9d%83%e6%9c%8d%e5%8a%a1%e5%99%a8%ef%bc%9f.md.html" id="13  授权体系：如何构建 OAuth2 授权服务器？.md.html">13  授权体系：如何构建 OAuth2 授权服务器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/14%20%20%e8%b5%84%e6%ba%90%e4%bf%9d%e6%8a%a4%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8e%20OAuth2%20%e5%8d%8f%e8%ae%ae%e9%85%8d%e7%bd%ae%e6%8e%88%e6%9d%83%e8%bf%87%e7%a8%8b%ef%bc%9f.md.html" id="14  资源保护：如何基于 OAuth2 协议配置授权过程？.md.html">14  资源保护：如何基于 OAuth2 协议配置授权过程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/15%20%20%e4%bb%a4%e7%89%8c%e6%89%a9%e5%b1%95%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%20JWT%20%e5%ae%9e%e7%8e%b0%e5%ae%9a%e5%88%b6%e5%8c%96%20Token%ef%bc%9f.md.html" id="15  令牌扩展：如何使用 JWT 实现定制化 Token？.md.html">15  令牌扩展：如何使用 JWT 实现定制化 Token？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/16%20%20%e6%a1%88%e4%be%8b%e5%ae%9e%e6%88%98%ef%bc%9a%e5%9f%ba%e4%ba%8e%20Spring%20Security%20%e5%92%8c%20Spring%20Cloud%20%e6%9e%84%e5%bb%ba%e5%be%ae%e6%9c%8d%e5%8a%a1%e5%ae%89%e5%85%a8%e6%9e%b6%e6%9e%84.md.html" id="16  案例实战：基于 Spring Security 和 Spring Cloud 构建微服务安全架构.md.html">16  案例实战：基于 Spring Security 和 Spring Cloud 构建微服务安全架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/17%20%20%e6%a1%88%e4%be%8b%e5%ae%9e%e6%88%98%ef%bc%9a%e5%9f%ba%e4%ba%8e%20Spring%20Security%20%e5%92%8c%20OAuth2%20%e5%ae%9e%e7%8e%b0%e5%8d%95%e7%82%b9%e7%99%bb%e5%bd%95.md.html" id="17  案例实战：基于 Spring Security 和 OAuth2 实现单点登录.md.html">17  案例实战：基于 Spring Security 和 OAuth2 实现单点登录.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/18%20%20%e6%8a%80%e6%9c%af%e8%b6%8b%e5%8a%bf%ef%bc%9a%e5%a6%82%e4%bd%95%e4%b8%ba%20Spring%20Security%20%e6%b7%bb%e5%8a%a0%e5%93%8d%e5%ba%94%e5%bc%8f%e7%bc%96%e7%a8%8b%e7%89%b9%e6%80%a7%ef%bc%9f.md.html" id="18  技术趋势：如何为 Spring Security 添加响应式编程特性？.md.html">18  技术趋势：如何为 Spring Security 添加响应式编程特性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/19%20%20%e6%b5%8b%e8%af%95%e9%a9%b1%e5%8a%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8e%20Spring%20Security%20%e6%b5%8b%e8%af%95%e7%b3%bb%e7%bb%9f%e5%ae%89%e5%85%a8%e6%80%a7%ef%bc%9f.md.html" id="19  测试驱动：如何基于 Spring Security 测试系统安全性？.md.html">19  测试驱动：如何基于 Spring Security 测试系统安全性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Spring%20Security%20%e8%af%a6%e8%a7%a3%e4%b8%8e%e5%ae%9e%e6%93%8d/20%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e4%bb%a5%e7%bb%88%e4%b8%ba%e5%a7%8b%ef%bc%8cSpring%20Security%20%e7%9a%84%e5%ad%a6%e4%b9%a0%e6%80%bb%e7%bb%93.md.html" id="20 结束语  以终为始，Spring Security 的学习总结.md.html">20 结束语  以终为始，Spring Security 的学习总结.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="08  管道过滤：如何基于 Spring Security 过滤器扩展安全性？" id="title">08  管道过滤：如何基于 Spring Security 过滤器扩展安全性？</h1>
+<div><p>在 06 讲“权限管理：如何剖析 Spring Security 的授权原理？”中，我们介绍 Spring Security 授权流程时提到了过滤器的概念。今天，我们就直面这个主题，详细分析 Spring Security 中的过滤器架构，进一步学习实现自定义过滤器的系统方法。</p>
+<h3 id="spring-security-过滤器架构">Spring Security 过滤器架构</h3>
+<p>过滤器是一种通用机制，在处理 Web 请求的过程中发挥了重要作用。可以说，目前市面上所有的 Web 开发框架都或多或少使用了过滤器完成对请求的处理，Spring Security 也不例外。Spring Security 中的过滤器架构是<strong>基于 Servlet</strong>构建的，所以我们先从 Servlet 中的过滤器开始说起。</p>
+<h4 id="servlet-与管道-过滤器模式">Servlet 与管道-过滤器模式</h4>
+<p>和业界大多数处理 Web 请求的框架一样，Servlet 中采用的最基本的架构就是管道-过滤器（Pipe-Filter）架构模式。管道-过滤器架构模式的示意图如下所示：</p>
+<p><img alt="Drawing 0.png" src="assets/Cgp9HWDJ2q6ADHioAABYcUjpFY4513.png"/></p>
+<p>管道-过滤器架构模式示意图</p>
+<p>结合上图我们可以看到，处理业务逻辑的组件被称为过滤器，而处理结果通过相邻过滤器之间的管道进行传输，这样就构成了一个过滤器链。</p>
+<p>在 Servlet 中，代表过滤器的 Filter 接口定义如下：</p>
+<pre><code>public interface Filter {
+
+ 
+
+    public void init(FilterConfig filterConfig) throws ServletException;
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException;
+
+ 
+
+    public void destroy();
+
+}
+</code></pre>
+<p>当应用程序启动时，Servlet 容器就会调用 init() 方法。<strong>这个方法只会在容器启动时调用一次</strong>，因此包含了初始化过滤器的相关代码。对应的，destroy() 方法用于释放该过滤器占有的资源。</p>
+<p>一个过滤器组件所包含的业务逻辑应该位于 doFilter() 方法中，该方法带有三个参数，分别是<strong>ServletRequest、ServletResponse 和 FilterChain</strong>。这三个参数都很重要，我们一一说明。</p>
+<ul>
+<li>ServletRequest：表示 HTTP 请求，我们使用该对象获取有关请求的详细信息。</li>
+<li>ServletResponse：表示 HTTP 响应，我们使用该对象构建响应结果，然后将其发送回客户端或沿着过滤器链向后传递。</li>
+<li>FilterChain：表示过滤器链，我们使用该对象将请求转发到链中的下一个过滤器。</li>
+</ul>
+<p>请注意，<strong>过滤器链中的过滤器是有顺序的</strong>，这点非常重要，我们在本讲后续内容中会针对这点展开讲解。</p>
+<h4 id="spring-security-中的过滤器链">Spring Security 中的过滤器链</h4>
+<p>在 Spring Security 中，其核心流程的执行也是依赖于一组过滤器，这些过滤器在框架启动后会自动进行初始化，如图所示：</p>
+<p><img alt="Drawing 1.png" src="assets/Cgp9HWDJ2rmAfrXzAABUC_CslH8843.png"/></p>
+<p>Spring Security 中的过滤器链示意图</p>
+<p>在上图中，我们看到了几个常见的 Filter，比如 BasicAuthenticationFilter、UsernamePasswordAuthenticationFilter 等，这些类都直接或间接实现了 Servlet 中的 Filter 接口，并完成某一项具体的认证机制。例如，上图中的 BasicAuthenticationFilter 用来验证用户的身份凭证；而 UsernamePasswordAuthenticationFilter 会检查输入的用户名和密码，并根据认证结果决定是否将这一结果传递给下一个过滤器。</p>
+<p>请注意，<strong>整个 Spring Security 过滤器链的末端是一个 FilterSecurityInterceptor，它本质上也是一个 Filter</strong>。但与其他用于完成认证操作的 Filter 不同，它的核心功能是<strong>实现权限控制</strong>，也就是用来判定该请求是否能够访问目标 HTTP 端点。FilterSecurityInterceptor 对于权限控制的粒度可以到方法级别，能够满足前面提到的精细化访问控制。我们在 06 讲“权限管理：如何剖析 Spring Security 的授权原理？”中已经对这个拦截器做了详细的介绍，这里就不再展开了。</p>
+<p>通过上述分析，我们明确了在 Spring Security 中，认证和授权这两个安全性需求是通过一系列的过滤器来实现的。而过滤器的真正价值不仅在于实现了认证和授权，更为开发人员提供了一个扩展 Spring Security 框架的有效手段。</p>
+<h3 id="实现自定义过滤器">实现自定义过滤器</h3>
+<p>在 Spring Security 中创建一个新的过滤器并不复杂，只需要<strong>遵循 Servlet 所提供的 Filter 接口约定</strong>即可。</p>
+<h4 id="开发过滤器">开发过滤器</h4>
+<p>讲到开发自定义的过滤器，最经典的应用场景就是记录 HTTP 请求的访问日志。如下所示就是一种常见的实现方式：</p>
+<pre><code>public class LoggingFilter implements Filter {
+
+ 
+
+    private final Logger logger =
+
+            Logger.getLogger(AuthenticationLoggingFilter.class.getName());
+
+ 
+
+    @Override
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+ 
+
+        //从 ServletRequest 获取请求数据并记录
+
+        String uniqueRequestId = httpRequest.getHeader("UniqueRequestId");
+
+        logger.info("成功对请求进行了认证： " +  uniqueRequestId);
+
+ 
+
+       //将请求继续在过滤器链上进行传递
+
+        filterChain.doFilter(request, response);
+
+    }
+
+}
+</code></pre>
+<p>这里我们定义了一个 LoggingFilter，用来记录已经通过用户认证的请求中包含的一个特定的消息头“UniqueRequestId”，通过这个唯一的请求 Id，我们可以对请求进行跟踪、监控和分析。在实现一个自定义的过滤器组件时，我们通常会从 ServletRequest 中获取请求数据，并在 ServletResponse 中设置响应数据，然后通过 filterChain 的 doFilter() 方法将请求继续在过滤器链上进行传递。</p>
+<p>接下来，我们想象这样一种场景，业务上我们需要根据客户端请求头中是否包含某一个特定的标志位，来决定请求是否有效。如图所示：</p>
+<p><img alt="Drawing 2.png" src="assets/CioPOWDJ2seAeDCHAABb0EbFFhw357.png"/></p>
+<p>根据标志位设计过滤器示意图</p>
+<p>这在现实开发过程中也是一种常见的应用场景，可以实现定制化的安全性控制。针对这种应用场景，我们可以实现如下所示的 RequestValidationFilter 过滤器：</p>
+<pre><code>public class RequestValidationFilter implements Filter {
+
+ 
+
+    @Override
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        String requestId = httpRequest.getHeader("SecurityFlag");
+
+        if (requestId == null || requestId.isBlank()) {
+
+            httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+            return;
+
+        }
+
+ 
+
+        filterChain.doFilter(request, response);
+
+    }
+
+}
+</code></pre>
+<p>这里我们从 HttpServletRequest 对象的请求头中获取了“SecurityFlag”标志位，否则将直接抛出一个 400 Bad Request 响应结果。根据需要，我们也可以实现各种自定义的异常处理逻辑。</p>
+<h4 id="配置过滤器">配置过滤器</h4>
+<p>现在，我们已经实现了几个有价值的过滤器了，下一步就是将这些过滤器整合到 Spring Security 的整个过滤器链中。这里，我想特别强调一点，和 Servlet 中的过滤器一样，<strong>Spring Security 中的过滤器也是有顺序的</strong>。也就是说，将过滤器放置在过滤器链的具体位置需要符合每个过滤器本身的功能特性，不能将这些过滤器随意排列组合。</p>
+<p>我们来举例说明合理设置过滤器顺序的重要性。在[“用户认证：如何使用 Spring Security 构建用户认证体系？”]一讲中我们提到了 HTTP 基础认证机制，而在 Spring Security 中，实现这一认证机制的就是 BasicAuthenticationFilter。</p>
+<p>如果我们想要实现定制化的安全性控制策略，就可以实现类似前面介绍的 RequestValidationFilter 这样的过滤器，并放置在 BasicAuthenticationFilter 前。这样，在执行用户认证之前，我们就可以排除掉一批无效请求，效果如下所示：</p>
+<p><img alt="Drawing 3.png" src="assets/CioPOWDJ2tWAOEqvAABaXzH63gI541.png"/></p>
+<p>RequestValidationFilter 的位置示意图</p>
+<p>上图中的 RequestValidationFilter 确保那些没有携带有效请求头信息的请求不会执行不必要的用户认证。基于这种场景，把 RequestValidationFilter 放在 BasicAuthenticationFilter 之后就不是很合适了，因为用户已经完成了认证操作。</p>
+<p>同样，针对前面已经构建的 LoggingFilter，原则上我们可以把它放在过滤器链的任何位置，因为它只记录了日志。但有没有更合适的位置呢？结合 RequestValidationFilter 来看，同样对于一个无效的请求而言，记录日志是没有什么意义的。所以 LoggingFilter 应该放置在 RequestValidationFilter 之后。另一方面，对于日志操作而言，通常只需要记录那些已经通过认证的请求，所以也推荐将 LoggingFilter 放在 BasicAuthenticationFilter 之后。最终，这三个过滤器之间的关系如下图所示：</p>
+<p><img alt="Drawing 4.png" src="assets/CioPOWDJ2t-AMX8kAAAyTVuPA_s000.png"/></p>
+<p>三个过滤器的位置示意图</p>
+<p>在 Spring Security 中，提供了一组可以往过滤器链中添加过滤器的工具方法，包括 addFilterBefore()、addFilterAfter()、addFilterAt() 以及 addFilter() 等，它们都定义在 HttpSecurity 类中。这些方法的含义都很明确，使用起来也很简单，例如，想要实现如上图所示的效果，我们可以编写这样的代码：</p>
+<pre><code>@Override
+
+protected void configure(HttpSecurity http) throws Exception {
+
+        http.addFilterBefore(
+
+                new RequestValidationFilter(),
+
+                BasicAuthenticationFilter.class)
+
+            .addFilterAfter(
+
+                new LoggingFilter(),
+
+                BasicAuthenticationFilter.class)
+
+            .authorizeRequests()
+
+                .anyRequest()
+
+                .permitAll();
+
+}
+</code></pre>
+<p>这里，我们使用了 addFilterBefore() 和 addFilterAfter() 方法在 BasicAuthenticationFilter 之前和之后分别添加了 RequestValidationFilter 和 LoggingFilter。</p>
+<h3 id="spring-security-中的过滤器">Spring Security 中的过滤器</h3>
+<p>下表列举了 Spring Security 中常用的过滤器名称、功能以及它们的顺序关系：</p>
+<p><img alt="image.png" src="assets/CioPOWDP_VCAc51eAADyJ6yBpaY941.png"/></p>
+<p>Spring Security 中的常见过滤器一览表</p>
+<p>这里以最基础的 UsernamePasswordAuthenticationFilter 为例，该类的定义及核心方法 attemptAuthentication 如下所示：</p>
+<pre><code>public class UsernamePasswordAuthenticationFilter extends
+
+        AbstractAuthenticationProcessingFilter {
+
+ 
+
+    public Authentication attemptAuthentication(HttpServletRequest request,
+
+           HttpServletResponse response) throws AuthenticationException {
+
+        if (postOnly &amp;&amp; !request.getMethod().equals("POST")) {
+
+           throw new AuthenticationServiceException(
+
+                   "Authentication method not supported: " + request.getMethod());
+
+        }
+
+ 
+
+        String username = obtainUsername(request);
+
+        String password = obtainPassword(request);
+
+ 
+
+        if (username == null) {
+
+           username = "";
+
+        }
+
+ 
+
+        if (password == null) {
+
+           password = "";
+
+        }
+
+ 
+
+        username = username.trim();
+
+ 
+
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
+
+               username, password);
+
+ 
+
+        setDetails(request, authRequest);
+
+ 
+
+        return this.getAuthenticationManager().authenticate(authRequest);
+
+    }
+
+    …
+
+}
+</code></pre>
+<p>围绕上述方法，我们结合前面已经介绍的认证和授权相关实现原理，可以引出该框架中一系列核心类并梳理它们之间的交互结构，如下图所示：</p>
+<p><img alt="image" src="assets/CioPOWDP_VuAIAgyAAFOMaUuRl4162.png"/></p>
+<p>UsernamePasswordAuthenticationFilter 相关核心类图</p>
+<p>上图中的很多类，我们通过名称就能明白它的含义和作用。以位于左下角的 SecurityContextHolder 为例，它是一个典型的 Holder 类，存储了应用的安全上下文对象 SecurityContext，而这个上下文对象中就包含了用户的认证信息。</p>
+<p>我们也可以大胆猜想，它的内部应该使用 ThreadLocal 确保线程访问的安全性。更具体的，我们已经在“权限管理：如何剖析 Spring Security 的授权原理？”中讲解过 SecurityContext 的使用方法。</p>
+<p>正如 UsernamePasswordAuthenticationFilter 中的代码所示，一个 HTTP 请求到达之后，会通过一系列的 Filter 完成用户认证，而具体的工作交由 AuthenticationManager 完成，这个过程又会涉及 AuthenticationProvider 以及 UserDetailsService 等多个核心组件之间的交互。关于 Spring Security 中认证流程的详细描述，你可以参考[认证体系：如何深入理解 Spring Security 的用户认证机制？]做一些回顾。</p>
+<h3 id="小结与预告">小结与预告</h3>
+<p>这一讲我们关注于 Spring Security 中的一个核心组件——过滤器。在请求-响应式处理框架中，过滤器发挥着重要的作用，它用来实现对请求的拦截，并定义认证和授权逻辑。同时，我们也可以根据需要实现各种自定义的过滤器组件，从而实现对 Spring Security 的动态扩展。本讲对 Spring Security 中的过滤器架构和开发方式都做了详细的介绍，你可以反复学习。</p>
+<p>本讲内容总结如下：</p>
+<p><img alt="Drawing 6.png" src="assets/CioPOWDJ2viAN_UiAAB6xt7iJjo286.png"/></p>
+<p>最后，给你留一道思考题：在 Spring Security 中，你能简单描述使用过滤器实现用户认证的操作过程吗？欢迎你在留言区和我分享自己的观点。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#e18d8d8dd8d5d0d0d1d6a1868c80888dcf828e8c" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93586e449b85d67f',t:'MTc0NTUyNzM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
