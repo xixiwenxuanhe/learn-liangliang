@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="16 庖丁解牛：kubelet" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>16 庖丁解牛：kubelet </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/01%20%20%e5%bc%80%e7%af%87%ef%bc%9a%20Kubernetes%20%e6%98%af%e4%bb%80%e4%b9%88%e4%bb%a5%e5%8f%8a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%ae%83.md.html" id="01  开篇： Kubernetes 是什么以及为什么需要它.md.html">01  开篇： Kubernetes 是什么以及为什么需要它.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/02%20%e5%88%9d%e6%ad%a5%e8%ae%a4%e8%af%86%ef%bc%9aKubernetes%20%e5%9f%ba%e7%a1%80%e6%a6%82%e5%bf%b5.md.html" id="02 初步认识：Kubernetes 基础概念.md.html">02 初步认识：Kubernetes 基础概念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/03%20%e5%ae%8f%e8%a7%82%e8%ae%a4%e8%af%86%ef%bc%9a%e6%95%b4%e4%bd%93%e6%9e%b6%e6%9e%84.md.html" id="03 宏观认识：整体架构.md.html">03 宏观认识：整体架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/04%20%e6%90%ad%e5%bb%ba%20Kubernetes%20%e9%9b%86%e7%be%a4%20-%20%e6%9c%ac%e5%9c%b0%e5%bf%ab%e9%80%9f%e6%90%ad%e5%bb%ba.md.html" id="04 搭建 Kubernetes 集群 - 本地快速搭建.md.html">04 搭建 Kubernetes 集群 - 本地快速搭建.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/05%20%e5%8a%a8%e6%89%8b%e5%ae%9e%e8%b7%b5%ef%bc%9a%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%20Kubernetes%20%e9%9b%86%e7%be%a4%20-%20%e7%94%9f%e4%ba%a7%e5%8f%af%e7%94%a8.md.html" id="05 动手实践：搭建一个 Kubernetes 集群 - 生产可用.md.html">05 动手实践：搭建一个 Kubernetes 集群 - 生产可用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/06%20%e9%9b%86%e7%be%a4%e7%ae%a1%e7%90%86%ef%bc%9a%e5%88%9d%e8%af%86%20kubectl.md.html" id="06 集群管理：初识 kubectl.md.html">06 集群管理：初识 kubectl.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/07%20%e9%9b%86%e7%be%a4%e7%ae%a1%e7%90%86%ef%bc%9a%e4%bb%a5%20Redis%20%e4%b8%ba%e4%be%8b-%e9%83%a8%e7%bd%b2%e5%8f%8a%e8%ae%bf%e9%97%ae.md.html" id="07 集群管理：以 Redis 为例-部署及访问.md.html">07 集群管理：以 Redis 为例-部署及访问.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/08%20%e5%ae%89%e5%85%a8%e9%87%8d%e7%82%b9%20%e8%ae%a4%e8%af%81%e5%92%8c%e6%8e%88%e6%9d%83.md.html" id="08 安全重点 认证和授权.md.html">08 安全重点 认证和授权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/09%20%e5%ba%94%e7%94%a8%e5%8f%91%e5%b8%83%ef%bc%9a%e9%83%a8%e7%bd%b2%e5%ae%9e%e9%99%85%e9%a1%b9%e7%9b%ae.md.html" id="09 应用发布：部署实际项目.md.html">09 应用发布：部署实际项目.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/10%20%e5%ba%94%e7%94%a8%e7%ae%a1%e7%90%86%ef%bc%9a%e5%88%9d%e8%af%86%20Helm.md.html" id="10 应用管理：初识 Helm.md.html">10 应用管理：初识 Helm.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/11%20%e9%83%a8%e7%bd%b2%e5%ae%9e%e8%b7%b5%ef%bc%9a%e4%bb%a5%20Helm%20%e9%83%a8%e7%bd%b2%e9%a1%b9%e7%9b%ae.md.html" id="11 部署实践：以 Helm 部署项目.md.html">11 部署实践：以 Helm 部署项目.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/12%20%e5%ba%96%e4%b8%81%e8%a7%a3%e7%89%9b%ef%bc%9akube-apiserver.md.html" id="12 庖丁解牛：kube-apiserver.md.html">12 庖丁解牛：kube-apiserver.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/13%20%e5%ba%96%e4%b8%81%e8%a7%a3%e7%89%9b%ef%bc%9aetcd.md.html" id="13 庖丁解牛：etcd.md.html">13 庖丁解牛：etcd.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/14%20%e5%ba%96%e4%b8%81%e8%a7%a3%e7%89%9b%ef%bc%9acontroller-manager.md.html" id="14 庖丁解牛：controller-manager.md.html">14 庖丁解牛：controller-manager.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/15%20%e5%ba%96%e4%b8%81%e8%a7%a3%e7%89%9b%ef%bc%9akube-scheduler.md.html" id="15 庖丁解牛：kube-scheduler.md.html">15 庖丁解牛：kube-scheduler.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/16%20%e5%ba%96%e4%b8%81%e8%a7%a3%e7%89%9b%ef%bc%9akubelet.md.html" id="16 庖丁解牛：kubelet.md.html">16 庖丁解牛：kubelet.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/17%20%e5%ba%96%e4%b8%81%e8%a7%a3%e7%89%9b%ef%bc%9akube-proxy.md.html" id="17 庖丁解牛：kube-proxy.md.html">17 庖丁解牛：kube-proxy.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/18%20%20%e5%ba%96%e4%b8%81%e8%a7%a3%e7%89%9b%ef%bc%9aContainer%20Runtime%20%ef%bc%88Docker%ef%bc%89.md.html" id="18  庖丁解牛：Container Runtime （Docker）.md.html">18  庖丁解牛：Container Runtime （Docker）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/19%20Troubleshoot.md.html" id="19 Troubleshoot.md.html">19 Troubleshoot.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/20%20%e6%89%a9%e5%b1%95%e5%a2%9e%e5%bc%ba%ef%bc%9aDashboard.md.html" id="20 扩展增强：Dashboard.md.html">20 扩展增强：Dashboard.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/21%20%e6%89%a9%e5%b1%95%e5%a2%9e%e5%bc%ba%ef%bc%9aCoreDNS.md.html" id="21 扩展增强：CoreDNS.md.html">21 扩展增强：CoreDNS.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/22%20%e6%9c%8d%e5%8a%a1%e5%a2%9e%e5%bc%ba%ef%bc%9aIngress.md.html" id="22 服务增强：Ingress.md.html">22 服务增强：Ingress.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/23%20%e7%9b%91%e6%8e%a7%e5%ae%9e%e8%b7%b5%ef%bc%9a%e5%af%b9%20K8S%20%e9%9b%86%e7%be%a4%e8%bf%9b%e8%a1%8c%e7%9b%91%e6%8e%a7.md.html" id="23 监控实践：对 K8S 集群进行监控.md.html">23 监控实践：对 K8S 集群进行监控.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kubernetes%20%e4%bb%8e%e4%b8%8a%e6%89%8b%e5%88%b0%e5%ae%9e%e8%b7%b5/24%20%e6%80%bb%e7%bb%93.md.html" id="24 总结.md.html">24 总结.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="16 庖丁解牛：kubelet" id="title">16 庖丁解牛：kubelet</h1>
+<div><h2 id="整体概览">整体概览</h2>
+<pre><code>+--------------------------------------------------------+       
+| +---------------------+        +---------------------+ |       
+| |      kubelet        |        |     kube-proxy      | |       
+| |                     |        |                     | |       
+| +---------------------+        +---------------------+ |       
+| +----------------------------------------------------+ |       
+| | Container Runtime (Docker)                         | |       
+| | +---------------------+    +---------------------+ | |       
+| | |Pod                  |    |Pod                  | | |       
+| | | +-----+ +-----+     |    |+-----++-----++-----+| | |       
+| | | |C1   | |C2   |     |    ||C1   ||C2   ||C3   || | |       
+| | | |     | |     |     |    ||     ||     ||     || | |       
+| | | +-----+ +-----+     |    |+-----++-----++-----+| | |       
+| | +---------------------+    +---------------------+ | |       
+| +----------------------------------------------------+ |       
++--------------------------------------------------------+  
+</code></pre>
+<p>在第 3 节《宏观认识：整体架构》 中，我们知道了 K8S 中 Node 由一些必要的组件构成，而其中最为核心的当属 <code>kubelet</code> 了，如果没有 <code>kubelet</code> 的存在，那我们预期的各类资源就只能存在于 <code>Master</code> 的相关组件中了，而 K8S 也很能只是一个 CRUD 的普通程序了。本节，我们来介绍下 <code>kubelet</code> 及它是如何完成这一系列任务的。</p>
+<h2 id="kubelet-是什么"><code>kubelet</code> 是什么</h2>
+<p>按照一般架构设计上的习惯，<code>kubelet</code> 所承担的角色一般会被叫做 <code>agent</code>，这里叫做 <code>kubelet</code> 很大程度上受 <code>Borg</code> 的命名影响，<code>Borg</code> 里面也有一个 <code>Borglet</code> 的组件存在。<code>kubelet</code> 便是 K8S 中的 <code>agent</code>，负责 <code>Node</code> 和 <code>Pod</code> 相关的管理任务。</p>
+<p>同样的，在我们下载 K8S 二进制文件解压后，便可以得到 <code>kubelet</code> 的可执行文件。在第 5 节中，我们也完成了 <code>kubelet</code> 以 <code>systemd</code> 进行启动和管理的相关配置。</p>
+<h2 id="kubelet-有什么作用"><code>kubelet</code> 有什么作用</h2>
+<p>通常来讲 <code>agent</code> 这样的角色起到的作用首先便是要能够注册，让 <code>server</code> 端知道它的存在，所以这便是它的第一个作用：节点管理。</p>
+<h3 id="节点管理">节点管理</h3>
+<p>当我们执行 <code>kubelet --help</code> 的时候，会看到它所支持的可配置参数，其中有一个 <code>--register-node</code> 参数便是用于控制是否向 <code>kube-apiserver</code> 注册节点的，默认是开启的。</p>
+<p>我们在第 5 节中还介绍了如何新增一个 <code>Node</code>，当 <code>kubeadm join</code> 执行成功后，你便可以通过 <code>kubectl get node</code> 查看到新加入集群中的 <code>Node</code>，与此同时，你也可以在该节点上通过以下命令查看 <code>kubelet</code> 的状态。</p>
+<pre><code>master $ systemctl status kubelet
+● kubelet.service - kubelet: The Kubernetes Agent
+   Loaded: loaded (/etc/systemd/system/kubelet.service; enabled; vendor preset: disabled)
+  Drop-In: /etc/systemd/system/kubelet.service.d
+           └─kubeadm.conf
+   Active: active (running) since Thu 2018-12-13 07:49:51 UTC; 32min ago
+     Docs: http://kubernetes.io/docs/
+ Main PID: 3876259 (kubelet)
+   Memory: 66.3M
+   CGroup: /system.slice/kubelet.service
+           └─3876259 /usr/bin/kubelet --bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernete...
+</code></pre>
+<p>当我们查看 <code>Node</code> 信息时，也能得到如下输出：</p>
+<pre><code>master $ kubectl get nodes node01 -o yaml
+apiVersion: v1
+kind: Node
+metadata:
+  annotations:
+    kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
+    node.alpha.kubernetes.io/ttl: "0"
+    volumes.kubernetes.io/controller-managed-attach-detach: "true"
+  creationTimestamp: 2018-12-13T07:50:47Z
+  labels:
+    beta.kubernetes.io/arch: amd64
+    beta.kubernetes.io/os: linux
+    kubernetes.io/hostname: node01
+  name: node01
+  resourceVersion: "4242"
+  selfLink: /api/v1/nodes/node01
+  uid: cd612df6-feab-11e8-9a0b-0242ac110096
+spec: {}
+status:
+  addresses:
+  - address: 172.17.0.152
+    type: InternalIP
+  - address: node01
+    type: Hostname
+  allocatable:
+    cpu: "4"
+    ephemeral-storage: "89032026784"
+    hugepages-1Gi: "0"
+    hugepages-2Mi: "0"
+    memory: 3894788Ki
+    pods: "110"
+  capacity:
+    cpu: "4"
+    ephemeral-storage: 96605932Ki
+    hugepages-1Gi: "0"
+    hugepages-2Mi: "0"
+    memory: 3997188Ki
+    pods: "110"
+  conditions:
+  - lastHeartbeatTime: 2018-12-13T08:39:41Z
+    lastTransitionTime: 2018-12-13T07:50:47Z
+    message: kubelet has sufficient disk space available
+    reason: KubeletHasSufficientDisk
+    status: "False"
+    type: OutOfDisk
+  - lastHeartbeatTime: 2018-12-13T08:39:41Z
+    lastTransitionTime: 2018-12-13T07:50:47Z
+    message: kubelet has sufficient memory available
+    reason: KubeletHasSufficientMemory
+    status: "False"
+    type: MemoryPressure
+  - lastHeartbeatTime: 2018-12-13T08:39:41Z
+    lastTransitionTime: 2018-12-13T07:50:47Z
+    message: kubelet has no disk pressure
+    reason: KubeletHasNoDiskPressure
+    status: "False"
+    type: DiskPressure
+  - lastHeartbeatTime: 2018-12-13T08:39:41Z
+    lastTransitionTime: 2018-12-13T07:50:47Z
+    message: kubelet has sufficient PID available
+    reason: KubeletHasSufficientPID
+    status: "False"
+    type: PIDPressure
+  - lastHeartbeatTime: 2018-12-13T08:39:41Z
+    lastTransitionTime: 2018-12-13T07:51:37Z
+    message: kubelet is posting ready status. AppArmor enabled
+    reason: KubeletReady
+    status: "True"
+    type: Ready
+  daemonEndpoints:
+    kubeletEndpoint:
+      Port: 10250
+  images:
+  - names:
+    - k8s.gcr.io/kube-apiserver-amd64@sha256:956bea8c139620c9fc823fb81ff9b5647582b53bd33904302987d56ab24fc187
+    - k8s.gcr.io/kube-apiserver-amd64:v1.11.3
+    sizeBytes: 186676561
+  nodeInfo:
+    architecture: amd64
+    bootID: 89ced22c-f7f8-4c4d-ad0d-d10887ab900e
+    containerRuntimeVersion: docker://18.6.0
+    kernelVersion: 4.4.0-62-generic
+    kubeProxyVersion: v1.11.3
+    kubeletVersion: v1.11.3
+    machineID: 26ba042302eea8095d6576975c120eeb
+    operatingSystem: linux
+    osImage: Ubuntu 16.04.2 LTS
+    systemUUID: 26ba042302eea8095d6576975c120eeb
+</code></pre>
+<p>可以看到 <code>kubelet</code> 不仅将自己注册给了 <code>kube-apiserver</code>，同时它所在机器的信息也都进行了上报，包括 CPU，内存，IP 信息等。</p>
+<p>这其中有我们在第 2 节中提到的关于 <code>Node</code> 状态相关的一些信息，可以对照着看看。</p>
+<p>当然这里除了这些信息外，还有些值得注意的，比如 <code>daemonEndpoints</code> 之类的，可以看到目前 <code>kubelet</code> 监听在了 <code>10250</code> 端口，这个端口可通过 <code>--port</code> 配置，但是之后会被废弃掉，我们是写入了 <code>/var/lib/kubelet/config.yaml</code> 的配置文件中。</p>
+<pre><code>master $ cat /var/lib/kubelet/config.yaml
+address: 0.0.0.0
+apiVersion: kubelet.config.k8s.io/v1beta1
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 2m0s
+    enabled: true
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.crt
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 5m0s
+    cacheUnauthorizedTTL: 30s
+cgroupDriver: cgroupfs
+cgroupsPerQOS: true
+clusterDNS:
+- 10.96.0.10
+clusterDomain: cluster.local
+containerLogMaxFiles: 5
+containerLogMaxSize: 10Mi
+contentType: application/vnd.kubernetes.protobuf
+cpuCFSQuota: true
+cpuManagerPolicy: none
+cpuManagerReconcilePeriod: 10s
+enableControllerAttachDetach: true
+enableDebuggingHandlers: true
+enforceNodeAllocatable:
+- pods
+eventBurst: 10
+eventRecordQPS: 5
+evictionHard:
+  imagefs.available: 15%
+  memory.available: 100Mi
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+evictionPressureTransitionPeriod: 5m0s
+failSwapOn: true
+fileCheckFrequency: 20s
+hairpinMode: promiscuous-bridge
+healthzBindAddress: 127.0.0.1
+healthzPort: 10248
+httpCheckFrequency: 20s
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
+imageMinimumGCAge: 2m0s
+iptablesDropBit: 15
+iptablesMasqueradeBit: 14
+kind: KubeletConfiguration
+kubeAPIBurst: 10
+kubeAPIQPS: 5
+makeIPTablesUtilChains: true
+maxOpenFiles: 1000000
+maxPods: 110
+nodeStatusUpdateFrequency: 10s
+oomScoreAdj: -999
+podPidsLimit: -1
+port: 10250
+registryBurst: 10
+registryPullQPS: 5
+resolvConf: /etc/resolv.conf
+rotateCertificates: true
+runtimeRequestTimeout: 2m0s
+serializeImagePulls: true
+staticPodPath: /etc/kubernetes/manifests
+streamingConnectionIdleTimeout: 4h0m0s
+syncFrequency: 1m0s
+volumeStatsAggPeriod: 1m0s
+master $
+</code></pre>
+<p>这其中有一些需要关注的配置：</p>
+<ul>
+<li><p><code>maxPods</code>：最大的 <code>Pod</code> 数</p></li>
+<li><p><code>healthzBindAddress</code> 和 <code>healthzPort</code>：配置了健康检查所监听的地址和端口</p></li>
+</ul>
+<p>我们可用以下方式进行验证：</p>
+<pre><code>  master $ curl 127.0.0.1:10248/healthz
+  ok 
+</code></pre>
+<ul>
+<li><p><code>authentication</code> 和 <code>authorization</code> ：认证授权相关</p></li>
+<li><p><code>evictionHard</code>：涉及到 <code>kubelet</code> 的驱逐策略，对 <code>Pod</code> 调度分配之类的影响很大</p></li>
+</ul>
+<p>其余部分，可参考<a href="https://kubernetes.io/docs/tasks/administer-cluster/out-of-resource/" target="_blank">手册内容</a></p>
+<h3 id="pod-管理">Pod 管理</h3>
+<p>从上面的配置以及我们之前的介绍中，<code>kube-scheduler</code> 处理了 <code>Pod</code> 应该调度至哪个 <code>Node</code>，而 <code>kubelet</code> 则是保障该 <code>Pod</code> 能按照预期，在对应 <code>Node</code> 上启动并保持工作。</p>
+<p>同时，<code>kubelet</code> 在保障 <code>Pod</code> 能按预期工作，主要是做了两方面的事情：</p>
+<ul>
+<li>健康检查：通过 <code>LivenessProbe</code> 和 <code>ReadinessProbe</code> 探针进行检查，判断是否健康及是否已经准备好接受请求。</li>
+<li>资源监控：通过 <code>cAdvisor</code> 进行资源监。</li>
+</ul>
+<h2 id="kubelet-是如何工作的"><code>kubelet</code> 是如何工作的</h2>
+<p>大致的功能已经介绍了，我们来看下它大体的实现。</p>
+<p>首先是在 <code>cmd/kubelet/app/server.go</code> 文件中的 <code>Run</code> 方法：</p>
+<pre><code>func Run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, stopCh &lt;-chan struct{}) error {
+	glog.Infof("Version: %+v", version.Get())
+	if err := initForOS(s.KubeletFlags.WindowsService); err != nil {
+		return fmt.Errorf("failed OS init: %v", err)
+	}
+	if err := run(s, kubeDeps, stopCh); err != nil {
+		return fmt.Errorf("failed to run Kubelet: %v", err)
+	}
+	return nil
+}
+</code></pre>
+<p>这个方法看起来很简单那，它是在读取完一系列的配置和校验之后开始被调用的，在调用过程中，会在日志中输出当前的版本号，如果你的 <code>kubelet</code> 已经正常运行，当你执行 <code>journalctl -u kubelet</code> 的时候，便会看到一条相关的日志输出。</p>
+<p>之后，便是一个 <code>run</code> 方法，其中包含着各种环境检查，容器管理，<code>cAdvisor</code> 初始化之类的操作，直到 <code>kubelet</code> 基本正确运行后，则会调用 <code>pkg/kubelet/kubelet.go</code> 中的一个 <code>BirthCry</code> 方法，该方法从命名就可以看出来，它其实就是宣告 <code>kubelet</code> 已经启动：</p>
+<pre><code>func (kl *Kubelet) BirthCry() {
+	kl.recorder.Eventf(kl.nodeRef, v1.EventTypeNormal, events.StartingKubelet, "Starting kubelet.")
+}
+</code></pre>
+<p>后续则是关于注册，<code>Pod</code> 管理以及资源相关的处理逻辑，内容较多，这里就不再展开了。</p>
+<h2 id="总结">总结</h2>
+<p>本节中我们介绍了 <code>kubelet</code> 的主要功能和基本实现，了解到了它不仅可将自身注册到集群，同时还承担着保障 <code>Pod</code> 可在该 <code>Node</code> 上按预期工作。另外 <code>kubelet</code> 其实还承担着清理 <code>Node</code> 上一些由 K8S 调度 <code>Pod</code> 所造成的磁盘占用之类的工作。</p>
+<p>从上面的配置中基本能看出来一些，这部分的功能大多数情况下不需要大家人为干预，所以也就不再展开了。</p>
+<p>当 <code>Pod</code> 在 <code>Node</code> 上正常运行之后，若是需要对外提供服务，则需要将其暴露出来。下节，我们来介绍下 <code>kube-proxy</code> 是如何来处理这些工作的。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#3f535353060b0e0e0f087f58525e5653115c5052" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935790a30b715812',t:'MTc0NTUxODMwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
