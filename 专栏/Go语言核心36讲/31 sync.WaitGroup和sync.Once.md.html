@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="31 sync.WaitGroup和sync.Once" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>31 sync.WaitGroup和sync.Once </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%af%bc%e8%af%bb%20%e5%86%99%e7%bb%990%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8%e7%9a%84Go%e8%af%ad%e8%a8%80%e5%ad%a6%e4%b9%a0%e8%80%85.md.html" id="00 导读 写给0基础入门的Go语言学习者.md.html">00 导读 写给0基础入门的Go语言学习者.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%af%bc%e8%af%bb%20%e5%ad%a6%e4%b9%a0%e4%b8%93%e6%a0%8f%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="00 导读 学习专栏的正确姿势.md.html">00 导读 学习专栏的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%b7%9f%e7%9d%80%e5%ad%a6%ef%bc%8c%e4%bd%a0%e4%b9%9f%e8%83%bd%e6%88%90%e4%b8%baGo%e8%af%ad%e8%a8%80%e9%ab%98%e6%89%8b.md.html" id="00 开篇词 跟着学，你也能成为Go语言高手.md.html">00 开篇词 跟着学，你也能成为Go语言高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/01%20%e5%b7%a5%e4%bd%9c%e5%8c%ba%e5%92%8cGOPATH.md.html" id="01 工作区和GOPATH.md.html">01 工作区和GOPATH.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/02%20%e5%91%bd%e4%bb%a4%e6%ba%90%e7%a0%81%e6%96%87%e4%bb%b6.md.html" id="02 命令源码文件.md.html">02 命令源码文件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/03%20%e5%ba%93%e6%ba%90%e7%a0%81%e6%96%87%e4%bb%b6.md.html" id="03 库源码文件.md.html">03 库源码文件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/04%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="04 程序实体的那些事儿（上）.md.html">04 程序实体的那些事儿（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/05%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="05 程序实体的那些事儿（中）.md.html">05 程序实体的那些事儿（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/06%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="06 程序实体的那些事儿 （下）.md.html">06 程序实体的那些事儿 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/07%20%e6%95%b0%e7%bb%84%e5%92%8c%e5%88%87%e7%89%87.md.html" id="07 数组和切片.md.html">07 数组和切片.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/08%20container%e5%8c%85%e4%b8%ad%e7%9a%84%e9%82%a3%e4%ba%9b%e5%ae%b9%e5%99%a8.md.html" id="08 container包中的那些容器.md.html">08 container包中的那些容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/09%20%e5%ad%97%e5%85%b8%e7%9a%84%e6%93%8d%e4%bd%9c%e5%92%8c%e7%ba%a6%e6%9d%9f.md.html" id="09 字典的操作和约束.md.html">09 字典的操作和约束.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/10%20%e9%80%9a%e9%81%93%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c.md.html" id="10 通道的基本操作.md.html">10 通道的基本操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/11%20%e9%80%9a%e9%81%93%e7%9a%84%e9%ab%98%e7%ba%a7%e7%8e%a9%e6%b3%95.md.html" id="11 通道的高级玩法.md.html">11 通道的高级玩法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/12%20%e4%bd%bf%e7%94%a8%e5%87%bd%e6%95%b0%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="12 使用函数的正确姿势.md.html">12 使用函数的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/13%20%e7%bb%93%e6%9e%84%e4%bd%93%e5%8f%8a%e5%85%b6%e6%96%b9%e6%b3%95%e7%9a%84%e4%bd%bf%e7%94%a8%e6%b3%95%e9%97%a8.md.html" id="13 结构体及其方法的使用法门.md.html">13 结构体及其方法的使用法门.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/14%20%e6%8e%a5%e5%8f%a3%e7%b1%bb%e5%9e%8b%e7%9a%84%e5%90%88%e7%90%86%e8%bf%90%e7%94%a8.md.html" id="14 接口类型的合理运用.md.html">14 接口类型的合理运用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/15%20%e5%85%b3%e4%ba%8e%e6%8c%87%e9%92%88%e7%9a%84%e6%9c%89%e9%99%90%e6%93%8d%e4%bd%9c.md.html" id="15 关于指针的有限操作.md.html">15 关于指针的有限操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/16%20go%e8%af%ad%e5%8f%a5%e5%8f%8a%e5%85%b6%e6%89%a7%e8%a1%8c%e8%a7%84%e5%88%99%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="16 go语句及其执行规则（上）.md.html">16 go语句及其执行规则（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/17%20go%e8%af%ad%e5%8f%a5%e5%8f%8a%e5%85%b6%e6%89%a7%e8%a1%8c%e8%a7%84%e5%88%99%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="17 go语句及其执行规则（下）.md.html">17 go语句及其执行规则（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/18%20if%e8%af%ad%e5%8f%a5%e3%80%81for%e8%af%ad%e5%8f%a5%e5%92%8cswitch%e8%af%ad%e5%8f%a5.md.html" id="18 if语句、for语句和switch语句.md.html">18 if语句、for语句和switch语句.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="19 错误处理（上）.md.html">19 错误处理（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/20%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="20 错误处理 （下）.md.html">20 错误处理 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/21%20panic%e5%87%bd%e6%95%b0%e3%80%81recover%e5%87%bd%e6%95%b0%e4%bb%a5%e5%8f%8adefer%e8%af%ad%e5%8f%a5%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="21 panic函数、recover函数以及defer语句 （上）.md.html">21 panic函数、recover函数以及defer语句 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/22%20panic%e5%87%bd%e6%95%b0%e3%80%81recover%e5%87%bd%e6%95%b0%e4%bb%a5%e5%8f%8adefer%e8%af%ad%e5%8f%a5%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="22 panic函数、recover函数以及defer语句（下）.md.html">22 panic函数、recover函数以及defer语句（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/23%20%e6%b5%8b%e8%af%95%e7%9a%84%e5%9f%ba%e6%9c%ac%e8%a7%84%e5%88%99%e5%92%8c%e6%b5%81%e7%a8%8b%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="23 测试的基本规则和流程 （上）.md.html">23 测试的基本规则和流程 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/24%20%e6%b5%8b%e8%af%95%e7%9a%84%e5%9f%ba%e6%9c%ac%e8%a7%84%e5%88%99%e5%92%8c%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="24 测试的基本规则和流程（下）.md.html">24 测试的基本规则和流程（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/25%20%e6%9b%b4%e5%a4%9a%e7%9a%84%e6%b5%8b%e8%af%95%e6%89%8b%e6%b3%95.md.html" id="25 更多的测试手法.md.html">25 更多的测试手法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/26%20sync.Mutex%e4%b8%8esync.RWMutex.md.html" id="26 sync.Mutex与sync.RWMutex.md.html">26 sync.Mutex与sync.RWMutex.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/27%20%e6%9d%a1%e4%bb%b6%e5%8f%98%e9%87%8fsync.Cond%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="27 条件变量sync.Cond （上）.md.html">27 条件变量sync.Cond （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/28%20%e6%9d%a1%e4%bb%b6%e5%8f%98%e9%87%8fsync.Cond%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="28 条件变量sync.Cond （下）.md.html">28 条件变量sync.Cond （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/29%20%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="29 原子操作（上）.md.html">29 原子操作（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/30%20%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="30 原子操作（下）.md.html">30 原子操作（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/31%20sync.WaitGroup%e5%92%8csync.Once.md.html" id="31 sync.WaitGroup和sync.Once.md.html">31 sync.WaitGroup和sync.Once.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/32%20context.Context%e7%b1%bb%e5%9e%8b.md.html" id="32 context.Context类型.md.html">32 context.Context类型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/33%20%e4%b8%b4%e6%97%b6%e5%af%b9%e8%b1%a1%e6%b1%a0sync.Pool.md.html" id="33 临时对象池sync.Pool.md.html">33 临时对象池sync.Pool.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/34%20%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e5%ad%97%e5%85%b8sync.Map%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="34 并发安全字典sync.Map （上）.md.html">34 并发安全字典sync.Map （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/35%20%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e5%ad%97%e5%85%b8sync.Map%20%28%e4%b8%8b%29.md.html" id="35 并发安全字典sync.Map (下).md.html">35 并发安全字典sync.Map (下).md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/36%20unicode%e4%b8%8e%e5%ad%97%e7%ac%a6%e7%bc%96%e7%a0%81.md.html" id="36 unicode与字符编码.md.html">36 unicode与字符编码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/37%20strings%e5%8c%85%e4%b8%8e%e5%ad%97%e7%ac%a6%e4%b8%b2%e6%93%8d%e4%bd%9c.md.html" id="37 strings包与字符串操作.md.html">37 strings包与字符串操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/38%20bytes%e5%8c%85%e4%b8%8e%e5%ad%97%e8%8a%82%e4%b8%b2%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="38 bytes包与字节串操作（上）.md.html">38 bytes包与字节串操作（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/39%20bytes%e5%8c%85%e4%b8%8e%e5%ad%97%e8%8a%82%e4%b8%b2%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="39 bytes包与字节串操作（下）.md.html">39 bytes包与字节串操作（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/40%20io%e5%8c%85%e4%b8%ad%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%92%8c%e5%b7%a5%e5%85%b7%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="40 io包中的接口和工具 （上）.md.html">40 io包中的接口和工具 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/41%20io%e5%8c%85%e4%b8%ad%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%92%8c%e5%b7%a5%e5%85%b7%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="41 io包中的接口和工具 （下）.md.html">41 io包中的接口和工具 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/42%20bufio%e5%8c%85%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="42 bufio包中的数据类型 （上）.md.html">42 bufio包中的数据类型 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/43%20bufio%e5%8c%85%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="43 bufio包中的数据类型（下）.md.html">43 bufio包中的数据类型（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/44%20%e4%bd%bf%e7%94%a8os%e5%8c%85%e4%b8%ad%e7%9a%84API%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="44 使用os包中的API （上）.md.html">44 使用os包中的API （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/45%20%e4%bd%bf%e7%94%a8os%e5%8c%85%e4%b8%ad%e7%9a%84API%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="45 使用os包中的API （下）.md.html">45 使用os包中的API （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/46%20%e8%ae%bf%e9%97%ae%e7%bd%91%e7%bb%9c%e6%9c%8d%e5%8a%a1.md.html" id="46 访问网络服务.md.html">46 访问网络服务.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/47%20%e5%9f%ba%e4%ba%8eHTTP%e5%8d%8f%e8%ae%ae%e7%9a%84%e7%bd%91%e7%bb%9c%e6%9c%8d%e5%8a%a1.md.html" id="47 基于HTTP协议的网络服务.md.html">47 基于HTTP协议的网络服务.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/48%20%e7%a8%8b%e5%ba%8f%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="48 程序性能分析基础（上）.md.html">48 程序性能分析基础（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/49%20%e7%a8%8b%e5%ba%8f%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="49 程序性能分析基础（下）.md.html">49 程序性能分析基础（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/%e5%b0%be%e5%a3%b0%20%e6%84%bf%e4%bd%a0%e6%8a%ab%e8%8d%86%e6%96%a9%e6%a3%98%ef%bc%8c%e6%89%80%e5%90%91%e6%97%a0%e6%95%8c.md.html" id="尾声 愿你披荆斩棘，所向无敌.md.html">尾声 愿你披荆斩棘，所向无敌.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/%e6%96%b0%e5%b9%b4%e5%bd%a9%e8%9b%8b%20%e5%ae%8c%e6%95%b4%e7%89%88%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88.md.html" id="新年彩蛋 完整版思考题答案.md.html">新年彩蛋 完整版思考题答案.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="31 sync.WaitGroup和sync.Once" id="title">31 sync.WaitGroup和sync.Once</h1>
+<div><p>我们在前几次讲的互斥锁、条件变量和原子操作都是最基本重要的同步工具。在Go语言中，除了通道之外，它们也算是最为常用的并发安全工具了。</p>
+<p>说到通道，不知道你想过没有，之前在一些场合下里，我们使用通道的方式看起来都似乎有些蹩脚。</p>
+<p>比如：<strong>声明一个通道，使它的容量与我们手动启用的goroutine的数量相同，之后再利用这个通道，让主goroutine等待其他goroutine的运行结束。</strong></p>
+<p>这一步更具体地说就是：让其他的goroutine在运行结束之前，都向这个通道发送一个元素值，并且，让主goroutine在最后从这个通道中接收元素值，接收的次数需要与其他的goroutine的数量相同。</p>
+<p>这就是下面的<code>coordinateWithChan</code>函数展示的多goroutine协作流程。</p>
+<pre><code>func coordinateWithChan() {
+ sign := make(chan struct{}, 2)
+ num := int32(0)
+ fmt.Printf("The number: %d [with chan struct{}]\n", num)
+ max := int32(10)
+ go addNum(&amp;num, 1, max, func() {
+  sign &lt;- struct{}{}
+ })
+ go addNum(&amp;num, 2, max, func() {
+  sign &lt;- struct{}{}
+ })
+ &lt;-sign
+ &lt;-sign
+}
+</code></pre>
+<p>其中的<code>addNum</code>函数的声明在demo65.go文件中。<code>addNum</code>函数会把它接受的最后一个参数值作为其中的<code>defer</code>函数。</p>
+<p>我手动启用的两个goroutine都会调用<code>addNum</code>函数，而它们传给该函数的最后一个参数值（也就是那个既无参数声明，也无结果声明的函数）都只会做一件事情，那就是向通道<code>sign</code>发送一个元素值。</p>
+<p>看到<code>coordinateWithChan</code>函数中最后的那两行代码了吗？重复的两个接收表达式<code>&lt;-sign</code>，是不是看起来很丑陋？</p>
+<h2 id="前导内容-sync-包的-waitgroup-类型">前导内容：<code>sync</code>包的<code>WaitGroup</code>类型</h2>
+<p>其实，在这种应用场景下，我们可以选用另外一个同步工具，即：<code>sync</code>包的<code>WaitGroup</code>类型。它比通道更加适合实现这种一对多的goroutine协作流程。</p>
+<p><code>sync.WaitGroup</code>类型（以下简称<code>WaitGroup</code>类型）是开箱即用的，也是并发安全的。同时，与我们前面讨论的几个同步工具一样，它一旦被真正使用就不能被复制了。</p>
+<p><code>WaitGroup</code>类型拥有三个指针方法：<code>Add</code>、<code>Done</code>和<code>Wait</code>。你可以想象该类型中有一个计数器，它的默认值是<code>0</code>。我们可以通过调用该类型值的<code>Add</code>方法来增加，或者减少这个计数器的值。</p>
+<p>一般情况下，我会用这个方法来记录需要等待的goroutine的数量。相对应的，这个类型的<code>Done</code>方法，用于对其所属值中计数器的值进行减一操作。我们可以在需要等待的goroutine中，通过<code>defer</code>语句调用它。</p>
+<p>而此类型的<code>Wait</code>方法的功能是，阻塞当前的goroutine，直到其所属值中的计数器归零。如果在该方法被调用的时候，那个计数器的值就是<code>0</code>，那么它将不会做任何事情。</p>
+<p>你可能已经看出来了，<code>WaitGroup</code>类型的值（以下简称<code>WaitGroup</code>值）完全可以被用来替换<code>coordinateWithChan</code>函数中的通道<code>sign</code>。下面的<code>coordinateWithWaitGroup</code>函数就是它的改造版本。</p>
+<pre><code>func coordinateWithWaitGroup() {
+ var wg sync.WaitGroup
+ wg.Add(2)
+ num := int32(0)
+ fmt.Printf("The number: %d [with sync.WaitGroup]\n", num)
+ max := int32(10)
+ go addNum(&amp;num, 3, max, wg.Done)
+ go addNum(&amp;num, 4, max, wg.Done)
+ wg.Wait()
+}
+</code></pre>
+<p>很明显，整体代码少了好几行，而且看起来也更加简洁了。这里我先声明了一个<code>WaitGroup</code>类型的变量<code>wg</code>。然后，我调用了它的<code>Add</code>方法并传入了<code>2</code>，因为我会在后面启用两个需要等待的goroutine。</p>
+<p>由于<code>wg</code>变量的<code>Done</code>方法本身就是一个既无参数声明，也无结果声明的函数，所以我在<code>go</code>语句中调用<code>addNum</code>函数的时候，可以直接把该方法作为最后一个参数值传进去。</p>
+<p>在<code>coordinateWithWaitGroup</code>函数的最后，我调用了<code>wg</code>的<code>Wait</code>方法。如此一来，该函数就可以等到那两个goroutine都运行结束之后，再结束执行了。</p>
+<p>以上就是<code>WaitGroup</code>类型最典型的应用场景了。不过不能止步于此，对于这个类型，我们还是有必要再深入了解一下的。我们一起看下面的问题。</p>
+<p><strong>问题：<code>sync.WaitGroup</code>类型值中计数器的值可以小于<code>0</code>吗？</strong></p>
+<p>这里的典型回答是：不可以。</p>
+<h2 id="问题解析">问题解析</h2>
+<p>为什么不可以呢，我们解析一下。<strong>之所以说<code>WaitGroup</code>值中计数器的值不能小于<code>0</code>，是因为这样会引发一个panic。</strong> 不适当地调用这类值的<code>Done</code>方法和<code>Add</code>方法都会如此。别忘了，我们在调用<code>Add</code>方法的时候是可以传入一个负数的。</p>
+<p>实际上，导致<code>WaitGroup</code>值的方法抛出panic的原因不只这一种。</p>
+<p>你需要知道，在我们声明了这样一个变量之后，应该首先根据需要等待的goroutine，或者其他事件的数量，调用它的<code>Add</code>方法，以使计数器的值大于<code>0</code>。这是确保我们能在后面正常地使用这类值的前提。</p>
+<p>如果我们对它的<code>Add</code>方法的首次调用，与对它的<code>Wait</code>方法的调用是同时发起的，比如，在同时启用的两个goroutine中，分别调用这两个方法，<strong>那么就有可能会让这里的<code>Add</code>方法抛出一个panic。</strong></p>
+<p>这种情况不太容易复现，也正因为如此，我们更应该予以重视。所以，虽然<code>WaitGroup</code>值本身并不需要初始化，但是尽早地增加其计数器的值，还是非常有必要的。</p>
+<p>另外，你可能已经知道，<code>WaitGroup</code>值是可以被复用的，但需要保证其计数周期的完整性。这里的计数周期指的是这样一个过程：该值中的计数器值由<code>0</code>变为了某个正整数，而后又经过一系列的变化，最终由某个正整数又变回了<code>0</code>。</p>
+<p>也就是说，只要计数器的值始于<code>0</code>又归为<code>0</code>，就可以被视为一个计数周期。在一个此类值的生命周期中，它可以经历任意多个计数周期。但是，只有在它走完当前的计数周期之后，才能够开始下一个计数周期。</p>
+<p><img alt="" src="assets/fac7dfa184053d2a95e121aa17141d8d.png">-
+（sync.WaitGroup的计数周期）</img></p>
+<p>因此，也可以说，如果一个此类值的<code>Wait</code>方法在它的某个计数周期中被调用，那么就会立即阻塞当前的goroutine，直至这个计数周期完成。在这种情况下，该值的下一个计数周期，必须要等到这个<code>Wait</code>方法执行结束之后，才能够开始。</p>
+<p>如果在一个此类值的<code>Wait</code>方法被执行期间，跨越了两个计数周期，<strong>那么就会引发一个panic。</strong></p>
+<p>例如，在当前的goroutine因调用此类值的<code>Wait</code>方法，而被阻塞的时候，另一个goroutine调用了该值的<code>Done</code>方法，并使其计数器的值变为了<code>0</code>。</p>
+<p>这会唤醒当前的goroutine，并使它试图继续执行<code>Wait</code>方法中其余的代码。但在这时，又有一个goroutine调用了它的<code>Add</code>方法，并让其计数器的值又从<code>0</code>变为了某个正整数。<strong>此时，这里的<code>Wait</code>方法就会立即抛出一个panic。</strong></p>
+<p>纵观上述会引发panic的后两种情况，我们可以总结出这样一条关于<code>WaitGroup</code>值的使用禁忌，即：<strong>不要把增加其计数器值的操作和调用其<code>Wait</code>方法的代码，放在不同的goroutine中执行。换句话说，要杜绝对同一个<code>WaitGroup</code>值的两种操作的并发执行。</strong></p>
+<p>除了第一种情况外，我们通常需要反复地实验，才能够让<code>WaitGroup</code>值的方法抛出panic。再次强调，虽然这不是每次都发生，但是在长期运行的程序中，这种情况发生的概率还是不小的，我们必须要重视它们。</p>
+<p>如果你对复现这些异常情况感兴趣，那么可以参看<code>sync</code>代码包中的waitgroup_test.go文件。其中的名称以<code>TestWaitGroupMisuse</code>为前缀的测试函数，很好地展示了这些异常情况的发生条件。你可以模仿这些测试函数自己写一些测试代码，执行一下试试看。</p>
+<h2 id="知识扩展">知识扩展</h2>
+<h3 id="问题-sync-once-类型值的-do-方法是怎么保证只执行参数函数一次的">问题：<code>sync.Once</code>类型值的<code>Do</code>方法是怎么保证只执行参数函数一次的？</h3>
+<p>与<code>sync.WaitGroup</code>类型一样，<code>sync.Once</code>类型（以下简称<code>Once</code>类型）也属于结构体类型，同样也是开箱即用和并发安全的。由于这个类型中包含了一个<code>sync.Mutex</code>类型的字段，所以，复制该类型的值也会导致功能的失效。</p>
+<p><code>Once</code>类型的<code>Do</code>方法只接受一个参数，这个参数的类型必须是<code>func()</code>，即：无参数声明和结果声明的函数。</p>
+<p>该方法的功能并不是对每一种参数函数都只执行一次，而是只执行“首次被调用时传入的”那个函数，并且之后不会再执行任何参数函数。</p>
+<p>所以，如果你有多个只需要执行一次的函数，那么就应该为它们中的每一个都分配一个<code>sync.Once</code>类型的值（以下简称<code>Once</code>值）。</p>
+<p><code>Once</code>类型中还有一个名叫<code>done</code>的<code>uint32</code>类型的字段。它的作用是记录其所属值的<code>Do</code>方法被调用的次数。不过，该字段的值只可能是<code>0</code>或者<code>1</code>。一旦<code>Do</code>方法的首次调用完成，它的值就会从<code>0</code>变为<code>1</code>。</p>
+<p>你可能会问，既然<code>done</code>字段的值不是<code>0</code>就是<code>1</code>，那为什么还要使用需要四个字节的<code>uint32</code>类型呢？</p>
+<p>原因很简单，因为对它的操作必须是“原子”的。<code>Do</code>方法在一开始就会通过调用<code>atomic.LoadUint32</code>函数来获取该字段的值，并且一旦发现该值为<code>1</code>，就会直接返回。这也初步保证了“<code>Do</code>方法，只会执行首次被调用时传入的函数”。</p>
+<p>不过，单凭这样一个判断的保证是不够的。因为，如果有两个goroutine都调用了同一个新的<code>Once</code>值的<code>Do</code>方法，并且几乎同时执行到了其中的这个条件判断代码，那么它们就都会因判断结果为<code>false</code>，而继续执行<code>Do</code>方法中剩余的代码。</p>
+<p>在这个条件判断之后，<code>Do</code>方法会立即锁定其所属值中的那个<code>sync.Mutex</code>类型的字段<code>m</code>。然后，它会在临界区中再次检查<code>done</code>字段的值，并且仅在条件满足时，才会去调用参数函数，以及用原子操作把<code>done</code>的值变为<code>1</code>。</p>
+<p>如果你熟悉GoF设计模式中的单例模式的话，那么肯定能看出来，这个<code>Do</code>方法的实现方式，与那个单例模式有很多相似之处。它们都会先在临界区之外，判断一次关键条件，若条件不满足则立即返回。这通常被称为<strong>“快路径”，或者叫做“快速失败路径”。</strong></p>
+<p>如果条件满足，那么到了临界区中还要再对关键条件进行一次判断，这主要是为了更加严谨。这两次条件判断常被统称为（跨临界区的）“双重检查”。</p>
+<p>由于进入临界区之前，肯定要锁定保护它的互斥锁<code>m</code>，显然会降低代码的执行速度，所以其中的第二次条件判断，以及后续的操作就被称为“慢路径”或者“常规路径”。</p>
+<p>别看<code>Do</code>方法中的代码不多，但它却应用了一个很经典的编程范式。我们在Go语言及其标准库中，还能看到不少这个经典范式及它衍生版本的应用案例。</p>
+<p><strong>下面我再来说说这个<code>Do</code>方法在功能方面的两个特点。</strong></p>
+<p><strong>第一个特点</strong>，由于<code>Do</code>方法只会在参数函数执行结束之后把<code>done</code>字段的值变为<code>1</code>，因此，如果参数函数的执行需要很长时间或者根本就不会结束（比如执行一些守护任务），那么就有可能会导致相关goroutine的同时阻塞。</p>
+<p>例如，有多个goroutine并发地调用了同一个<code>Once</code>值的<code>Do</code>方法，并且传入的函数都会一直执行而不结束。那么，这些goroutine就都会因调用了这个<code>Do</code>方法而阻塞。因为，除了那个抢先执行了参数函数的goroutine之外，其他的goroutine都会被阻塞在锁定该<code>Once</code>值的互斥锁<code>m</code>的那行代码上。</p>
+<p><strong>第二个特点</strong>，<code>Do</code>方法在参数函数执行结束后，对<code>done</code>字段的赋值用的是原子操作，并且，这一操作是被挂在<code>defer</code>语句中的。因此，不论参数函数的执行会以怎样的方式结束，<code>done</code>字段的值都会变为<code>1</code>。</p>
+<p>也就是说，即使这个参数函数没有执行成功（比如引发了一个panic），我们也无法使用同一个<code>Once</code>值重新执行它了。所以，如果你需要为参数函数的执行设定重试机制，那么就要考虑<code>Once</code>值的适时替换问题。</p>
+<p>在很多时候，我们需要依据<code>Do</code>方法的这两个特点来设计与之相关的流程，以避免不必要的程序阻塞和功能缺失。</p>
+<h2 id="总结">总结</h2>
+<p><code>sync</code>代码包的<code>WaitGroup</code>类型和<code>Once</code>类型都是非常易用的同步工具。它们都是开箱即用和并发安全的。</p>
+<p>利用<code>WaitGroup</code>值，我们可以很方便地实现一对多的goroutine协作流程，即：一个分发子任务的goroutine，和多个执行子任务的goroutine，共同来完成一个较大的任务。</p>
+<p>在使用<code>WaitGroup</code>值的时候，我们一定要注意，千万不要让其中的计数器的值小于<code>0</code>，否则就会引发panic。</p>
+<p>另外，<strong>我们最好用“先统一<code>Add</code>，再并发<code>Done</code>，最后<code>Wait</code>”这种标准方式，来使用<code>WaitGroup</code>值。</strong> 尤其不要在调用<code>Wait</code>方法的同时，并发地通过调用<code>Add</code>方法去增加其计数器的值，因为这也有可能引发panic。</p>
+<p><code>Once</code>值的使用方式比<code>WaitGroup</code>值更加简单，它只有一个<code>Do</code>方法。同一个<code>Once</code>值的<code>Do</code>方法，永远只会执行第一次被调用时传入的参数函数，不论这个函数的执行会以怎样的方式结束。</p>
+<p>只要传入某个<code>Do</code>方法的参数函数没有结束执行，任何之后调用该方法的goroutine就都会被阻塞。只有在这个参数函数执行结束以后，那些goroutine才会逐一被唤醒。</p>
+<p><code>Once</code>类型使用互斥锁和原子操作实现了功能，而<code>WaitGroup</code>类型中只用到了原子操作。 所以可以说，它们都是更高层次的同步工具。它们都基于基本的通用工具，实现了某一种特定的功能。<code>sync</code>包中的其他高级同步工具，其实也都是这样的。</p>
+<h2 id="思考题">思考题</h2>
+<p>今天的思考题是：在使用<code>WaitGroup</code>值实现一对多的goroutine协作流程时，怎样才能让分发子任务的goroutine获得各个子任务的具体执行结果？</p>
+<p><a href="https://github.com/hyper0x/Golang_Puzzlers" target="_blank">戳此查看Go语言专栏文章配套详细代码。</a></p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#4c20202075787d7d7c7b0c2b212d2520622f2321" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358f7d93c2cd674',t:'MTc0NTUzMzAxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

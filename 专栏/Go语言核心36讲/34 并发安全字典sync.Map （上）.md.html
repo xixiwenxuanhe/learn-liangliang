@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="34 并发安全字典sync.Map （上）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>34 并发安全字典sync.Map （上） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%af%bc%e8%af%bb%20%e5%86%99%e7%bb%990%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8%e7%9a%84Go%e8%af%ad%e8%a8%80%e5%ad%a6%e4%b9%a0%e8%80%85.md.html" id="00 导读 写给0基础入门的Go语言学习者.md.html">00 导读 写给0基础入门的Go语言学习者.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%af%bc%e8%af%bb%20%e5%ad%a6%e4%b9%a0%e4%b8%93%e6%a0%8f%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="00 导读 学习专栏的正确姿势.md.html">00 导读 学习专栏的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%b7%9f%e7%9d%80%e5%ad%a6%ef%bc%8c%e4%bd%a0%e4%b9%9f%e8%83%bd%e6%88%90%e4%b8%baGo%e8%af%ad%e8%a8%80%e9%ab%98%e6%89%8b.md.html" id="00 开篇词 跟着学，你也能成为Go语言高手.md.html">00 开篇词 跟着学，你也能成为Go语言高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/01%20%e5%b7%a5%e4%bd%9c%e5%8c%ba%e5%92%8cGOPATH.md.html" id="01 工作区和GOPATH.md.html">01 工作区和GOPATH.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/02%20%e5%91%bd%e4%bb%a4%e6%ba%90%e7%a0%81%e6%96%87%e4%bb%b6.md.html" id="02 命令源码文件.md.html">02 命令源码文件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/03%20%e5%ba%93%e6%ba%90%e7%a0%81%e6%96%87%e4%bb%b6.md.html" id="03 库源码文件.md.html">03 库源码文件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/04%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="04 程序实体的那些事儿（上）.md.html">04 程序实体的那些事儿（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/05%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="05 程序实体的那些事儿（中）.md.html">05 程序实体的那些事儿（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/06%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="06 程序实体的那些事儿 （下）.md.html">06 程序实体的那些事儿 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/07%20%e6%95%b0%e7%bb%84%e5%92%8c%e5%88%87%e7%89%87.md.html" id="07 数组和切片.md.html">07 数组和切片.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/08%20container%e5%8c%85%e4%b8%ad%e7%9a%84%e9%82%a3%e4%ba%9b%e5%ae%b9%e5%99%a8.md.html" id="08 container包中的那些容器.md.html">08 container包中的那些容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/09%20%e5%ad%97%e5%85%b8%e7%9a%84%e6%93%8d%e4%bd%9c%e5%92%8c%e7%ba%a6%e6%9d%9f.md.html" id="09 字典的操作和约束.md.html">09 字典的操作和约束.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/10%20%e9%80%9a%e9%81%93%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c.md.html" id="10 通道的基本操作.md.html">10 通道的基本操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/11%20%e9%80%9a%e9%81%93%e7%9a%84%e9%ab%98%e7%ba%a7%e7%8e%a9%e6%b3%95.md.html" id="11 通道的高级玩法.md.html">11 通道的高级玩法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/12%20%e4%bd%bf%e7%94%a8%e5%87%bd%e6%95%b0%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="12 使用函数的正确姿势.md.html">12 使用函数的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/13%20%e7%bb%93%e6%9e%84%e4%bd%93%e5%8f%8a%e5%85%b6%e6%96%b9%e6%b3%95%e7%9a%84%e4%bd%bf%e7%94%a8%e6%b3%95%e9%97%a8.md.html" id="13 结构体及其方法的使用法门.md.html">13 结构体及其方法的使用法门.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/14%20%e6%8e%a5%e5%8f%a3%e7%b1%bb%e5%9e%8b%e7%9a%84%e5%90%88%e7%90%86%e8%bf%90%e7%94%a8.md.html" id="14 接口类型的合理运用.md.html">14 接口类型的合理运用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/15%20%e5%85%b3%e4%ba%8e%e6%8c%87%e9%92%88%e7%9a%84%e6%9c%89%e9%99%90%e6%93%8d%e4%bd%9c.md.html" id="15 关于指针的有限操作.md.html">15 关于指针的有限操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/16%20go%e8%af%ad%e5%8f%a5%e5%8f%8a%e5%85%b6%e6%89%a7%e8%a1%8c%e8%a7%84%e5%88%99%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="16 go语句及其执行规则（上）.md.html">16 go语句及其执行规则（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/17%20go%e8%af%ad%e5%8f%a5%e5%8f%8a%e5%85%b6%e6%89%a7%e8%a1%8c%e8%a7%84%e5%88%99%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="17 go语句及其执行规则（下）.md.html">17 go语句及其执行规则（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/18%20if%e8%af%ad%e5%8f%a5%e3%80%81for%e8%af%ad%e5%8f%a5%e5%92%8cswitch%e8%af%ad%e5%8f%a5.md.html" id="18 if语句、for语句和switch语句.md.html">18 if语句、for语句和switch语句.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="19 错误处理（上）.md.html">19 错误处理（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/20%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="20 错误处理 （下）.md.html">20 错误处理 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/21%20panic%e5%87%bd%e6%95%b0%e3%80%81recover%e5%87%bd%e6%95%b0%e4%bb%a5%e5%8f%8adefer%e8%af%ad%e5%8f%a5%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="21 panic函数、recover函数以及defer语句 （上）.md.html">21 panic函数、recover函数以及defer语句 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/22%20panic%e5%87%bd%e6%95%b0%e3%80%81recover%e5%87%bd%e6%95%b0%e4%bb%a5%e5%8f%8adefer%e8%af%ad%e5%8f%a5%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="22 panic函数、recover函数以及defer语句（下）.md.html">22 panic函数、recover函数以及defer语句（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/23%20%e6%b5%8b%e8%af%95%e7%9a%84%e5%9f%ba%e6%9c%ac%e8%a7%84%e5%88%99%e5%92%8c%e6%b5%81%e7%a8%8b%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="23 测试的基本规则和流程 （上）.md.html">23 测试的基本规则和流程 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/24%20%e6%b5%8b%e8%af%95%e7%9a%84%e5%9f%ba%e6%9c%ac%e8%a7%84%e5%88%99%e5%92%8c%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="24 测试的基本规则和流程（下）.md.html">24 测试的基本规则和流程（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/25%20%e6%9b%b4%e5%a4%9a%e7%9a%84%e6%b5%8b%e8%af%95%e6%89%8b%e6%b3%95.md.html" id="25 更多的测试手法.md.html">25 更多的测试手法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/26%20sync.Mutex%e4%b8%8esync.RWMutex.md.html" id="26 sync.Mutex与sync.RWMutex.md.html">26 sync.Mutex与sync.RWMutex.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/27%20%e6%9d%a1%e4%bb%b6%e5%8f%98%e9%87%8fsync.Cond%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="27 条件变量sync.Cond （上）.md.html">27 条件变量sync.Cond （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/28%20%e6%9d%a1%e4%bb%b6%e5%8f%98%e9%87%8fsync.Cond%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="28 条件变量sync.Cond （下）.md.html">28 条件变量sync.Cond （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/29%20%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="29 原子操作（上）.md.html">29 原子操作（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/30%20%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="30 原子操作（下）.md.html">30 原子操作（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/31%20sync.WaitGroup%e5%92%8csync.Once.md.html" id="31 sync.WaitGroup和sync.Once.md.html">31 sync.WaitGroup和sync.Once.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/32%20context.Context%e7%b1%bb%e5%9e%8b.md.html" id="32 context.Context类型.md.html">32 context.Context类型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/33%20%e4%b8%b4%e6%97%b6%e5%af%b9%e8%b1%a1%e6%b1%a0sync.Pool.md.html" id="33 临时对象池sync.Pool.md.html">33 临时对象池sync.Pool.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/34%20%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e5%ad%97%e5%85%b8sync.Map%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="34 并发安全字典sync.Map （上）.md.html">34 并发安全字典sync.Map （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/35%20%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e5%ad%97%e5%85%b8sync.Map%20%28%e4%b8%8b%29.md.html" id="35 并发安全字典sync.Map (下).md.html">35 并发安全字典sync.Map (下).md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/36%20unicode%e4%b8%8e%e5%ad%97%e7%ac%a6%e7%bc%96%e7%a0%81.md.html" id="36 unicode与字符编码.md.html">36 unicode与字符编码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/37%20strings%e5%8c%85%e4%b8%8e%e5%ad%97%e7%ac%a6%e4%b8%b2%e6%93%8d%e4%bd%9c.md.html" id="37 strings包与字符串操作.md.html">37 strings包与字符串操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/38%20bytes%e5%8c%85%e4%b8%8e%e5%ad%97%e8%8a%82%e4%b8%b2%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="38 bytes包与字节串操作（上）.md.html">38 bytes包与字节串操作（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/39%20bytes%e5%8c%85%e4%b8%8e%e5%ad%97%e8%8a%82%e4%b8%b2%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="39 bytes包与字节串操作（下）.md.html">39 bytes包与字节串操作（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/40%20io%e5%8c%85%e4%b8%ad%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%92%8c%e5%b7%a5%e5%85%b7%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="40 io包中的接口和工具 （上）.md.html">40 io包中的接口和工具 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/41%20io%e5%8c%85%e4%b8%ad%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%92%8c%e5%b7%a5%e5%85%b7%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="41 io包中的接口和工具 （下）.md.html">41 io包中的接口和工具 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/42%20bufio%e5%8c%85%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="42 bufio包中的数据类型 （上）.md.html">42 bufio包中的数据类型 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/43%20bufio%e5%8c%85%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="43 bufio包中的数据类型（下）.md.html">43 bufio包中的数据类型（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/44%20%e4%bd%bf%e7%94%a8os%e5%8c%85%e4%b8%ad%e7%9a%84API%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="44 使用os包中的API （上）.md.html">44 使用os包中的API （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/45%20%e4%bd%bf%e7%94%a8os%e5%8c%85%e4%b8%ad%e7%9a%84API%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="45 使用os包中的API （下）.md.html">45 使用os包中的API （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/46%20%e8%ae%bf%e9%97%ae%e7%bd%91%e7%bb%9c%e6%9c%8d%e5%8a%a1.md.html" id="46 访问网络服务.md.html">46 访问网络服务.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/47%20%e5%9f%ba%e4%ba%8eHTTP%e5%8d%8f%e8%ae%ae%e7%9a%84%e7%bd%91%e7%bb%9c%e6%9c%8d%e5%8a%a1.md.html" id="47 基于HTTP协议的网络服务.md.html">47 基于HTTP协议的网络服务.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/48%20%e7%a8%8b%e5%ba%8f%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="48 程序性能分析基础（上）.md.html">48 程序性能分析基础（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/49%20%e7%a8%8b%e5%ba%8f%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="49 程序性能分析基础（下）.md.html">49 程序性能分析基础（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/%e5%b0%be%e5%a3%b0%20%e6%84%bf%e4%bd%a0%e6%8a%ab%e8%8d%86%e6%96%a9%e6%a3%98%ef%bc%8c%e6%89%80%e5%90%91%e6%97%a0%e6%95%8c.md.html" id="尾声 愿你披荆斩棘，所向无敌.md.html">尾声 愿你披荆斩棘，所向无敌.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/%e6%96%b0%e5%b9%b4%e5%bd%a9%e8%9b%8b%20%e5%ae%8c%e6%95%b4%e7%89%88%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88.md.html" id="新年彩蛋 完整版思考题答案.md.html">新年彩蛋 完整版思考题答案.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="34 并发安全字典sync.Map （上）" id="title">34 并发安全字典sync.Map （上）</h1>
+<div><p>在前面，我几乎已经把Go语言自带的同步工具全盘托出了。你是否已经听懂了会用了呢？</p>
+<p>无论怎样，我都希望你能够多多练习、多多使用。它们和Go语言独有的并发编程方式并不冲突，相反，配合起来使用，绝对能达到“一加一大于二”的效果。</p>
+<p>当然了，至于怎样配合就是一门学问了。我在前面已经讲了不少的方法和技巧，不过，更多的东西可能就需要你在实践中逐渐领悟和总结了。</p>
+<hr/>
+<p>我们今天再来讲一个并发安全的高级数据结构：<code>sync.Map</code>。众所周知，Go语言自带的字典类型<code>map</code>并不是并发安全的。</p>
+<h2 id="前导知识-并发安全字典诞生史">前导知识：并发安全字典诞生史</h2>
+<p>换句话说，在同一时间段内，让不同goroutine中的代码，对同一个字典进行读写操作是不安全的。字典值本身可能会因这些操作而产生混乱，相关的程序也可能会因此发生不可预知的问题。</p>
+<p>在<code>sync.Map</code>出现之前，我们如果要实现并发安全的字典，就只能自行构建。不过，这其实也不是什么麻烦事，使用 <code>sync.Mutex</code>或<code>sync.RWMutex</code>，再加上原生的<code>map</code>就可以轻松地做到。</p>
+<p>GitHub网站上已经有很多库提供了类似的数据结构。我在《Go并发编程实战》的第2版中也提供了一个比较完整的并发安全字典的实现。它的性能比同类的数据结构还要好一些，因为它在很大程度上有效地避免了对锁的依赖。</p>
+<p>尽管已经有了不少的参考实现，Go语言爱好者们还是希望Go语言官方能够发布一个标准的并发安全字典。</p>
+<p>经过大家多年的建议和吐槽，Go语言官方终于在2017年发布的Go 1.9中，正式加入了并发安全的字典类型<code>sync.Map</code>。</p>
+<p>这个字典类型提供了一些常用的键值存取操作方法，并保证了这些操作的并发安全。同时，它的存、取、删等操作都可以基本保证在常数时间内执行完毕。换句话说，它们的算法复杂度与<code>map</code>类型一样都是<code>O(1)</code>的。</p>
+<p>在有些时候，与单纯使用原生<code>map</code>和互斥锁的方案相比，使用<code>sync.Map</code>可以显著地减少锁的争用。<code>sync.Map</code>本身虽然也用到了锁，但是，它其实在尽可能地避免使用锁。</p>
+<p>我们都知道，使用锁就意味着要把一些并发的操作强制串行化。这往往会降低程序的性能，尤其是在计算机拥有多个CPU核心的情况下。</p>
+<p>因此，我们常说，能用原子操作就不要用锁，不过这很有局限性，毕竟原子只能对一些基本的数据类型提供支持。</p>
+<p>无论在何种场景下使用<code>sync.Map</code>，我们都需要注意，与原生<code>map</code>明显不同，它只是Go语言标准库中的一员，而不是语言层面的东西。也正因为这一点，Go语言的编译器并不会对它的键和值，进行特殊的类型检查。</p>
+<p>如果你看过<code>sync.Map</code>的文档或者实际使用过它，那么就一定会知道，它所有的方法涉及的键和值的类型都是<code>interface{}</code>，也就是空接口，这意味着可以包罗万象。所以，我们必须在程序中自行保证它的键类型和值类型的正确性。</p>
+<p>好了，现在第一个问题来了。<strong>今天的问题是：并发安全字典对键的类型有要求吗？</strong></p>
+<p>这道题的典型回答是：有要求。键的实际类型不能是函数类型、字典类型和切片类型。</p>
+<p><strong>解析一下这个问题。</strong> 我们都知道，Go语言的原生字典的键类型不能是函数类型、字典类型和切片类型。</p>
+<p>由于并发安全字典内部使用的存储介质正是原生字典，又因为它使用的原生字典键类型也是可以包罗万象的<code>interface{}</code>；所以，我们绝对不能带着任何实际类型为函数类型、字典类型或切片类型的键值去操作并发安全字典。</p>
+<p>由于这些键值的实际类型只有在程序运行期间才能够确定，所以Go语言编译器是无法在编译期对它们进行检查的，不正确的键值实际类型肯定会引发panic。</p>
+<p>因此，我们在这里首先要做的一件事就是：一定不要违反上述规则。我们应该在每次操作并发安全字典的时候，都去显式地检查键值的实际类型。无论是存、取还是删，都应该如此。</p>
+<p>当然，更好的做法是，把针对同一个并发安全字典的这几种操作都集中起来，然后统一地编写检查代码。除此之外，把并发安全字典封装在一个结构体类型中，往往是一个很好的选择。</p>
+<p>总之，我们必须保证键的类型是可比较的（或者说可判等的）。如果你实在拿不准，那么可以先通过调用<code>reflect.TypeOf</code>函数得到一个键值对应的反射类型值（即：<code>reflect.Type</code>类型的值），然后再调用这个值的<code>Comparable</code>方法，得到确切的判断结果。</p>
+<h2 id="知识扩展">知识扩展</h2>
+<h2 id="问题1-怎样保证并发安全字典中的键和值的类型正确性-方案一">问题1：怎样保证并发安全字典中的键和值的类型正确性？（方案一）</h2>
+<p>简单地说，可以使用类型断言表达式或者反射操作来保证它们的类型正确性。</p>
+<p>为了进一步明确并发安全字典中键值的实际类型，这里大致有两种方案可选。</p>
+<p><strong>第一种方案是，让并发安全字典只能存储某个特定类型的键。</strong></p>
+<p>比如，指定这里的键只能是<code>int</code>类型的，或者只能是字符串，又或是某类结构体。一旦完全确定了键的类型，你就可以在进行存、取、删操作的时候，使用类型断言表达式去对键的类型做检查了。</p>
+<p>一般情况下，这种检查并不繁琐。而且，你要是把并发安全字典封装在一个结构体类型里面，那就更加方便了。你这时完全可以让Go语言编译器帮助你做类型检查。请看下面的代码：</p>
+<pre><code>type IntStrMap struct {
+ m sync.Map
+}
+
+func (iMap *IntStrMap) Delete(key int) {
+ iMap.m.Delete(key)
+}
+
+func (iMap *IntStrMap) Load(key int) (value string, ok bool) {
+ v, ok := iMap.m.Load(key)
+ if v != nil {
+  value = v.(string)
+ }
+ return
+}
+
+func (iMap *IntStrMap) LoadOrStore(key int, value string) (actual string, loaded bool) {
+ a, loaded := iMap.m.LoadOrStore(key, value)
+ actual = a.(string)
+ return
+}
+
+func (iMap *IntStrMap) Range(f func(key int, value string) bool) {
+ f1 := func(key, value interface{}) bool {
+  return f(key.(int), value.(string))
+ }
+ iMap.m.Range(f1)
+}
+
+func (iMap *IntStrMap) Store(key int, value string) {
+ iMap.m.Store(key, value)
+}
+</code></pre>
+<p>如上所示，我编写了一个名为<code>IntStrMap</code>的结构体类型，它代表了键类型为<code>int</code>、值类型为<code>string</code>的并发安全字典。在这个结构体类型中，只有一个<code>sync.Map</code>类型的字段<code>m</code>。并且，这个类型拥有的所有方法，都与<code>sync.Map</code>类型的方法非常类似。</p>
+<p>两者对应的方法名称完全一致，方法签名也非常相似，只不过，与键和值相关的那些参数和结果的类型不同而已。在<code>IntStrMap</code>类型的方法签名中，明确了键的类型为<code>int</code>，且值的类型为<code>string</code>。</p>
+<p>显然，这些方法在接受键和值的时候，就不用再做类型检查了。另外，这些方法在从<code>m</code>中取出键和值的时候，完全不用担心它们的类型会不正确，因为它的正确性在当初存入的时候，就已经由Go语言编译器保证了。</p>
+<p>稍微总结一下。第一种方案适用于我们可以完全确定键和值的具体类型的情况。在这种情况下，我们可以利用Go语言编译器去做类型检查，并用类型断言表达式作为辅助，就像<code>IntStrMap</code>那样。</p>
+<h2 id="总结">总结</h2>
+<p>我们今天讨论的是<code>sync.Map</code>类型，它是一种并发安全的字典。它提供了一些常用的键、值存取操作方法，并保证了这些操作的并发安全。同时，它还保证了存、取、删等操作的常数级执行时间。</p>
+<p>与原生的字典相同，并发安全字典对键的类型也是有要求的。它们同样不能是函数类型、字典类型和切片类型。</p>
+<p>另外，由于并发安全字典提供的方法涉及的键和值的类型都是<code>interface{}</code>，所以我们在调用这些方法的时候，往往还需要对键和值的实际类型进行检查。</p>
+<p>这里大致有两个方案。我们今天主要提到了第一种方案，这是在编码时就完全确定键和值的类型，然后利用Go语言的编译器帮我们做检查。</p>
+<p>在下一次的文章中，我们会提到另外一种方案，并对比这两种方案的优劣。除此之外，我会继续探讨并发安全字典的相关问题。</p>
+<p>感谢你的收听，我们下期再见。</p>
+<p><a href="https://github.com/hyper0x/Golang_Puzzlers" target="_blank">戳此查看Go语言专栏文章配套详细代码。</a></p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#6a060606535e5b5b5a5d2a0d070b030644090507" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</hr></div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358f80adad459b5',t:'MTc0NTUzMzAyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

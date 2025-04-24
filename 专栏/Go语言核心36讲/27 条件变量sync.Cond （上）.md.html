@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="27 条件变量sync.Cond （上）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>27 条件变量sync.Cond （上） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%af%bc%e8%af%bb%20%e5%86%99%e7%bb%990%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8%e7%9a%84Go%e8%af%ad%e8%a8%80%e5%ad%a6%e4%b9%a0%e8%80%85.md.html" id="00 导读 写给0基础入门的Go语言学习者.md.html">00 导读 写给0基础入门的Go语言学习者.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%af%bc%e8%af%bb%20%e5%ad%a6%e4%b9%a0%e4%b8%93%e6%a0%8f%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="00 导读 学习专栏的正确姿势.md.html">00 导读 学习专栏的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%b7%9f%e7%9d%80%e5%ad%a6%ef%bc%8c%e4%bd%a0%e4%b9%9f%e8%83%bd%e6%88%90%e4%b8%baGo%e8%af%ad%e8%a8%80%e9%ab%98%e6%89%8b.md.html" id="00 开篇词 跟着学，你也能成为Go语言高手.md.html">00 开篇词 跟着学，你也能成为Go语言高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/01%20%e5%b7%a5%e4%bd%9c%e5%8c%ba%e5%92%8cGOPATH.md.html" id="01 工作区和GOPATH.md.html">01 工作区和GOPATH.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/02%20%e5%91%bd%e4%bb%a4%e6%ba%90%e7%a0%81%e6%96%87%e4%bb%b6.md.html" id="02 命令源码文件.md.html">02 命令源码文件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/03%20%e5%ba%93%e6%ba%90%e7%a0%81%e6%96%87%e4%bb%b6.md.html" id="03 库源码文件.md.html">03 库源码文件.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/04%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="04 程序实体的那些事儿（上）.md.html">04 程序实体的那些事儿（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/05%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="05 程序实体的那些事儿（中）.md.html">05 程序实体的那些事儿（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/06%20%e7%a8%8b%e5%ba%8f%e5%ae%9e%e4%bd%93%e7%9a%84%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="06 程序实体的那些事儿 （下）.md.html">06 程序实体的那些事儿 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/07%20%e6%95%b0%e7%bb%84%e5%92%8c%e5%88%87%e7%89%87.md.html" id="07 数组和切片.md.html">07 数组和切片.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/08%20container%e5%8c%85%e4%b8%ad%e7%9a%84%e9%82%a3%e4%ba%9b%e5%ae%b9%e5%99%a8.md.html" id="08 container包中的那些容器.md.html">08 container包中的那些容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/09%20%e5%ad%97%e5%85%b8%e7%9a%84%e6%93%8d%e4%bd%9c%e5%92%8c%e7%ba%a6%e6%9d%9f.md.html" id="09 字典的操作和约束.md.html">09 字典的操作和约束.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/10%20%e9%80%9a%e9%81%93%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c.md.html" id="10 通道的基本操作.md.html">10 通道的基本操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/11%20%e9%80%9a%e9%81%93%e7%9a%84%e9%ab%98%e7%ba%a7%e7%8e%a9%e6%b3%95.md.html" id="11 通道的高级玩法.md.html">11 通道的高级玩法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/12%20%e4%bd%bf%e7%94%a8%e5%87%bd%e6%95%b0%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="12 使用函数的正确姿势.md.html">12 使用函数的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/13%20%e7%bb%93%e6%9e%84%e4%bd%93%e5%8f%8a%e5%85%b6%e6%96%b9%e6%b3%95%e7%9a%84%e4%bd%bf%e7%94%a8%e6%b3%95%e9%97%a8.md.html" id="13 结构体及其方法的使用法门.md.html">13 结构体及其方法的使用法门.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/14%20%e6%8e%a5%e5%8f%a3%e7%b1%bb%e5%9e%8b%e7%9a%84%e5%90%88%e7%90%86%e8%bf%90%e7%94%a8.md.html" id="14 接口类型的合理运用.md.html">14 接口类型的合理运用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/15%20%e5%85%b3%e4%ba%8e%e6%8c%87%e9%92%88%e7%9a%84%e6%9c%89%e9%99%90%e6%93%8d%e4%bd%9c.md.html" id="15 关于指针的有限操作.md.html">15 关于指针的有限操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/16%20go%e8%af%ad%e5%8f%a5%e5%8f%8a%e5%85%b6%e6%89%a7%e8%a1%8c%e8%a7%84%e5%88%99%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="16 go语句及其执行规则（上）.md.html">16 go语句及其执行规则（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/17%20go%e8%af%ad%e5%8f%a5%e5%8f%8a%e5%85%b6%e6%89%a7%e8%a1%8c%e8%a7%84%e5%88%99%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="17 go语句及其执行规则（下）.md.html">17 go语句及其执行规则（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/18%20if%e8%af%ad%e5%8f%a5%e3%80%81for%e8%af%ad%e5%8f%a5%e5%92%8cswitch%e8%af%ad%e5%8f%a5.md.html" id="18 if语句、for语句和switch语句.md.html">18 if语句、for语句和switch语句.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="19 错误处理（上）.md.html">19 错误处理（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/20%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="20 错误处理 （下）.md.html">20 错误处理 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/21%20panic%e5%87%bd%e6%95%b0%e3%80%81recover%e5%87%bd%e6%95%b0%e4%bb%a5%e5%8f%8adefer%e8%af%ad%e5%8f%a5%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="21 panic函数、recover函数以及defer语句 （上）.md.html">21 panic函数、recover函数以及defer语句 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/22%20panic%e5%87%bd%e6%95%b0%e3%80%81recover%e5%87%bd%e6%95%b0%e4%bb%a5%e5%8f%8adefer%e8%af%ad%e5%8f%a5%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="22 panic函数、recover函数以及defer语句（下）.md.html">22 panic函数、recover函数以及defer语句（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/23%20%e6%b5%8b%e8%af%95%e7%9a%84%e5%9f%ba%e6%9c%ac%e8%a7%84%e5%88%99%e5%92%8c%e6%b5%81%e7%a8%8b%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="23 测试的基本规则和流程 （上）.md.html">23 测试的基本规则和流程 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/24%20%e6%b5%8b%e8%af%95%e7%9a%84%e5%9f%ba%e6%9c%ac%e8%a7%84%e5%88%99%e5%92%8c%e6%b5%81%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="24 测试的基本规则和流程（下）.md.html">24 测试的基本规则和流程（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/25%20%e6%9b%b4%e5%a4%9a%e7%9a%84%e6%b5%8b%e8%af%95%e6%89%8b%e6%b3%95.md.html" id="25 更多的测试手法.md.html">25 更多的测试手法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/26%20sync.Mutex%e4%b8%8esync.RWMutex.md.html" id="26 sync.Mutex与sync.RWMutex.md.html">26 sync.Mutex与sync.RWMutex.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/27%20%e6%9d%a1%e4%bb%b6%e5%8f%98%e9%87%8fsync.Cond%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="27 条件变量sync.Cond （上）.md.html">27 条件变量sync.Cond （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/28%20%e6%9d%a1%e4%bb%b6%e5%8f%98%e9%87%8fsync.Cond%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="28 条件变量sync.Cond （下）.md.html">28 条件变量sync.Cond （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/29%20%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="29 原子操作（上）.md.html">29 原子操作（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/30%20%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="30 原子操作（下）.md.html">30 原子操作（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/31%20sync.WaitGroup%e5%92%8csync.Once.md.html" id="31 sync.WaitGroup和sync.Once.md.html">31 sync.WaitGroup和sync.Once.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/32%20context.Context%e7%b1%bb%e5%9e%8b.md.html" id="32 context.Context类型.md.html">32 context.Context类型.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/33%20%e4%b8%b4%e6%97%b6%e5%af%b9%e8%b1%a1%e6%b1%a0sync.Pool.md.html" id="33 临时对象池sync.Pool.md.html">33 临时对象池sync.Pool.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/34%20%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e5%ad%97%e5%85%b8sync.Map%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="34 并发安全字典sync.Map （上）.md.html">34 并发安全字典sync.Map （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/35%20%e5%b9%b6%e5%8f%91%e5%ae%89%e5%85%a8%e5%ad%97%e5%85%b8sync.Map%20%28%e4%b8%8b%29.md.html" id="35 并发安全字典sync.Map (下).md.html">35 并发安全字典sync.Map (下).md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/36%20unicode%e4%b8%8e%e5%ad%97%e7%ac%a6%e7%bc%96%e7%a0%81.md.html" id="36 unicode与字符编码.md.html">36 unicode与字符编码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/37%20strings%e5%8c%85%e4%b8%8e%e5%ad%97%e7%ac%a6%e4%b8%b2%e6%93%8d%e4%bd%9c.md.html" id="37 strings包与字符串操作.md.html">37 strings包与字符串操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/38%20bytes%e5%8c%85%e4%b8%8e%e5%ad%97%e8%8a%82%e4%b8%b2%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="38 bytes包与字节串操作（上）.md.html">38 bytes包与字节串操作（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/39%20bytes%e5%8c%85%e4%b8%8e%e5%ad%97%e8%8a%82%e4%b8%b2%e6%93%8d%e4%bd%9c%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="39 bytes包与字节串操作（下）.md.html">39 bytes包与字节串操作（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/40%20io%e5%8c%85%e4%b8%ad%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%92%8c%e5%b7%a5%e5%85%b7%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="40 io包中的接口和工具 （上）.md.html">40 io包中的接口和工具 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/41%20io%e5%8c%85%e4%b8%ad%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%92%8c%e5%b7%a5%e5%85%b7%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="41 io包中的接口和工具 （下）.md.html">41 io包中的接口和工具 （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/42%20bufio%e5%8c%85%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="42 bufio包中的数据类型 （上）.md.html">42 bufio包中的数据类型 （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/43%20bufio%e5%8c%85%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="43 bufio包中的数据类型（下）.md.html">43 bufio包中的数据类型（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/44%20%e4%bd%bf%e7%94%a8os%e5%8c%85%e4%b8%ad%e7%9a%84API%20%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="44 使用os包中的API （上）.md.html">44 使用os包中的API （上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/45%20%e4%bd%bf%e7%94%a8os%e5%8c%85%e4%b8%ad%e7%9a%84API%20%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="45 使用os包中的API （下）.md.html">45 使用os包中的API （下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/46%20%e8%ae%bf%e9%97%ae%e7%bd%91%e7%bb%9c%e6%9c%8d%e5%8a%a1.md.html" id="46 访问网络服务.md.html">46 访问网络服务.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/47%20%e5%9f%ba%e4%ba%8eHTTP%e5%8d%8f%e8%ae%ae%e7%9a%84%e7%bd%91%e7%bb%9c%e6%9c%8d%e5%8a%a1.md.html" id="47 基于HTTP协议的网络服务.md.html">47 基于HTTP协议的网络服务.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/48%20%e7%a8%8b%e5%ba%8f%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="48 程序性能分析基础（上）.md.html">48 程序性能分析基础（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/49%20%e7%a8%8b%e5%ba%8f%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="49 程序性能分析基础（下）.md.html">49 程序性能分析基础（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/%e5%b0%be%e5%a3%b0%20%e6%84%bf%e4%bd%a0%e6%8a%ab%e8%8d%86%e6%96%a9%e6%a3%98%ef%bc%8c%e6%89%80%e5%90%91%e6%97%a0%e6%95%8c.md.html" id="尾声 愿你披荆斩棘，所向无敌.md.html">尾声 愿你披荆斩棘，所向无敌.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%e8%af%ad%e8%a8%80%e6%a0%b8%e5%bf%8336%e8%ae%b2/%e6%96%b0%e5%b9%b4%e5%bd%a9%e8%9b%8b%20%e5%ae%8c%e6%95%b4%e7%89%88%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88.md.html" id="新年彩蛋 完整版思考题答案.md.html">新年彩蛋 完整版思考题答案.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="27 条件变量sync.Cond （上）" id="title">27 条件变量sync.Cond （上）</h1>
+<div><p>在上篇文章中，我们主要说的是互斥锁，今天我和你来聊一聊条件变量（conditional variable）。</p>
+<h2 id="前导内容-条件变量与互斥锁">前导内容：条件变量与互斥锁</h2>
+<p>我们常常会把条件变量这个同步工具拿来与互斥锁一起讨论。实际上，条件变量是基于互斥锁的，它必须有互斥锁的支撑才能发挥作用。</p>
+<p>条件变量并不是被用来保护临界区和共享资源的，它是用于协调想要访问共享资源的那些线程的。当共享资源的状态发生变化时，它可以被用来通知被互斥锁阻塞的线程。</p>
+<p>比如说，我们两个人在共同执行一项秘密任务，这需要在不直接联系和见面的前提下进行。我需要向一个信箱里放置情报，你需要从这个信箱中获取情报。这个信箱就相当于一个共享资源，而我们就分别是进行写操作的线程和进行读操作的线程。</p>
+<p>如果我在放置的时候发现信箱里还有未被取走的情报，那就不再放置，而先返回。另一方面，如果你在获取的时候发现信箱里没有情报，那也只能先回去了。这就相当于写的线程或读的线程阻塞的情况。</p>
+<p>虽然我们俩都有信箱的钥匙，但是同一时刻只能有一个人插入钥匙并打开信箱，这就是锁的作用了。更何况咱们俩是不能直接见面的，所以这个信箱本身就可以被视为一个临界区。</p>
+<p>尽管没有协调好，咱们俩仍然要想方设法的完成任务啊。所以，如果信箱里有情报，而你却迟迟未取走，那我就需要每过一段时间带着新情报去检查一次，若发现信箱空了，我就需要及时地把新情报放到里面。</p>
+<p>另一方面，如果信箱里一直没有情报，那你也要每过一段时间去打开看看，一旦有了情报就及时地取走。这么做是可以的，但就是太危险了，很容易被敌人发现。</p>
+<p>后来，我们又想了一个计策，各自雇佣了一个不起眼的小孩儿。如果早上七点有一个戴红色帽子的小孩儿从你家楼下路过，那么就意味着信箱里有了新情报。另一边，如果上午九点有一个戴蓝色帽子的小孩儿从我家楼下路过，那就说明你已经从信箱中取走了情报。</p>
+<p>这样一来，咱们执行任务的隐蔽性高多了，并且效率的提升非常显著。这两个戴不同颜色帽子的小孩儿就相当于条件变量，在共享资源的状态产生变化的时候，起到了通知的作用。</p>
+<p>当然了，我们是在用Go语言编写程序，而不是在执行什么秘密任务。因此，条件变量在这里的最大优势就是在效率方面的提升。当共享资源的状态不满足条件的时候，想操作它的线程再也不用循环往复地做检查了，只要等待通知就好了。</p>
+<p>说到这里，想考考你知道怎么使用条件变量吗？所以，<strong>我们今天的问题就是：条件变量怎样与互斥锁配合使用？</strong></p>
+<p><strong>这道题的典型回答是：条件变量的初始化离不开互斥锁，并且它的方法有的也是基于互斥锁的。</strong></p>
+<p>条件变量提供的方法有三个：等待通知（wait）、单发通知（signal）和广播通知（broadcast）。</p>
+<p>我们在利用条件变量等待通知的时候，需要在它基于的那个互斥锁保护下进行。而在进行单发通知或广播通知的时候，却是恰恰相反的，也就是说，需要在对应的互斥锁解锁之后再做这两种操作。</p>
+<h2 id="问题解析">问题解析</h2>
+<p>这个问题看起来很简单，但其实可以基于它,延伸出很多其他的问题。比如，每个方法的使用时机是什么？又比如，每个方法执行的内部流程是怎样的？</p>
+<p>下面，我们一边用代码实现前面那个例子，一边讨论条件变量的使用。</p>
+<p>首先，我们先来创建如下几个变量。</p>
+<pre><code>var mailbox uint8
+var lock sync.RWMutex
+sendCond := sync.NewCond(&amp;lock)
+recvCond := sync.NewCond(lock.RLocker())
+</code></pre>
+<p><strong>变量<code>mailbox</code>代表信箱，是<code>uint8</code>类型的。</strong> 若它的值为<code>0</code>则表示信箱中没有情报，而当它的值为<code>1</code>时则说明信箱中有情报。<code>lock</code>是一个类型为<code>sync.RWMutex</code>的变量，是一个读写锁，也可以被视为信箱上的那把锁。</p>
+<p>另外，基于这把锁，我还创建了两个代表条件变量的变量，<strong>名字分别叫<code>sendCond</code>和<code>recvCond</code>。</strong> 它们都是<code>*sync.Cond</code>类型的，同时也都是由<code>sync.NewCond</code>函数来初始化的。</p>
+<p>与<code>sync.Mutex</code>类型和<code>sync.RWMutex</code>类型不同，<code>sync.Cond</code>类型并不是开箱即用的。我们只能利用<code>sync.NewCond</code>函数创建它的指针值。这个函数需要一个<code>sync.Locker</code>类型的参数值。</p>
+<p>还记得吗？我在前面说过，条件变量是基于互斥锁的，它必须有互斥锁的支撑才能够起作用。因此，这里的参数值是不可或缺的，它会参与到条件变量的方法实现当中。</p>
+<p><code>sync.Locker</code>其实是一个接口，在它的声明中只包含了两个方法定义，即：<code>Lock()</code>和<code>Unlock()</code>。<code>sync.Mutex</code>类型和<code>sync.RWMutex</code>类型都拥有<code>Lock</code>方法和<code>Unlock</code>方法，只不过它们都是指针方法。因此，这两个类型的指针类型才是<code>sync.Locker</code>接口的实现类型。</p>
+<p>我在为<code>sendCond</code>变量做初始化的时候，把基于<code>lock</code>变量的指针值传给了<code>sync.NewCond</code>函数。</p>
+<p>原因是，<strong><code>lock</code>变量的<code>Lock</code>方法和<code>Unlock</code>方法分别用于对其中写锁的锁定和解锁，它们与<code>sendCond</code>变量的含义是对应的。</strong><code>sendCond</code>是专门为放置情报而准备的条件变量，向信箱里放置情报，可以被视为对共享资源的写操作。</p>
+<p>相应的，<strong><code>recvCond</code>变量代表的是专门为获取情报而准备的条件变量。</strong> 虽然获取情报也会涉及对信箱状态的改变，但是好在做这件事的人只会有你一个，而且我们也需要借此了解一下，条件变量与读写锁中的读锁的联用方式。所以，在这里，我们暂且把获取情报看做是对共享资源的读操作。</p>
+<p>因此，为了初始化<code>recvCond</code>这个条件变量，我们需要的是<code>lock</code>变量中的读锁，并且还需要是<code>sync.Locker</code>类型的。</p>
+<p>可是，<code>lock</code>变量中用于对读锁进行锁定和解锁的方法却是<code>RLock</code>和<code>RUnlock</code>，它们与<code>sync.Locker</code>接口中定义的方法并不匹配。</p>
+<p>好在<code>sync.RWMutex</code>类型的<code>RLocker</code>方法可以实现这一需求。我们只要在调用<code>sync.NewCond</code>函数时，传入调用表达式<code>lock.RLocker()</code>的结果值，就可以使该函数返回符合要求的条件变量了。</p>
+<p>为什么说通过<code>lock.RLocker()</code>得来的值就是<code>lock</code>变量中的读锁呢？实际上，这个值所拥有的<code>Lock</code>方法和<code>Unlock</code>方法，在其内部会分别调用<code>lock</code>变量的<code>RLock</code>方法和<code>RUnlock</code>方法。也就是说，前两个方法仅仅是后两个方法的代理而已。</p>
+<p>好了，我们现在有四个变量。一个是代表信箱的<code>mailbox</code>，一个是代表信箱上的锁的<code>lock</code>。还有两个是，代表了蓝帽子小孩儿的<code>sendCond</code>，以及代表了红帽子小孩儿的<code>recvCond</code>。</p>
+<p><img alt="" src="assets/3619456ade9d45a4d9c0fbd22bb6fd5d.png"/></p>
+<p>（互斥锁与条件变量）</p>
+<p>我，现在是一个goroutine（携带的<code>go</code>函数），想要适时地向信箱里放置情报并通知你，应该怎么做呢？</p>
+<pre><code>lock.Lock()
+for mailbox == 1 {
+ sendCond.Wait()
+}
+mailbox = 1
+lock.Unlock()
+recvCond.Signal()
+</code></pre>
+<p>我肯定需要先调用<code>lock</code>变量的<code>Lock</code>方法。注意，这个<code>Lock</code>方法在这里意味的是：持有信箱上的锁，并且有打开信箱的权利，而不是锁上这个锁。</p>
+<p>然后，我要检查<code>mailbox</code>变量的值是否等于<code>1</code>，也就是说，要看看信箱里是不是还存有情报。如果还有情报，那么我就回家去等蓝帽子小孩儿了。</p>
+<p>这就是那条<code>for</code>语句以及其中的调用表达式<code>sendCond.Wait()</code>所表示的含义了。你可能会问，为什么这里是<code>for</code>语句而不是<code>if</code>语句呢？我在后面会对此进行解释的。</p>
+<p>我们再往后看，如果信箱里没有情报，那么我就把新情报放进去，关上信箱、锁上锁，然后离开。用代码表达出来就是<code>mailbox = 1</code>和<code>lock.Unlock()</code>。</p>
+<p>离开之后我还要做一件事，那就是让红帽子小孩儿准时去你家楼下路过。也就是说，我会及时地通知你“信箱里已经有新情报了”，我们调用<code>recvCond</code>的<code>Signal</code>方法就可以实现这一步骤。</p>
+<p>另一方面，你现在是另一个goroutine，想要适时地从信箱中获取情报，然后通知我。</p>
+<pre><code>lock.RLock()
+for mailbox == 0 {
+ recvCond.Wait()
+}
+mailbox = 0
+lock.RUnlock()
+sendCond.Signal()
+</code></pre>
+<p>你跟我做的事情在流程上其实基本一致，只不过每一步操作的对象是不同的。你需要调用的是<code>lock</code>变量的<code>RLock</code>方法。因为你要进行的是读操作，并且会使用<code>recvCond</code>变量作为辅助。<code>recvCond</code>与<code>lock</code>变量的读锁是对应的。</p>
+<p>在打开信箱后，你要关注的是信箱里是不是没有情报，也就是检查<code>mailbox</code>变量的值是否等于<code>0</code>。如果它确实等于<code>0</code>，那么你就需要回家去等红帽子小孩儿，也就是调用<code>recvCond</code>的<code>Wait</code>方法。这里使用的依然是<code>for</code>语句。</p>
+<p>如果信箱里有情报，那么你就应该取走情报，关上信箱、锁上锁，然后离开。对应的代码是<code>mailbox = 0</code>和<code>lock.RUnlock()</code>。之后，你还需要让蓝帽子小孩儿准时去我家楼下路过。这样我就知道信箱中的情报已经被你获取了。</p>
+<p>以上这些，就是对咱们俩要执行秘密任务的代码实现。其中的条件变量的用法需要你特别注意。</p>
+<p>再强调一下，只要条件不满足，我就会通过调用<code>sendCond</code>变量的<code>Wait</code>方法，去等待你的通知，只有在收到通知之后我才会再次检查信箱。</p>
+<p>另外，当我需要通知你的时候，我会调用<code>recvCond</code>变量的<code>Signal</code>方法。你使用这两个条件变量的方式正好与我相反。你可能也看出来了，利用条件变量可以实现单向的通知，而双向的通知则需要两个条件变量。这也是条件变量的基本使用规则。</p>
+<p>你可以打开demo61.go文件，看到上述例子的全部实现代码。</p>
+<h2 id="总结">总结</h2>
+<p>我们这两期的文章会围绕条件变量的内容展开，条件变量是基于互斥锁的一种同步工具，它必须有互斥锁的支撑才能发挥作用。 条件变量可以协调那些想要访问共享资源的线程。当共享资源的状态发生变化时，它可以被用来通知被互斥锁阻塞的线程。我在文章举了一个两人访问信箱的例子，并用代码实现了这个过程。</p>
+<h2 id="思考题">思考题</h2>
+<p><code>*sync.Cond</code>类型的值可以被传递吗？那<code>sync.Cond</code>类型的值呢？</p>
+<p>感谢你的收听，我们下期再见。</p>
+<p><a href="https://github.com/hyper0x/Golang_Puzzlers" target="_blank">戳此查看Go语言专栏文章配套详细代码。</a></p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#ddb1b1b1e4e9ececedea9dbab0bcb4b1f3beb2b0" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358f7a87aa65766',t:'MTc0NTUzMzAxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
