@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="27 如何在Dart层兼容Android_iOS平台特定实现？（二）" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>27 如何在Dart层兼容Android_iOS平台特定实现？（二） </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e6%af%8f%e4%b8%80%e4%bd%8d%e5%a4%a7%e5%89%8d%e7%ab%af%e4%bb%8e%e4%b8%9a%e8%80%85%e9%83%bd%e5%ba%94%e8%af%a5%e5%ad%a6%e4%b9%a0Flutter%ef%bc%9f.md.html" id="00 开篇词 为什么每一位大前端从业者都应该学习Flutter？.md.html">00 开篇词 为什么每一位大前端从业者都应该学习Flutter？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/01%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20%e4%bb%8e0%e5%bc%80%e5%a7%8b%e6%90%ad%e5%bb%baFlutter%e5%b7%a5%e7%a8%8b%e7%8e%af%e5%a2%83.md.html" id="01 预习篇 · 从0开始搭建Flutter工程环境.md.html">01 预习篇 · 从0开始搭建Flutter工程环境.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/02%20%e9%a2%84%e4%b9%a0%e7%af%87%20%c2%b7%20Dart%e8%af%ad%e8%a8%80%e6%a6%82%e8%a7%88.md.html" id="02 预习篇 · Dart语言概览.md.html">02 预习篇 · Dart语言概览.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/03%20%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%e8%b7%a8%e5%b9%b3%e5%8f%b0%e6%96%b9%e6%a1%88%e7%9a%84%e5%8e%86%e5%8f%b2%e5%8f%91%e5%b1%95%e9%80%bb%e8%be%91.md.html" id="03 深入理解跨平台方案的历史发展逻辑.md.html">03 深入理解跨平台方案的历史发展逻辑.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/04%20Flutter%e5%8c%ba%e5%88%ab%e4%ba%8e%e5%85%b6%e4%bb%96%e6%96%b9%e6%a1%88%e7%9a%84%e5%85%b3%e9%94%ae%e6%8a%80%e6%9c%af%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="04 Flutter区别于其他方案的关键技术是什么？.md.html">04 Flutter区别于其他方案的关键技术是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/05%20%e4%bb%8e%e6%a0%87%e5%87%86%e6%a8%a1%e6%9d%bf%e5%85%a5%e6%89%8b%ef%bc%8c%e4%bd%93%e4%bc%9aFlutter%e4%bb%a3%e7%a0%81%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%e5%9c%a8%e5%8e%9f%e7%94%9f%e7%b3%bb%e7%bb%9f%e4%b8%8a%e7%9a%84.md.html" id="05 从标准模板入手，体会Flutter代码是如何运行在原生系统上的.md.html">05 从标准模板入手，体会Flutter代码是如何运行在原生系统上的.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/06%20%e5%9f%ba%e7%a1%80%e8%af%ad%e6%b3%95%e4%b8%8e%e7%b1%bb%e5%9e%8b%e5%8f%98%e9%87%8f%ef%bc%9aDart%e6%98%af%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e4%bf%a1%e6%81%af%e7%9a%84%ef%bc%9f.md.html" id="06 基础语法与类型变量：Dart是如何表示信息的？.md.html">06 基础语法与类型变量：Dart是如何表示信息的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/07%20%e5%87%bd%e6%95%b0%e3%80%81%e7%b1%bb%e4%b8%8e%e8%bf%90%e7%ae%97%e7%ac%a6%ef%bc%9aDart%e6%98%af%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e4%bf%a1%e6%81%af%e7%9a%84%ef%bc%9f.md.html" id="07 函数、类与运算符：Dart是如何处理信息的？.md.html">07 函数、类与运算符：Dart是如何处理信息的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/08%20%e7%bb%bc%e5%90%88%e6%a1%88%e4%be%8b%ef%bc%9a%e6%8e%8c%e6%8f%a1Dart%e6%a0%b8%e5%bf%83%e7%89%b9%e6%80%a7.md.html" id="08 综合案例：掌握Dart核心特性.md.html">08 综合案例：掌握Dart核心特性.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/09%20Widget%ef%bc%8c%e6%9e%84%e5%bb%baFlutter%e7%95%8c%e9%9d%a2%e7%9a%84%e5%9f%ba%e7%9f%b3.md.html" id="09 Widget，构建Flutter界面的基石.md.html">09 Widget，构建Flutter界面的基石.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/10%20Widget%e4%b8%ad%e7%9a%84State%e5%88%b0%e5%ba%95%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Widget中的State到底是什么？.md.html">10 Widget中的State到底是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/11%20%e6%8f%90%e5%88%b0%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%8c%e6%88%91%e4%bb%ac%e6%98%af%e5%9c%a8%e8%af%b4%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="11 提到生命周期，我们是在说什么？.md.html">11 提到生命周期，我们是在说什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/12%20%e7%bb%8f%e5%85%b8%e6%8e%a7%e4%bb%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%96%87%e6%9c%ac%e3%80%81%e5%9b%be%e7%89%87%e5%92%8c%e6%8c%89%e9%92%ae%e5%9c%a8Flutter%e4%b8%ad%e6%80%8e%e4%b9%88%e7%94%a8%ef%bc%9f.md.html" id="12 经典控件（一）：文本、图片和按钮在Flutter中怎么用？.md.html">12 经典控件（一）：文本、图片和按钮在Flutter中怎么用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/13%20%e7%bb%8f%e5%85%b8%e6%8e%a7%e4%bb%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aUITableView_ListView%e5%9c%a8Flutter%e4%b8%ad%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="13 经典控件（二）：UITableView_ListView在Flutter中是什么？.md.html">13 经典控件（二）：UITableView_ListView在Flutter中是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/14%20%e7%bb%8f%e5%85%b8%e5%b8%83%e5%b1%80%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9a%e4%b9%89%e5%ad%90%e6%8e%a7%e4%bb%b6%e5%9c%a8%e7%88%b6%e5%ae%b9%e5%99%a8%e4%b8%ad%e6%8e%92%e7%89%88%e7%9a%84%e4%bd%8d%e7%bd%ae%ef%bc%9f.md.html" id="14 经典布局：如何定义子控件在父容器中排版的位置？.md.html">14 经典布局：如何定义子控件在父容器中排版的位置？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/15%20%e7%bb%84%e5%90%88%e4%b8%8e%e8%87%aa%e7%bb%98%ef%bc%8c%e6%88%91%e8%af%a5%e9%80%89%e7%94%a8%e4%bd%95%e7%a7%8d%e6%96%b9%e5%bc%8f%e8%87%aa%e5%ae%9a%e4%b9%89Widget%ef%bc%9f.md.html" id="15 组合与自绘，我该选用何种方式自定义Widget？.md.html">15 组合与自绘，我该选用何种方式自定义Widget？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/16%20%e4%bb%8e%e5%a4%9c%e9%97%b4%e6%a8%a1%e5%bc%8f%e8%af%b4%e8%b5%b7%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9a%e5%88%b6%e4%b8%8d%e5%90%8c%e9%a3%8e%e6%a0%bc%e7%9a%84App%e4%b8%bb%e9%a2%98%ef%bc%9f.md.html" id="16 从夜间模式说起，如何定制不同风格的App主题？.md.html">16 从夜间模式说起，如何定制不同风格的App主题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/17%20%e4%be%9d%e8%b5%96%e7%ae%a1%e7%90%86%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%9b%be%e7%89%87%e3%80%81%e9%85%8d%e7%bd%ae%e5%92%8c%e5%ad%97%e4%bd%93%e5%9c%a8Flutter%e4%b8%ad%e6%80%8e%e4%b9%88%e7%94%a8%ef%bc%9f.md.html" id="17 依赖管理（一）：图片、配置和字体在Flutter中怎么用？.md.html">17 依赖管理（一）：图片、配置和字体在Flutter中怎么用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/18%20%e4%be%9d%e8%b5%96%e7%ae%a1%e7%90%86%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%ac%ac%e4%b8%89%e6%96%b9%e7%bb%84%e4%bb%b6%e5%ba%93%e5%9c%a8Flutter%e4%b8%ad%e8%a6%81%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%ef%bc%9f.md.html" id="18 依赖管理（二）：第三方组件库在Flutter中要如何管理？.md.html">18 依赖管理（二）：第三方组件库在Flutter中要如何管理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/19%20%e7%94%a8%e6%88%b7%e4%ba%a4%e4%ba%92%e4%ba%8b%e4%bb%b6%e8%af%a5%e5%a6%82%e4%bd%95%e5%93%8d%e5%ba%94%ef%bc%9f.md.html" id="19 用户交互事件该如何响应？.md.html">19 用户交互事件该如何响应？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/20%20%e5%85%b3%e4%ba%8e%e8%b7%a8%e7%bb%84%e4%bb%b6%e4%bc%a0%e9%80%92%e6%95%b0%e6%8d%ae%ef%bc%8c%e4%bd%a0%e5%8f%aa%e9%9c%80%e8%a6%81%e8%ae%b0%e4%bd%8f%e8%bf%99%e4%b8%89%e6%8b%9b.md.html" id="20 关于跨组件传递数据，你只需要记住这三招.md.html">20 关于跨组件传递数据，你只需要记住这三招.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/21%20%e8%b7%af%e7%94%b1%e4%b8%8e%e5%af%bc%e8%88%aa%ef%bc%8cFlutter%e6%98%af%e8%bf%99%e6%a0%b7%e5%ae%9e%e7%8e%b0%e9%a1%b5%e9%9d%a2%e5%88%87%e6%8d%a2%e7%9a%84.md.html" id="21 路由与导航，Flutter是这样实现页面切换的.md.html">21 路由与导航，Flutter是这样实现页面切换的.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/22%20%e5%a6%82%e4%bd%95%e6%9e%84%e9%80%a0%e7%82%ab%e9%85%b7%e7%9a%84%e5%8a%a8%e7%94%bb%e6%95%88%e6%9e%9c%ef%bc%9f.md.html" id="22 如何构造炫酷的动画效果？.md.html">22 如何构造炫酷的动画效果？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/23%20%e5%8d%95%e7%ba%bf%e7%a8%8b%e6%a8%a1%e5%9e%8b%e6%80%8e%e4%b9%88%e4%bf%9d%e8%af%81UI%e8%bf%90%e8%a1%8c%e6%b5%81%e7%95%85%ef%bc%9f.md.html" id="23 单线程模型怎么保证UI运行流畅？.md.html">23 单线程模型怎么保证UI运行流畅？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/24%20HTTP%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e4%b8%8eJSON%e8%a7%a3%e6%9e%90.md.html" id="24 HTTP网络编程与JSON解析.md.html">24 HTTP网络编程与JSON解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/25%20%e6%9c%ac%e5%9c%b0%e5%ad%98%e5%82%a8%e4%b8%8e%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e4%bd%bf%e7%94%a8%e5%92%8c%e4%bc%98%e5%8c%96.md.html" id="25 本地存储与数据库的使用和优化.md.html">25 本地存储与数据库的使用和优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/26%20%e5%a6%82%e4%bd%95%e5%9c%a8Dart%e5%b1%82%e5%85%bc%e5%ae%b9Android_iOS%e5%b9%b3%e5%8f%b0%e7%89%b9%e5%ae%9a%e5%ae%9e%e7%8e%b0%ef%bc%9f%ef%bc%88%e4%b8%80%ef%bc%89.md.html" id="26 如何在Dart层兼容Android_iOS平台特定实现？（一）.md.html">26 如何在Dart层兼容Android_iOS平台特定实现？（一）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/27%20%e5%a6%82%e4%bd%95%e5%9c%a8Dart%e5%b1%82%e5%85%bc%e5%ae%b9Android_iOS%e5%b9%b3%e5%8f%b0%e7%89%b9%e5%ae%9a%e5%ae%9e%e7%8e%b0%ef%bc%9f%ef%bc%88%e4%ba%8c%ef%bc%89.md.html" id="27 如何在Dart层兼容Android_iOS平台特定实现？（二）.md.html">27 如何在Dart层兼容Android_iOS平台特定实现？（二）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/28%20%e5%a6%82%e4%bd%95%e5%9c%a8%e5%8e%9f%e7%94%9f%e5%ba%94%e7%94%a8%e4%b8%ad%e6%b7%b7%e7%bc%96Flutter%e5%b7%a5%e7%a8%8b%ef%bc%9f.md.html" id="28 如何在原生应用中混编Flutter工程？.md.html">28 如何在原生应用中混编Flutter工程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/29%20%e6%b7%b7%e5%90%88%e5%bc%80%e5%8f%91%ef%bc%8c%e8%af%a5%e7%94%a8%e4%bd%95%e7%a7%8d%e6%96%b9%e6%a1%88%e7%ae%a1%e7%90%86%e5%af%bc%e8%88%aa%e6%a0%88%ef%bc%9f.md.html" id="29 混合开发，该用何种方案管理导航栈？.md.html">29 混合开发，该用何种方案管理导航栈？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/30%20%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%81%9a%e7%8a%b6%e6%80%81%e7%ae%a1%e7%90%86%ef%bc%8c%e6%80%8e%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="30 为什么需要做状态管理，怎么做？.md.html">30 为什么需要做状态管理，怎么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/31%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%94%9f%e6%8e%a8%e9%80%81%e8%83%bd%e5%8a%9b%ef%bc%9f.md.html" id="31 如何实现原生推送能力？.md.html">31 如何实现原生推送能力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/32%20%e9%80%82%e9%85%8d%e5%9b%bd%e9%99%85%e5%8c%96%ef%bc%8c%e9%99%a4%e4%ba%86%e5%a4%9a%e8%af%ad%e8%a8%80%e6%88%91%e4%bb%ac%e8%bf%98%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e4%bb%80%e4%b9%88_.md.html" id="32 适配国际化，除了多语言我们还需要注意什么_.md.html">32 适配国际化，除了多语言我们还需要注意什么_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/33%20%e5%a6%82%e4%bd%95%e9%80%82%e9%85%8d%e4%b8%8d%e5%90%8c%e5%88%86%e8%be%a8%e7%8e%87%e7%9a%84%e6%89%8b%e6%9c%ba%e5%b1%8f%e5%b9%95%ef%bc%9f.md.html" id="33 如何适配不同分辨率的手机屏幕？.md.html">33 如何适配不同分辨率的手机屏幕？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/34%20%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3Flutter%e7%9a%84%e7%bc%96%e8%af%91%e6%a8%a1%e5%bc%8f%ef%bc%9f.md.html" id="34 如何理解Flutter的编译模式？.md.html">34 如何理解Flutter的编译模式？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/35%20Hot%20Reload%e6%98%af%e6%80%8e%e4%b9%88%e5%81%9a%e5%88%b0%e7%9a%84%ef%bc%9f.md.html" id="35 Hot Reload是怎么做到的？.md.html">35 Hot Reload是怎么做到的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/36%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e5%b7%a5%e5%85%b7%e9%93%be%e4%bc%98%e5%8c%96%e5%bc%80%e5%8f%91%e8%b0%83%e8%af%95%e6%95%88%e7%8e%87%ef%bc%9f.md.html" id="36 如何通过工具链优化开发调试效率？.md.html">36 如何通过工具链优化开发调试效率？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/37%20%e5%a6%82%e4%bd%95%e6%a3%80%e6%b5%8b%e5%b9%b6%e4%bc%98%e5%8c%96Flutter%20App%e7%9a%84%e6%95%b4%e4%bd%93%e6%80%a7%e8%83%bd%e8%a1%a8%e7%8e%b0%ef%bc%9f.md.html" id="37 如何检测并优化Flutter App的整体性能表现？.md.html">37 如何检测并优化Flutter App的整体性能表现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/38%20%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e8%87%aa%e5%8a%a8%e5%8c%96%e6%b5%8b%e8%af%95%e6%8f%90%e9%ab%98%e4%ba%a4%e4%bb%98%e8%b4%a8%e9%87%8f%ef%bc%9f.md.html" id="38 如何通过自动化测试提高交付质量？.md.html">38 如何通过自动化测试提高交付质量？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/39%20%e7%ba%bf%e4%b8%8a%e5%87%ba%e7%8e%b0%e9%97%ae%e9%a2%98%ef%bc%8c%e8%af%a5%e5%a6%82%e4%bd%95%e5%81%9a%e5%a5%bd%e5%bc%82%e5%b8%b8%e6%8d%95%e8%8e%b7%e4%b8%8e%e4%bf%a1%e6%81%af%e9%87%87%e9%9b%86%ef%bc%9f.md.html" id="39 线上出现问题，该如何做好异常捕获与信息采集？.md.html">39 线上出现问题，该如何做好异常捕获与信息采集？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/40%20%e8%a1%a1%e9%87%8fFlutter%20App%e7%ba%bf%e4%b8%8a%e8%b4%a8%e9%87%8f%ef%bc%8c%e6%88%91%e4%bb%ac%e9%9c%80%e8%a6%81%e5%85%b3%e6%b3%a8%e8%bf%99%e4%b8%89%e4%b8%aa%e6%8c%87%e6%a0%87.md.html" id="40 衡量Flutter App线上质量，我们需要关注这三个指标.md.html">40 衡量Flutter App线上质量，我们需要关注这三个指标.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/41%20%e7%bb%84%e4%bb%b6%e5%8c%96%e5%92%8c%e5%b9%b3%e5%8f%b0%e5%8c%96%ef%bc%8c%e8%af%a5%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e5%90%88%e7%90%86%e7%a8%b3%e5%ae%9a%e7%9a%84Flutter%e5%b7%a5%e7%a8%8b%e7%bb%93%e6%9e%84%ef%bc%9f.md.html" id="41 组件化和平台化，该如何组织合理稳定的Flutter工程结构？.md.html">41 组件化和平台化，该如何组织合理稳定的Flutter工程结构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/42%20%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e9%ab%98%e6%95%88%e7%9a%84Flutter%20App%e6%89%93%e5%8c%85%e5%8f%91%e5%b8%83%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="42 如何构建高效的Flutter App打包发布环境？.md.html">42 如何构建高效的Flutter App打包发布环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/43%20%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e8%87%aa%e5%b7%b1%e7%9a%84Flutter%e6%b7%b7%e5%90%88%e5%bc%80%e5%8f%91%e6%a1%86%e6%9e%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9f.md.html" id="43 如何构建自己的Flutter混合开发框架（一）？.md.html">43 如何构建自己的Flutter混合开发框架（一）？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/44%20%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e8%87%aa%e5%b7%b1%e7%9a%84Flutter%e6%b7%b7%e5%90%88%e5%bc%80%e5%8f%91%e6%a1%86%e6%9e%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9f.md.html" id="44 如何构建自己的Flutter混合开发框架（二）？.md.html">44 如何构建自己的Flutter混合开发框架（二）？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%20%20%e6%b8%a9%e6%95%85%e8%80%8c%e7%9f%a5%e6%96%b0%ef%bc%8c%e4%b8%8e%e4%bd%a0%e8%af%b4%e8%af%b4%e4%b8%93%e6%a0%8f%e7%9a%84%e9%82%a3%e4%ba%9b%e6%80%9d%e8%80%83%e9%a2%98.md.html" id="特别放送   温故而知新，与你说说专栏的那些思考题.md.html">特别放送   温故而知新，与你说说专栏的那些思考题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Flutter%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%8b%bf%e7%95%8f%e9%9a%be%ef%bc%8c%e5%8b%bf%e8%bd%bb%e7%95%a5.md.html" id="结束语 勿畏难，勿轻略.md.html">结束语 勿畏难，勿轻略.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="27 如何在Dart层兼容Android_iOS平台特定实现？（二）" id="title">27 如何在Dart层兼容Android_iOS平台特定实现？（二）</h1>
+<div><p>你好，我是陈航。</p>
+<p>在上一篇文章中，我与你介绍了方法通道，这种在Flutter中实现调用原生Android、iOS代码的轻量级解决方案。使用方法通道，我们可以把原生代码所拥有的能力，以接口形式提供给Dart。</p>
+<p>这样，当发起方法调用时，Flutter应用会以类似网络异步调用的方式，将请求数据通过一个唯一标识符指定的方法通道传输至原生代码宿主；而原生代码处理完毕后，会将响应结果通过方法通道回传至Flutter，从而实现Dart代码与原生Android、iOS代码的交互。这，与调用一个本地的Dart 异步API并无太多区别。</p>
+<p>通过方法通道，我们可以把原生操作系统提供的底层能力，以及现有原生开发中一些相对成熟的解决方案，以接口封装的形式在Dart层快速搞定，从而解决原生代码在Flutter上的复用问题。然后，我们可以利用Flutter本身提供的丰富控件，做好UI渲染。</p>
+<p>底层能力+应用层渲染，看似我们已经搞定了搭建一个复杂App的所有内容。但，真的是这样吗？</p>
+<h2 id="构建一个复杂app都需要什么">构建一个复杂App都需要什么？</h2>
+<p>别急，在下结论之前，我们先按照四象限分析法，把能力和渲染分解成四个维度，分析构建一个复杂App都需要什么。</p>
+<p><img alt="" src="assets/38cf2fbb91584a4799815e41e3b11fd3.jpg"/></p>
+<p>图1 四象限分析法</p>
+<p>经过分析，我们终于发现，原来构建一个App需要覆盖那么多的知识点，通过Flutter和方法通道只能搞定应用层渲染、应用层能力和底层能力，对于那些涉及到底层渲染，比如浏览器、相机、地图，以及原生自定义视图的场景，自己在Flutter上重新开发一套显然不太现实。</p>
+<p>在这种情况下，使用混合视图看起来是一个不错的选择。我们可以在Flutter的Widget树中提前预留一块空白区域，在Flutter的画板中（即FlutterView与FlutterViewController）嵌入一个与空白区域完全匹配的原生视图，就可以实现想要的视觉效果了。</p>
+<p>但是，采用这种方案极其不优雅，因为嵌入的原生视图并不在Flutter的渲染层级中，需要同时在Flutter侧与原生侧做大量的适配工作，才能实现正常的用户交互体验。</p>
+<p>幸运的是，Flutter提供了一个平台视图（Platform View）的概念。它提供了一种方法，允许开发者在Flutter里面嵌入原生系统（Android和iOS）的视图，并加入到Flutter的渲染树中，实现与Flutter一致的交互体验。</p>
+<p>这样一来，通过平台视图，我们就可以将一个原生控件包装成Flutter控件，嵌入到Flutter页面中，就像使用一个普通的Widget一样。</p>
+<p>接下来，我就与你详细讲述如何使用平台视图。</p>
+<h2 id="平台视图">平台视图</h2>
+<p>如果说方法通道解决的是原生能力逻辑复用问题，那么平台视图解决的就是原生视图复用问题。Flutter提供了一种轻量级的方法，让我们可以创建原生（Android和iOS）的视图，通过一些简单的Dart层接口封装之后，就可以将它插入Widget树中，实现原生视图与Flutter视图的混用。</p>
+<p>一次典型的平台视图使用过程与方法通道类似：</p>
+<ul>
+<li>首先，由作为客户端的Flutter，通过向原生视图的Flutter封装类（在iOS和Android平台分别是UIKitView和AndroidView）传入视图标识符，用于发起原生视图的创建请求；</li>
+<li>然后，原生代码侧将对应原生视图的创建交给平台视图工厂（PlatformViewFactory）实现；</li>
+<li>最后，在原生代码侧将视图标识符与平台视图工厂进行关联注册，让Flutter发起的视图创建请求可以直接找到对应的视图创建工厂。</li>
+</ul>
+<p>至此，我们就可以像使用Widget那样，使用原生视图了。整个流程，如下图所示：</p>
+<p><img alt="" src="assets/ab585fd02fdc419f815f310ee1a540a6.jpg"/></p>
+<p>图2 平台视图示例</p>
+<p>接下来，我以一个具体的案例，也就是将一个红色的原生视图内嵌到Flutter中，与你演示如何使用平台视图。这部分内容主要包括两部分：</p>
+<ul>
+<li>作为调用发起方的Flutter，如何实现原生视图的接口调用？</li>
+<li>如何在原生（Android和iOS）系统实现接口？</li>
+</ul>
+<p>接下来，我将分别与你讲述这两个问题。</p>
+<h3 id="flutter如何实现原生视图的接口调用">Flutter如何实现原生视图的接口调用？</h3>
+<p>在下面的代码中，我们在SampleView的内部，分别使用了原生Android、iOS视图的封装类AndroidView和UIkitView，并传入了一个唯一标识符，用于和原生视图建立关联：</p>
+<pre><code>class SampleView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    //使用Android平台的AndroidView，传入唯一标识符sampleView
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidView(viewType: 'sampleView');
+    } else {
+      //使用iOS平台的UIKitView，传入唯一标识符sampleView
+      return UiKitView(viewType: 'sampleView');
+    }
+  }
+}
+</code></pre>
+<p>可以看到，平台视图在Flutter侧的使用方式比较简单，与普通Widget并无明显区别。而关于普通Widget的使用方式，你可以参考第<a href="https://time.geekbang.org/column/article/110292" target="_blank">12</a>、<a href="https://time.geekbang.org/column/article/110859" target="_blank">13</a>篇的相关内容进行复习。</p>
+<p>调用方的实现搞定了。接下来，我们需要在原生代码中完成视图创建的封装，建立相关的绑定关系。同样的，由于需要同时适配Android和iOS平台，我们需要分别在两个系统上完成对应的接口实现。</p>
+<h3 id="如何在原生系统实现接口">如何在原生系统实现接口？</h3>
+<p>首先，我们来看看<strong>Android端的实现</strong>。在下面的代码中，我们分别创建了平台视图工厂和原生视图封装类，并通过视图工厂的create方法，将它们关联起来：</p>
+<pre><code>//视图工厂类
+class SampleViewFactory extends PlatformViewFactory {
+    private final BinaryMessenger messenger;
+    //初始化方法
+    public SampleViewFactory(BinaryMessenger msger) {
+        super(StandardMessageCodec.INSTANCE);
+        messenger = msger;
+    }
+    //创建原生视图封装类，完成关联
+    @Override
+    public PlatformView create(Context context, int id, Object obj) {
+        return new SimpleViewControl(context, id, messenger);
+    }
+}
+//原生视图封装类
+class SimpleViewControl implements PlatformView {
+    private final View view;//缓存原生视图
+    //初始化方法，提前创建好视图
+    public SimpleViewControl(Context context, int id, BinaryMessenger messenger) {
+        view = new View(context);
+        view.setBackgroundColor(Color.rgb(255, 0, 0));
+    }
+    
+    //返回原生视图
+    @Override
+    public View getView() {
+        return view;
+    }
+    //原生视图销毁回调
+    @Override
+    public void dispose() {
+    }
+}
+</code></pre>
+<p>将原生视图封装类与原生视图工厂完成关联后，接下来就需要将Flutter侧的调用与视图工厂绑定起来了。与上一篇文章讲述的方法通道类似，我们仍然需要在MainActivity中进行绑定操作：</p>
+<pre><code>protected void onCreate(Bundle savedInstanceState) {
+  ...
+  Registrar registrar =    registrarFor("samples.chenhang/native_views");//生成注册类
+  SampleViewFactory playerViewFactory = new SampleViewFactory(registrar.messenger());//生成视图工厂
+
+registrar.platformViewRegistry().registerViewFactory("sampleView", playerViewFactory);//注册视图工厂
+}
+</code></pre>
+<p>完成绑定之后，平台视图调用响应的Android部分就搞定了。</p>
+<p>接下来，我们再来看看<strong>iOS端的实现</strong>。</p>
+<p>与Android类似，我们同样需要分别创建平台视图工厂和原生视图封装类，并通过视图工厂的create方法，将它们关联起来：</p>
+<pre><code>//平台视图工厂
+@interface SampleViewFactory : NSObject&lt;FlutterPlatformViewFactory&gt;
+- (instancetype)initWithMessenger:(NSObject&lt;FlutterBinaryMessenger&gt;*)messager;
+@end
+
+@implementation SampleViewFactory{
+  NSObject&lt;FlutterBinaryMessenger&gt;*_messenger;
+}
+
+- (instancetype)initWithMessenger:(NSObject&lt;FlutterBinaryMessenger&gt; *)messager{
+  self = [super init];
+  if (self) {
+    _messenger = messager;
+  }
+  return self;
+}
+
+-(NSObject&lt;FlutterMessageCodec&gt; *)createArgsCodec{
+  return [FlutterStandardMessageCodec sharedInstance];
+}
+
+//创建原生视图封装实例
+-(NSObject&lt;FlutterPlatformView&gt; *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args{
+  SampleViewControl *activity = [[SampleViewControl alloc] initWithWithFrame:frame viewIdentifier:viewId arguments:args binaryMessenger:_messenger];
+  return activity;
+}
+@end
+
+//平台视图封装类
+@interface SampleViewControl : NSObject&lt;FlutterPlatformView&gt;
+- (instancetype)initWithWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id _Nullable)args binaryMessenger:(NSObject&lt;FlutterBinaryMessenger&gt;*)messenger;
+@end
+
+@implementation SampleViewControl{
+    UIView * _templcateView;
+}
+//创建原生视图
+- (instancetype)initWithWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args binaryMessenger:(NSObject&lt;FlutterBinaryMessenger&gt; *)messenger{
+  if ([super init]) {
+    _templcateView = [[UIView alloc] init];
+    _templcateView.backgroundColor = [UIColor redColor];
+  }
+  return self;
+}
+
+-(UIView *)view{
+  return _templcateView;
+}
+
+@end
+</code></pre>
+<p>然后，我们同样需要把原生视图的创建与Flutter侧的调用关联起来，才可以在Flutter侧找到原生视图的实现：</p>
+<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  NSObject&lt;FlutterPluginRegistrar&gt;* registrar = [self registrarForPlugin:@"samples.chenhang/native_views"];//生成注册类
+  SampleViewFactory* viewFactory = [[SampleViewFactory alloc] initWithMessenger:registrar.messenger];//生成视图工厂
+    [registrar registerViewFactory:viewFactory withId:@"sampleView"];//注册视图工厂
+ ...
+}
+</code></pre>
+<p>需要注意的是，在iOS平台上，Flutter内嵌UIKitView目前还处于技术预览状态，因此我们还需要在Info.plist文件中增加一项配置，把内嵌原生视图的功能开关设置为true，才能打开这个隐藏功能：</p>
+<pre><code>&lt;dict&gt;
+   ...
+  &lt;key&gt;io.flutter.embedded_views_preview&lt;/key&gt;
+  &lt;true/&gt;
+  ....
+&lt;/dict&gt;
+</code></pre>
+<p>经过上面的封装与绑定，Android端与iOS端的平台视图功能都已经实现了。接下来，我们就可以在Flutter应用里，像使用普通Widget一样，去内嵌原生视图了：</p>
+<pre><code> Scaffold(
+        backgroundColor: Colors.yellowAccent,
+        body:  Container(width: 200, height:200,
+            child: SampleView(controller: controller)
+        ));
+</code></pre>
+<p>如下所示，我们分别在iOS和Android平台的Flutter应用上，内嵌了一个红色的原生视图：</p>
+<p><img alt="" src="assets/89abfd6ac28a4d9f9df94e5c629bd500.jpg"/></p>
+<p>图3 内嵌原生视图示例</p>
+<p>在上面的例子中，我们将原生视图封装在一个StatelessWidget中，可以有效应对静态展示的场景。如果我们需要在程序运行时动态调整原生视图的样式，又该如何处理呢？</p>
+<h2 id="如何在程序运行时-动态地调整原生视图的样式">如何在程序运行时，动态地调整原生视图的样式？</h2>
+<p>与基于声明式的Flutter Widget，每次变化只能以数据驱动其视图销毁重建不同，原生视图是基于命令式的，可以精确地控制视图展示样式。因此，我们可以在原生视图的封装类中，将其持有的修改视图实例相关的接口，以方法通道的方式暴露给Flutter，让Flutter也可以拥有动态调整视图视觉样式的能力。</p>
+<p>接下来，我以一个具体的案例来演示如何在程序运行时动态调整内嵌原生视图的背景颜色。</p>
+<p>在这个案例中，我们会用到原生视图的一个初始化属性，即onPlatformViewCreated：原生视图会在其创建完成后，以回调的形式通知视图id，因此我们可以在这个时候注册方法通道，让后续的视图修改请求通过这条通道传递给原生视图。</p>
+<p>由于我们在底层直接持有了原生视图的实例，因此理论上可以直接在这个原生视图的Flutter封装类上提供视图修改方法，而不管它到底是StatelessWidget还是StatefulWidget。但为了遵照Flutter的Widget设计理念，我们还是决定将视图展示与视图控制分离，即：将原生视图封装为一个StatefulWidget专门用于展示，通过其controller初始化参数，在运行期修改原生视图的展示效果。如下所示：</p>
+<pre><code>//原生视图控制器
+class NativeViewController {
+  MethodChannel _channel;
+  //原生视图完成创建后，通过id生成唯一方法通道
+  onCreate(int id) {
+    _channel = MethodChannel('samples.chenhang/native_views_$id');
+  }
+  //调用原生视图方法，改变背景颜色
+  Future&lt;void&gt; changeBackgroundColor() async {
+    return _channel.invokeMethod('changeBackgroundColor');
+  }
+}
+
+//原生视图Flutter侧封装，继承自StatefulWidget
+class SampleView extends StatefulWidget {
+  const SampleView({
+    Key key,
+    this.controller,
+  }) : super(key: key);
+
+  //持有视图控制器
+  final NativeViewController controller;
+  @override
+  State&lt;StatefulWidget&gt; createState() =&gt; _SampleViewState();
+}
+
+class _SampleViewState extends State&lt;SampleView&gt; {
+  //根据平台确定返回何种平台视图
+  @override
+  Widget build(BuildContext context) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidView(
+        viewType: 'sampleView',
+        //原生视图创建完成后，通过onPlatformViewCreated产生回调
+        onPlatformViewCreated: _onPlatformViewCreated,
+      );
+    } else {
+      return UiKitView(viewType: 'sampleView',
+        //原生视图创建完成后，通过onPlatformViewCreated产生回调
+        onPlatformViewCreated: _onPlatformViewCreated
+      );
+    }
+  }
+  //原生视图创建完成后，调用control的onCreate方法，传入view id
+  _onPlatformViewCreated(int id) {
+    if (widget.controller == null) {
+      return;
+    }
+    widget.controller.onCreate(id);
+  }
+}
+</code></pre>
+<p>Flutter的调用方实现搞定了，接下来我们分别看看Android和iOS端的实现。</p>
+<p>程序的整体结构与之前并无不同，只是在进行原生视图初始化时，我们需要完成方法通道的注册和相关事件的处理；在响应方法调用消息时，我们需要判断方法名，如果完全匹配，则修改视图背景，否则返回异常。</p>
+<p>Android端接口实现代码如下所示：</p>
+<pre><code>class SimpleViewControl implements PlatformView, MethodCallHandler {
+    private final MethodChannel methodChannel;
+    ...
+    public SimpleViewControl(Context context, int id, BinaryMessenger messenger) {
+        ...
+        //用view id注册方法通道
+        methodChannel = new MethodChannel(messenger, "samples.chenhang/native_views_" + id);
+        //设置方法通道回调
+        methodChannel.setMethodCallHandler(this);
+    }
+    //处理方法调用消息
+    @Override
+    public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
+        //如果方法名完全匹配
+        if (methodCall.method.equals("changeBackgroundColor")) {
+            //修改视图背景，返回成功
+            view.setBackgroundColor(Color.rgb(0, 0, 255));
+            result.success(0);
+        }else {
+            //调用方发起了一个不支持的API调用
+            result.notImplemented();
+        }
+    }
+  ...
+}
+</code></pre>
+<p>iOS端接口实现代码：</p>
+<pre><code>@implementation SampleViewControl{
+    ...
+    FlutterMethodChannel* _channel;
+}
+
+- (instancetype)initWithWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args binaryMessenger:(NSObject&lt;FlutterBinaryMessenger&gt; *)messenger{
+    if ([super init]) {
+        ...
+        //使用view id完成方法通道的创建
+        _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"samples.chenhang/native_views_%lld", viewId] binaryMessenger:messenger];
+        //设置方法通道的处理回调
+        __weak __typeof__(self) weakSelf = self;
+        [_channel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+            [weakSelf onMethodCall:call result:result];
+        }];
+    }
+    return self;
+}
+
+//响应方法调用消息
+- (void)onMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    //如果方法名完全匹配
+    if ([[call method] isEqualToString:@"changeBackgroundColor"]) {
+        //修改视图背景色，返回成功
+        _templcateView.backgroundColor = [UIColor blueColor];
+        result(@0);
+    } else {
+        //调用方发起了一个不支持的API调用
+        result(FlutterMethodNotImplemented);
+    }
+}
+ ...
+@end
+</code></pre>
+<p>通过注册方法通道，以及暴露的changeBackgroundColor接口，Android端与iOS端修改平台视图背景颜色的功能都已经实现了。接下来，我们就可以在Flutter应用运行期间，修改原生视图展示样式了：</p>
+<pre><code>class DefaultState extends State&lt;DefaultPage&gt; {
+  NativeViewController controller;
+  @override
+  void initState() {
+    controller = NativeViewController();//初始化原生View控制器
+	super.initState();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+          ...
+          //内嵌原生View
+          body:  Container(width: 200, height:200,
+              child: SampleView(controller: controller)
+          ),
+         //设置点击行为：改变视图颜色 
+         floatingActionButton: FloatingActionButton(onPressed: ()=&gt;controller.changeBackgroundColor())
+    );
+  }
+}
+</code></pre>
+<p>运行一下，效果如下所示：</p>
+<p><img alt="" src="assets/7dffd34126e04771a82ef98521f22f9b.jpg"/></p>
+<p>图4 动态修改原生视图样式</p>
+<h2 id="总结">总结</h2>
+<p>好了，今天的分享就到这里。我们总结一下今天的主要内容吧。</p>
+<p>平台视图解决了原生渲染能力的复用问题，使得Flutter能够通过轻量级的代码封装，把原生视图组装成一个Flutter控件。</p>
+<p>Flutter提供了平台视图工厂和视图标识符两个概念，因此Dart层发起的视图创建请求可以通过标识符直接找到对应的视图创建工厂，从而实现原生视图与Flutter视图的融合复用。对于需要在运行期动态调用原生视图接口的需求，我们可以在原生视图的封装类中注册方法通道，实现精确控制原生视图展示的效果。</p>
+<p>需要注意的是，由于Flutter与原生渲染方式完全不同，因此转换不同的渲染数据会有较大的性能开销。如果在一个界面上同时实例化多个原生控件，就会对性能造成非常大的影响，所以我们要避免在使用Flutter控件也能实现的情况下去使用内嵌平台视图。</p>
+<p>因为这样做，一方面需要分别在Android和iOS端写大量的适配桥接代码，违背了跨平台技术的本意，也增加了后续的维护成本；另一方面毕竟除去地图、WebView、相机等涉及底层方案的特殊情况外，大部分原生代码能够实现的UI效果，完全可以用Flutter实现。</p>
+<p>我把今天分享所涉及到的知识点打包到了<a href="https://github.com/cyndibaby905/27_native_view" target="_blank">GitHub</a>中，你可以下载下来，反复运行几次，加深理解。</p>
+<h2 id="思考题">思考题</h2>
+<p>最后，我给你留下一道思考题吧。</p>
+<p>请你在动态调整原生视图样式的代码基础上，增加颜色参数，以实现动态变更原生视图颜色的需求。</p>
+<p>欢迎你在评论区给我留言分享你的观点，我会在下一篇文章中等待你！感谢你的收听，也欢迎你把这篇文章分享给更多的朋友一起阅读。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#bbd7d7d7828f8a8a8b8cfbdcd6dad2d795d8d4d6" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93587be99f6d7ffa',t:'MTc0NTUyNzk0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
