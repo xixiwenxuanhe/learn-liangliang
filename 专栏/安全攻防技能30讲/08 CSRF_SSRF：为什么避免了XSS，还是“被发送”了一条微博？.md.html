@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="08 CSRF_SSRF：为什么避免了XSS，还是“被发送”了一条微博？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>08 CSRF_SSRF：为什么避免了XSS，还是“被发送”了一条微博？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%88%ab%e8%af%b4%e4%bd%a0%e6%b2%a1%e8%a2%ab%e5%ae%89%e5%85%a8%e5%9b%b0%e6%89%b0%e8%bf%87.md.html" id="00 开篇词 别说你没被安全困扰过.md.html">00 开篇词 别说你没被安全困扰过.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/01%20%e5%ae%89%e5%85%a8%e7%9a%84%e6%9c%ac%e8%b4%a8%ef%bc%9a%e6%95%b0%e6%8d%ae%e8%a2%ab%e7%aa%83%e5%8f%96%e5%90%8e%ef%bc%8c%e4%bd%a0%e8%83%bd%e6%84%8f%e8%af%86%e5%88%b0%e9%97%ae%e9%a2%98%e6%9d%a5%e6%ba%90%e5%90%97%ef%bc%9f.md.html" id="01 安全的本质：数据被窃取后，你能意识到问题来源吗？.md.html">01 安全的本质：数据被窃取后，你能意识到问题来源吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/02%20%e5%ae%89%e5%85%a8%e5%8e%9f%e5%88%99%ef%bc%9a%e6%88%91%e4%bb%ac%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e4%b8%8a%e6%89%8b%e8%a7%a3%e5%86%b3%e5%ae%89%e5%85%a8%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="02 安全原则：我们应该如何上手解决安全问题？.md.html">02 安全原则：我们应该如何上手解决安全问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/03%20%e5%af%86%e7%a0%81%e5%ad%a6%e5%9f%ba%e7%a1%80%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e4%bd%a0%e7%9a%84%e5%af%86%e7%a0%81%e5%8f%98%e5%be%97%e2%80%9c%e4%b8%8d%e5%8f%af%e8%a7%81%e2%80%9d%ef%bc%9f.md.html" id="03 密码学基础：如何让你的密码变得“不可见”？.md.html">03 密码学基础：如何让你的密码变得“不可见”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/04%20%e8%ba%ab%e4%bb%bd%e8%ae%a4%e8%af%81%ef%bc%9a%e9%99%a4%e4%ba%86%e8%b4%a6%e5%8f%b7%e5%af%86%e7%a0%81%ef%bc%8c%e6%88%91%e4%bb%ac%e8%bf%98%e8%83%bd%e6%80%8e%e4%b9%88%e5%81%9a%e8%ba%ab%e4%bb%bd%e8%ae%a4%e8%af%81%ef%bc%9f.md.html" id="04 身份认证：除了账号密码，我们还能怎么做身份认证？.md.html">04 身份认证：除了账号密码，我们还能怎么做身份认证？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/05%20%e8%ae%bf%e9%97%ae%e6%8e%a7%e5%88%b6%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%89%e5%8f%96%e4%b8%80%e4%b8%aa%e5%90%88%e9%80%82%e7%9a%84%e6%95%b0%e6%8d%ae%e4%bf%9d%e6%8a%a4%e6%96%b9%e6%a1%88%ef%bc%9f.md.html" id="05 访问控制：如何选取一个合适的数据保护方案？.md.html">05 访问控制：如何选取一个合适的数据保护方案？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/06%20XSS%ef%bc%9a%e5%bd%93%e4%bd%a0%e2%80%9c%e8%a2%ab%e5%8f%91%e9%80%81%e2%80%9d%e4%ba%86%e4%b8%80%e6%9d%a1%e5%be%ae%e5%8d%9a%e6%97%b6%ef%bc%8c%e5%88%b0%e5%ba%95%e5%8f%91%e7%94%9f%e4%ba%86%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="06 XSS：当你“被发送”了一条微博时，到底发生了什么？.md.html">06 XSS：当你“被发送”了一条微博时，到底发生了什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/07%20SQL%e6%b3%a8%e5%85%a5%ef%bc%9a%e6%98%8e%e6%98%8e%e8%ae%be%e7%bd%ae%e4%ba%86%e5%bc%ba%e5%af%86%e7%a0%81%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e8%bf%98%e4%bc%9a%e8%a2%ab%e5%88%ab%e4%ba%ba%e7%99%bb%e5%bd%95%ef%bc%9f.md.html" id="07 SQL注入：明明设置了强密码，为什么还会被别人登录？.md.html">07 SQL注入：明明设置了强密码，为什么还会被别人登录？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/08%20CSRF_SSRF%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%81%bf%e5%85%8d%e4%ba%86XSS%ef%bc%8c%e8%bf%98%e6%98%af%e2%80%9c%e8%a2%ab%e5%8f%91%e9%80%81%e2%80%9d%e4%ba%86%e4%b8%80%e6%9d%a1%e5%be%ae%e5%8d%9a%ef%bc%9f.md.html" id="08 CSRF_SSRF：为什么避免了XSS，还是“被发送”了一条微博？.md.html">08 CSRF_SSRF：为什么避免了XSS，还是“被发送”了一条微博？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/09%20%e5%8f%8d%e5%ba%8f%e5%88%97%e5%8c%96%e6%bc%8f%e6%b4%9e%ef%bc%9a%e4%bd%bf%e7%94%a8%e4%ba%86%e7%bc%96%e8%af%91%e5%9e%8b%e8%af%ad%e8%a8%80%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e8%bf%98%e6%98%af%e4%bc%9a%e8%a2%ab%e6%b3%a8%e5%85%a5%ef%bc%9f.md.html" id="09 反序列化漏洞：使用了编译型语言，为什么还是会被注入？.md.html">09 反序列化漏洞：使用了编译型语言，为什么还是会被注入？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/10%20%e4%bf%a1%e6%81%af%e6%b3%84%e9%9c%b2%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%bb%91%e5%ae%a2%e4%bc%9a%e7%9f%a5%e9%81%93%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%80%bb%e8%be%91%ef%bc%9f.md.html" id="10 信息泄露：为什么黑客会知道你的代码逻辑？.md.html">10 信息泄露：为什么黑客会知道你的代码逻辑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/11%20%e6%8f%92%e4%bb%b6%e6%bc%8f%e6%b4%9e%ef%bc%9a%e6%88%91%e7%9a%84%e4%bb%a3%e7%a0%81%e7%9c%8b%e8%b5%b7%e6%9d%a5%e5%be%88%e5%ae%89%e5%85%a8%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e8%bf%98%e4%bc%9a%e5%87%ba%e7%8e%b0%e6%bc%8f%e6%b4%9e%ef%bc%9f.md.html" id="11 插件漏洞：我的代码看起来很安全，为什么还会出现漏洞？.md.html">11 插件漏洞：我的代码看起来很安全，为什么还会出现漏洞？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/13%20Linux%e7%b3%bb%e7%bb%9f%e5%ae%89%e5%85%a8%ef%bc%9a%e5%a4%9a%e4%ba%ba%e5%85%b1%e7%94%a8%e6%9c%8d%e5%8a%a1%e5%99%a8%ef%bc%8c%e5%a6%82%e4%bd%95%e9%98%b2%e6%ad%a2%e5%88%ab%e4%ba%ba%e5%b9%b2%e2%80%9c%e5%9d%8f%e4%ba%8b%e2%80%9d%ef%bc%9f.md.html" id="13 Linux系统安全：多人共用服务器，如何防止别人干“坏事”？.md.html">13 Linux系统安全：多人共用服务器，如何防止别人干“坏事”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/14%20%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8%ef%bc%9a%e5%92%8c%e5%88%ab%e4%ba%ba%e5%85%b1%e7%94%a8Wi-Fi%e6%97%b6%ef%bc%8c%e4%bd%a0%e7%9a%84%e4%bf%a1%e6%81%af%e4%bc%9a%e8%a2%ab%e7%aa%83%e5%8f%96%e5%90%97%ef%bc%9f.md.html" id="14 网络安全：和别人共用Wi-Fi时，你的信息会被窃取吗？.md.html">14 网络安全：和别人共用Wi-Fi时，你的信息会被窃取吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/15%20Docker%e5%ae%89%e5%85%a8%ef%bc%9a%e5%9c%a8%e8%99%9a%e6%8b%9f%e7%9a%84%e7%8e%af%e5%a2%83%e4%b8%ad%ef%bc%8c%e5%b0%b1%e4%b8%8d%e7%94%a8%e8%80%83%e8%99%91%e5%ae%89%e5%85%a8%e4%ba%86%e5%90%97%ef%bc%9f.md.html" id="15 Docker安全：在虚拟的环境中，就不用考虑安全了吗？.md.html">15 Docker安全：在虚拟的环境中，就不用考虑安全了吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/16%20%e6%95%b0%e6%8d%ae%e5%ba%93%e5%ae%89%e5%85%a8%ef%bc%9a%e6%95%b0%e6%8d%ae%e5%ba%93%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%a2%ab%e9%bb%91%e5%ae%a2%e6%8b%96%e5%8f%96%e7%9a%84%ef%bc%9f.md.html" id="16 数据库安全：数据库中的数据是如何被黑客拖取的？.md.html">16 数据库安全：数据库中的数据是如何被黑客拖取的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/17%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%ae%89%e5%85%a8%ef%bc%9a%e4%b8%8a%e7%99%be%e4%b8%aa%e5%88%86%e5%b8%83%e5%bc%8f%e8%8a%82%e7%82%b9%ef%bc%8c%e4%b8%8d%e4%bc%9a%e5%87%ba%e7%8e%b0%e2%80%9c%e5%86%85%e5%a5%b8%e2%80%9d%e5%90%97%ef%bc%9f.md.html" id="17 分布式安全：上百个分布式节点，不会出现“内奸”吗？.md.html">17 分布式安全：上百个分布式节点，不会出现“内奸”吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/18%20%e5%ae%89%e5%85%a8%e6%a0%87%e5%87%86%e5%92%8c%e6%a1%86%e6%9e%b6%ef%bc%9a%e6%80%8e%e6%a0%b7%e4%be%9d%e2%80%9c%e8%91%ab%e8%8a%a6%e2%80%9d%e7%94%bb%e5%87%ba%e5%a5%bd%e2%80%9c%e7%93%a2%e2%80%9d%ef%bc%9f.md.html" id="18 安全标准和框架：怎样依“葫芦”画出好“瓢”？.md.html">18 安全标准和框架：怎样依“葫芦”画出好“瓢”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/19%20%e9%98%b2%e7%81%ab%e5%a2%99%ef%bc%9a%e5%a6%82%e4%bd%95%e5%92%8c%e9%bb%91%e5%ae%a2%e2%80%9c%e5%88%92%e6%b8%85%e7%95%8c%e9%99%90%e2%80%9d%ef%bc%9f.md.html" id="19 防火墙：如何和黑客“划清界限”？.md.html">19 防火墙：如何和黑客“划清界限”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/20%20WAF%ef%bc%9a%e5%a6%82%e4%bd%95%e4%b8%ba%e6%bc%8f%e6%b4%9e%e7%99%be%e5%87%ba%e7%9a%84Web%e5%ba%94%e7%94%a8%e4%bf%9d%e9%a9%be%e6%8a%a4%e8%88%aa%ef%bc%9f.md.html" id="20 WAF：如何为漏洞百出的Web应用保驾护航？.md.html">20 WAF：如何为漏洞百出的Web应用保驾护航？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/21%20IDS%ef%bc%9a%e5%bd%93%e9%bb%91%e5%ae%a2%e7%bb%95%e8%bf%87%e4%ba%86%e9%98%b2%e7%81%ab%e5%a2%99%ef%bc%8c%e4%bd%a0%e8%af%a5%e5%a6%82%e4%bd%95%e5%8f%91%e7%8e%b0%ef%bc%9f.md.html" id="21 IDS：当黑客绕过了防火墙，你该如何发现？.md.html">21 IDS：当黑客绕过了防火墙，你该如何发现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/22%20RASP%ef%bc%9a%e5%86%99%e8%a7%84%e5%88%99%e5%86%99%e5%be%97%e7%83%a6%e4%ba%86%ef%bc%9f%e5%b0%9d%e8%af%95%e4%b8%80%e4%b8%8b%e6%9b%b4%e5%ba%95%e5%b1%82%e7%9a%84IDS.md.html" id="22 RASP：写规则写得烦了？尝试一下更底层的IDS.md.html">22 RASP：写规则写得烦了？尝试一下更底层的IDS.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/23%20SIEM%ef%bc%9a%e4%b8%80%e4%b8%aa%e4%ba%ba%e7%ae%a1%e7%90%86%e5%a5%bd%e5%87%a0%e4%b8%aa%e5%ae%89%e5%85%a8%e5%b7%a5%e5%85%b7%ef%bc%8c%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e8%bf%90%e8%90%a5%ef%bc%9f.md.html" id="23 SIEM：一个人管理好几个安全工具，如何高效运营？.md.html">23 SIEM：一个人管理好几个安全工具，如何高效运营？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/24%20SDL%ef%bc%9a%e6%80%8e%e6%a0%b7%e6%89%8d%e8%83%bd%e5%86%99%e5%87%ba%e6%9b%b4%e2%80%9c%e5%ae%89%e5%85%a8%e2%80%9d%e7%9a%84%e4%bb%a3%e7%a0%81%ef%bc%9f.md.html" id="24 SDL：怎样才能写出更“安全”的代码？.md.html">24 SDL：怎样才能写出更“安全”的代码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/25%20%e4%b8%9a%e5%8a%a1%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%ef%bc%9a%e5%af%b9%e6%af%94%e5%9f%ba%e7%a1%80%e5%ae%89%e5%85%a8%ef%bc%8c%e4%b8%9a%e5%8a%a1%e5%ae%89%e5%85%a8%e6%9c%89%e5%93%aa%e4%ba%9b%e4%b8%8d%e5%90%8c%ef%bc%9f.md.html" id="25 业务安全体系：对比基础安全，业务安全有哪些不同？.md.html">25 业务安全体系：对比基础安全，业务安全有哪些不同？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/26%20%e4%ba%a7%e5%93%81%e5%ae%89%e5%85%a8%e6%96%b9%e6%a1%88%ef%bc%9a%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%e4%b8%9a%e5%8a%a1%e5%af%b9%e9%bb%91%e7%81%b0%e4%ba%a7%e7%9a%84%e8%af%b1%e6%83%91%ef%bc%9f.md.html" id="26 产品安全方案：如何降低业务对黑灰产的诱惑？.md.html">26 产品安全方案：如何降低业务对黑灰产的诱惑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/27%20%e9%a3%8e%e6%8e%a7%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e6%b5%b7%e9%87%8f%e4%b8%9a%e5%8a%a1%e6%95%b0%e6%8d%ae%e4%b8%ad%ef%bc%8c%e6%8c%96%e6%8e%98%e9%bb%91%e7%81%b0%e4%ba%a7%ef%bc%9f.md.html" id="27 风控系统：如何从海量业务数据中，挖掘黑灰产？.md.html">27 风控系统：如何从海量业务数据中，挖掘黑灰产？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/28%20%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%ef%bc%9a%e5%a6%82%e4%bd%95%e6%95%99%e4%bc%9a%e6%9c%ba%e5%99%a8%e8%af%86%e5%88%ab%e9%bb%91%e7%81%b0%e4%ba%a7%ef%bc%9f.md.html" id="28 机器学习：如何教会机器识别黑灰产？.md.html">28 机器学习：如何教会机器识别黑灰产？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/29%20%e8%ae%be%e5%a4%87%e6%8c%87%e7%ba%b9%ef%bc%9a%e9%9d%a2%e5%af%b9%e5%90%84%e7%a7%8d%e8%99%9a%e6%8b%9f%e8%ae%be%e5%a4%87%ef%bc%8c%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e5%af%b9%e6%8a%97%ef%bc%9f.md.html" id="29 设备指纹：面对各种虚拟设备，如何进行对抗？.md.html">29 设备指纹：面对各种虚拟设备，如何进行对抗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/30%20%e5%ae%89%e5%85%a8%e8%bf%90%e8%90%a5%ef%bc%9a%e2%80%9c%e9%bb%91%e7%81%b0%e4%ba%a7%e2%80%9d%e6%89%93%e4%ba%86%e5%8f%88%e6%9d%a5%ef%bc%8c%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%a4%84%e7%bd%ae%ef%bc%9f.md.html" id="30 安全运营：“黑灰产”打了又来，如何正确处置？.md.html">30 安全运营：“黑灰产”打了又来，如何正确处置？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e5%8a%a0%e9%a4%901%20%e6%95%b0%e6%8d%ae%e5%ae%89%e5%85%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e9%98%b2%e6%ad%a2%e5%86%85%e9%83%a8%e5%91%98%e5%b7%a5%e6%b3%84%e9%9c%b2%e5%95%86%e4%b8%9a%e6%9c%ba%e5%af%86%ef%bc%9f.md.html" id="加餐1 数据安全：如何防止内部员工泄露商业机密？.md.html">加餐1 数据安全：如何防止内部员工泄露商业机密？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e5%8a%a0%e9%a4%902%20%e5%89%8d%e7%ab%af%e5%ae%89%e5%85%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e6%89%93%e9%80%a0%e4%b8%80%e4%b8%aa%e5%8f%af%e4%bf%a1%e7%9a%84%e5%89%8d%e7%ab%af%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="加餐2 前端安全：如何打造一个可信的前端环境？.md.html">加餐2 前端安全：如何打造一个可信的前端环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e5%8a%a0%e9%a4%903%20%e8%81%8c%e4%b8%9a%e5%8f%91%e5%b1%95%ef%bc%9a%e5%ba%94%e8%81%98%e5%ae%89%e5%85%a8%e5%b7%a5%e7%a8%8b%e5%b8%88%ef%bc%8c%e6%88%91%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="加餐3 职业发展：应聘安全工程师，我需要注意什么？.md.html">加餐3 职业发展：应聘安全工程师，我需要注意什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e5%8a%a0%e9%a4%904%20%e4%b8%aa%e4%ba%ba%e6%88%90%e9%95%bf%ef%bc%9a%e5%ad%a6%e4%b9%a0%e5%ae%89%e5%85%a8%ef%bc%8c%e5%93%aa%e4%ba%9b%e8%b5%84%e6%ba%90%e6%88%91%e5%bf%85%e9%a1%bb%e8%a6%81%e7%9f%a5%e9%81%93%ef%bc%9f.md.html" id="加餐4 个人成长：学习安全，哪些资源我必须要知道？.md.html">加餐4 个人成长：学习安全，哪些资源我必须要知道？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e5%8a%a0%e9%a4%905%20%20%e5%ae%89%e5%85%a8%e6%96%b0%e6%8a%80%e6%9c%af%ef%bc%9aIoT%e3%80%81IPv6%e3%80%81%e5%8c%ba%e5%9d%97%e9%93%be%e4%b8%ad%e7%9a%84%e5%ae%89%e5%85%a8%e6%96%b0%e9%97%ae%e9%a2%98.md.html" id="加餐5  安全新技术：IoT、IPv6、区块链中的安全新问题.md.html">加餐5  安全新技术：IoT、IPv6、区块链中的安全新问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e6%a8%a1%e5%9d%97%e4%b8%b2%e8%ae%b2%ef%bc%88%e4%b8%80%ef%bc%89Web%e5%ae%89%e5%85%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e8%af%84%e4%bc%b0%e7%94%a8%e6%88%b7%e6%95%b0%e6%8d%ae%e5%92%8c%e8%b5%84%e4%ba%a7%e6%95%b0%e6%8d%ae%e9%9d%a2%e4%b8%b4%e7%9a%84%e5%a8%81%e8%83%81%ef%bc%9f.md.html" id="模块串讲（一）Web安全：如何评估用户数据和资产数据面临的威胁？.md.html">模块串讲（一）Web安全：如何评估用户数据和资产数据面临的威胁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e6%a8%a1%e5%9d%97%e4%b8%b2%e8%ae%b2%ef%bc%88%e4%b8%89%ef%bc%89%e5%ae%89%e5%85%a8%e9%98%b2%e5%be%a1%e5%b7%a5%e5%85%b7%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%89%e6%8b%a9%e5%92%8c%e8%a7%84%e5%88%92%e5%85%ac%e5%8f%b8%e7%9a%84%e5%ae%89%e5%85%a8%e9%98%b2%e5%be%a1%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="模块串讲（三）安全防御工具：如何选择和规划公司的安全防御体系？.md.html">模块串讲（三）安全防御工具：如何选择和规划公司的安全防御体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e6%a8%a1%e5%9d%97%e4%b8%b2%e8%ae%b2%ef%bc%88%e4%ba%8c%ef%bc%89Linux%e7%b3%bb%e7%bb%9f%e5%92%8c%e5%ba%94%e7%94%a8%e5%ae%89%e5%85%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e5%a4%a7%e8%8c%83%e5%9b%b4%e6%8f%90%e9%ab%98%e5%b9%b3%e5%8f%b0%e5%ae%89%e5%85%a8%e6%80%a7%ef%bc%9f.md.html" id="模块串讲（二）Linux系统和应用安全：如何大范围提高平台安全性？.md.html">模块串讲（二）Linux系统和应用安全：如何大范围提高平台安全性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%89%e5%85%a8%e6%94%bb%e9%98%b2%e6%8a%80%e8%83%bd30%e8%ae%b2/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%9c%a8%e4%b8%8e%e9%bb%91%e5%ae%a2%e7%9a%84%e6%88%98%e5%bd%b9%e4%b8%ad%ef%bc%8c%e6%88%91%e4%bb%ac%e9%83%bd%e6%98%af%e7%9b%9f%e5%8f%8b%ef%bc%81.md.html" id="结束语 在与黑客的战役中，我们都是盟友！.md.html">结束语 在与黑客的战役中，我们都是盟友！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="08 CSRF_SSRF：为什么避免了XSS，还是“被发送”了一条微博？" id="title">08 CSRF_SSRF：为什么避免了XSS，还是“被发送”了一条微博？</h1>
+<div><p>你好，我是何为舟。</p>
+<p>前面我们讲了2种常见的Web攻击：XSS和SQL注入。它们分别篡改了原始的HTML和SQL逻辑，从而使得黑客能够执行自定义的功能。那么除了对代码逻辑进行篡改，黑客还能通过什么方式发起Web攻击呢？</p>
+<p>我们还是先来看一个例子。在平常使用浏览器访问各种网页的时候，是否遇到过，自己的银行应用突然发起了一笔转账，又或者，你的微博突然发送了一条内容？</p>
+<p>在我们学习XSS之后，你可能会联想到，这是银行或者微博中出现了某个XSS漏洞。但问题是，你今天并没有访问过银行或者微博的页面，所以并没有“被XSS”的机会。这时，你想到，会不会是你今天访问的其他网页里存在一些恶意的攻击，实现了你不知道的转账和发博行为呢？好了，你肯定很想知道黑客究竟是怎么做到的，那你不妨先自己思考一下，写出几个可能的答案，然后跟着我开始学习今天的内容！</p>
+<h2 id="csrf攻击是如何产生的">CSRF攻击是如何产生的？</h2>
+<p>我们几乎每天都要用到浏览器，我们的信息也会被浏览器“保存”。那我们首先来看一下，浏览器是如何保存你的身份信息的。</p>
+<p>当我们在访问一个Web页面的时候，并不是我们自己去获取页面信息，而是浏览器去获取了这些信息，并将它们进行了展示。这就说明，你允许浏览器代表你去和Web的服务端进行交互。为了能够准确地代表你的身份，浏览器通常会在Cookie中存储一些必要的身份信息。所以，在我们使用一个网页的时候，只需要在首次访问的时候登录就可以了。</p>
+<p>从用户体验上来说，这当然是非常方便的。但是，黑客正是利用这一点，来编写带有恶意JavaScript脚本的网页，通过“钓鱼”的方式诱导你访问。然后，黑客会通过这些JavaScript脚本窃取你保存在网页中的身份信息，通过仿冒你，让你的浏览器发起伪造的请求，最终执行黑客定义的操作。而这一切对于你自己而言都是无感知的。这就是<strong>CSRF</strong>（Cross-Site Request Forgery，跨站请求伪造）攻击。</p>
+<p>接下来，我们就以银行转账为例子，来详细讲解一下这个攻击过程。</p>
+<p>当你在银行页面发起一笔转账时，这个过程其实是通过一个转账接口来完成的。这个接口的内容可能包括下面这些内容：</p>
+<ul>
+<li>接口地址：<code>http://bank.com/transfer</code> ；</li>
+<li>HTTP方法：POST；</li>
+<li>接口参数：to（目标账户）、amount（金额）。</li>
+</ul>
+<p>在转账之前，你肯定进行了一次登录。这样一来，这个转账接口就可以通过你之前存储在Cookie中的相关字段来完成认证了。所以，这个接口参数中不需要包含任何身份认证相关的信息。也正是因为如此，这个接口满足了CSRF攻击的基本条件：</p>
+<ul>
+<li>使用Cookie进行认证；</li>
+<li>参数中不包含任何隐私信息。</li>
+</ul>
+<p>于是，黑客可以构造一个如下的空白网页。我们假设这个网页的地址为 hacker.com。</p>
+<pre><code>&lt;html&gt;
+  &lt;body&gt;
+    &lt;form action="http://bank.com/transfer" method="POST"&gt;
+    	&lt;input type="hidden" name="to" value="hacker" /&gt;
+    	&lt;input type="hidden" name="amount" value="10000.00" /&gt;
+    &lt;/form&gt;
+    &lt;script&gt;
+    	document.forms[0].submit();
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>在HTML中，<code>&lt;script&gt;</code>标签内的JavaScript脚本会在打开网页的时候自动执行。因此，一旦用户访问了这个hacker.com的页面，它就会自动提交form表单，向<code>http://bank.com/transfer</code>这个接口（假设为转账接口）发起一个POST请求。</p>
+<p>其中，to和amount这两个参数，代表着用户向黑客的账号转账10000元。只要这个用户之前登录过bank.com，并且账户余额大于10000元，那么黑客就能够成功地收到这10000元的转账了。在这个网页中，<code>&lt;input&gt;</code>的标签带有“hidden”属性，所以这整个过程对于用户来说都是不可见的。</p>
+<p>为了方便你理解，我把这个流程，我画成了一张图，如下所示：</p>
+<p><img alt="" src="assets/28bef572703d4861bf0252aec620e8fc.jpg"/></p>
+<h2 id="通过csrf攻击-黑客能做什么">通过CSRF攻击，黑客能做什么？</h2>
+<p>和XSS一样，CSRF也可以仿冒用户去进行一些功能操作的请求，比如修改密码、转账等等，相当于绕过身份认证，进行未授权的操作。</p>
+<p>值得一提的是，尽管黑客通过CSRF能进行的操作没有XSS丰富，但CSRF在传播和攻击成本上都低于XSS。这也就是说，即使你的网页中没有任何注入漏洞，但只要接口配置不当，就能够被CSRF利用。而黑客也只需要在自己的域名中，搭建一个诱导性的网页，就可以让任何访问网页的用户都遭受到CSRF攻击。而且，用户每天需要访问大量的网页，根本没有办法确认每一个网页的合法性。而从严格意义上来说，用户根本没有办法防止CSRF攻击。因此，我们只能从应用本身入手去加强防护。</p>
+<h2 id="如何进行csrf防护">如何进行CSRF防护？</h2>
+<p>那究竟该怎么进行CSRF防护呢？我们有两种方法。<strong>行业内标准的CSRF防护方法是CSRFToken。</strong> 我们先来看这个方法。</p>
+<p>通过前面的学习，我们知道，CSRF是通过自动提交表单的形式来发起攻击的。所以，在前面转账的例子中，黑客可以通过<a href="https://baike.baidu.com/item/%E6%8A%93%E5%8C%85/9929103?fr=aladdin" target="_blank">抓包</a>分析出<a href="http://bank.com/transfer这个接口所需要的参数，从而构造对应的form表单。因此，我们只需要在这个接口中，加入一个黑客无法猜到的参数，就可以有效防止CSRF了。这就是**CSRF" target="_blank">http://bank.com/transfer这个接口所需要的参数，从而构造对应的form表单。因此，我们只需要在这个接口中，加入一个黑客无法猜到的参数，就可以有效防止CSRF了。这就是**CSRF</a> Token**的工作原理。</p>
+<p>它的工作流程，我也总结了一下，如下图所示：</p>
+<p><img alt="" src="assets/13df273e0db947078b85cf7695f2deef.jpg"/></p>
+<p>因为CSRF Token是每次用户正常访问页面时，服务端随机生成返回给浏览器的。所以，每一次正常的转账接口调用，都会携带不同的CSRF Token。黑客没有办法进行提前猜测，也就没有办法构造出正确的表单了。</p>
+<p><strong>除了CSRF Token之外，我们也可以通过二次验证来加强防护。</strong></p>
+<p>回想一下，当你进行各类支付操作的时候，银行网页通常会要求你输入支付密码。你可能会觉得奇怪，明明自己已经登录了，为什么还需要输入一个独立的支付密码呢？这其实和CSRF Token的原理一样：这个独立的支付密码是需要用户输入的，只存在于用户的记忆中，因此，也是黑客无法获取到的参数。</p>
+<p>怎么理解呢？假如说，黑客通过CSRF攻击，替你发起了一笔转账。在支付的时候，银行会发起一个全新的页面，让你验证支付密码。这个时候你发现，这个支付请求不是你本人发起的，那你肯定不会输入支付密码来完成验证。所以，在用户进行支付这样的敏感操作时，应用通常会要求用户提供一些私密的信息，就是为了对CSRF攻击进行防护。</p>
+<p>讲到这里，你现在对CSRF的攻击和防护，应该有了一个大概的了解。简单来说，CSRF其实就是黑客利用浏览器存储用户Cookie这一特性，来模拟用户发起一次带有认证信息的请求，比如转账、修改密码等。防护CSRF的原理也很简单，在这些请求中，加入一些黑客无法得到的参数信息即可，比如CSRF Token或者独立的支付密码等。掌握了这些内容，其实CSRF的知识基本上就差不多了。</p>
+<h2 id="ssrf-同样的原理-发生在服务端又会发生什么">SSRF：同样的原理，发生在服务端又会发生什么？</h2>
+<p>在CSRF中，黑客通过诱导用户访问某个网站，让用户的浏览器发起一个伪造的请求。那么，如果服务端发起了这个伪造的请求，又会发生什么呢？</p>
+<p>我们知道，服务端也有代理请求的功能：用户在浏览器中输入一个URL（比如某个图片资源），然后服务端会向这个URL发起请求，通过访问其他的服务端资源来完成正常的页面展示。</p>
+<p>这个时候，只要黑客在输入中提交一个内网URL，就能让服务端发起一个黑客定义的内网请求，从而获取到内网数据。这就是<strong>SSRF</strong>（Server Side Request Forgery，服务端请求伪造）的原理。而服务端作为内网设备，通常具备很高的权限，所以，这个伪造的请求往往因为能绕过大部分的认证和授权机制，而产生很严重的后果。</p>
+<p>比方说，当我们在百度中搜索图片时，会涉及图片的跨域加载保护，百度不会直接在页面中加载图片的源地址，而是将地址通过GET参数提交到百度服务器，然后百度服务器请求到对应的图片，再返回到页面展示出来。</p>
+<p><img alt="" src="assets/dd29d7e388cc456d922c8cf2255dbb72.jpg"/></p>
+<p>这个过程中，百度服务器实际上会向另外一个URL地址发起请求（比如，上图中的<code>http://s1.sinaimg.cn</code>）。利用这个代理发起请求的功能，黑客可以通过提交一个内网的地址，实现对内网任意服务的访问。这就是SSRF攻击的实现过程，也就是我们常说的“内网穿透”。</p>
+<p><img alt="" src="assets/75c632f16dbf40cca38d96e7823d050e.jpg"/></p>
+<h2 id="通过ssrf攻击-黑客能做什么">通过SSRF攻击，黑客能做什么？</h2>
+<p>了解了SSRF攻击的过程之后，我们知道，在服务端不做任何保护措施的情况下，黑客可以利用SSRF向内网发起任意的HTTP请求。那么，这些请求会产生什么样的后果呢？我总结了一下，主要会有这样两种动作：内网探测和文件读取。</p>
+<h3 id="1-内网探测">1.内网探测</h3>
+<p>我们先来看内网探测。内外网一般是隔离的。所以，黑客在外网环境中，是无法知道内网有哪些服务器，这些服务器又分别提供了哪些服务。但是，通过一个加载图片的SSRF漏洞，黑客就能够对内网进行探测。这是怎么做到的呢？别着急，我们慢慢来看。</p>
+<p>在前面百度搜图的例子中，我们请求的地址是：<a href="https://image.baidu.com/search/detail?objurl=http://s1.sinaimg.cn/picture" target="_blank">https://image.baidu.com/search/detail?objurl=http://s1.sinaimg.cn/picture</a><a href="https://image.baidu.com/search/detail?objurl=http://s1.sinaimg.cn/picture.jpg%E7%9A%84%E6%97%B6%E5%80%99%EF%BC%8C" target="_blank">.jpg</a>。因为<a href="https://image.baidu.com/search/detail?objurl=http://s1.sinaimg.cn/picture" target="_blank">http://s1.sinaimg.cn/picture</a><a href="https://image.baidu.com/search/detail?objurl=http://s1.sinaimg.cn/picture.jpg%E7%9A%84%E6%97%B6%E5%80%99%EF%BC%8C" target="_blank">.jpg</a>会正常返回一个图片，所以网页会展示出来对应的图片。</p>
+<p>我们假定这样一个服务端逻辑：在这个请求过程中，服务端会判断objurl返回数据的Content Type是否为image/jpeg。那么，可能的返回结果就有三种：</p>
+<ul>
+<li>“是”，则展示图片；</li>
+<li>“不是”，则返回“格式错误”；</li>
+<li>无响应，则返回“找不到图片”。</li>
+</ul>
+<p>基于这三种返回逻辑，黑客可以构造一个恶意的请求地址：<a href="https://image.baidu.com/search/detail?objurl=127.0.0.1:3306%EF%BC%8C" target="_blank">https://image.baidu.com/search/detail?objurl=127.0.0.1:3306</a>。如果服务器返回“格式错误”，则代表服务端本地的3306端口可用；如果返回“找不到图片”，则代表不可用。我们知道，3306是MySQL对应的端口号，因此，根据这个返回的信息，黑客就能够知道服务端本地是否开启了一个MySQL服务。接下来，黑客只需要不断重复这个过程，尝试不同的IP和端口号，就能够一点一点探测出整个内网的结构。</p>
+<h3 id="2-文件读取">2.文件读取</h3>
+<p>接下来，我们说一下文件读取。服务器除了对图片的代理不做合法性判断之外，对很多其他的代理也不做判断，而是直接将代理的结果返回到前端。我们称这种情况为“有回显的SSRF”。在这种情况下，黑客不仅能够知道请求是否成功了，还能够知道具体返回的内容。这时候你肯定会好奇，黑客究竟是怎么做到呢？</p>
+<p>在URI中，开头的http://和https://代表需要使用什么协议去进行请求。除了HTTP之外，URI还有很多种协议可以选择，比如file://就是直接读取本地的文件。通过输入file:///etc/passwd，黑客就能够通过一个请求获取到本地的passwd文件，从而知道本地有哪些用户。经过不断地尝试，黑客就能够把整个服务器中的文件内容都给拉取出来，这其中包括密钥、源码等极度敏感的信息。</p>
+<p>我曾经就遇到过一个黑客。他通过SSRF攻击拿到了服务端的源码，然后通过对源码的分析，找到了一个SQL注入的漏洞，再利用SSRF发起对内网的SQL注入攻击，从而拿到了内网的命令执行权限。</p>
+<h2 id="如何进行ssrf防护">如何进行SSRF防护？</h2>
+<p>因为SSRF漏洞起源于业务的正常功能需求（比如百度图片的图片请求等等）。因此，我们很难真正消除它。尽管如此，我还是会为你介绍几种常见的防护手段，来尽可能地提高应用的安全性。这些常见的手段主要包括：白名单限制、协议限制和请求端限制。接下来，我们一一来看。</p>
+<p><strong>白名单的限制永远是最简单、最高效的防护措施。</strong> SSRF中的白名单，就是对用户提交上来的目标URL进行限制。比如，只允许是同一个域名下的URL。你可以理解为，让百度图片的代理服务只允许代理baidu.com的URL。但是，很多时候，因为业务功能的设计，白名单的限制并不可行。比如，上述百度图片的例子，这个功能的设计思路就是，baidu.com这个域名下能够请求各类域名下的图片资源（比如上述例子中的sinaimg.cn）。</p>
+<p>在这种时候，<strong>我们可以对协议和资源类型等进行限制</strong>。比如：对于使用协议，我们只允许HTTP或者HTTPS协议；对于返回的内容，我们只允许图片格式的内容。通过这些限制，虽然不能完全阻止黑客发起SSRF攻击，但也大大降低了黑客能够造成的危害。</p>
+<p>除此之外，因为SSRF最终的结果，是接受代理请求的服务端发生数据泄露。所以，SSRF防护不仅仅涉及接收URL的服务端检测，也需要接受代理请求的服务端进行配合。在这种情况下，我们就需要用到<strong>请求端限制</strong>，它的防护措施主要包括两个方面。</p>
+<p>第一，为其他业务提供的服务接口尽量使用POST，避免GET的使用。因为，在SSRF中（以及大部分的Web攻击中），发起一个POST请求的难度是远远大于GET请求的。因为默认的请求方式是GET，而发起POST请求，需要在发起HTTP请求的时候进行配置。很多安全漏洞中不包含能够配置协议的地方。在上述百度图片的例子中，黑客显然就只能发起GET请求。如果某个敏感服务是POST的，黑客就无法请求到相关资源了。</p>
+<p>第二，为其他业务提供的服务接口，最好每次都进行验证。通过SSRF，黑客只能发起请求，并不能获取到服务端存储的验证信息（如认证的key和secret等）。因此，只要接受代理请求的端对每次请求都进行完整的验证，黑客无法成功通过验证，也就无法完成请求了。</p>
+<h2 id="总结">总结</h2>
+<p>好了，今天的内容差不多了，让我们来回顾一下，你要掌握的重点内容。</p>
+<p>今天我们介绍了CSRF和SSRF这两种攻击方式。其中，CSRF是黑客控制用户的浏览器发起伪造的请求，SSRF则是黑客控制服务端发起伪造的请求。通过伪造的请求，黑客可以伪造用户或者服务器的身份，越权获取数据或者发起请求。应用中的请求接口越敏感，黑客能够造成的伤害就越大。</p>
+<p>除此之外，CSRF和SSRF产生于正常的业务功能逻辑中，因此，我们没有办法从根本上阻止黑客发起伪造的请求。但是，你可以通过加强接口的安全验证，来避免伪造请求造成影响。在CSRF中，我们可以通过CSRF Token或者二次验证等操作来加强防护。这样，黑客无法获取到隐私信息，也就无法发起连续的请求了。在SSRF中，我们则需要限制可请求的域名，来限制黑客能够访问到的资源。另外，目标服务端，也需要加强接口的验证，来避免伪造请求成功通过授权。</p>
+<p>今天的内容比较多，为了方便你记忆，我总结了一个知识脑图，你可以通过它来对今天的重点内容进行复习巩固。</p>
+<p><img alt="" src="assets/11c1afdf141e4eefbb488a9cd59727c9.jpg"/></p>
+<h2 id="思考题">思考题</h2>
+<p>接下来，让我们来看一道思考题。</p>
+<p>通过今天的讲解，你可以回忆一下，你的企业是否遇到过CSRF/SSRF攻击呢？如果遇到过，当时是如何处理的呢？如果没有遇到过，那你负责的Web或者应用中，是否实现了CSRF/SSRF的保护逻辑呢？具体又是怎么实现的呢？</p>
+<p>欢迎留言和我分享你的思考和疑惑，也欢迎你把文章分享给你的朋友。我们下一讲再见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#caa6a6a6f3fefbfbfafd8aada7aba3a6e4a9a5a7" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359231bea3b86a6',t:'MTc0NTUzNDc5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
