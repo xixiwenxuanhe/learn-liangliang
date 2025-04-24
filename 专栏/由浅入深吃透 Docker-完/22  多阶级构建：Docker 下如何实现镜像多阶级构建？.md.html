@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="22  多阶级构建：Docker 下如何实现镜像多阶级构建？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>22  多阶级构建：Docker 下如何实现镜像多阶级构建？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/00%20%e6%ba%af%e6%9c%ac%e6%b1%82%e6%ba%90%ef%bc%8c%e5%90%83%e9%80%8f%20Docker%ef%bc%81.md.html" id="00 溯本求源，吃透 Docker！.md.html">00 溯本求源，吃透 Docker！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/01%20%20Docker%20%e5%ae%89%e8%a3%85%ef%bc%9a%e5%85%a5%e9%97%a8%e6%a1%88%e4%be%8b%e5%b8%a6%e4%bd%a0%e4%ba%86%e8%a7%a3%e5%ae%b9%e5%99%a8%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86.md.html" id="01  Docker 安装：入门案例带你了解容器技术原理.md.html">01  Docker 安装：入门案例带你了解容器技术原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/02%20%20%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%ef%bc%9a%e9%95%9c%e5%83%8f%e3%80%81%e5%ae%b9%e5%99%a8%e3%80%81%e4%bb%93%e5%ba%93%ef%bc%8c%e5%bd%bb%e5%ba%95%e6%8e%8c%e6%8f%a1%20Docker%20%e6%9e%b6%e6%9e%84%e6%a0%b8%e5%bf%83%e8%ae%be%e8%ae%a1%e7%90%86%e5%bf%b5.md.html" id="02  核心概念：镜像、容器、仓库，彻底掌握 Docker 架构核心设计理念.md.html">02  核心概念：镜像、容器、仓库，彻底掌握 Docker 架构核心设计理念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/03%20%20%e9%95%9c%e5%83%8f%e4%bd%bf%e7%94%a8%ef%bc%9aDocker%20%e7%8e%af%e5%a2%83%e4%b8%8b%e5%a6%82%e4%bd%95%e9%85%8d%e7%bd%ae%e4%bd%a0%e7%9a%84%e9%95%9c%e5%83%8f%ef%bc%9f.md.html" id="03  镜像使用：Docker 环境下如何配置你的镜像？.md.html">03  镜像使用：Docker 环境下如何配置你的镜像？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/04%20%20%e5%ae%b9%e5%99%a8%e6%93%8d%e4%bd%9c%ef%bc%9a%e5%be%97%e5%bf%83%e5%ba%94%e6%89%8b%e6%8e%8c%e6%8f%a1%20Docker%20%e5%ae%b9%e5%99%a8%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c.md.html" id="04  容器操作：得心应手掌握 Docker 容器基本操作.md.html">04  容器操作：得心应手掌握 Docker 容器基本操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/05%20%20%e4%bb%93%e5%ba%93%e8%ae%bf%e9%97%ae%ef%bc%9a%e6%80%8e%e6%a0%b7%e6%90%ad%e5%bb%ba%e5%b1%9e%e4%ba%8e%e4%bd%a0%e7%9a%84%e7%a7%81%e6%9c%89%e4%bb%93%e5%ba%93%ef%bc%9f.md.html" id="05  仓库访问：怎样搭建属于你的私有仓库？.md.html">05  仓库访问：怎样搭建属于你的私有仓库？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/06%20%20%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e7%94%9f%e4%ba%a7%e4%b8%ad%e7%bc%96%e5%86%99%e6%9c%80%e4%bc%98%20Dockerfile%ef%bc%9f.md.html" id="06  最佳实践：如何在生产中编写最优 Dockerfile？.md.html">06  最佳实践：如何在生产中编写最优 Dockerfile？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/07%20%20Docker%20%e5%ae%89%e5%85%a8%ef%bc%9a%e5%9f%ba%e4%ba%8e%e5%86%85%e6%a0%b8%e7%9a%84%e5%bc%b1%e9%9a%94%e7%a6%bb%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e4%bf%9d%e9%9a%9c%e5%ae%89%e5%85%a8%e6%80%a7%ef%bc%9f.md.html" id="07  Docker 安全：基于内核的弱隔离系统如何保障安全性？.md.html">07  Docker 安全：基于内核的弱隔离系统如何保障安全性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/08%20%20%e5%ae%b9%e5%99%a8%e7%9b%91%e6%8e%a7%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%9b%91%e6%8e%a7%e5%8e%9f%e7%90%86%e5%8f%8a%20cAdvisor%20%e7%9a%84%e5%ae%89%e8%a3%85%e4%b8%8e%e4%bd%bf%e7%94%a8.md.html" id="08  容器监控：容器监控原理及 cAdvisor 的安装与使用.md.html">08  容器监控：容器监控原理及 cAdvisor 的安装与使用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/09%20%20%e8%b5%84%e6%ba%90%e9%9a%94%e7%a6%bb%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%9e%84%e5%bb%ba%e5%ae%b9%e5%99%a8%e9%9c%80%e8%a6%81%20Namespace%20%ef%bc%9f.md.html" id="09  资源隔离：为什么构建容器需要 Namespace ？.md.html">09  资源隔离：为什么构建容器需要 Namespace ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/10%20%20%e8%b5%84%e6%ba%90%e9%99%90%e5%88%b6%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%20Cgroups%20%e6%9c%ba%e5%88%b6%e5%ae%9e%e7%8e%b0%e8%b5%84%e6%ba%90%e9%99%90%e5%88%b6%ef%bc%9f.md.html" id="10  资源限制：如何通过 Cgroups 机制实现资源限制？.md.html">10  资源限制：如何通过 Cgroups 机制实现资源限制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/11%20%20%e7%bb%84%e4%bb%b6%e7%bb%84%e6%88%90%ef%bc%9a%e5%89%96%e6%9e%90%20Docker%20%e7%bb%84%e4%bb%b6%e4%bd%9c%e7%94%a8%e5%8f%8a%e5%85%b6%e5%ba%95%e5%b1%82%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86.md.html" id="11  组件组成：剖析 Docker 组件作用及其底层工作原理.md.html">11  组件组成：剖析 Docker 组件作用及其底层工作原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/12%20%20%e7%bd%91%e7%bb%9c%e6%a8%a1%e5%9e%8b%ef%bc%9a%e5%89%96%e6%9e%90%20Docker%20%e7%bd%91%e7%bb%9c%e5%ae%9e%e7%8e%b0%e5%8f%8a%20Libnetwork%20%e5%ba%95%e5%b1%82%e5%8e%9f%e7%90%86.md.html" id="12  网络模型：剖析 Docker 网络实现及 Libnetwork 底层原理.md.html">12  网络模型：剖析 Docker 网络实现及 Libnetwork 底层原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/13%20%20%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8%ef%bc%9a%e5%89%96%e6%9e%90%20Docker%20%e5%8d%b7%e4%b8%8e%e6%8c%81%e4%b9%85%e5%8c%96%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8%e7%9a%84%e5%ba%95%e5%b1%82%e5%8e%9f%e7%90%86.md.html" id="13  数据存储：剖析 Docker 卷与持久化数据存储的底层原理.md.html">13  数据存储：剖析 Docker 卷与持久化数据存储的底层原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/14%20%20%e6%96%87%e4%bb%b6%e5%ad%98%e5%82%a8%e9%a9%b1%e5%8a%a8%ef%bc%9aAUFS%20%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%8e%9f%e7%90%86%e5%8f%8a%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e7%9a%84%e6%9c%80%e4%bd%b3%e9%85%8d%e7%bd%ae.md.html" id="14  文件存储驱动：AUFS 文件系统原理及生产环境的最佳配置.md.html">14  文件存储驱动：AUFS 文件系统原理及生产环境的最佳配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/15%20%20%e6%96%87%e4%bb%b6%e5%ad%98%e5%82%a8%e9%a9%b1%e5%8a%a8%ef%bc%9aDevicemapper%20%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%8e%9f%e7%90%86%e5%8f%8a%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e7%9a%84%e6%9c%80%e4%bd%b3%e9%85%8d%e7%bd%ae.md.html" id="15  文件存储驱动：Devicemapper 文件系统原理及生产环境的最佳配置.md.html">15  文件存储驱动：Devicemapper 文件系统原理及生产环境的最佳配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/16%20%20%e6%96%87%e4%bb%b6%e5%ad%98%e5%82%a8%e9%a9%b1%e5%8a%a8%ef%bc%9aOverlayFS%20%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%8e%9f%e7%90%86%e5%8f%8a%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e7%9a%84%e6%9c%80%e4%bd%b3%e9%85%8d%e7%bd%ae.md.html" id="16  文件存储驱动：OverlayFS 文件系统原理及生产环境的最佳配置.md.html">16  文件存储驱动：OverlayFS 文件系统原理及生产环境的最佳配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/17%20%20%e5%8e%9f%e7%90%86%e5%ae%9e%e8%b7%b5%ef%bc%9a%e8%87%aa%e5%b7%b1%e5%8a%a8%e6%89%8b%e4%bd%bf%e7%94%a8%20Golang%20%e5%bc%80%e5%8f%91%20Docker%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="17  原理实践：自己动手使用 Golang 开发 Docker（上）.md.html">17  原理实践：自己动手使用 Golang 开发 Docker（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/18%20%20%e5%8e%9f%e7%90%86%e5%ae%9e%e8%b7%b5%ef%bc%9a%e8%87%aa%e5%b7%b1%e5%8a%a8%e6%89%8b%e4%bd%bf%e7%94%a8%20Golang%20%e5%bc%80%e5%8f%91%20Docker%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="18  原理实践：自己动手使用 Golang 开发 Docker（下）.md.html">18  原理实践：自己动手使用 Golang 开发 Docker（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/19%20%20%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%20Docker%20Compose%20%e8%a7%a3%e5%86%b3%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%e7%9a%84%e4%be%9d%e8%b5%96%ef%bc%9f.md.html" id="19  如何使用 Docker Compose 解决开发环境的依赖？.md.html">19  如何使用 Docker Compose 解决开发环境的依赖？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/20%20%20%e5%a6%82%e4%bd%95%e5%9c%a8%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e4%b8%ad%e4%bd%bf%e7%94%a8%20Docker%20Swarm%20%e8%b0%83%e5%ba%a6%e5%ae%b9%e5%99%a8%ef%bc%9f.md.html" id="20  如何在生产环境中使用 Docker Swarm 调度容器？.md.html">20  如何在生产环境中使用 Docker Swarm 调度容器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/21%20%20%e5%a6%82%e4%bd%95%e4%bd%bf%20Docker%20%e5%92%8c%20Kubernetes%20%e7%bb%93%e5%90%88%e5%8f%91%e6%8c%a5%e5%ae%b9%e5%99%a8%e7%9a%84%e6%9c%80%e5%a4%a7%e4%bb%b7%e5%80%bc%ef%bc%9f.md.html" id="21  如何使 Docker 和 Kubernetes 结合发挥容器的最大价值？.md.html">21  如何使 Docker 和 Kubernetes 结合发挥容器的最大价值？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/22%20%20%e5%a4%9a%e9%98%b6%e7%ba%a7%e6%9e%84%e5%bb%ba%ef%bc%9aDocker%20%e4%b8%8b%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%95%9c%e5%83%8f%e5%a4%9a%e9%98%b6%e7%ba%a7%e6%9e%84%e5%bb%ba%ef%bc%9f.md.html" id="22  多阶级构建：Docker 下如何实现镜像多阶级构建？.md.html">22  多阶级构建：Docker 下如何实现镜像多阶级构建？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/23%20%20DevOps%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%8c%96%e5%90%8e%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%20DevOps%20%e6%8f%90%e9%ab%98%e5%8d%8f%e4%bd%9c%e6%95%88%e8%83%bd%ef%bc%9f.md.html" id="23  DevOps：容器化后如何通过 DevOps 提高协作效能？.md.html">23  DevOps：容器化后如何通过 DevOps 提高协作效能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/24%20%20CICD%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%8c%96%e5%90%8e%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%81%e7%bb%ad%e9%9b%86%e6%88%90%e4%b8%8e%e4%ba%a4%e4%bb%98%ef%bc%9f%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="24  CICD：容器化后如何实现持续集成与交付？（上）.md.html">24  CICD：容器化后如何实现持续集成与交付？（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/25%20%20CICD%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%8c%96%e5%90%8e%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%8c%81%e7%bb%ad%e9%9b%86%e6%88%90%e4%b8%8e%e4%ba%a4%e4%bb%98%ef%bc%9f%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="25  CICD：容器化后如何实现持续集成与交付？（下）.md.html">25  CICD：容器化后如何实现持续集成与交付？（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%94%b1%e6%b5%85%e5%85%a5%e6%b7%b1%e5%90%83%e9%80%8f%20Docker-%e5%ae%8c/26%20%e7%bb%93%e6%9d%9f%e8%af%ad%20%20%e5%b1%95%e6%9c%9b%e6%9c%aa%e6%9d%a5%ef%bc%9aDocker%20%e7%9a%84%e7%a7%b0%e9%9c%b8%e4%b9%8b%e8%b7%af.md.html" id="26 结束语  展望未来：Docker 的称霸之路.md.html">26 结束语  展望未来：Docker 的称霸之路.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="22  多阶级构建：Docker 下如何实现镜像多阶级构建？" id="title">22  多阶级构建：Docker 下如何实现镜像多阶级构建？</h1>
+<div><p>通过前面课程的学习，我们知道 Docker 镜像是分层的，并且每一层镜像都会额外占用存储空间，一个 Docker 镜像层数越多，这个镜像占用的存储空间则会越多。镜像构建最重要的一个原则就是要保持镜像体积尽可能小，要实现这个目标通常可以从两个方面入手：</p>
+<ul>
+<li>基础镜像体积应该尽量小；</li>
+<li>尽量减少 Dockerfile 的行数，因为 Dockerfile 的每一条指令都会生成一个镜像层。</li>
+</ul>
+<p>在 Docker 的早期版本中，对于编译型语言（例如 C、Java、Go）的镜像构建，我们只能将应用的编译和运行环境的准备，全部都放到一个 Dockerfile 中，这就导致我们构建出来的镜像体积很大，从而增加了镜像的存储和分发成本，这显然与我们的镜像构建原则不符。</p>
+<p>为了减小镜像体积，我们需要借助一个额外的脚本，将镜像的编译过程和运行过程分开。</p>
+<ul>
+<li>编译阶段：负责将我们的代码编译成可执行对象。</li>
+<li>运行时构建阶段：准备应用程序运行的依赖环境，然后将编译后的可执行对象拷贝到镜像中。</li>
+</ul>
+<p>我以 Go 语言开发的一个 HTTP 服务为例，代码如下：</p>
+<pre><code>package main
+
+import (
+
+   "fmt"
+
+   "net/http"
+
+)
+
+func hello(w http.ResponseWriter, req *http.Request) {
+
+   fmt.Fprintf(w, "hello world!\n")
+
+}
+
+func main() {
+
+   http.HandleFunc("/", hello)
+
+   http.ListenAndServe(":8080", nil)
+
+}
+</code></pre>
+<p>我将这个 Go 服务构建成镜像分为两个阶段：代码的编译阶段和镜像构建阶段。</p>
+<p>我们构建镜像时，镜像中需要包含 Go 语言编译环境，应用的编译阶段我们可以使用 Dockerfile.build 文件来构建镜像。Dockerfile.build 的内容如下：</p>
+<pre><code>FROM golang:1.13
+
+WORKDIR /go/src/github.com/wilhelmguo/multi-stage-demo/
+
+COPY main.go .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o http-server .
+</code></pre>
+<p>Dockerfile.build 可以帮助我们把代码编译成可以执行的二进制文件，我们使用以下 Dockerfile 构建一个运行环境：</p>
+<pre><code>FROM alpine:latest  
+
+WORKDIR /root/
+
+COPY http-server .
+
+CMD ["./http-server"] 
+</code></pre>
+<p>然后，我们将应用的编译和运行环境的准备步骤，都放到一个 build.sh 脚本文件中，内容如下：</p>
+<pre><code>#!/bin/sh
+
+echo Building http-server:build
+
+docker build -t http-server:build . -f Dockerfile.build
+
+docker create --name builder http-server:build  
+
+docker cp builder:/go/src/github.com/wilhelmguo/multi-stage-demo/http-server ./http-server  
+
+docker rm -f builder
+
+echo Building http-server:latest
+
+docker build -t http-server:latest .
+
+rm ./http-server
+</code></pre>
+<p>下面，我带你来逐步分析下这个脚本。</p>
+<p>第一步，声明 shell 文件，然后输出开始构建信息。</p>
+<pre><code>#!/bin/sh
+
+echo Building http-server:build
+</code></pre>
+<p>第二步，使用 Dockerfile.build 文件来构建一个临时镜像 http-server:build。</p>
+<pre><code>docker build -t http-server:build . -f Dockerfile.build
+</code></pre>
+<p>第三步，使用 http-server:build 镜像创建一个名称为 builder 的容器，该容器包含编译后的 http-server 二进制文件。</p>
+<pre><code>docker create --name builder http-server:build  
+</code></pre>
+<p>第四步，使用<code>docker cp</code>命令从 builder 容器中拷贝 http-server 文件到当前构建目录下，并且删除名称为 builder 的临时容器。</p>
+<pre><code>docker cp builder:/go/src/github.com/wilhelmguo/multi-stage-demo/http-server ./http-server  
+
+docker rm -f builder
+</code></pre>
+<p>第五步，输出开始构建镜像信息。</p>
+<pre><code>echo Building http-server:latest
+</code></pre>
+<p>第六步，构建运行时镜像，然后删除临时文件 http-server。</p>
+<pre><code>docker build -t http-server:latest .
+
+rm ./http-server
+</code></pre>
+<p>我这里总结一下，我们是使用 Dockerfile.build 文件来编译应用程序，使用 Dockerfile 文件来构建应用的运行环境。然后我们通过创建一个临时容器，把编译后的 http-server 文件拷贝到当前构建目录中，然后再把这个文件拷贝到运行环境的镜像中，最后指定容器的启动命令为 http-server。</p>
+<p>使用这种方式虽然可以实现分离镜像的编译和运行环境，但是我们需要额外引入一个 build.sh 脚本文件，而且构建过程中，还需要创建临时容器 builder 拷贝编译后的 http-server 文件，这使得整个构建过程比较复杂，并且整个构建过程也不够透明。</p>
+<p>为了解决这种问题， Docker 在 17.05 推出了多阶段构建（multistage-build）的解决方案。</p>
+<h3 id="使用多阶段构建">使用多阶段构建</h3>
+<p>Docker 允许我们在 Dockerfile 中使用多个 FROM 语句，而每个 FROM 语句都可以使用不同基础镜像。最终生成的镜像，是以最后一条 FROM 为准，所以我们可以在一个 Dockerfile 中声明多个 FROM，然后选择性地将一个阶段生成的文件拷贝到另外一个阶段中，从而实现最终的镜像只保留我们需要的环境和文件。多阶段构建的主要使用场景是<strong>分离编译环境和运行环境。</strong></p>
+<p>接下来，我们使用多阶段构建的特性，将上述未使用多阶段构建的过程精简成如下 Dockerfile：</p>
+<pre><code>FROM golang:1.13
+
+WORKDIR /go/src/github.com/wilhelmguo/multi-stage-demo/
+
+COPY main.go .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o http-server .
+
+FROM alpine:latest  
+
+WORKDIR /root/
+
+COPY --from=0 /go/src/github.com/wilhelmguo/multi-stage-demo/http-server .
+
+CMD ["./http-server"] 
+</code></pre>
+<p>然后，我们将这个 Dockerfile 拆解成两步进行分析。</p>
+<p>第一步，编译代码。</p>
+<pre><code>FROM golang:1.13
+
+WORKDIR /go/src/github.com/wilhelmguo/multi-stage-demo/
+
+COPY main.go .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o http-server .
+</code></pre>
+<p>将代码拷贝到 golang:1.13 镜像（已经安装好了 go）中，并且使用<code>go build</code>命令编译代码生成 http-server 文件。</p>
+<p>第二步，构建运行时镜像。</p>
+<pre><code>FROM alpine:latest  
+
+WORKDIR /root/
+
+COPY --from=0 /go/src/github.com/wilhelmguo/multi-stage-demo/http-server .
+
+CMD ["./http-server"]
+</code></pre>
+<p>使用第二个 FROM 命令表示镜像构建的第二阶段，使用 COPY 指令拷贝编译后的文件到 alpine 镜像中，–from=0 表示从第一阶段构建结果中拷贝文件到当前构建阶段。</p>
+<p>最后，我们只需要使用以下命令，即可实现整个镜像的构建：</p>
+<pre><code>docker build -t http-server:latest .
+</code></pre>
+<p>构建出来的镜像与未使用多阶段构建之前构建的镜像大小一致，为了验证这一结论，我们分别使用这两种方式来构建镜像，最后对比一下镜像构建的结果。</p>
+<h3 id="镜像构建对比">镜像构建对比</h3>
+<p>使用多阶段构建前后的代码我都已经放在了<a href="https://github.com/wilhelmguo/multi-stage-demo" target="_blank">Github</a>，你只需要克隆代码到本地即可。</p>
+<pre><code>$ mkdir /go/src/github.com/wilhelmguo
+
+$ cd /go/src/github.com/wilhelmguo
+
+$ git clone https://github.com/wilhelmguo/multi-stage-demo.git
+</code></pre>
+<p>代码克隆完成后，我们首先切换到without-multi-stage分支：</p>
+<pre><code>$ cd without-multi-stage
+
+$ git checkout without-multi-stage
+</code></pre>
+<p>这个分支是未使用多阶段构建技术构建镜像的代码，我们可以通过执行 build.sh 文件构建镜像：</p>
+<pre><code>$  chmod +x build.sh &amp;&amp; ./build.sh
+
+Building http-server:build
+
+Sending build context to Docker daemon  96.26kB
+
+Step 1/4 : FROM golang:1.13
+
+1.13: Pulling from library/golang
+
+d6ff36c9ec48: Pull complete 
+
+c958d65b3090: Pull complete 
+
+edaf0a6b092f: Pull complete 
+
+80931cf68816: Pull complete 
+
+813643441356: Pull complete 
+
+799f41bb59c9: Pull complete 
+
+16b5038bccc8: Pull complete 
+
+Digest: sha256:8ebb6d5a48deef738381b56b1d4cd33d99a5d608e0d03c5fe8dfa3f68d41a1f8
+
+Status: Downloaded newer image for golang:1.13
+
+ ---&gt; d6f3656320fe
+
+Step 2/4 : WORKDIR /go/src/github.com/wilhelmguo/multi-stage-demo/
+
+ ---&gt; Running in fa3da5ffb0c0
+
+Removing intermediate container fa3da5ffb0c0
+
+ ---&gt; 97245cbb773f
+
+Step 3/4 : COPY main.go .
+
+ ---&gt; a021d2f2a5bb
+
+Step 4/4 : RUN CGO_ENABLED=0 GOOS=linux go build -o http-server .
+
+ ---&gt; Running in b5c36bb67b9c
+
+Removing intermediate container b5c36bb67b9c
+
+ ---&gt; 76c0c88a5cf7
+
+Successfully built 76c0c88a5cf7
+
+Successfully tagged http-server:build
+
+4b0387b270bc4a4da570e1667fe6f9baac765f6b80c68f32007494c6255d9e5b
+
+builder
+
+Building http-server:latest
+
+Sending build context to Docker daemon  7.496MB
+
+Step 1/4 : FROM alpine:latest
+
+latest: Pulling from library/alpine
+
+df20fa9351a1: Already exists 
+
+Digest: sha256:185518070891758909c9f839cf4ca393ee977ac378609f700f60a771a2dfe321
+
+Status: Downloaded newer image for alpine:latest
+
+ ---&gt; a24bb4013296
+
+Step 2/4 : WORKDIR /root/
+
+ ---&gt; Running in 0b25ffe603b8
+
+Removing intermediate container 0b25ffe603b8
+
+ ---&gt; 80da40d3a0b4
+
+Step 3/4 : COPY http-server .
+
+ ---&gt; 3f2300210b7b
+
+Step 4/4 : CMD ["./http-server"]
+
+ ---&gt; Running in 045cea651dde
+
+Removing intermediate container 045cea651dde
+
+ ---&gt; 5c73883177e7
+
+Successfully built 5c73883177e7
+
+Successfully tagged http-server:latest
+</code></pre>
+<p>经过一段时间的等待，我们的镜像就构建完成了。
+镜像构建完成后，我们使用<code>docker image ls</code>命令查看一下刚才构建的镜像大小：</p>
+<pre><code>$ docker image ls http-server
+
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+
+http-server         latest              5c73883177e7        3 minutes ago       13MB
+
+http-server         build               76c0c88a5cf7        3 minutes ago       819MB
+</code></pre>
+<p>可以看到，http-server:latest 镜像只有 13M，而我们的编译镜像 http-server:build 则为 819M，虽然我们编写了很复杂的脚本 build.sh，但是这个脚本确实帮助我们将镜像体积减小了很多。</p>
+<p>下面，我们将代码切换到多阶段构建分支：</p>
+<pre><code>$ git checkout with-multi-stage
+
+Switched to branch 'with-multi-stage'
+</code></pre>
+<p>为了避免镜像名称重复，我们将多阶段构建的镜像命名为 http-server-with-multi-stage:latest ，并且禁用缓存，避免缓存干扰构建结果，构建命令如下：</p>
+<pre><code>$ docker build --no-cache -t http-server-with-multi-stage:latest .
+
+Sending build context to Docker daemon  96.77kB
+
+Step 1/8 : FROM golang:1.13
+
+ ---&gt; d6f3656320fe
+
+Step 2/8 : WORKDIR /go/src/github.com/wilhelmguo/multi-stage-demo/
+
+ ---&gt; Running in 640da7a92a62
+
+Removing intermediate container 640da7a92a62
+
+ ---&gt; 9c27b4606da0
+
+Step 3/8 : COPY main.go .
+
+ ---&gt; bd9ce4af24cb
+
+Step 4/8 : RUN CGO_ENABLED=0 GOOS=linux go build -o http-server .
+
+ ---&gt; Running in 6b441b4cc6b7
+
+Removing intermediate container 6b441b4cc6b7
+
+ ---&gt; 759acbf6c9a6
+
+Step 5/8 : FROM alpine:latest
+
+ ---&gt; a24bb4013296
+
+Step 6/8 : WORKDIR /root/
+
+ ---&gt; Running in c2aa2168acd8
+
+Removing intermediate container c2aa2168acd8
+
+ ---&gt; f026884acda6
+
+Step 7/8 : COPY --from=0 /go/src/github.com/wilhelmguo/multi-stage-demo/http-server .
+
+ ---&gt; 667503e6bc14
+
+Step 8/8 : CMD ["./http-server"]
+
+ ---&gt; Running in 15c4cc359144
+
+Removing intermediate container 15c4cc359144
+
+ ---&gt; b73cc4d99088
+
+Successfully built b73cc4d99088
+
+Successfully tagged http-server-with-multi-stage:latest
+</code></pre>
+<p>镜像构建完成后，我们同样使用<code>docker image ls</code>命令查看一下镜像构建结果：</p>
+<pre><code>$ docker image ls http-server-with-multi-stage:latest
+
+REPOSITORY                     TAG                 IMAGE ID            CREATED             SIZE
+
+http-server-with-multi-stage   latest              b73cc4d99088        2 minutes ago       13MB
+</code></pre>
+<p>可以看到，使用多阶段构建的镜像大小与上一步构建的镜像大小一致，都为 13M。但是使用多阶段构建后，却大大减少了我们的构建步骤，使得构建过程更加清晰可读。</p>
+<h3 id="多阶段构建的其他使用方式">多阶段构建的其他使用方式</h3>
+<p>多阶段构建除了我们上面讲解的使用方式，还有更多其他的使用方式，这些使用方式，可以使得多阶段构建实现更多的功能。</p>
+<h4 id="为构建阶段命名">为构建阶段命名</h4>
+<p>默认情况下，每一个构建阶段都没有被命名，你可以通过 FROM 指令出现的顺序来引用这些构建阶段，构建阶段的序号是从 0 开始的。然而，为了提高 Dockerfile 的可读性，我们需要为某些构建阶段起一个名称，这样即便后面我们对 Dockerfile 中的内容进程重新排序或者添加了新的构建阶段，其他构建过程中的 COPY 指令也不需要修改。</p>
+<p>上面的 Dockerfile 我们可以优化成如下内容：</p>
+<pre><code>FROM golang:1.13 AS builder
+
+WORKDIR /go/src/github.com/wilhelmguo/multi-stage-demo/
+
+COPY main.go .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o http-server .
+
+FROM alpine:latest  
+
+WORKDIR /root/
+
+COPY --from=builder /go/src/github.com/wilhelmguo/multi-stage-demo/http-server .
+
+CMD ["./http-server"]
+</code></pre>
+<p>我们在第一个构建阶段，使用 AS 指令将这个阶段命名为 builder。然后在第二个构建阶段使用 –from=builder 指令，即可从第一个构建阶段中拷贝文件，使得 Dockerfile 更加清晰可读。</p>
+<h4 id="停止在特定的构建阶段">停止在特定的构建阶段</h4>
+<p>有时候，我们的构建阶段非常复杂，我们想在代码编译阶段进行调试，但是多阶段构建默认构建 Dockerfile 的所有阶段，为了减少每次调试的构建时间，我们可以使用 target 参数来指定构建停止的阶段。</p>
+<p>例如，我只想在编译阶段调试 Dockerfile 文件，可以使用如下命令：</p>
+<pre><code>$ docker build --target builder -t http-server:latest .
+</code></pre>
+<p>在执行<code>docker build</code>命令时添加 target 参数，可以将构建阶段停止在指定阶段，从而方便我们调试代码编译过程。</p>
+<h4 id="使用现有镜像作为构建阶段">使用现有镜像作为构建阶段</h4>
+<p>使用多阶段构建时，不仅可以从 Dockerfile 中已经定义的阶段中拷贝文件，还可以使用<code>COPY --from</code>指令从一个指定的镜像中拷贝文件，指定的镜像可以是本地已经存在的镜像，也可以是远程镜像仓库上的镜像。</p>
+<p>例如，当我们想要拷贝 nginx 官方镜像的配置文件到我们自己的镜像中时，可以在 Dockerfile 中使用以下指令：</p>
+<pre><code>COPY --from=nginx:latest /etc/nginx/nginx.conf /etc/local/nginx.conf
+</code></pre>
+<p>从现有镜像中拷贝文件还有一些其他的使用场景。例如，有些工具没有我们使用的操作系统的安装源，或者安装源太老，需要我们自己下载源码并编译这些工具，但是这些工具可能依赖的编译环境非常复杂，而网上又有别人已经编译好的镜像。这时我们就可以使用<code>COPY --from</code>指令从编译好的镜像中将工具拷贝到我们自己的镜像中，很方便地使用这些工具了。</p>
+<h3 id="结语">结语</h3>
+<p>多阶段构建可以让我们通过一个 Dockerfile 很方便地构建出体积更小的镜像，并且我们只需要编写 Dockerfile 文件即可，无须借助外部脚本文件。这使得镜像构建过程更加简单透明，但要提醒一点：使用多阶段构建的唯一限制条件是我们使用的 Docker 版本必须高于 17.05 。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#177b7b7b2e232626272057707a767e7b3974787a" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93582a17c92338a0',t:'MTc0NTUyNDU5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
