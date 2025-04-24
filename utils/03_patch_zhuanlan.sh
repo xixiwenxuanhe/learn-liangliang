@@ -14,6 +14,13 @@ for zhuanlan in "${unfinished[@]}"; do
     tmp=$(mktemp)
     jq --arg name "$zhuanlan" 'map(if .name == $name then .status = "已完成" else . end)' "$TASK_FILE" > "$tmp" && mv "$tmp" "$TASK_FILE"
     echo "已完成: $zhuanlan"
+    
+    # Git 操作
+    echo "开始 Git 操作..."
+    git add "专栏/$zhuanlan/"
+    git commit -m "提交专栏/$zhuanlan"
+    git push origin main
+    echo "Git 操作完成"
 done
 
 echo "全部专栏处理完毕。" 
