@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%ae%a9Rust%e6%88%90%e4%b8%ba%e4%bd%a0%e7%9a%84%e4%b8%8b%e4%b8%80%e9%97%a8%e4%b8%bb%e5%8a%9b%e8%af%ad%e8%a8%80.md.html" id="00 开篇词 让Rust成为你的下一门主力语言.md.html">00 开篇词 让Rust成为你的下一门主力语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/01%20%e5%86%85%e5%ad%98%ef%bc%9a%e5%80%bc%e6%94%be%e5%a0%86%e4%b8%8a%e8%bf%98%e6%98%af%e6%94%be%e6%a0%88%e4%b8%8a%ef%bc%8c%e8%bf%99%e6%98%af%e4%b8%80%e4%b8%aa%e9%97%ae%e9%a2%98.md.html" id="01 内存：值放堆上还是放栈上，这是一个问题.md.html">01 内存：值放堆上还是放栈上，这是一个问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/02%20%e4%b8%b2%e8%ae%b2%ef%bc%9a%e7%bc%96%e7%a8%8b%e5%bc%80%e5%8f%91%e4%b8%ad%ef%bc%8c%e9%82%a3%e4%ba%9b%e4%bd%a0%e9%9c%80%e8%a6%81%e6%8e%8c%e6%8f%a1%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5.md.html" id="02 串讲：编程开发中，那些你需要掌握的基本概念.md.html">02 串讲：编程开发中，那些你需要掌握的基本概念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/03%20%e5%88%9d%e7%aa%a5%e9%97%a8%e5%be%84%ef%bc%9a%e4%bb%8e%e4%bd%a0%e7%9a%84%e7%ac%ac%e4%b8%80%e4%b8%aaRust%e7%a8%8b%e5%ba%8f%e5%bc%80%e5%a7%8b%ef%bc%81.md.html" id="03 初窥门径：从你的第一个Rust程序开始！.md.html">03 初窥门径：从你的第一个Rust程序开始！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/04%20get%20hands%20dirty%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%aa%e5%ae%9e%e7%94%a8%e7%9a%84CLI%e5%b0%8f%e5%b7%a5%e5%85%b7.md.html" id="04 get hands dirty：来写个实用的CLI小工具.md.html">04 get hands dirty：来写个实用的CLI小工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/05%20get%20hands%20dirty%ef%bc%9a%e5%81%9a%e4%b8%80%e4%b8%aa%e5%9b%be%e7%89%87%e6%9c%8d%e5%8a%a1%e5%99%a8%e6%9c%89%e5%a4%9a%e9%9a%be%ef%bc%9f.md.html" id="05 get hands dirty：做一个图片服务器有多难？.md.html">05 get hands dirty：做一个图片服务器有多难？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/06%20get%20hands%20dirty%ef%bc%9aSQL%e6%9f%a5%e8%af%a2%e5%b7%a5%e5%85%b7%e6%80%8e%e4%b9%88%e4%b8%80%e9%b1%bc%e5%a4%9a%e5%90%83%ef%bc%9f.md.html" id="06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html">06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/07%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e7%94%9f%e6%9d%80%e5%a4%a7%e6%9d%83%e5%88%b0%e5%ba%95%e5%9c%a8%e8%b0%81%e6%89%8b%e4%b8%8a%ef%bc%9f.md.html" id="07 所有权：值的生杀大权到底在谁手上？.md.html">07 所有权：值的生杀大权到底在谁手上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/08%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e5%80%9f%e7%94%a8%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="08 所有权：值的借用是如何工作的？.md.html">08 所有权：值的借用是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/09%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%80%bc%e5%8f%af%e4%bb%a5%e6%9c%89%e5%a4%9a%e4%b8%aa%e6%89%80%e6%9c%89%e8%80%85%e4%b9%88%ef%bc%9f.md.html" id="09 所有权：一个值可以有多个所有者么？.md.html">09 所有权：一个值可以有多个所有者么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/10%20%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9a%e4%bd%a0%e5%88%9b%e5%bb%ba%e7%9a%84%e5%80%bc%e7%a9%b6%e7%ab%9f%e8%83%bd%e6%b4%bb%e5%a4%9a%e4%b9%85%ef%bc%9f.md.html" id="10 生命周期：你创建的值究竟能活多久？.md.html">10 生命周期：你创建的值究竟能活多久？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/11%20%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9a%e4%bb%8e%e5%88%9b%e5%bb%ba%e5%88%b0%e6%b6%88%e4%ba%a1%ef%bc%8c%e5%80%bc%e9%83%bd%e7%bb%8f%e5%8e%86%e4%ba%86%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="11 内存管理：从创建到消亡，值都经历了什么？.md.html">11 内存管理：从创建到消亡，值都经历了什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/12%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9aRust%e7%9a%84%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%e6%9c%89%e4%bb%80%e4%b9%88%e7%89%b9%e7%82%b9%ef%bc%9f.md.html" id="12 类型系统：Rust的类型系统有什么特点？.md.html">12 类型系统：Rust的类型系统有什么特点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/13%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8trait%e6%9d%a5%e5%ae%9a%e4%b9%89%e6%8e%a5%e5%8f%a3%ef%bc%9f.md.html" id="13 类型系统：如何使用trait来定义接口？.md.html">13 类型系统：如何使用trait来定义接口？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/14%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%bf%85%e9%a1%bb%e6%8e%8c%e6%8f%a1%e7%9a%84trait%ef%bc%9f.md.html" id="14 类型系统：有哪些必须掌握的trait？.md.html">14 类型系统：有哪些必须掌握的trait？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/15%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bf%99%e4%ba%9b%e6%b5%93%e7%9c%89%e5%a4%a7%e7%9c%bc%e7%9a%84%e7%bb%93%e6%9e%84%e7%ab%9f%e7%84%b6%e9%83%bd%e6%98%af%e6%99%ba%e8%83%bd%e6%8c%87%e9%92%88%ef%bc%9f.md.html" id="15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html">15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/16%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9aVec_T_%e3%80%81&amp;[T]%e3%80%81Box_[T]_%20%ef%bc%8c%e4%bd%a0%e7%9c%9f%e7%9a%84%e4%ba%86%e8%a7%a3%e9%9b%86%e5%90%88%e5%ae%b9%e5%99%a8%e4%b9%88%ef%bc%9f.md.html" id="16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html">16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/17%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bd%af%e4%bb%b6%e7%b3%bb%e7%bb%9f%e6%a0%b8%e5%bf%83%e9%83%a8%e4%bb%b6%e5%93%88%e5%b8%8c%e8%a1%a8%ef%bc%8c%e5%86%85%e5%ad%98%e5%a6%82%e4%bd%95%e5%b8%83%e5%b1%80%ef%bc%9f.md.html" id="17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html">17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88Rust%e7%9a%84%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%e4%b8%8e%e4%bc%97%e4%b8%8d%e5%90%8c%ef%bc%9f.md.html" id="18 错误处理：为什么Rust的错误处理与众不同？.md.html">18 错误处理：为什么Rust的错误处理与众不同？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/19%20%e9%97%ad%e5%8c%85%ef%bc%9aFnOnce%e3%80%81FnMut%e5%92%8cFn%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e7%b1%bb%e5%9e%8b%ef%bc%9f.md.html" id="19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html">19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/20%204%20Steps%20%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9b%b4%e5%a5%bd%e5%9c%b0%e9%98%85%e8%af%bbRust%e6%ba%90%e7%a0%81%ef%bc%9f.md.html" id="20 4 Steps ：如何更好地阅读Rust源码？.md.html">20 4 Steps ：如何更好地阅读Rust源码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/21%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%881%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html">21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/22%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%882%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html">22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/23%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="23 类型系统：如何在实战中使用泛型编程？.md.html">23 类型系统：如何在实战中使用泛型编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/24%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8trait%20object%ef%bc%9f.md.html" id="24 类型系统：如何在实战中使用trait object？.md.html">24 类型系统：如何在实战中使用trait object？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/25%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9b%b4%e7%bb%95trait%e6%9d%a5%e8%ae%be%e8%ae%a1%e5%92%8c%e6%9e%b6%e6%9e%84%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="25 类型系统：如何围绕trait来设计和架构系统？.md.html">25 类型系统：如何围绕trait来设计和架构系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/26%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%883%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%ab%98%e7%ba%a7trait%e6%8a%80%e5%b7%a7.md.html" id="26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html">26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/27%20%e7%94%9f%e6%80%81%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e6%9c%89%e7%9a%84Rust%e5%ba%93%e5%8f%af%e4%bb%a5%e4%b8%ba%e6%88%91%e6%89%80%e7%94%a8%ef%bc%9f.md.html" id="27 生态系统：有哪些常有的Rust库可以为我所用？.md.html">27 生态系统：有哪些常有的Rust库可以为我所用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/28%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="28 网络开发（上）：如何使用Rust处理网络请求？.md.html">28 网络开发（上）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/29%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="29 网络开发（下）：如何使用Rust处理网络请求？.md.html">29 网络开发（下）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/30%20Unsafe%20Rust%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8C++%e7%9a%84%e6%96%b9%e5%bc%8f%e6%89%93%e5%bc%80Rust%ef%bc%9f.md.html" id="30 Unsafe Rust：如何用C++的方式打开Rust？.md.html">30 Unsafe Rust：如何用C++的方式打开Rust？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/31%20FFI%ef%bc%9aRust%e5%a6%82%e4%bd%95%e5%92%8c%e4%bd%a0%e7%9a%84%e8%af%ad%e8%a8%80%e6%9e%b6%e8%b5%b7%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html">31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/32%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e4%bd%bf%e7%94%a8PyO3%e5%bc%80%e5%8f%91Python3%e6%a8%a1%e5%9d%97.md.html" id="32 实操项目：使用PyO3开发Python3模块.md.html">32 实操项目：使用PyO3开发Python3模块.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html">33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html">34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/35%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84MPSC%20channel%ef%bc%9f.md.html" id="35 实操项目：如何实现一个基本的MPSC channel？.md.html">35 实操项目：如何实现一个基本的MPSC channel？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/36%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%884%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%a4%84%e7%90%86.md.html" id="36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html">36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/37%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%885%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8.md.html" id="37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html">37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/38%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aFuture%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f%e5%ae%83%e5%92%8casync_await%e6%98%af%e4%bb%80%e4%b9%88%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="38 异步处理：Future是什么？它和async_await是什么关系？.md.html">38 异步处理：Future是什么？它和async_await是什么关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/39%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aasync_await%e5%86%85%e9%83%a8%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="39 异步处理：async_await内部是怎么实现的？.md.html">39 异步处理：async_await内部是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/40%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%bc%82%e6%ad%a5IO%ef%bc%9f.md.html" id="40 异步处理：如何处理异步IO？.md.html">40 异步处理：如何处理异步IO？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/41%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%886%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86.md.html" id="41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html">41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/42%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%887%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%a6%82%e4%bd%95%e5%81%9a%e5%a4%a7%e7%9a%84%e9%87%8d%e6%9e%84%ef%bc%9f.md.html" id="42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html">42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/43%20%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%ef%bc%9a%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e4%b8%8b%e7%9a%84%e4%b8%80%e4%b8%aaRust%e9%a1%b9%e7%9b%ae%e5%8c%85%e5%90%ab%e5%93%aa%e4%ba%9b%e8%a6%81%e7%b4%a0%ef%bc%9f.md.html" id="43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html">43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/44%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%92%8c%e6%95%b0%e6%8d%ae%e5%a6%82%e4%bd%95%e6%89%93%e4%ba%a4%e9%81%93%ef%bc%9f.md.html" id="44 数据处理：应用程序和数据如何打交道？.md.html">44 数据处理：应用程序和数据如何打交道？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/45%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%888%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%85%8d%e7%bd%ae_%e6%b5%8b%e8%af%95_%e7%9b%91%e6%8e%a7_CI_CD.md.html" id="45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html">45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/46%20%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8Rust%e6%9e%b6%e6%9e%84%e5%a4%8d%e6%9d%82%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="46 软件架构：如何用Rust架构复杂系统？.md.html">46 软件架构：如何用Rust架构复杂系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20Rust2021%e7%89%88%e6%ac%a1%e9%97%ae%e4%b8%96%e4%ba%86%ef%bc%81.md.html" id="加餐 Rust2021版次问世了！.md.html">加餐 Rust2021版次问世了！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e4%bb%a3%e7%a0%81%e5%8d%b3%e6%95%b0%e6%8d%ae%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e9%9c%80%e8%a6%81%e5%ae%8f%e7%bc%96%e7%a8%8b%e8%83%bd%e5%8a%9b%ef%bc%9f.md.html" id="加餐 代码即数据：为什么我们需要宏编程能力？.md.html">加餐 代码即数据：为什么我们需要宏编程能力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e7%94%a8%e6%9c%80%e2%80%9c%e7%ac%a8%e2%80%9d%e7%9a%84%e6%96%b9%e5%bc%8f%e6%92%b0%e5%86%99%e5%ae%8f.md.html" id="加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html">加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e7%94%a8%20syn_quote%20%e4%bc%98%e9%9b%85%e5%9c%b0%e6%9e%84%e5%bb%ba%e5%ae%8f.md.html" id="加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html">加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%84%9a%e6%98%a7%e4%b9%8b%e5%b7%85%ef%bc%9a%e4%bd%a0%e7%9a%84Rust%e5%ad%a6%e4%b9%a0%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%e6%b1%87%e6%80%bb.md.html" id="加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html">加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e5%8f%82%e8%80%83%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="加餐 期中测试：参考实现讲解.md.html">加餐 期中测试：参考实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84grep%e5%91%bd%e4%bb%a4%e8%a1%8c.md.html" id="加餐 期中测试：来写一个简单的grep命令行.md.html">加餐 期中测试：来写一个简单的grep命令行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e8%bf%99%e4%b8%aa%e4%b8%93%e6%a0%8f%e4%bd%a0%e5%8f%af%e4%bb%a5%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%8c%e4%bb%a5%e5%8f%8aRust%e6%98%af%e5%90%a6%e5%80%bc%e5%be%97%e5%ad%a6%ef%bc%9f.md.html" id="加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html">加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（一）：听听课代表们怎么说.md.html">特别策划 学习锦囊（一）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（三）：听听课代表们怎么说.md.html">特别策划 学习锦囊（三）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（二）：听听课代表们怎么说.md.html">特别策划 学习锦囊（二）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%bb%9d%e6%9c%9b%e4%b9%8b%e8%b0%b7%ef%bc%9a%e6%94%b9%e5%8f%98%e4%bb%8e%e5%ad%a6%e4%b9%a0%e5%bc%80%e5%a7%8b.md.html" id="用户故事 绝望之谷：改变从学习开始.md.html">用户故事 绝望之谷：改变从学习开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%af%ad%e8%a8%80%e4%b8%8d%e4%bb%85%e6%98%af%e5%b7%a5%e5%85%b7%ef%bc%8c%e8%bf%98%e6%98%af%e6%80%9d%e7%bb%b4%e6%96%b9%e5%bc%8f.md.html" id="用户故事 语言不仅是工具，还是思维方式.md.html">用户故事 语言不仅是工具，还是思维方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%b0%b8%e7%bb%ad%e4%b9%8b%e5%8e%9f%ef%bc%9aRust%e5%ad%a6%e4%b9%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e6%8c%81%e7%bb%ad%e7%b2%be%e8%bf%9b%ef%bc%9f.md.html" id="结束语 永续之原：Rust学习，如何持续精进？.md.html">结束语 永续之原：Rust学习，如何持续精进？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？" id="title">19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？</h1>
+<div><p>你好，我是陈天。</p>
+<p>在现代编程语言中，闭包是一个很重要的工具，可以让我们很方便地以函数式编程的方式来撰写代码。因为闭包可以作为参数传递给函数，可以作为返回值被函数返回，也可以为它实现某个 trait，使其能表现出其他行为，而不仅仅是作为函数被调用。</p>
+<p>这些都是怎么做到的？这就和 Rust 里闭包的本质有关了，我们今天就来学习基础篇的最后一个知识点：闭包。</p>
+<h3 id="闭包的定义">闭包的定义</h3>
+<p>之前介绍了闭包的基本概念和一个非常简单的例子：</p>
+<blockquote>
+<p>闭包是将函数，或者说代码和其环境一起存储的一种数据结构。闭包引用的上下文中的自由变量，会被捕获到闭包的结构中，成为闭包类型的一部分（[第二讲]）。</p>
+</blockquote>
+<p>闭包会根据内部的使用情况，捕获环境中的自由变量。在 Rust 里，闭包可以用 <code>|args| {code}</code> 来表述，图中闭包 c 捕获了上下文中的 a 和 b，并通过引用来使用这两个自由变量：-
+<img alt="" src="assets/6060b99f222ef6e435c9fe7c83f46593.jpg"/></p>
+<p>除了用引用来捕获自由变量之外，还有另外一个方法使用 move 关键字 <code>move |args| {code}</code> 。</p>
+<p>之前的课程中，多次见到了创建新线程的 thread::spawn，它的参数就是一个闭包：</p>
+<pre><code>pub fn spawn&lt;F, T&gt;(f: F) -&gt; JoinHandle&lt;T&gt; 
+where
+    F: FnOnce() -&gt; T,
+    F: Send + 'static,
+    T: Send + 'static,
+</code></pre>
+<p>仔细看这个接口：</p>
+<ol>
+<li>F: FnOnce() → T，表明 F 是一个接受 0 个参数、返回 T 的闭包。FnOnce 我们稍后再说。</li>
+<li>F: Send + ‘static，说明闭包 F 这个数据结构，需要静态生命周期或者拥有所有权，并且它还能被发送给另一个线程。</li>
+<li>T: Send + ‘static，说明闭包 F 返回的数据结构 T，需要静态生命周期或者拥有所有权，并且它还能被发送给另一个线程。</li>
+</ol>
+<p>1 和 3 都很好理解，2 就有些费解了。一个闭包，它不就是一段代码 + 被捕获的变量么？需要静态生命周期或者拥有所有权是什么意思？</p>
+<p>拆开看。代码自然是静态生命周期了，那么是不是意味着被捕获的变量，需要静态生命周期或者拥有所有权？</p>
+<p>的确如此。在使用 thread::spawn 时，我们需要使用 move 关键字，把变量的所有权从当前作用域移动到闭包的作用域，让 thread::spawn 可以正常编译通过：</p>
+<pre><code>use std::thread;
+
+fn main() {
+    let s = String::from("hello world");
+
+    let handle = thread::spawn(move || {
+        println!("moved: {:?}", s);
+    });
+
+    handle.join().unwrap();
+}
+</code></pre>
+<p>但你有没有好奇过，加 move 和不加 move，这两种闭包有什么本质上的不同？闭包究竟是一种什么样的数据类型，让编译器可以判断它是否满足 Send + ‘static 呢？我们从闭包的本质下手来尝试回答这两个问题。</p>
+<h3 id="闭包本质上是什么">闭包本质上是什么？</h3>
+<p>在官方的 Rust reference 中，有这样的<a href="https://doc.rust-lang.org/reference/types/closure.html" target="_blank">定义</a>：</p>
+<blockquote>
+<p>A closure expression produces a closure value with a unique, anonymous type that cannot be written out. A closure type is approximately equivalent to a struct which contains the captured variables.</p>
+</blockquote>
+<p>闭包是一种匿名类型，<strong>一旦声明，就会产生一个新的类型</strong>，但这个类型无法被其它地方使用。<strong>这个类型就像一个结构体，会包含所有捕获的变量</strong>。</p>
+<p>所以闭包类似一个特殊的结构体？</p>
+<p>为了搞明白这一点，我们得写段代码探索一下，建议你跟着敲一遍认真思考（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=b68b60542c9bda8dbcbc4a63915a7590" target="_blank">代码</a>）：</p>
+<pre><code>use std::{collections::HashMap, mem::size_of_val};
+fn main() {
+    // 长度为 0
+    let c1 = || println!("hello world!");
+    // 和参数无关，长度也为 0
+    let c2 = |i: i32| println!("hello: {}", i);
+    let name = String::from("tyr");
+    let name1 = name.clone();
+    let mut table = HashMap::new();
+    table.insert("hello", "world");
+    // 如果捕获一个引用，长度为 8
+    let c3 = || println!("hello: {}", name);
+    // 捕获移动的数据 name1(长度 24) + table(长度 48)，closure 长度 72
+    let c4 = move || println!("hello: {}, {:?}", name1, table);
+    let name2 = name.clone();
+    // 和局部变量无关，捕获了一个 String name2，closure 长度 24
+    let c5 = move || {
+        let x = 1;
+        let name3 = String::from("lindsey");
+        println!("hello: {}, {:?}, {:?}", x, name2, name3);
+    };
+
+		println!(
+        "c1: {}, c2: {}, c3: {}, c4: {}, c5: {}, main: {}",
+        size_of_val(&amp;c1),
+        size_of_val(&amp;c2),
+        size_of_val(&amp;c3),
+        size_of_val(&amp;c4),
+        size_of_val(&amp;c5),
+        size_of_val(&amp;main),
+    )
+}
+</code></pre>
+<p>分别生成了 5 个闭包：</p>
+<ul>
+<li>c1 没有参数，也没捕获任何变量，从代码输出可以看到，c1 长度为 0；</li>
+<li>c2 有一个 i32 作为参数，没有捕获任何变量，长度也为 0，可以看出参数跟闭包的大小无关；</li>
+<li>c3 捕获了一个对变量 name 的引用，这个引用是 &amp;String，长度为 8。而 c3 的长度也是 8；</li>
+<li>c4 捕获了变量 name1 和 table，由于用了 move，它们的所有权移动到了 c4 中。c4 长度是 72，恰好等于 String 的 24 字节，加上 HashMap 的 48 字节。</li>
+<li>c5 捕获了 name2，name2 的所有权移动到了 c5，虽然 c5 有局部变量，但它的大小和局部变量也无关，c5 的大小等于 String 的 24 字节。</li>
+</ul>
+<p>学到这里，前面的第一个问题就解决了，可以看到，不带 move 时，闭包捕获的是对应自由变量的引用；带 move 时，对应自由变量的所有权会被移动到闭包结构中。</p>
+<p>继续分析这段代码的运行结果。</p>
+<p>还知道了，<strong>闭包的大小跟参数、局部变量都无关，只跟捕获的变量有关</strong>。如果你回顾[第一讲]函数调用，参数和局部变量在栈中如何存放的图，就很清楚了：因为它们是在调用的时刻才在栈上产生的内存分配，说到底和闭包类型本身是无关的，所以闭包的大小跟它们自然无关。-
+<img alt="" src="assets/568023dcb61859029aa0eb48c5eb1c8f.jpg"/></p>
+<p>那一个闭包类型在内存中究竟是如何排布的，和结构体有什么区别？我们要再次结合 rust-gdb 探索，看看上面的代码在运行结束前，几个长度不为 0 闭包内存里都放了什么：-
+<img alt="" src="assets/404f3a30a4150a774b8310ab105c3fdd.png"/></p>
+<p>可以看到，c3 的确是一个引用，把它指向的内存地址的 24 个字节打出来，是 (ptr | cap | len) 的标准结构。如果打印 ptr 对应的堆内存的 3 个字节，是 ‘t’ ‘y’ ‘r’。</p>
+<p>而 c4 捕获的 name 和 table，内存结构和下面的结构体一模一样：</p>
+<pre><code>struct Closure4 {
+    name: String,  // (ptr|cap|len)=24字节
+    table: HashMap&lt;&amp;str, &amp;str&gt; // (RandomState(16)|mask|ctrl|left|len)=48字节
+}
+</code></pre>
+<p>不过，对于 closure 类型来说，编译器知道像函数一样调用闭包 c4() 是合法的，并且知道执行 c4() 时，代码应该跳转到什么地址来执行。在执行过程中，如果遇到 name、table，可以从自己的数据结构中获取。</p>
+<p>那么多想一步，闭包捕获变量的顺序，和其内存结构的顺序是一致的么？的确如此，如果我们调整闭包里使用 name1 和 table 的顺序：</p>
+<pre><code>let c4 = move || println!("hello: {:?}, {}", table, name1);
+</code></pre>
+<p>其数据的位置是相反的，类似于：</p>
+<pre><code>struct Closure4 {
+    table: HashMap&lt;&amp;str, &amp;str&gt; // (RandomState(16)|mask|ctrl|left|len)=48字节
+    name: String,  // (ptr|cap|len)=24字节
+}
+</code></pre>
+<p>从 gdb 中也可以看到同样的结果：-
+<img alt="" src="assets/f216f8bb700965f9ac3b79b71196ea02.png"/></p>
+<p>不过这只是逻辑上的位置，如果你还记得[第 11 讲] struct 在内存的排布，Rust 编译器会重排内存，让数据能够以最小的代价对齐，所以有些情况下，内存中数据的顺序可能和 struct 定义不一致。</p>
+<p>所以回到刚才闭包和结构体的比较。在 Rust 里，闭包产生的匿名数据类型，格式和 struct 是一样的。看图中 gdb 的输出，<strong>闭包是存储在栈上，并且除了捕获的数据外，闭包本身不包含任何额外函数指针指向闭包的代码</strong>。如果你理解了 c3/c4 这两个闭包，c5 是如何构造的就很好理解了。</p>
+<p>现在，你是不是可以回答为什么 thread::spawn 对传入的闭包约束是 Send + ‘static 了？究竟什么样的闭包满足它呢？很明显，使用了 move 且 move 到闭包内的数据结构满足 Send，因为此时，闭包的数据结构拥有所有数据的所有权，它的生命周期是 ‘static。</p>
+<p>看完Rust闭包的内存结构，你是不是想说“就这”，没啥独特之处吧？但是对比其他语言，结合接下来我的解释，你再仔细想想就会有一种“这怎么可能”的惊讶。</p>
+<h3 id="不同语言的闭包设计">不同语言的闭包设计</h3>
+<p>闭包最大的问题是变量的多重引用导致生命周期不明确，所以你先想，其它支持闭包的语言（lambda 也是闭包），它们的闭包会放在哪里？</p>
+<p>栈上么？是，又好像不是。</p>
+<p>因为闭包这玩意，从当前上下文中捕获了些变量，变得有点不伦不类，不像函数那样清楚，尤其是这些被捕获的变量，它们的归属和生命周期处理起来很麻烦。所以，大部分编程语言的闭包很多时候无法放在栈上，需要额外的堆分配。你可以看这个 <a href="https://github.com/golang/go/issues/43210" target="_blank">Golang 的例子</a>。</p>
+<p>不光 Golang，Java/Swift/Python/JavaScript 等语言都是如此，这也是为什么大多数编程语言闭包的性能要远低于函数调用。因为使用闭包就意味着：额外的堆内存分配、潜在的动态分派（很多语言会把闭包处理成函数指针）、额外的内存回收。</p>
+<p>在性能上，唯有 C++ 的 lambda 和 Rust 闭包类似，不过 C++ 的闭包还有<a href="http://www.elbeno.com/blog/?p=1068" target="_blank">一些场景</a>会触发堆内存分配。如果你还记得 16 讲的 Rust/Swift/Kotlin iterator 函数式编程的性能测试：-
+<img alt="" src="assets/c1e1c1909b761cfa3348115bb417d4d4.png"/></p>
+<p>Kotlin 运行超时，Swift 很慢，Rust 的性能却和使用命令式编程的 C 几乎一样，除了编译器优化的效果，也因为 Rust 闭包的性能和函数差不多。</p>
+<p>为什么 Rust 可以做到这样呢？这又跟 Rust 从根本上使用所有权和借用，解决了内存归属问题有关。</p>
+<p>在其他语言中，闭包变量因为多重引用导致生命周期不明确，但 Rust 从一开始就消灭了这个问题：</p>
+<ul>
+<li>如果不使用 move 转移所有权，闭包会引用上下文中的变量，<strong>这个引用受借用规则的约束</strong>，所以只要编译通过，那么闭包对变量的引用就不会超过变量的生命周期，没有内存安全问题。</li>
+<li>如果使用 move 转移所有权，上下文中的变量在转移后就无法访问，<strong>闭包完全接管这些变量</strong>，它们的生命周期和闭包一致，所以也不会有内存安全问题。</li>
+</ul>
+<p>而 Rust 为每个闭包生成一个新的类型，又使得<strong>调用闭包时可以直接和代码对应</strong>，省去了使用函数指针再转一道手的额外消耗。</p>
+<p>所以还是那句话，当回归到最初的本原，你解决的不是单个问题，而是由此引发的所有问题。我们不必为堆内存管理设计 GC、不必为其它资源的回收提供 defer 关键字、不必为并发安全进行诸多限制、也不必为闭包挖空心思搞优化。</p>
+<h2 id="rust的闭包类型">Rust的闭包类型</h2>
+<p>现在我们搞明白了闭包究竟是个什么东西，在内存中怎么表示，接下来我们看看 FnOnce/FnMut/Fn 这三种闭包类型有什么区别。</p>
+<p>在声明闭包的时候，我们并不需要指定闭包要满足的约束，但是当闭包作为函数的参数或者数据结构的一个域时，我们需要告诉调用者，对闭包的约束。还以 thread::spawn 为例，它要求传入的闭包满足 FnOnce trait。</p>
+<h3 id="fnonce">FnOnce</h3>
+<p>先来看 FnOnce。它的<a href="https://doc.rust-lang.org/std/ops/trait.FnOnce.html" target="_blank">定义</a>如下：</p>
+<pre><code>pub trait FnOnce&lt;Args&gt; {
+    type Output;
+    extern "rust-call" fn call_once(self, args: Args) -&gt; Self::Output;
+}
+</code></pre>
+<p>FnOnce 有一个关联类型 Output，显然，它是闭包返回值的类型；还有一个方法 call_once，要注意的是 call_once 第一个参数是 self，它会转移 self 的所有权到 call_once 函数中。</p>
+<p>这也是为什么 FnOnce 被称作 Once ：<strong>它只能被调用一次</strong>。再次调用，编译器就会报变量已经被 move 这样的常见所有权错误了。</p>
+<p>至于 FnOnce 的参数，是一个叫 Args 的泛型参数，它并没有任何约束。如果你对这个感兴趣可以看文末的参考资料。</p>
+<p>看一个隐式的 FnOnce 的例子：</p>
+<pre><code>fn main() {
+    let name = String::from("Tyr");
+    // 这个闭包啥也不干，只是把捕获的参数返回去
+    let c = move |greeting: String| (greeting, name);
+
+    let result = c("hello".to_string());
+
+    println!("result: {:?}", result);
+
+    // 无法再次调用
+    let result = c("hi".to_string());
+}
+</code></pre>
+<p>这个闭包 c，啥也没做，只是把捕获的参数返回。就像一个结构体里，某个字段被转移走之后，就不能再访问一样，闭包内部的数据一旦被转移，这个闭包就不完整了，也就无法再次使用，所以它是一个 FnOnce 的闭包。</p>
+<p>如果一个闭包并不转移自己的内部数据，那么它就不是 FnOnce，然而，一旦它被当做 FnOnce 调用，自己会被转移到 call_once 函数的作用域中，之后就无法再次调用了，我们看个例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=d35767cd6cc747d21a57592088aa5854" target="_blank">代码</a>）：</p>
+<pre><code>fn main() {
+    let name = String::from("Tyr");
+
+    // 这个闭包会 clone 内部的数据返回，所以它不是 FnOnce
+    let c = move |greeting: String| (greeting, name.clone());
+
+    // 所以 c1 可以被调用多次
+
+    println!("c1 call once: {:?}", c("qiao".into()));
+    println!("c1 call twice: {:?}", c("bonjour".into()));
+
+    // 然而一旦它被当成 FnOnce 被调用，就无法被再次调用
+    println!("result: {:?}", call_once("hi".into(), c));
+
+    // 无法再次调用
+    // let result = c("hi".to_string());
+
+    // Fn 也可以被当成 FnOnce 调用，只要接口一致就可以
+    println!("result: {:?}", call_once("hola".into(), not_closure));
+}
+
+fn call_once(arg: String, c: impl FnOnce(String) -&gt; (String, String)) -&gt; (String, String) {
+    c(arg)
+}
+
+fn not_closure(arg: String) -&gt; (String, String) {
+    (arg, "Rosie".into())
+}
+</code></pre>
+<h3 id="fnmut">FnMut</h3>
+<p>理解了 FnOnce，我们再来看 FnMut，它的<a href="https://doc.rust-lang.org/std/ops/trait.FnMut.html" target="_blank">定义</a>如下：</p>
+<pre><code>pub trait FnMut&lt;Args&gt;: FnOnce&lt;Args&gt; {
+    extern "rust-call" fn call_mut(
+        &amp;mut self, 
+        args: Args
+    ) -&gt; Self::Output;
+}
+</code></pre>
+<p>首先，FnMut “继承”了 FnOnce，或者说 FnOnce 是 FnMut 的 super trait。所以FnMut也拥有 Output 这个关联类型和 call_once 这个方法。此外，它还有一个 call_mut() 方法。<strong>注意 call_mut() 传入 &amp;mut self，它不移动 self，所以 FnMut 可以被多次调用</strong>。</p>
+<p>因为 FnOnce 是 FnMut 的 super trait，所以，一个 FnMut 闭包，可以被传给一个需要 FnOnce 的上下文，此时调用闭包相当于调用了 call_once()。</p>
+<p>如果你理解了前面讲的闭包的内存组织结构，那么 FnMut 就不难理解，就像结构体如果想改变数据需要用 let mut 声明一样，如果你想改变闭包捕获的数据结构，那么就需要 FnMut。我们看个例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=979173c2269312cb63a73bb439a5b3b8" target="_blank">代码</a>）：</p>
+<pre><code>fn main() {
+    let mut name = String::from("hello");
+    let mut name1 = String::from("hola");
+
+    // 捕获 &amp;mut name
+    let mut c = || {
+        name.push_str(" Tyr");
+        println!("c: {}", name);
+    };
+
+    // 捕获 mut name1，注意 name1 需要声明成 mut
+    let mut c1 = move || {
+        name1.push_str("!");
+        println!("c1: {}", name1);
+    };
+
+    c();
+    c1();
+
+    call_mut(&amp;mut c);
+    call_mut(&amp;mut c1);
+
+    call_once(c);
+    call_once(c1);
+}
+
+// 在作为参数时，FnMut 也要显式地使用 mut，或者 &amp;mut
+fn call_mut(c: &amp;mut impl FnMut()) {
+    c();
+}
+
+// 想想看，为啥 call_once 不需要 mut？
+fn call_once(c: impl FnOnce()) {
+    c();
+}
+</code></pre>
+<p>在声明的闭包 c 和 c1 里，我们修改了捕获的 name 和 name1。不同的是 name 使用了引用，而 name1 移动了所有权，这两种情况和其它代码一样，也需要遵循所有权和借用有关的规则。所以，如果在闭包 c 里借用了 name，你就不能把 name 移动给另一个闭包 c1。</p>
+<p>这里也展示了，c 和 c1 这两个符合 FnMut 的闭包，能作为 FnOnce 来调用。我们在代码中也确认了，FnMut 可以被多次调用，这是因为 call_mut() 使用的是 &amp;mut self，不移动所有权。</p>
+<h3 id="fn">Fn</h3>
+<p>最后我们来看看 Fn trait。它的<a href="https://doc.rust-lang.org/std/ops/trait.Fn.html" target="_blank">定义</a>如下：</p>
+<pre><code>pub trait Fn&lt;Args&gt;: FnMut&lt;Args&gt; {
+    extern "rust-call" fn call(&amp;self, args: Args) -&gt; Self::Output;
+}
+</code></pre>
+<p>可以看到，它“继承”了 FnMut，或者说 FnMut 是 Fn 的 super trait。这也就意味着<strong>任何需要 FnOnce 或者 FnMut 的场合，都可以传入满足 Fn 的闭包</strong>。我们继续看例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=e00f0e9009d0991f7d7e7ec48e9d93d5" target="_blank">代码</a>）：</p>
+<pre><code>fn main() {
+    let v = vec![0u8; 1024];
+    let v1 = vec![0u8; 1023];
+
+    // Fn，不移动所有权
+    let mut c = |x: u64| v.len() as u64 * x;
+    // Fn，移动所有权
+    let mut c1 = move |x: u64| v1.len() as u64 * x;
+
+    println!("direct call: {}", c(2));
+    println!("direct call: {}", c1(2));
+
+    println!("call: {}", call(3, &amp;c));
+    println!("call: {}", call(3, &amp;c1));
+
+    println!("call_mut: {}", call_mut(4, &amp;mut c));
+    println!("call_mut: {}", call_mut(4, &amp;mut c1));
+
+    println!("call_once: {}", call_once(5, c));
+    println!("call_once: {}", call_once(5, c1));
+}
+
+fn call(arg: u64, c: &amp;impl Fn(u64) -&gt; u64) -&gt; u64 {
+    c(arg)
+}
+
+fn call_mut(arg: u64, c: &amp;mut impl FnMut(u64) -&gt; u64) -&gt; u64 {
+    c(arg)
+}
+
+fn call_once(arg: u64, c: impl FnOnce(u64) -&gt; u64) -&gt; u64 {
+    c(arg)
+}
+</code></pre>
+<h2 id="闭包的使用场景">闭包的使用场景</h2>
+<p>在讲完Rust的三个闭包类型之后，最后来看看闭包的使用场景。虽然今天才开始讲闭包，但其实之前隐晦地使用了很多闭包。</p>
+<p>thread::spawn 自不必说，我们熟悉的 Iterator trait 里面大部分函数都接受一个闭包，比如 <a href="https://doc.rust-lang.org/src/core/iter/traits/iterator.rs.html#682-685" target="_blank">map</a>：</p>
+<pre><code>fn map&lt;B, F&gt;(self, f: F) -&gt; Map&lt;Self, F&gt;
+where
+		Self: Sized,
+	  F: FnMut(Self::Item) -&gt; B,
+{
+		Map::new(self, f)
+}
+</code></pre>
+<p>可以看到，Iterator 的 map() 方法接受一个 FnMut，它的参数是 Self::Item，返回值是没有约束的泛型参数 B。Self::Item 是 Iterator::next() 方法吐出来的数据，被 map 之后，可以得到另一个结果。</p>
+<p>所以在函数的参数中使用闭包，是闭包一种非常典型的用法。另外闭包也可以作为函数的返回值，举个简单的例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=92a031385725865cc8d11bd3d56bdd69" target="_blank">代码</a>）：</p>
+<pre><code>use std::ops::Mul;
+
+fn main() {
+    let c1 = curry(5);
+    println!("5 multiply 2 is: {}", c1(2));
+
+    let adder2 = curry(3.14);
+    println!("pi multiply 4^2 is: {}", adder2(4. * 4.));
+}
+
+fn curry&lt;T&gt;(x: T) -&gt; impl Fn(T) -&gt; T
+where
+    T: Mul&lt;Output = T&gt; + Copy,
+{
+    move |y| x * y
+}
+</code></pre>
+<p>最后，闭包还有一种并不少见，但可能不太容易理解的用法：<strong>为它实现某个 trait</strong>，使其也能表现出其他行为，而不仅仅是作为函数被调用。比如说有些接口既可以传入一个结构体，又可以传入一个函数或者闭包。</p>
+<p>我们看一个 <a href="https://github.com/hyperium/tonic" target="_blank">tonic</a>（Rust 下的 gRPC 库）的<a href="https://docs.rs/tonic/0.5.2/src/tonic/service/interceptor.rs.html#41-53" target="_blank">例子</a>：</p>
+<pre><code>pub trait Interceptor {
+    /// Intercept a request before it is sent, optionally cancelling it.
+    fn call(&amp;mut self, request: crate::Request&lt;()&gt;) -&gt; Result&lt;crate::Request&lt;()&gt;, Status&gt;;
+}
+
+impl&lt;F&gt; Interceptor for F
+where
+    F: FnMut(crate::Request&lt;()&gt;) -&gt; Result&lt;crate::Request&lt;()&gt;, Status&gt;,
+{
+    fn call(&amp;mut self, request: crate::Request&lt;()&gt;) -&gt; Result&lt;crate::Request&lt;()&gt;, Status&gt; {
+        self(request)
+    }
+}
+</code></pre>
+<p>在这个例子里，Interceptor 有一个 call 方法，它可以让 gRPC Request 被发送出去之前被修改，一般是添加各种头，比如 Authorization 头。</p>
+<p>我们可以创建一个结构体，为它实现 Interceptor，不过大部分时候 Interceptor 可以直接通过一个闭包函数完成。为了让传入的闭包也能通过 Interceptor::call() 来统一调用，可以为符合某个接口的闭包实现 Interceptor trait。掌握了这种用法，我们就可以通过某些 trait 把特定的结构体和闭包统一起来调用，是不是很神奇。</p>
+<h2 id="小结">小结</h2>
+<p>Rust 闭包的效率非常高。首先闭包捕获的变量，都储存在栈上，没有堆内存分配。其次因为闭包在创建时会隐式地创建自己的类型，每个闭包都是一个新的类型。通过闭包自己唯一的类型，Rust 不需要额外的函数指针来运行闭包，所以<strong>闭包的调用效率和函数调用几乎一致</strong>。</p>
+<p>Rust 支持三种不同的闭包 trait：FnOnce、FnMut 和 Fn。FnOnce 是 FnMut 的 super trait，而 FnMut 又是 Fn 的 super trait。从这些 trait 的接口可以看出，</p>
+<ul>
+<li>FnOnce 只能调用一次；</li>
+<li>FnMut 允许在执行时修改闭包的内部数据，可以执行多次；</li>
+<li>Fn 不允许修改闭包的内部数据，也可以执行多次。</li>
+</ul>
+<p>总结一下三种闭包使用的情况以及它们之间的关系：<img alt="" src="assets/cba964802787a05f173099b13d210b25.jpg"/></p>
+<h3 id="思考题">思考题</h3>
+<ol>
+<li><p>下面的代码，闭包 c 相当于一个什么样的结构体？它的长度多大？代码的最后，main() 函数还能访问变量 name 么？为什么？</p>
+<p>fn main() {</p>
+<pre><code>let name = String::from("Tyr");
+let vec = vec!["Rust", "Elixir", "Javascript"];
+let v = &amp;vec[..];
+let data = (1, 2, 3, 4);
+let c = move || {
+    println!("data: {:?}", data);
+    println!("v: {:?}, name: {:?}", v, name.clone());
+};
+c();
+
+
+// 请问在这里，还能访问 name 么？为什么？
+</code></pre>
+<p>}</p></li>
+<li><p>在讲到 FnMut 时，我们放了一段代码，在那段代码里，我问了一个问题：为啥 call_once 不需要 c 是 mut 呢？就像下面这样：</p>
+<p>// 想想看，为啥 call_once 不需要 mut？
+fn call_once(mut c: impl FnOnce()) {</p>
+<pre><code>c();
+</code></pre>
+<p>}</p></li>
+<li><p>为下面的代码添加实现，使其能够正常工作（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=f29ebd99613bc9da1d358e0f5b758fd6" target="_blank">代码</a>）：</p>
+<p>pub trait Executor {</p>
+<pre><code>fn execute(&amp;self, cmd: &amp;str) -&gt; Result&lt;String, &amp;'static str&gt;;
+</code></pre>
+<p>}</p>
+<p>struct BashExecutor {</p>
+<pre><code>env: String,
+</code></pre>
+<p>}</p>
+<p>impl Executor for BashExecutor {</p>
+<pre><code>fn execute(&amp;self, cmd: &amp;str) -&gt; Result&lt;String, &amp;'static str&gt; {
+    Ok(format!(
+        "fake bash execute: env: {}, cmd: {}",
+        self.env, cmd
+    ))
+}
+</code></pre>
+<p>}</p>
+<p>// 看看我给的 tonic 的例子，想想怎么实现让 27 行可以正常执行</p>
+<p>fn main() {</p>
+<pre><code>let env = "PATH=/usr/bin".to_string();
+
+
+let cmd = "cat /etc/passwd";
+let r1 = execute(cmd, BashExecutor { env: env.clone() });
+println!("{:?}", r1);
+
+
+let r2 = execute(cmd, |cmd: &amp;str| {
+    Ok(format!("fake fish execute: env: {}, cmd: {}", env, cmd))
+});
+println!("{:?}", r2);
+</code></pre>
+<p>}</p>
+<p>fn execute(cmd: &amp;str, exec: impl Executor) -&gt; Result<string, &'static="" str=""> {</string,></p>
+<pre><code>exec.execute(cmd)
+</code></pre>
+<p>}</p></li>
+</ol>
+<p>你已经完成Rust学习的第19次打卡。如果你觉得有收获，也欢迎你分享给身边的朋友，邀TA一起讨论。我们下节课见～</p>
+<h2 id="参考资料">参考资料</h2>
+<p>怎么理解 FnOnce 的 Args 泛型参数呢？Args 又是怎么和 FnOnce 的约束，比如 FnOnce(String) 这样的参数匹配呢？感兴趣的同学可以看下面的例子，它（不完全）模拟了 FnOnce 中闭包的使用（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=424352c0be4e143b284a0223a4a8bff5" target="_blank">代码</a>）：</p>
+<pre><code>struct ClosureOnce&lt;Captured, Args, Output&gt; {
+    // 捕获的数据
+    captured: Captured,
+    // closure 的执行代码
+    func: fn(Args, Captured) -&gt; Output,
+}
+
+impl&lt;Captured, Args, Output&gt; ClosureOnce&lt;Captured, Args, Output&gt; {
+    // 模拟 FnOnce 的 call_once，直接消耗 self
+    fn call_once(self, greeting: Args) -&gt; Output {
+        (self.func)(greeting, self.captured)
+    }
+}
+
+// 类似 greeting 闭包的函数体
+fn greeting_code1(args: (String,), captured: (String,)) -&gt; (String, String) {
+    (args.0, captured.0)
+}
+
+fn greeting_code2(args: (String, String), captured: (String, u8)) -&gt; (String, String, String, u8) {
+    (args.0, args.1, captured.0, captured.1)
+}
+
+fn main() {
+    let name = "Tyr".into();
+    // 模拟变量捕捉
+    let c = ClosureOnce {
+        captured: (name,),
+        func: greeting_code1,
+    };
+
+    // 模拟闭包调用，这里和 FnOnce 不完全一样，传入的是一个 tuple 来匹配 Args 参数
+    println!("{:?}", c.call_once(("hola".into(),)));
+    // 调用一次后无法继续调用
+    // println!("{:?}", clo.call_once("hola".into()));
+
+    // 更复杂一些的复杂的闭包
+    let c1 = ClosureOnce {
+        captured: ("Tyr".into(), 18),
+        func: greeting_code2,
+    };
+
+    println!("{:?}", c1.call_once(("hola".into(), "hallo".into())));
+}
+</code></pre>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#4f232323767b7e7e7f780f28222e2623612c2022" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935950ee396dc9bb',t:'MTc0NTUzNjY2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="40 异步处理：如何处理异步IO？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>40 异步处理：如何处理异步IO？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%ae%a9Rust%e6%88%90%e4%b8%ba%e4%bd%a0%e7%9a%84%e4%b8%8b%e4%b8%80%e9%97%a8%e4%b8%bb%e5%8a%9b%e8%af%ad%e8%a8%80.md.html" id="00 开篇词 让Rust成为你的下一门主力语言.md.html">00 开篇词 让Rust成为你的下一门主力语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/01%20%e5%86%85%e5%ad%98%ef%bc%9a%e5%80%bc%e6%94%be%e5%a0%86%e4%b8%8a%e8%bf%98%e6%98%af%e6%94%be%e6%a0%88%e4%b8%8a%ef%bc%8c%e8%bf%99%e6%98%af%e4%b8%80%e4%b8%aa%e9%97%ae%e9%a2%98.md.html" id="01 内存：值放堆上还是放栈上，这是一个问题.md.html">01 内存：值放堆上还是放栈上，这是一个问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/02%20%e4%b8%b2%e8%ae%b2%ef%bc%9a%e7%bc%96%e7%a8%8b%e5%bc%80%e5%8f%91%e4%b8%ad%ef%bc%8c%e9%82%a3%e4%ba%9b%e4%bd%a0%e9%9c%80%e8%a6%81%e6%8e%8c%e6%8f%a1%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5.md.html" id="02 串讲：编程开发中，那些你需要掌握的基本概念.md.html">02 串讲：编程开发中，那些你需要掌握的基本概念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/03%20%e5%88%9d%e7%aa%a5%e9%97%a8%e5%be%84%ef%bc%9a%e4%bb%8e%e4%bd%a0%e7%9a%84%e7%ac%ac%e4%b8%80%e4%b8%aaRust%e7%a8%8b%e5%ba%8f%e5%bc%80%e5%a7%8b%ef%bc%81.md.html" id="03 初窥门径：从你的第一个Rust程序开始！.md.html">03 初窥门径：从你的第一个Rust程序开始！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/04%20get%20hands%20dirty%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%aa%e5%ae%9e%e7%94%a8%e7%9a%84CLI%e5%b0%8f%e5%b7%a5%e5%85%b7.md.html" id="04 get hands dirty：来写个实用的CLI小工具.md.html">04 get hands dirty：来写个实用的CLI小工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/05%20get%20hands%20dirty%ef%bc%9a%e5%81%9a%e4%b8%80%e4%b8%aa%e5%9b%be%e7%89%87%e6%9c%8d%e5%8a%a1%e5%99%a8%e6%9c%89%e5%a4%9a%e9%9a%be%ef%bc%9f.md.html" id="05 get hands dirty：做一个图片服务器有多难？.md.html">05 get hands dirty：做一个图片服务器有多难？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/06%20get%20hands%20dirty%ef%bc%9aSQL%e6%9f%a5%e8%af%a2%e5%b7%a5%e5%85%b7%e6%80%8e%e4%b9%88%e4%b8%80%e9%b1%bc%e5%a4%9a%e5%90%83%ef%bc%9f.md.html" id="06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html">06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/07%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e7%94%9f%e6%9d%80%e5%a4%a7%e6%9d%83%e5%88%b0%e5%ba%95%e5%9c%a8%e8%b0%81%e6%89%8b%e4%b8%8a%ef%bc%9f.md.html" id="07 所有权：值的生杀大权到底在谁手上？.md.html">07 所有权：值的生杀大权到底在谁手上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/08%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e5%80%9f%e7%94%a8%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="08 所有权：值的借用是如何工作的？.md.html">08 所有权：值的借用是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/09%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%80%bc%e5%8f%af%e4%bb%a5%e6%9c%89%e5%a4%9a%e4%b8%aa%e6%89%80%e6%9c%89%e8%80%85%e4%b9%88%ef%bc%9f.md.html" id="09 所有权：一个值可以有多个所有者么？.md.html">09 所有权：一个值可以有多个所有者么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/10%20%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9a%e4%bd%a0%e5%88%9b%e5%bb%ba%e7%9a%84%e5%80%bc%e7%a9%b6%e7%ab%9f%e8%83%bd%e6%b4%bb%e5%a4%9a%e4%b9%85%ef%bc%9f.md.html" id="10 生命周期：你创建的值究竟能活多久？.md.html">10 生命周期：你创建的值究竟能活多久？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/11%20%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9a%e4%bb%8e%e5%88%9b%e5%bb%ba%e5%88%b0%e6%b6%88%e4%ba%a1%ef%bc%8c%e5%80%bc%e9%83%bd%e7%bb%8f%e5%8e%86%e4%ba%86%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="11 内存管理：从创建到消亡，值都经历了什么？.md.html">11 内存管理：从创建到消亡，值都经历了什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/12%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9aRust%e7%9a%84%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%e6%9c%89%e4%bb%80%e4%b9%88%e7%89%b9%e7%82%b9%ef%bc%9f.md.html" id="12 类型系统：Rust的类型系统有什么特点？.md.html">12 类型系统：Rust的类型系统有什么特点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/13%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8trait%e6%9d%a5%e5%ae%9a%e4%b9%89%e6%8e%a5%e5%8f%a3%ef%bc%9f.md.html" id="13 类型系统：如何使用trait来定义接口？.md.html">13 类型系统：如何使用trait来定义接口？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/14%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%bf%85%e9%a1%bb%e6%8e%8c%e6%8f%a1%e7%9a%84trait%ef%bc%9f.md.html" id="14 类型系统：有哪些必须掌握的trait？.md.html">14 类型系统：有哪些必须掌握的trait？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/15%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bf%99%e4%ba%9b%e6%b5%93%e7%9c%89%e5%a4%a7%e7%9c%bc%e7%9a%84%e7%bb%93%e6%9e%84%e7%ab%9f%e7%84%b6%e9%83%bd%e6%98%af%e6%99%ba%e8%83%bd%e6%8c%87%e9%92%88%ef%bc%9f.md.html" id="15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html">15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/16%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9aVec_T_%e3%80%81&amp;[T]%e3%80%81Box_[T]_%20%ef%bc%8c%e4%bd%a0%e7%9c%9f%e7%9a%84%e4%ba%86%e8%a7%a3%e9%9b%86%e5%90%88%e5%ae%b9%e5%99%a8%e4%b9%88%ef%bc%9f.md.html" id="16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html">16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/17%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bd%af%e4%bb%b6%e7%b3%bb%e7%bb%9f%e6%a0%b8%e5%bf%83%e9%83%a8%e4%bb%b6%e5%93%88%e5%b8%8c%e8%a1%a8%ef%bc%8c%e5%86%85%e5%ad%98%e5%a6%82%e4%bd%95%e5%b8%83%e5%b1%80%ef%bc%9f.md.html" id="17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html">17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88Rust%e7%9a%84%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%e4%b8%8e%e4%bc%97%e4%b8%8d%e5%90%8c%ef%bc%9f.md.html" id="18 错误处理：为什么Rust的错误处理与众不同？.md.html">18 错误处理：为什么Rust的错误处理与众不同？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/19%20%e9%97%ad%e5%8c%85%ef%bc%9aFnOnce%e3%80%81FnMut%e5%92%8cFn%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e7%b1%bb%e5%9e%8b%ef%bc%9f.md.html" id="19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html">19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/20%204%20Steps%20%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9b%b4%e5%a5%bd%e5%9c%b0%e9%98%85%e8%af%bbRust%e6%ba%90%e7%a0%81%ef%bc%9f.md.html" id="20 4 Steps ：如何更好地阅读Rust源码？.md.html">20 4 Steps ：如何更好地阅读Rust源码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/21%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%881%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html">21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/22%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%882%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html">22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/23%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="23 类型系统：如何在实战中使用泛型编程？.md.html">23 类型系统：如何在实战中使用泛型编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/24%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8trait%20object%ef%bc%9f.md.html" id="24 类型系统：如何在实战中使用trait object？.md.html">24 类型系统：如何在实战中使用trait object？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/25%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9b%b4%e7%bb%95trait%e6%9d%a5%e8%ae%be%e8%ae%a1%e5%92%8c%e6%9e%b6%e6%9e%84%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="25 类型系统：如何围绕trait来设计和架构系统？.md.html">25 类型系统：如何围绕trait来设计和架构系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/26%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%883%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%ab%98%e7%ba%a7trait%e6%8a%80%e5%b7%a7.md.html" id="26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html">26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/27%20%e7%94%9f%e6%80%81%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e6%9c%89%e7%9a%84Rust%e5%ba%93%e5%8f%af%e4%bb%a5%e4%b8%ba%e6%88%91%e6%89%80%e7%94%a8%ef%bc%9f.md.html" id="27 生态系统：有哪些常有的Rust库可以为我所用？.md.html">27 生态系统：有哪些常有的Rust库可以为我所用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/28%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="28 网络开发（上）：如何使用Rust处理网络请求？.md.html">28 网络开发（上）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/29%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="29 网络开发（下）：如何使用Rust处理网络请求？.md.html">29 网络开发（下）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/30%20Unsafe%20Rust%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8C++%e7%9a%84%e6%96%b9%e5%bc%8f%e6%89%93%e5%bc%80Rust%ef%bc%9f.md.html" id="30 Unsafe Rust：如何用C++的方式打开Rust？.md.html">30 Unsafe Rust：如何用C++的方式打开Rust？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/31%20FFI%ef%bc%9aRust%e5%a6%82%e4%bd%95%e5%92%8c%e4%bd%a0%e7%9a%84%e8%af%ad%e8%a8%80%e6%9e%b6%e8%b5%b7%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html">31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/32%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e4%bd%bf%e7%94%a8PyO3%e5%bc%80%e5%8f%91Python3%e6%a8%a1%e5%9d%97.md.html" id="32 实操项目：使用PyO3开发Python3模块.md.html">32 实操项目：使用PyO3开发Python3模块.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html">33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html">34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/35%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84MPSC%20channel%ef%bc%9f.md.html" id="35 实操项目：如何实现一个基本的MPSC channel？.md.html">35 实操项目：如何实现一个基本的MPSC channel？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/36%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%884%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%a4%84%e7%90%86.md.html" id="36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html">36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/37%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%885%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8.md.html" id="37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html">37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/38%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aFuture%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f%e5%ae%83%e5%92%8casync_await%e6%98%af%e4%bb%80%e4%b9%88%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="38 异步处理：Future是什么？它和async_await是什么关系？.md.html">38 异步处理：Future是什么？它和async_await是什么关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/39%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aasync_await%e5%86%85%e9%83%a8%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="39 异步处理：async_await内部是怎么实现的？.md.html">39 异步处理：async_await内部是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/40%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%bc%82%e6%ad%a5IO%ef%bc%9f.md.html" id="40 异步处理：如何处理异步IO？.md.html">40 异步处理：如何处理异步IO？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/41%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%886%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86.md.html" id="41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html">41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/42%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%887%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%a6%82%e4%bd%95%e5%81%9a%e5%a4%a7%e7%9a%84%e9%87%8d%e6%9e%84%ef%bc%9f.md.html" id="42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html">42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/43%20%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%ef%bc%9a%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e4%b8%8b%e7%9a%84%e4%b8%80%e4%b8%aaRust%e9%a1%b9%e7%9b%ae%e5%8c%85%e5%90%ab%e5%93%aa%e4%ba%9b%e8%a6%81%e7%b4%a0%ef%bc%9f.md.html" id="43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html">43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/44%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%92%8c%e6%95%b0%e6%8d%ae%e5%a6%82%e4%bd%95%e6%89%93%e4%ba%a4%e9%81%93%ef%bc%9f.md.html" id="44 数据处理：应用程序和数据如何打交道？.md.html">44 数据处理：应用程序和数据如何打交道？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/45%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%888%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%85%8d%e7%bd%ae_%e6%b5%8b%e8%af%95_%e7%9b%91%e6%8e%a7_CI_CD.md.html" id="45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html">45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/46%20%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8Rust%e6%9e%b6%e6%9e%84%e5%a4%8d%e6%9d%82%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="46 软件架构：如何用Rust架构复杂系统？.md.html">46 软件架构：如何用Rust架构复杂系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20Rust2021%e7%89%88%e6%ac%a1%e9%97%ae%e4%b8%96%e4%ba%86%ef%bc%81.md.html" id="加餐 Rust2021版次问世了！.md.html">加餐 Rust2021版次问世了！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e4%bb%a3%e7%a0%81%e5%8d%b3%e6%95%b0%e6%8d%ae%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e9%9c%80%e8%a6%81%e5%ae%8f%e7%bc%96%e7%a8%8b%e8%83%bd%e5%8a%9b%ef%bc%9f.md.html" id="加餐 代码即数据：为什么我们需要宏编程能力？.md.html">加餐 代码即数据：为什么我们需要宏编程能力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e7%94%a8%e6%9c%80%e2%80%9c%e7%ac%a8%e2%80%9d%e7%9a%84%e6%96%b9%e5%bc%8f%e6%92%b0%e5%86%99%e5%ae%8f.md.html" id="加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html">加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e7%94%a8%20syn_quote%20%e4%bc%98%e9%9b%85%e5%9c%b0%e6%9e%84%e5%bb%ba%e5%ae%8f.md.html" id="加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html">加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%84%9a%e6%98%a7%e4%b9%8b%e5%b7%85%ef%bc%9a%e4%bd%a0%e7%9a%84Rust%e5%ad%a6%e4%b9%a0%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%e6%b1%87%e6%80%bb.md.html" id="加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html">加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e5%8f%82%e8%80%83%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="加餐 期中测试：参考实现讲解.md.html">加餐 期中测试：参考实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84grep%e5%91%bd%e4%bb%a4%e8%a1%8c.md.html" id="加餐 期中测试：来写一个简单的grep命令行.md.html">加餐 期中测试：来写一个简单的grep命令行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e8%bf%99%e4%b8%aa%e4%b8%93%e6%a0%8f%e4%bd%a0%e5%8f%af%e4%bb%a5%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%8c%e4%bb%a5%e5%8f%8aRust%e6%98%af%e5%90%a6%e5%80%bc%e5%be%97%e5%ad%a6%ef%bc%9f.md.html" id="加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html">加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（一）：听听课代表们怎么说.md.html">特别策划 学习锦囊（一）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（三）：听听课代表们怎么说.md.html">特别策划 学习锦囊（三）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（二）：听听课代表们怎么说.md.html">特别策划 学习锦囊（二）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%bb%9d%e6%9c%9b%e4%b9%8b%e8%b0%b7%ef%bc%9a%e6%94%b9%e5%8f%98%e4%bb%8e%e5%ad%a6%e4%b9%a0%e5%bc%80%e5%a7%8b.md.html" id="用户故事 绝望之谷：改变从学习开始.md.html">用户故事 绝望之谷：改变从学习开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%af%ad%e8%a8%80%e4%b8%8d%e4%bb%85%e6%98%af%e5%b7%a5%e5%85%b7%ef%bc%8c%e8%bf%98%e6%98%af%e6%80%9d%e7%bb%b4%e6%96%b9%e5%bc%8f.md.html" id="用户故事 语言不仅是工具，还是思维方式.md.html">用户故事 语言不仅是工具，还是思维方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%b0%b8%e7%bb%ad%e4%b9%8b%e5%8e%9f%ef%bc%9aRust%e5%ad%a6%e4%b9%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e6%8c%81%e7%bb%ad%e7%b2%be%e8%bf%9b%ef%bc%9f.md.html" id="结束语 永续之原：Rust学习，如何持续精进？.md.html">结束语 永续之原：Rust学习，如何持续精进？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="40 异步处理：如何处理异步IO？" id="title">40 异步处理：如何处理异步IO？</h1>
+<div><p>你好，我是陈天。</p>
+<p>前面两讲我们学习了异步处理基本的功能和原理（Future/async/await），但是还没有正式介绍在具体场合下该用哪些工具来处理异步 IO。不过之前讲 trait 的时候，已经了解和使用过一些处理同步 IO 的结构和 trait。</p>
+<p>今天我们就对比同步 IO 来学习异步 IO。毕竟在学习某个新知识的时候，如果能够和头脑中已有的知识联系起来，大脑神经元之间的连接就会被激活，学习的效果会事半功倍。</p>
+<p>回忆一下同步环境都有哪些结构和 trait呢？首先，单个的值可以用类型 T 表述，一组值可以用 Iterator trait 表述；同步 IO，我们有标准的 Read/Write/Seek trait。顾名思义，Read/Write 是进行 IO 的读写，而 Seek 是在 IO 中前后移动当前的位置。</p>
+<p>那么异步呢？我们已经学习到，对于单个的、在未来某个时刻会得到的值，可以用 Future 来表示：</p>
+<p><img alt="图片" src="assets/2371c456d1d7429caea5512f53ec5c43.jpg"/></p>
+<p>但还不知道一组未来才能得到的值该用什么 trait 来表述，也不知道异步的 Read/Write 该是什么样子。今天，我们就来聊聊这些重要的异步数据类型。</p>
+<h2 id="stream-trait">Stream trait</h2>
+<p>首先来了解一下 Iterator 在异步环境下的表兄弟：Stream。</p>
+<p>我们知道，对于 Iterator，可以不断调用其 next() 方法，获得新的值，直到 Iterator 返回 None。Iterator 是阻塞式返回数据的，每次调用 next()，必然独占 CPU 直到得到一个结果，<strong>而异步的 Stream 是非阻塞的，在等待的过程中会空出 CPU 做其他事情</strong>。</p>
+<p>不过和 Future 已经在标准库稳定下来不同，Stream trait 目前还只能在 nightly 版本使用。一般跟 Stream 打交道，我们会使用 futures 库。来对比 Iterator 和 Stream的源码定义：</p>
+<pre><code>pub trait Iterator {
+    type Item;
+    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt;;
+
+    fn size_hint(&amp;self) -&gt; (usize, Option&lt;usize&gt;) { ... }
+    fn map&lt;B, F&gt;(self, f: F) -&gt; Map&lt;Self, F&gt; where F: FnMut(Self::Item) -&gt; B { ... }
+    ... // 还有 67 个方法
+}
+
+pub trait Stream {
+    type Item;
+    fn poll_next(self: Pin&lt;&amp;mut Self&gt;,  cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Option&lt;Self::Item&gt;&gt;;
+
+    fn size_hint(&amp;self) -&gt; (usize, Option&lt;usize&gt;) { ... }
+}
+
+pub trait StreamExt: Stream {
+    fn next(&amp;mut self) -&gt; Next&lt;'_, Self&gt; where Self: Unpin { ... }
+    fn map&lt;T, F&gt;(self, f: F) -&gt; Map&lt;Self, F&gt; where F: FnMut(Self::Item) -&gt; T { ... }
+    ... // 还有 41 个方法
+}
+</code></pre>
+<p>可以看到，Iterator 把所有方法都放在 Iterator trait 里，而Stream 把需要开发者实现的基本方法和有缺省实现的衍生方法区别开，放在不同的 trait 里。比如 map。</p>
+<p>实现 Stream 的时候，和 Iterator 类似，你需要提供 Item 类型，这是每次拿出一个值时，值的类型；此外，还有 poll_next() 方法，它长得和 Future 的 poll() 方法很像，和 Iterator 版本的 next() 的作用类似。</p>
+<p>然而，poll_next() 调用起来不方便，我们需要自己处理 Poll 状态，所以，StreamExt 提供了 next() 方法，返回一个实现了 Future trait 的 Next 结构，这样，我们就可以直接通过 stream.next().await 来获取下一个值了。来看 next() 方法以及 Next 结构的实现（<a href="https://docs.rs/futures-util/0.3.17/src/futures_util/stream/stream/next.rs.html#10-34" target="_blank">源码</a>）：</p>
+<pre><code>pub trait StreamExt: Stream {
+    fn next(&amp;mut self) -&gt; Next&lt;'_, Self&gt; where Self: Unpin {
+        assert_future::&lt;Option&lt;Self::Item&gt;, _&gt;(Next::new(self))
+    }
+}
+
+// next 返回了 Next 结构
+pub struct Next&lt;'a, St: ?Sized&gt; {
+    stream: &amp;'a mut St,
+}
+
+// 如果 Stream Unpin 那么 Next 也是 Unpin
+impl&lt;St: ?Sized + Unpin&gt; Unpin for Next&lt;'_, St&gt; {}
+
+impl&lt;'a, St: ?Sized + Stream + Unpin&gt; Next&lt;'a, St&gt; {
+    pub(super) fn new(stream: &amp;'a mut St) -&gt; Self {
+        Self { stream }
+    }
+}
+
+// Next 实现了 Future，每次 poll() 实际上就是从 stream 中 poll_next()
+impl&lt;St: ?Sized + Stream + Unpin&gt; Future for Next&lt;'_, St&gt; {
+    type Output = Option&lt;St::Item&gt;;
+
+    fn poll(mut self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Self::Output&gt; {
+        self.stream.poll_next_unpin(cx)
+    }
+}
+</code></pre>
+<p>看个小例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=4374c885eaf1a386fe6a67d8a54dc37b" target="_blank">代码</a>）：</p>
+<pre><code>use futures::prelude::*;
+
+#[tokio::main]
+async fn main() {
+    let mut st = stream::iter(1..10)
+        .filter(|x| future::ready(x % 2 == 0))
+        .map(|x| x * x);
+
+    while let Some(x) = st.next().await {
+        println!("Got item: {}", x);
+    }
+}
+</code></pre>
+<p>我们使用 stream::iter 生成了一个 Stream，并对其进行 filter/map 的操作。最后，遍历整个 stream，把获得的数据打印出来。从使用的感受来看，Stream 和 Iterator 也很相似，可以对比着来用。</p>
+<h3 id="生成-stream">生成 Stream</h3>
+<p>futures 库提供了一些基本的生成 Stream 的方法，除了上面用到的 iter 方法，还有：</p>
+<ul>
+<li>empty()：生成一个空的 Stream</li>
+<li>once()：生成一个只包含单个值的 Stream</li>
+<li>pending()：生成一个不包含任何值，只返回 Poll::Pending 的 Stream</li>
+<li>repeat()：生成一个一直返回相同值的 Stream</li>
+<li>repeat_with()：通过闭包函数无穷尽地返回数据的 Stream</li>
+<li>poll_fn()：通过一个返回 Poll<option<t>&gt; 的闭包来产生 Stream</option<t></li>
+<li>unfold()：通过初始值和返回 Future 的闭包来产生 Stream</li>
+</ul>
+<p>前几种产生 Stream 的方法都很好理解，最后三种引入了闭包复杂一点，我们分别使用它们来实现斐波那契数列，对比一下差异（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=d83d2877d953b381c4f412b5768288ff" target="_blank">代码</a>）：</p>
+<pre><code>use futures::{prelude::*, stream::poll_fn};
+use std::task::Poll;
+
+#[tokio::main]
+async fn main() {
+    consume(fib().take(10)).await;
+    consume(fib1(10)).await;
+    // unfold 产生的 Unfold stream 没有实现 Unpin，
+    // 所以我们将其 Pin&lt;Box&lt;T&gt;&gt; 一下，使其满足 consume 的接口
+    consume(fib2(10).boxed()).await;
+}
+
+async fn consume(mut st: impl Stream&lt;Item = i32&gt; + Unpin) {
+    while let Some(v) = st.next().await {
+        print!("{} ", v);
+    }
+    print!("\\n");
+}
+
+// 使用 repeat_with 创建 stream，无法控制何时结束
+fn fib() -&gt; impl Stream&lt;Item = i32&gt; {
+    let mut a = 1;
+    let mut b = 1;
+    stream::repeat_with(move || {
+        let c = a + b;
+        a = b;
+        b = c;
+        b
+    })
+}
+
+// 使用 poll_fn 创建 stream，可以通过返回 Poll::Ready(None) 来结束
+fn fib1(mut n: usize) -&gt; impl Stream&lt;Item = i32&gt; {
+    let mut a = 1;
+    let mut b = 1;
+    poll_fn(move |_cx| -&gt; Poll&lt;Option&lt;i32&gt;&gt; {
+        if n == 0 {
+            return Poll::Ready(None);
+        }
+        n -= 1;
+        let c = a + b;
+        a = b;
+        b = c;
+        Poll::Ready(Some(b))
+    })
+}
+
+fn fib2(n: usize) -&gt; impl Stream&lt;Item = i32&gt; {
+    stream::unfold((n, (1, 1)), |(mut n, (a, b))| async move {
+        if n == 0 {
+            None
+        } else {
+            n -= 1;
+            let c = a + b;
+            // c 作为 poll_next() 的返回值，(n, (a, b)) 作为 state
+            Some((c, (n, (b, c))))
+        }
+    })
+}
+</code></pre>
+<p>值得注意的是，<strong>使用 unfold 的时候，同时使用了局部变量和 Future，所以生成的 Stream 没有实现 Unpin</strong>，我们在使用的时候，需要将其 pin 住。怎么做呢？</p>
+<p>Pin<box<t>&gt; 是一种很简单的方法，能将数据 Pin 在堆上，我们可以使用 StreamExt 的 boxed() 方法来生成一个 Pin<box<t>&gt;。</box<t></box<t></p>
+<p>除了上面讲的方法，我们还可以为一个数据结构实现 Stream trait，从而使其支持 Stream。看一个例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=94797b51e031dbde9d81ff04c5ff9f83" target="_blank">代码</a>）：</p>
+<pre><code>use futures::prelude::*;
+use pin_project::pin_project;
+use std::{
+    pin::Pin,
+    task::{Context, Poll},
+};
+use tokio::{
+    fs,
+    io::{AsyncBufReadExt, AsyncRead, BufReader, Lines},
+};
+
+/// LineStream 内部使用 tokio::io::Lines
+#[pin_project]
+struct LineStream&lt;R&gt; {
+    #[pin]
+    lines: Lines&lt;BufReader&lt;R&gt;&gt;,
+}
+
+impl&lt;R: AsyncRead&gt; LineStream&lt;R&gt; {
+    /// 从 BufReader 创建一个 LineStream
+    pub fn new(reader: BufReader&lt;R&gt;) -&gt; Self {
+        Self {
+            lines: reader.lines(),
+        }
+    }
+}
+
+/// 为 LineStream 实现 Stream trait
+impl&lt;R: AsyncRead&gt; Stream for LineStream&lt;R&gt; {
+    type Item = std::io::Result&lt;String&gt;;
+
+    fn poll_next(self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Option&lt;Self::Item&gt;&gt; {
+        self.project()
+            .lines
+            .poll_next_line(cx)
+            .map(Result::transpose)
+    }
+}
+
+#[tokio::main]
+async fn main() -&gt; std::io::Result&lt;()&gt; {
+    let file = fs::File::open("Cargo.toml").await?;
+    let reader = BufReader::new(file);
+    let mut st = LineStream::new(reader);
+    while let Some(Ok(line)) = st.next().await {
+        println!("Got: {}", line);
+    }
+
+    Ok(())
+}
+</code></pre>
+<p>这段代码封装了 <a href="https://docs.rs/tokio/1.14.0/tokio/io/struct.Lines.html" target="_blank">Lines</a> 结构，我们可以通过 <a href="https://docs.rs/tokio/1.14.0/tokio/io/trait.AsyncBufReadExt.html#" target="_blank">AsyncBufReadExt</a> 的 <a href="https://docs.rs/tokio/1.14.0/tokio/io/trait.AsyncBufReadExt.html#method.lines" target="_blank">lines()</a> 方法，把一个实现了 <a href="https://docs.rs/tokio/1.14.0/tokio/io/trait.AsyncBufRead.html" target="_blank">AsyncBufRead</a> trait 的 reader 转换成 Lines。</p>
+<p>你也许注意到代码中引入的 <a href="https://docs.rs/pin-project" target="_blank">pin_project</a> 库，它提供了一些便利的宏，方便我们操作数据结构里需要被 pin 住的字段。在数据结构中，<strong>可以使用 #[pin] 来声明某个字段在使用的时候需要被封装为 Pin<t></t></strong>。这样，调用时，我们就可以使用 self.project().lines 得到一个 Pin&lt;&amp;mut Lines&gt;，以便调用其 <a href="https://docs.rs/tokio/1.14.0/tokio/io/struct.Lines.html#method.poll_next_line" target="_blank">poll_next_line()</a> 方法（这个方法的第一个参数是 Pin&lt;&amp;mut Self&gt;）。</p>
+<p>在Lines这个结构内部，异步的 <a href="https://docs.rs/tokio/1.14.0/tokio/io/struct.Lines.html#method.next_line" target="_blank">next_line()</a> 方法可以读取下一行，它实际上就是比较低阶的 <a href="https://docs.rs/tokio/1.14.0/src/tokio/io/util/lines.rs.html#112-134" target="_blank">poll_next_line()</a> 接口的一个封装。</p>
+<p><strong>虽然 Lines 结构提供了 next_line()，但并没有实现 Stream</strong>，所以我们无法像其他 Stream 那样统一用 next() 方法获取下一行。于是，我们将其包裹在自己的 LineStream 下，并且为 LineStream 实现了 Stream 方法。</p>
+<p>注意，由于 poll_next_line() 的结果是 Result<option<t>&gt;，而 Stream 的 poll_next() 的结果是 Option<result<t>&gt;，所以我们需要使用 Result 方法的 <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.transpose" target="_blank">transpose</a> 来将二者对调。这个transpose 方法是一个很基础的方法，非常实用。</result<t></option<t></p>
+<h2 id="异步-io-接口">异步 IO 接口</h2>
+<p>在实现 LineStream 时，我们遇到了两个异步 I/O 接口：AsyncRead 以及 AsyncBufRead。回到开头的那张表，相信你现在已经有大致答案了吧：<strong>所有同步的 Read/Write/Seek trait，前面加一个 Async，就构成了对应的异步 IO 接口</strong>。</p>
+<p>不过，和 Stream 不同的是，如果你对比 futures 下定义的 IO trait 以及 tokio 下定义的 IO trait，会发现它们都有各自的定义，双方并未统一，有些许的差别：</p>
+<p><img alt="图片" src="assets/da47e6ae335b4c46719afc64b5a60e28.jpg"/></p>
+<p>比如 futures 下 <a href="https://docs.rs/futures/0.3.17/futures/io/trait.AsyncRead.html" target="_blank">AsyncRead</a> 的定义：</p>
+<pre><code>pub trait AsyncRead {
+    fn poll_read(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;, 
+        buf: &amp;mut [u8]
+    ) -&gt; Poll&lt;Result&lt;usize, Error&gt;&gt;;
+
+    unsafe fn initializer(&amp;self) -&gt; Initializer { ... }
+    fn poll_read_vectored(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;, 
+        bufs: &amp;mut [IoSliceMut&lt;'_&gt;]
+    ) -&gt; Poll&lt;Result&lt;usize, Error&gt;&gt; { ... }
+}
+</code></pre>
+<p>而 tokio 下 <a href="https://docs.rs/tokio/1.14.0/tokio/io/trait.AsyncRead.html" target="_blank">AsyncRead</a> 的定义：</p>
+<pre><code>pub trait AsyncRead {
+    fn poll_read(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;, 
+        buf: &amp;mut ReadBuf&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;()&gt;&gt;;
+}
+</code></pre>
+<p>我们看不同之处：tokio 的 poll_read() 方法需要 <a href="https://docs.rs/tokio/1.14.0/src/tokio/io/read_buf.rs.html#27-31" target="_blank">ReadBuf</a>，而 futures 的 poll_read() 方法需要 &amp;mut [u8]。此外，futures 的 AsyncRead 还多了两个缺省方法。</p>
+<p>再看 AsyncWrite。futures 下的 <a href="https://docs.rs/futures/0.3.17/futures/io/trait.AsyncWrite.html" target="_blank">AsyncWrite</a> 接口如下：</p>
+<pre><code>pub trait AsyncWrite {
+    fn poll_write(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;, 
+        buf: &amp;[u8]
+    ) -&gt; Poll&lt;Result&lt;usize, Error&gt;&gt;;
+    fn poll_flush(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;(), Error&gt;&gt;;
+    fn poll_close(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;(), Error&gt;&gt;;
+
+    fn poll_write_vectored(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;, 
+        bufs: &amp;[IoSlice&lt;'_&gt;]
+    ) -&gt; Poll&lt;Result&lt;usize, Error&gt;&gt; { ... }
+}
+</code></pre>
+<p>而 tokio 下的 <a href="https://docs.rs/tokio/1.14.0/tokio/io/trait.AsyncWrite.html" target="_blank">AsyncWrite</a> 的定义：</p>
+<pre><code>pub trait AsyncWrite {
+    fn poll_write(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;, 
+        buf: &amp;[u8]
+    ) -&gt; Poll&lt;Result&lt;usize, Error&gt;&gt;;
+    fn poll_flush(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;(), Error&gt;&gt;;
+    fn poll_shutdown(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;(), Error&gt;&gt;;
+
+    fn poll_write_vectored(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;, 
+        bufs: &amp;[IoSlice&lt;'_&gt;]
+    ) -&gt; Poll&lt;Result&lt;usize, Error&gt;&gt; { ... }
+    fn is_write_vectored(&amp;self) -&gt; bool { ... }
+}
+</code></pre>
+<p>可以看到，AsyncWrite 二者的差距就只有 poll_close() 和 poll_shutdown() 命名上的分别。其它的异步 IO 接口我就不一一举例了，你可以自己去看代码对比。</p>
+<h3 id="异步-io-接口的兼容性处理">异步 IO 接口的兼容性处理</h3>
+<p>为什么 Rust 的异步 IO trait 会有这样的分裂？这是因为在 tokio/futures 库实现的早期，社区还没有形成比较统一的异步 IO trait，不同的接口背后也有各自不同的考虑，这种分裂就沿袭下来。</p>
+<p>所以，如果我们使用 tokio 进行异步开发，那么，代码需要使用 tokio::io 下的异步 IO trait。也许，未来等 Async IO trait 稳定并进入标准库后，tokio 会更新自己的 trait。</p>
+<p>虽然 Rust 的异步 IO trait 有这样的分裂，你也不必过分担心。<strong>tokio-util 提供了相应的</strong><a href="https://docs.rs/tokio-util/0.6.9/tokio_util/compat/index.html" target="_blank">Compat</a><strong>功能，可以让你的数据结构在二者之间自如切换</strong>。看一个使用 <a href="https://docs.rs/yamux" target="_blank">yamux</a> 做多路复用的例子，重点位置详细注释了：</p>
+<pre><code>use anyhow::Result;
+use futures::prelude::*;
+use tokio::net::TcpListener;
+use tokio_util::{
+    codec::{Framed, LinesCodec},
+    compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt},
+};
+use tracing::info;
+use yamux::{Config, Connection, Mode, WindowUpdateMode};
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    tracing_subscriber::fmt::init();
+    let addr = "0.0.0.0:8080";
+    let listener = TcpListener::bind(addr).await?;
+    info!("Listening on: {:?}", addr);
+    loop {
+        let (stream, addr) = listener.accept().await?;
+        info!("Accepted: {:?}", addr);
+        let mut config = Config::default();
+        config.set_window_update_mode(WindowUpdateMode::OnRead);
+        // 使用 compat() 方法把 tokio AsyncRead/AsyncWrite 转换成 futures 对应的 trait
+        let conn = Connection::new(stream.compat(), config, Mode::Server);
+        // Yamux ctrl stream 可以用来打开新的 stream
+        let _ctrl = conn.control();
+        tokio::spawn(
+            yamux::into_stream(conn).try_for_each_concurrent(None, move |s| async move {
+                // 使用 compat() 方法把 futures AsyncRead/AsyncWrite 转换成 tokio 对应的 trait
+                let mut framed = Framed::new(s.compat(), LinesCodec::new());
+                while let Some(Ok(line)) = framed.next().await {
+                    println!("Got: {}", line);
+                    framed
+                        .send(format!("Hello! I got '{}'", line))
+                        .await
+                        .unwrap();
+                }
+
+                Ok(())
+            }),
+        );
+    }
+}
+</code></pre>
+<p>yamux 是一个类似 HTTP/2 内部多路复用机制的协议，可以让你在一个 TCP 连接上打开多个逻辑 yamux stream，而yamux stream 之间并行工作，互不干扰。</p>
+<p>yamux crate 在实现的时候，使用了 futures 下的异步 IO 接口。但是当我们使用 tokio Listener 接受一个客户端，得到对应的 TcpStream 时，这个 TcpStream 使用的是 tokio 下的异步 IO 接口。所以我们需要 tokio_util::compat 来协助接口的兼容。</p>
+<p>在代码中，首先我用 stream.compat() 生成一个 Compat 结构，供 yamux Connection 使用：</p>
+<pre><code>let conn = Connection::new(stream.compat(), config, Mode::Server);
+</code></pre>
+<p>之后，拿到 yamux connection 下所有 stream 进行处理时，我们想用 tokio 的 Frame 和 Codec 一行行读取和写入，也就需要把使用 futures 异步接口的 yamux stream，转换成使用 tokio 接口的数据结构，这样就可以用在 Framed::new() 中：</p>
+<pre><code>let mut framed = Framed::new(s.compat(), LinesCodec::new());
+</code></pre>
+<p>如果你想运行这段代码，可以看这门课的 <a href="https://github.com/tyrchen/geektime-rust" target="_blank">GitHub repo</a> 下的完整版，包括依赖以及客户端的代码。</p>
+<h3 id="实现异步-io-接口">实现异步 IO 接口</h3>
+<p>异步 IO 主要应用在文件处理、网络处理等场合，而这些场合的数据结构都已经实现了对应的接口，比如 File 或者 TcpStream，它们也已经实现了 AsyncRead/AsyncWrite。所以基本上，我们不用自己实现异步 IO 接口，只需要会用就可以了。</p>
+<p>不过有些情况，我们可能会把已有的数据结构封装在自己的数据结构中，此时，也应该实现相应的异步 IO 接口（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=b53409b4ad26aaf078d4799bfe95f65c" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use pin_project::pin_project;
+use std::{
+    pin::Pin,
+    task::{Context, Poll},
+};
+use tokio::{
+    fs::File,
+    io::{AsyncRead, AsyncReadExt, ReadBuf},
+};
+
+#[pin_project]
+struct FileWrapper {
+    #[pin]
+    file: File,
+}
+
+impl FileWrapper {
+    pub async fn try_new(name: &amp;str) -&gt; Result&lt;Self&gt; {
+        let file = File::open(name).await?;
+        Ok(Self { file })
+    }
+}
+
+impl AsyncRead for FileWrapper {
+    fn poll_read(
+        self: Pin&lt;&amp;mut Self&gt;,
+        cx: &amp;mut Context&lt;'_&gt;,
+        buf: &amp;mut ReadBuf&lt;'_&gt;,
+    ) -&gt; Poll&lt;std::io::Result&lt;()&gt;&gt; {
+        self.project().file.poll_read(cx, buf)
+    }
+}
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let mut file = FileWrapper::try_new("./Cargo.toml").await?;
+    let mut buffer = String::new();
+    file.read_to_string(&amp;mut buffer).await?;
+    println!("{}", buffer);
+    Ok(())
+}
+</code></pre>
+<p>这段代码封装了 tokio::fs::File 结构，我们想读取内部的 file 字段，但又不想把 File 暴露出来，因此实现了 AsyncRead trait。</p>
+<h2 id="sink-trait">Sink trait</h2>
+<p>在同步环境下往 IO 中发送连续的数据，可以一次性发送，也可以使用 Write trait 多次发送，使用起来并没有什么麻烦；但在异步 IO 下，做同样的事情，我们需要更方便的接口。因此异步IO还有一个比较独特的 Sink trait，它是一个用于发送一系列异步值的接口。</p>
+<p>看 Sink trait 的定义：</p>
+<pre><code>pub trait Sink&lt;Item&gt; {
+    type Error;
+    fn poll_ready(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;(), Self::Error&gt;&gt;;
+    fn start_send(self: Pin&lt;&amp;mut Self&gt;, item: Item) -&gt; Result&lt;(), Self::Error&gt;;
+    fn poll_flush(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;(), Self::Error&gt;&gt;;
+    fn poll_close(
+        self: Pin&lt;&amp;mut Self&gt;, 
+        cx: &amp;mut Context&lt;'_&gt;
+    ) -&gt; Poll&lt;Result&lt;(), Self::Error&gt;&gt;;
+}
+
+pub trait SinkExt&lt;Item&gt;: Sink&lt;Item&gt; {
+    ...
+    fn send(&amp;mut self, item: Item) -&gt; Send&lt;'_, Self, Item&gt; where Self: Unpin { ... }
+    ...
+}
+</code></pre>
+<p>和 Stream trait 不同的是，Sink trait 的 Item 是 trait 的泛型参数，而不是关联类型。<strong>一般而言，当 trait 接受某个 input，应该使用泛型参数，比如 Add<rhs>；当它输出某个 output，那么应该使用关联类型，比如 Future、Stream、Iterator 等</rhs></strong>。</p>
+<p>Item 对于 Sink 来说是输入，所以使用泛型参数是正确的选择。因为这也意味着，在发送端，可以发送不同类型的数据结构。</p>
+<p>看上面的定义源码，Sink trait 有四个方法：</p>
+<ul>
+<li>poll_ready()：用来准备 Sink 使其可以发送数据。只有 poll_ready() 返回 Poll::Ready(Ok(())) 后，Sink 才会开展后续的动作。poll_ready() 可以用来控制背压。</li>
+<li>start_send()：开始发送数据到 Sink。但是start_send() 并不保证数据被发送完毕，所以调用者要调用 poll_flush() 或者 poll_close() 来保证完整发送。</li>
+<li>poll_flush()：将任何尚未发送的数据 flush 到这个 Sink。</li>
+<li>poll_close()：将任何尚未发送的数据 flush 到这个 Sink，并关闭这个 Sink。</li>
+</ul>
+<p>其中三个方法和 Item 是无关的，这会导致，如果不同的输入类型有多个实现，Sink的poll_ready、poll_flush 和 poll_close 可能会有重复的代码。所以一般我们在使用 Sink 时，如果确实需要处理不同的数据类型，可以用 enum 将它们统一（感兴趣的话，可以进一步阅读这个<a href="https://github.com/rust-lang/futures-rs/issues/623" target="_blank">讨论</a>）。</p>
+<p>我们就用一个简单的 FileSink 的例子，看看如何实现这些方法。tokio::fs 下的 File 结构已经实现了 AsyncRead/AsyncWrite，我们只需要在 Sink 的几个方法中调用 AsyncWrite 的方法即可（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=b3aab166023b7478ccd947703f8f53cd" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use bytes::{BufMut, BytesMut};
+use futures::{Sink, SinkExt};
+use pin_project::pin_project;
+use std::{
+    pin::Pin,
+    task::{Context, Poll},
+};
+use tokio::{fs::File, io::AsyncWrite};
+
+#[pin_project]
+struct FileSink {
+    #[pin]
+    file: File,
+    buf: BytesMut,
+}
+
+impl FileSink {
+    pub fn new(file: File) -&gt; Self {
+        Self {
+            file,
+            buf: BytesMut::new(),
+        }
+    }
+}
+
+impl Sink&lt;&amp;str&gt; for FileSink {
+    type Error = std::io::Error;
+
+    fn poll_ready(self: Pin&lt;&amp;mut Self&gt;, _cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Result&lt;(), Self::Error&gt;&gt; {
+        Poll::Ready(Ok(()))
+    }
+
+    fn start_send(self: Pin&lt;&amp;mut Self&gt;, item: &amp;str) -&gt; Result&lt;(), Self::Error&gt; {
+        let this = self.project();
+        eprint!("{}", item);
+        this.buf.put(item.as_bytes());
+        Ok(())
+    }
+
+    fn poll_flush(mut self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Result&lt;(), Self::Error&gt;&gt; {
+        // 如果想 project() 多次，需要先把 self reborrow 一下
+        let this = self.as_mut().project();
+        let buf = this.buf.split_to(this.buf.len());
+        if buf.is_empty() {
+            return Poll::Ready(Ok(()));
+        }
+
+        // 写入文件
+        if let Err(e) = futures::ready!(this.file.poll_write(cx, &amp;buf[..])) {
+            return Poll::Ready(Err(e));
+        }
+        // 刷新文件
+        self.project().file.poll_flush(cx)
+    }
+
+    fn poll_close(self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Result&lt;(), Self::Error&gt;&gt; {
+        let this = self.project();
+        // 结束写入
+        this.file.poll_shutdown(cx)
+    }
+}
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let file_sink = FileSink::new(File::create("/tmp/hello").await?);
+    // pin_mut 可以把变量 pin 住
+    futures::pin_mut!(file_sink);
+    file_sink.send("hello\\n").await?;
+    file_sink.send("world!\\n").await?;
+    file_sink.send("Tyr!\\n").await?;
+
+    Ok(())
+}
+</code></pre>
+<p>对于 poll_ready() 方法，直接返回 Poll::Ready(Ok(()))。</p>
+<p>在 start_send() 方法中，我们把传入的 item，写入 FileSink 的 BytesMut 中。然后在 poll_flush() 时，我们拿到 buf，把已有的内容调用 <a href="https://docs.rs/bytes/1.1.0/bytes/struct.BytesMut.html#method.split_to" target="_blank">split_to()</a>，得到一个包含所有未写入文件的新 buffer。这个 buffer 和 self 无关，所以传入 poll_write() 时，不会有对 self 的引用问题。</p>
+<p>在写入文件后，我们再次调用 poll_flush() ，确保写入的内容刷新到磁盘上。最后，在 poll_close() 时调用 poll_shutdown() 关闭文件。</p>
+<p>这段代码虽然实现了 Sink trait，也展示了如何实现 Sink 的几个方法，但是这么简单的一个问题，处理起来还是颇为费劲。有没有更简单的方法呢？</p>
+<p>有的。futures 里提供了 sink::unfold 方法，类似 stream::unfold，我们来重写上面的 File Sink 的例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=2582cfe2473f615b4e2f021893d738a3" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use futures::prelude::*;
+use tokio::{fs::File, io::AsyncWriteExt};
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let file_sink = writer(File::create("/tmp/hello").await?);
+    // pin_mut 可以把变量 pin 住
+    futures::pin_mut!(file_sink);
+    if let Err(_) = file_sink.send("hello\\n").await {
+        println!("Error on send");
+    }
+    if let Err(_) = file_sink.send("world!\\n").await {
+        println!("Error on send");
+    }
+    Ok(())
+}
+
+/// 使用 unfold 生成一个 Sink 数据结构
+fn writer&lt;'a&gt;(file: File) -&gt; impl Sink&lt;&amp;'a str&gt; {
+    sink::unfold(file, |mut file, line: &amp;'a str| async move {
+        file.write_all(line.as_bytes()).await?;
+        eprint!("Received: {}", line);
+        Ok::&lt;_, std::io::Error&gt;(file)
+    })
+}
+</code></pre>
+<p>可以看到，通过 unfold 方法，我们不需要撰写 Sink 的几个方法了，而且可以在一个返回 Future 的闭包中来提供处理逻辑，这就意味着我们可以不使用 poll_xxx 这样的方法，直接在闭包中使用这样的异步函数：</p>
+<pre><code>file.write_all(line.as_bytes()).await?
+</code></pre>
+<p>你看，短短 5 行代码，就实现了刚才五十多行代码要表达的逻辑。</p>
+<h2 id="小结">小结</h2>
+<p>今天我们学习了和异步 IO 相关的 Stream/Sink trait，以及和异步读写相关的 AsyncRead/AsyncWrite 等 trait。在学习异步 IO 时，很多内容都可以和同步 IO 的处理对比着学，这样事半功倍。</p>
+<p><img alt="图片" src="assets/da47e6ae335b4c46719afc64b5a60e28.jpg"/></p>
+<p>在处理异步 IO 时，底层的 poll_xxx() 函数很难写，因为它的约束很多。好在有 pin_project 这个项目，用宏帮我们解决了很多关于 Pin/Unpin 的问题。</p>
+<p>一般情况下，我们不太需要直接实现 Stream/Sink/AsyncRead/AsyncWrite trait，如果的确需要，先看看有没有可以使用的辅助函数，比如通过 poll_fn/unfold 创建 Stream、通过 unfold 创建 Sink。</p>
+<h3 id="思考题">思考题</h3>
+<p>我们知道 tokio:sync::mpsc 下有支持异步的 MPSC channel，生产者可以通过 send() 发送消息，消费者可以通过 recv() 来接收消息。你能不能为其封装 Sink 和 Stream 的实现，让 MPSC channel 可以像 Stream/Sink 一样使用？（提示：tokio-stream 有 ReceiverStream 的实现）。</p>
+<p>欢迎在留言区分享你的思考和学习收获，感谢收听，恭喜你已经完成了rust学习的40次打卡，如果觉得有收获，也欢迎分享给你身边的朋友，邀他一起讨论。我们下节课见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#503c3c3c69646161606710373d31393c7e333f3d" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935952ef0a1ec977',t:'MTc0NTUzNjc1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

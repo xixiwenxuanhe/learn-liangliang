@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="17 数据结构：软件系统核心部件哈希表，内存如何布局？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>17 数据结构：软件系统核心部件哈希表，内存如何布局？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%ae%a9Rust%e6%88%90%e4%b8%ba%e4%bd%a0%e7%9a%84%e4%b8%8b%e4%b8%80%e9%97%a8%e4%b8%bb%e5%8a%9b%e8%af%ad%e8%a8%80.md.html" id="00 开篇词 让Rust成为你的下一门主力语言.md.html">00 开篇词 让Rust成为你的下一门主力语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/01%20%e5%86%85%e5%ad%98%ef%bc%9a%e5%80%bc%e6%94%be%e5%a0%86%e4%b8%8a%e8%bf%98%e6%98%af%e6%94%be%e6%a0%88%e4%b8%8a%ef%bc%8c%e8%bf%99%e6%98%af%e4%b8%80%e4%b8%aa%e9%97%ae%e9%a2%98.md.html" id="01 内存：值放堆上还是放栈上，这是一个问题.md.html">01 内存：值放堆上还是放栈上，这是一个问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/02%20%e4%b8%b2%e8%ae%b2%ef%bc%9a%e7%bc%96%e7%a8%8b%e5%bc%80%e5%8f%91%e4%b8%ad%ef%bc%8c%e9%82%a3%e4%ba%9b%e4%bd%a0%e9%9c%80%e8%a6%81%e6%8e%8c%e6%8f%a1%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5.md.html" id="02 串讲：编程开发中，那些你需要掌握的基本概念.md.html">02 串讲：编程开发中，那些你需要掌握的基本概念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/03%20%e5%88%9d%e7%aa%a5%e9%97%a8%e5%be%84%ef%bc%9a%e4%bb%8e%e4%bd%a0%e7%9a%84%e7%ac%ac%e4%b8%80%e4%b8%aaRust%e7%a8%8b%e5%ba%8f%e5%bc%80%e5%a7%8b%ef%bc%81.md.html" id="03 初窥门径：从你的第一个Rust程序开始！.md.html">03 初窥门径：从你的第一个Rust程序开始！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/04%20get%20hands%20dirty%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%aa%e5%ae%9e%e7%94%a8%e7%9a%84CLI%e5%b0%8f%e5%b7%a5%e5%85%b7.md.html" id="04 get hands dirty：来写个实用的CLI小工具.md.html">04 get hands dirty：来写个实用的CLI小工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/05%20get%20hands%20dirty%ef%bc%9a%e5%81%9a%e4%b8%80%e4%b8%aa%e5%9b%be%e7%89%87%e6%9c%8d%e5%8a%a1%e5%99%a8%e6%9c%89%e5%a4%9a%e9%9a%be%ef%bc%9f.md.html" id="05 get hands dirty：做一个图片服务器有多难？.md.html">05 get hands dirty：做一个图片服务器有多难？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/06%20get%20hands%20dirty%ef%bc%9aSQL%e6%9f%a5%e8%af%a2%e5%b7%a5%e5%85%b7%e6%80%8e%e4%b9%88%e4%b8%80%e9%b1%bc%e5%a4%9a%e5%90%83%ef%bc%9f.md.html" id="06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html">06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/07%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e7%94%9f%e6%9d%80%e5%a4%a7%e6%9d%83%e5%88%b0%e5%ba%95%e5%9c%a8%e8%b0%81%e6%89%8b%e4%b8%8a%ef%bc%9f.md.html" id="07 所有权：值的生杀大权到底在谁手上？.md.html">07 所有权：值的生杀大权到底在谁手上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/08%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e5%80%9f%e7%94%a8%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="08 所有权：值的借用是如何工作的？.md.html">08 所有权：值的借用是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/09%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%80%bc%e5%8f%af%e4%bb%a5%e6%9c%89%e5%a4%9a%e4%b8%aa%e6%89%80%e6%9c%89%e8%80%85%e4%b9%88%ef%bc%9f.md.html" id="09 所有权：一个值可以有多个所有者么？.md.html">09 所有权：一个值可以有多个所有者么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/10%20%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9a%e4%bd%a0%e5%88%9b%e5%bb%ba%e7%9a%84%e5%80%bc%e7%a9%b6%e7%ab%9f%e8%83%bd%e6%b4%bb%e5%a4%9a%e4%b9%85%ef%bc%9f.md.html" id="10 生命周期：你创建的值究竟能活多久？.md.html">10 生命周期：你创建的值究竟能活多久？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/11%20%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9a%e4%bb%8e%e5%88%9b%e5%bb%ba%e5%88%b0%e6%b6%88%e4%ba%a1%ef%bc%8c%e5%80%bc%e9%83%bd%e7%bb%8f%e5%8e%86%e4%ba%86%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="11 内存管理：从创建到消亡，值都经历了什么？.md.html">11 内存管理：从创建到消亡，值都经历了什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/12%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9aRust%e7%9a%84%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%e6%9c%89%e4%bb%80%e4%b9%88%e7%89%b9%e7%82%b9%ef%bc%9f.md.html" id="12 类型系统：Rust的类型系统有什么特点？.md.html">12 类型系统：Rust的类型系统有什么特点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/13%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8trait%e6%9d%a5%e5%ae%9a%e4%b9%89%e6%8e%a5%e5%8f%a3%ef%bc%9f.md.html" id="13 类型系统：如何使用trait来定义接口？.md.html">13 类型系统：如何使用trait来定义接口？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/14%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%bf%85%e9%a1%bb%e6%8e%8c%e6%8f%a1%e7%9a%84trait%ef%bc%9f.md.html" id="14 类型系统：有哪些必须掌握的trait？.md.html">14 类型系统：有哪些必须掌握的trait？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/15%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bf%99%e4%ba%9b%e6%b5%93%e7%9c%89%e5%a4%a7%e7%9c%bc%e7%9a%84%e7%bb%93%e6%9e%84%e7%ab%9f%e7%84%b6%e9%83%bd%e6%98%af%e6%99%ba%e8%83%bd%e6%8c%87%e9%92%88%ef%bc%9f.md.html" id="15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html">15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/16%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9aVec_T_%e3%80%81&amp;[T]%e3%80%81Box_[T]_%20%ef%bc%8c%e4%bd%a0%e7%9c%9f%e7%9a%84%e4%ba%86%e8%a7%a3%e9%9b%86%e5%90%88%e5%ae%b9%e5%99%a8%e4%b9%88%ef%bc%9f.md.html" id="16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html">16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/17%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bd%af%e4%bb%b6%e7%b3%bb%e7%bb%9f%e6%a0%b8%e5%bf%83%e9%83%a8%e4%bb%b6%e5%93%88%e5%b8%8c%e8%a1%a8%ef%bc%8c%e5%86%85%e5%ad%98%e5%a6%82%e4%bd%95%e5%b8%83%e5%b1%80%ef%bc%9f.md.html" id="17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html">17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88Rust%e7%9a%84%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%e4%b8%8e%e4%bc%97%e4%b8%8d%e5%90%8c%ef%bc%9f.md.html" id="18 错误处理：为什么Rust的错误处理与众不同？.md.html">18 错误处理：为什么Rust的错误处理与众不同？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/19%20%e9%97%ad%e5%8c%85%ef%bc%9aFnOnce%e3%80%81FnMut%e5%92%8cFn%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e7%b1%bb%e5%9e%8b%ef%bc%9f.md.html" id="19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html">19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/20%204%20Steps%20%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9b%b4%e5%a5%bd%e5%9c%b0%e9%98%85%e8%af%bbRust%e6%ba%90%e7%a0%81%ef%bc%9f.md.html" id="20 4 Steps ：如何更好地阅读Rust源码？.md.html">20 4 Steps ：如何更好地阅读Rust源码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/21%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%881%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html">21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/22%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%882%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html">22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/23%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="23 类型系统：如何在实战中使用泛型编程？.md.html">23 类型系统：如何在实战中使用泛型编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/24%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8trait%20object%ef%bc%9f.md.html" id="24 类型系统：如何在实战中使用trait object？.md.html">24 类型系统：如何在实战中使用trait object？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/25%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9b%b4%e7%bb%95trait%e6%9d%a5%e8%ae%be%e8%ae%a1%e5%92%8c%e6%9e%b6%e6%9e%84%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="25 类型系统：如何围绕trait来设计和架构系统？.md.html">25 类型系统：如何围绕trait来设计和架构系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/26%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%883%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%ab%98%e7%ba%a7trait%e6%8a%80%e5%b7%a7.md.html" id="26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html">26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/27%20%e7%94%9f%e6%80%81%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e6%9c%89%e7%9a%84Rust%e5%ba%93%e5%8f%af%e4%bb%a5%e4%b8%ba%e6%88%91%e6%89%80%e7%94%a8%ef%bc%9f.md.html" id="27 生态系统：有哪些常有的Rust库可以为我所用？.md.html">27 生态系统：有哪些常有的Rust库可以为我所用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/28%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="28 网络开发（上）：如何使用Rust处理网络请求？.md.html">28 网络开发（上）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/29%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="29 网络开发（下）：如何使用Rust处理网络请求？.md.html">29 网络开发（下）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/30%20Unsafe%20Rust%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8C++%e7%9a%84%e6%96%b9%e5%bc%8f%e6%89%93%e5%bc%80Rust%ef%bc%9f.md.html" id="30 Unsafe Rust：如何用C++的方式打开Rust？.md.html">30 Unsafe Rust：如何用C++的方式打开Rust？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/31%20FFI%ef%bc%9aRust%e5%a6%82%e4%bd%95%e5%92%8c%e4%bd%a0%e7%9a%84%e8%af%ad%e8%a8%80%e6%9e%b6%e8%b5%b7%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html">31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/32%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e4%bd%bf%e7%94%a8PyO3%e5%bc%80%e5%8f%91Python3%e6%a8%a1%e5%9d%97.md.html" id="32 实操项目：使用PyO3开发Python3模块.md.html">32 实操项目：使用PyO3开发Python3模块.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html">33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html">34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/35%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84MPSC%20channel%ef%bc%9f.md.html" id="35 实操项目：如何实现一个基本的MPSC channel？.md.html">35 实操项目：如何实现一个基本的MPSC channel？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/36%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%884%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%a4%84%e7%90%86.md.html" id="36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html">36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/37%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%885%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8.md.html" id="37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html">37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/38%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aFuture%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f%e5%ae%83%e5%92%8casync_await%e6%98%af%e4%bb%80%e4%b9%88%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="38 异步处理：Future是什么？它和async_await是什么关系？.md.html">38 异步处理：Future是什么？它和async_await是什么关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/39%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aasync_await%e5%86%85%e9%83%a8%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="39 异步处理：async_await内部是怎么实现的？.md.html">39 异步处理：async_await内部是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/40%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%bc%82%e6%ad%a5IO%ef%bc%9f.md.html" id="40 异步处理：如何处理异步IO？.md.html">40 异步处理：如何处理异步IO？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/41%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%886%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86.md.html" id="41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html">41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/42%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%887%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%a6%82%e4%bd%95%e5%81%9a%e5%a4%a7%e7%9a%84%e9%87%8d%e6%9e%84%ef%bc%9f.md.html" id="42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html">42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/43%20%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%ef%bc%9a%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e4%b8%8b%e7%9a%84%e4%b8%80%e4%b8%aaRust%e9%a1%b9%e7%9b%ae%e5%8c%85%e5%90%ab%e5%93%aa%e4%ba%9b%e8%a6%81%e7%b4%a0%ef%bc%9f.md.html" id="43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html">43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/44%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%92%8c%e6%95%b0%e6%8d%ae%e5%a6%82%e4%bd%95%e6%89%93%e4%ba%a4%e9%81%93%ef%bc%9f.md.html" id="44 数据处理：应用程序和数据如何打交道？.md.html">44 数据处理：应用程序和数据如何打交道？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/45%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%888%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%85%8d%e7%bd%ae_%e6%b5%8b%e8%af%95_%e7%9b%91%e6%8e%a7_CI_CD.md.html" id="45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html">45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/46%20%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8Rust%e6%9e%b6%e6%9e%84%e5%a4%8d%e6%9d%82%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="46 软件架构：如何用Rust架构复杂系统？.md.html">46 软件架构：如何用Rust架构复杂系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20Rust2021%e7%89%88%e6%ac%a1%e9%97%ae%e4%b8%96%e4%ba%86%ef%bc%81.md.html" id="加餐 Rust2021版次问世了！.md.html">加餐 Rust2021版次问世了！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e4%bb%a3%e7%a0%81%e5%8d%b3%e6%95%b0%e6%8d%ae%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e9%9c%80%e8%a6%81%e5%ae%8f%e7%bc%96%e7%a8%8b%e8%83%bd%e5%8a%9b%ef%bc%9f.md.html" id="加餐 代码即数据：为什么我们需要宏编程能力？.md.html">加餐 代码即数据：为什么我们需要宏编程能力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e7%94%a8%e6%9c%80%e2%80%9c%e7%ac%a8%e2%80%9d%e7%9a%84%e6%96%b9%e5%bc%8f%e6%92%b0%e5%86%99%e5%ae%8f.md.html" id="加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html">加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e7%94%a8%20syn_quote%20%e4%bc%98%e9%9b%85%e5%9c%b0%e6%9e%84%e5%bb%ba%e5%ae%8f.md.html" id="加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html">加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%84%9a%e6%98%a7%e4%b9%8b%e5%b7%85%ef%bc%9a%e4%bd%a0%e7%9a%84Rust%e5%ad%a6%e4%b9%a0%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%e6%b1%87%e6%80%bb.md.html" id="加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html">加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e5%8f%82%e8%80%83%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="加餐 期中测试：参考实现讲解.md.html">加餐 期中测试：参考实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84grep%e5%91%bd%e4%bb%a4%e8%a1%8c.md.html" id="加餐 期中测试：来写一个简单的grep命令行.md.html">加餐 期中测试：来写一个简单的grep命令行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e8%bf%99%e4%b8%aa%e4%b8%93%e6%a0%8f%e4%bd%a0%e5%8f%af%e4%bb%a5%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%8c%e4%bb%a5%e5%8f%8aRust%e6%98%af%e5%90%a6%e5%80%bc%e5%be%97%e5%ad%a6%ef%bc%9f.md.html" id="加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html">加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（一）：听听课代表们怎么说.md.html">特别策划 学习锦囊（一）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（三）：听听课代表们怎么说.md.html">特别策划 学习锦囊（三）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（二）：听听课代表们怎么说.md.html">特别策划 学习锦囊（二）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%bb%9d%e6%9c%9b%e4%b9%8b%e8%b0%b7%ef%bc%9a%e6%94%b9%e5%8f%98%e4%bb%8e%e5%ad%a6%e4%b9%a0%e5%bc%80%e5%a7%8b.md.html" id="用户故事 绝望之谷：改变从学习开始.md.html">用户故事 绝望之谷：改变从学习开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%af%ad%e8%a8%80%e4%b8%8d%e4%bb%85%e6%98%af%e5%b7%a5%e5%85%b7%ef%bc%8c%e8%bf%98%e6%98%af%e6%80%9d%e7%bb%b4%e6%96%b9%e5%bc%8f.md.html" id="用户故事 语言不仅是工具，还是思维方式.md.html">用户故事 语言不仅是工具，还是思维方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%b0%b8%e7%bb%ad%e4%b9%8b%e5%8e%9f%ef%bc%9aRust%e5%ad%a6%e4%b9%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e6%8c%81%e7%bb%ad%e7%b2%be%e8%bf%9b%ef%bc%9f.md.html" id="结束语 永续之原：Rust学习，如何持续精进？.md.html">结束语 永续之原：Rust学习，如何持续精进？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="17 数据结构：软件系统核心部件哈希表，内存如何布局？" id="title">17 数据结构：软件系统核心部件哈希表，内存如何布局？</h1>
+<div><p>你好，我是陈天。</p>
+<p>上一讲我们深入学习了切片，对比了数组、列表、字符串和它们的切片以及切片引用的关系。今天就继续讲 Rust 里另一个非常重要的集合容器：HashMap，也就是哈希表。</p>
+<p>如果谈论软件开发中最重要、出镜率最高的数据结构，那哈希表一定位列其中。很多编程语言甚至将哈希表作为一种内置的数据结构，做进了语言的核心。比如 PHP 的关联数组（associate array）、Python 的字典（dict）、JavaScript 的对象（object）和 Map。</p>
+<p>Google 的工程师Matt Kulukundis 在 <a href="https://youtu.be/ncHmEUmJZf4?t=210" target="_blank">cppCon 2017</a> 做的一个演讲，说：全世界 Google 的服务器上 1% 的 CPU 时间用来做哈希表的计算，超过 4% 的内存用来存储哈希表。足以证明哈希表的重要性。</p>
+<p>我们知道，哈希表和列表类似，都用于处理需要随机访问的数据结构。如果数据结构的输入和输出能一一对应，那么可以使用列表，如果无法一一对应，那么就需要使用哈希表。-
+<img alt="" src="assets/4e0c043a82e29886cd7b8e1dd79a5183.jpg"/></p>
+<h2 id="rust-的哈希表">Rust 的哈希表</h2>
+<p>那 Rust 为我们提供了什么样的哈希表呢？它长什么样？性能如何？我们从官方文档学起。</p>
+<p>如果你打开 <a href="https://doc.rust-lang.org/std/collections/struct.HashMap.html" target="_blank">HashMap</a> 的文档，会看到这样一句话：</p>
+<blockquote>
+<p>A hash map implemented with <strong>quadratic probing</strong> and <strong>SIMD lookup</strong>.</p>
+</blockquote>
+<p>这一看就有点肾上腺素上升了，出现了两个高端词汇：二次探查（quadratic probing）和 SIMD 查表（SIMD lookup），都是什么意思？它们是Rust哈希表算法的设计核心，我们今天的学习也会围绕着这两个词展开，所以别着急，等学完相信你会理解这句话的。</p>
+<p>先把基础理论扫一遍。哈希表最核心的特点就是：<strong>巨量的可能输入和有限的哈希表容量。</strong>这就会引发哈希冲突，也就是两个或者多个输入的哈希被映射到了同一个位置，所以我们要能够处理哈希冲突。</p>
+<p>要解决冲突，首先可以通过更好的、分布更均匀的哈希函数，以及使用更大的哈希表来缓解冲突，但无法完全解决，所以我们还需要使用冲突解决机制。</p>
+<h3 id="如何解决冲突">如何解决冲突？</h3>
+<p>理论上，主要的冲突解决机制有链地址法（chaining）和开放寻址法（open addressing）。</p>
+<p>链地址法，我们比较熟悉，就是把落在同一个哈希上的数据用单链表或者双链表连接起来。这样在查找的时候，先找到对应的哈希桶（hash bucket），然后再在冲突链上挨个比较，直到找到匹配的项：<img alt="" src="assets/a3334e4a3259e0bd231815a486b7c45d.jpg"/></p>
+<p>冲突链处理哈希冲突非常直观，很容易理解和撰写代码，但缺点是哈希表和冲突链使用了不同的内存，对缓存不友好。</p>
+<p>开放寻址法把整个哈希表看做一个大数组，不引入额外的内存，当冲突产生时，按照一定的规则把数据插入到其它空闲的位置。比如线性探寻（linear probing）在出现哈希冲突时，不断往后探寻，直到找到空闲的位置插入。</p>
+<p>而<strong>二次探查</strong>，理论上是在冲突发生时，不断探寻哈希位置加减 n 的二次方，找到空闲的位置插入，我们看图，更容易理解：-
+<img alt="" src="assets/42a18970ac2eec7510c69c1f8323bc4e.jpg"/>（图中示意是理论上的处理方法，实际为了性能会有很多不同的处理。）</p>
+<p>开放寻址还有其它方案，比如二次哈希什么的，今天就不详细介绍了。</p>
+<p>好，搞明白哈希表的二次探查的理论知识，我们可以推测，Rust 哈希表不是用冲突链来解决哈希冲突，而是用开放寻址法的二次探查来解决的。当然，后面会讲到 Rust 的二次探查和理论的处理方式有些差别。</p>
+<p>而另一个关键词，使用 SIMD 做单指令多数据的查表，也和一会要讲到 Rust 哈希表巧妙的内存布局息息相关。</p>
+<h3 id="hashmap-的数据结构">HashMap 的数据结构</h3>
+<p>进入正题，我们来看看 Rust 哈希表的数据结构是什么样子的，打开标准库的 <a href="https://doc.rust-lang.org/src/std/collections/hash/map.rs.html#206-208" target="_blank">源代码</a>：</p>
+<pre><code>use hashbrown::hash_map as base;
+
+#[derive(Clone)]
+pub struct RandomState {
+    k0: u64,
+    k1: u64,
+}
+
+pub struct HashMap&lt;K, V, S = RandomState&gt; {
+    base: base::HashMap&lt;K, V, S&gt;,
+}
+</code></pre>
+<p>可以看到，HashMap 有三个泛型参数，K 和 V 代表 key/value 的类型，S 是哈希算法的状态，它默认是 RandomState，占两个 u64。RandomState 使用 SipHash 作为缺省的哈希算法，它是一个加密安全的哈希函数（cryptographically secure hashing）。</p>
+<p>从定义中还能看到，Rust 的 HashMap 复用了 hashbrown 的 HashMap。hashbrown 是 Rust 下对 <a href="https://abseil.io/blog/20180927-swisstables" target="_blank">Google Swiss Table</a> 的一个改进版实现，我们打开 hashbrown 的代码，看它的<a href="https://docs.rs/hashbrown/0.11.2/src/hashbrown/map.rs.html#192-195" target="_blank">结构</a>：</p>
+<pre><code>pub struct HashMap&lt;K, V, S = DefaultHashBuilder, A: Allocator + Clone = Global&gt; {
+    pub(crate) hash_builder: S,
+    pub(crate) table: RawTable&lt;(K, V), A&gt;,
+}
+</code></pre>
+<p>可以看到，HashMap 里有两个域，一个是 hash_builder，类型是刚才我们提到的标准库使用的 RandomState，还有一个是具体的 RawTable：</p>
+<pre><code>pub struct RawTable&lt;T, A: Allocator + Clone = Global&gt; {
+    table: RawTableInner&lt;A&gt;,
+    // Tell dropck that we own instances of T.
+    marker: PhantomData&lt;T&gt;,
+}
+
+struct RawTableInner&lt;A&gt; {
+    // Mask to get an index from a hash value. The value is one less than the
+    // number of buckets in the table.
+    bucket_mask: usize,
+
+    // [Padding], T1, T2, ..., Tlast, C1, C2, ...
+    //                                ^ points here
+    ctrl: NonNull&lt;u8&gt;,
+
+    // Number of elements that can be inserted before we need to grow the table
+    growth_left: usize,
+
+    // Number of elements in the table, only really used by len()
+    items: usize,
+
+    alloc: A,
+}
+</code></pre>
+<p>RawTable 中，实际上有意义的数据结构是 RawTableInner，前四个字段很重要，我们一会讲HashMap的内存布局会再提到：</p>
+<ul>
+<li>usize 的 bucket_mask，是哈希表中哈希桶的数量减一；</li>
+<li>名字叫 ctrl 的指针，它指向哈希表堆内存末端的 ctrl 区；</li>
+<li>usize 的字段 growth_left，指哈希表在下次自动增长前还能存储多少数据；</li>
+<li>usize 的 items，表明哈希表现在有多少数据。</li>
+</ul>
+<p>这里最后的 alloc 字段，和 RawTable 的 marker 一样，只是一个用来占位的类型，我们现在只需知道，它用来分配在堆上的内存。</p>
+<h3 id="hashmap-的基本使用方法">HashMap 的基本使用方法</h3>
+<p>数据结构搞清楚，我们再看具体使用方法。Rust 哈希表的使用很简单，它提供了一系列很方便的方法，使用起来和其它语言非常类似，你只要看看<a href="https://doc.rust-lang.org/std/collections/struct.HashMap.html" target="_blank">文档</a>，就很容易理解。我们来写段代码，尝试一下（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=a0543e873c9b6ecb49f56755493dc968" target="_blank">代码</a>）：</p>
+<pre><code>use std::collections::HashMap;
+
+fn main() {
+    let mut map = HashMap::new();
+    explain("empty", &amp;map);
+
+    map.insert('a', 1);
+    explain("added 1", &amp;map);
+
+    map.insert('b', 2);
+    map.insert('c', 3);
+    explain("added 3", &amp;map);
+
+    map.insert('d', 4);
+    explain("added 4", &amp;map);
+
+    // get 时需要使用引用，并且也返回引用
+    assert_eq!(map.get(&amp;'a'), Some(&amp;1));
+    assert_eq!(map.get_key_value(&amp;'b'), Some((&amp;'b', &amp;2)));
+
+    map.remove(&amp;'a');
+    // 删除后就找不到了
+    assert_eq!(map.contains_key(&amp;'a'), false);
+    assert_eq!(map.get(&amp;'a'), None);
+    explain("removed", &amp;map);
+    // shrink 后哈希表变小
+    map.shrink_to_fit();
+    explain("shrinked", &amp;map);
+}
+
+fn explain&lt;K, V&gt;(name: &amp;str, map: &amp;HashMap&lt;K, V&gt;) {
+    println!("{}: len: {}, cap: {}", name, map.len(), map.capacity());
+}
+</code></pre>
+<p>运行这段代码，我们可以看到这样的输出：</p>
+<pre><code>empty: len: 0, cap: 0
+added 1: len: 1, cap: 3
+added 3: len: 3, cap: 3
+added 4: len: 4, cap: 7
+removed: len: 3, cap: 7
+shrinked: len: 3, cap: 3
+</code></pre>
+<p>可以看到，当 HashMap::new() 时，它并没有分配空间，容量为零，<strong>随着哈希表不断插入数据，它会以 2的幂减一的方式增长</strong>，最小是 3。当删除表中的数据时，原有的表大小不变，只有显式地调用 shrink_to_fit，才会让哈希表变小。</p>
+<h2 id="hashmap-的内存布局">HashMap 的内存布局</h2>
+<p>但是通过 HashMap 的公开接口，我们无法看到 HashMap 在内存中是如何布局的，还是需要借助之前使用过的 std::mem::transmute 方法，来把数据结构打出来。我们把刚才的代码改一改（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=40a71cd4e349369e7255f173578ec9ae" target="_blank">代码</a>）：</p>
+<pre><code>use std::collections::HashMap;
+
+fn main() {
+    let map = HashMap::new();
+    let mut map = explain("empty", map);
+
+    map.insert('a', 1);
+    let mut map = explain("added 1", map);
+    map.insert('b', 2);
+    map.insert('c', 3);
+
+    let mut map = explain("added 3", map);
+
+    map.insert('d', 4);
+
+    let mut map = explain("added 4", map);
+
+    map.remove(&amp;'a');
+
+    explain("final", map);
+}
+
+// HashMap 结构有两个 u64 的 RandomState，然后是四个 usize，
+// 分别是 bucket_mask, ctrl, growth_left 和 items
+// 我们 transmute 打印之后，再 transmute 回去
+fn explain&lt;K, V&gt;(name: &amp;str, map: HashMap&lt;K, V&gt;) -&gt; HashMap&lt;K, V&gt; {
+    let arr: [usize; 6] = unsafe { std::mem::transmute(map) };
+    println!(
+        "{}: bucket_mask 0x{:x}, ctrl 0x{:x}, growth_left: {}, items: {}",
+        name, arr[2], arr[3], arr[4], arr[5]
+    );
+    unsafe { std::mem::transmute(arr) }
+}
+</code></pre>
+<p>运行之后，可以看到：</p>
+<pre><code>empty: bucket_mask 0x0, ctrl 0x1056df820, growth_left: 0, items: 0
+added 1: bucket_mask 0x3, ctrl 0x7fa0d1405e30, growth_left: 2, items: 1
+added 3: bucket_mask 0x3, ctrl 0x7fa0d1405e30, growth_left: 0, items: 3
+added 4: bucket_mask 0x7, ctrl 0x7fa0d1405e90, growth_left: 3, items: 4
+final: bucket_mask 0x7, ctrl 0x7fa0d1405e90, growth_left: 4, items: 3
+</code></pre>
+<p>有意思，我们发现在运行的过程中，ctrl 对应的堆地址发生了改变。</p>
+<p>在我的 OS X 下，一开始哈希表为空，ctrl 地址看上去是一个 TEXT/RODATA 段的地址，应该是指向了一个默认的空表地址；插入第一个数据后，哈希表分配了 4 个 bucket，ctrl 地址发生改变；在插入三个数据后，growth_left 为零，再插入时，哈希表重新分配，ctrl 地址继续改变。</p>
+<p>刚才在探索 HashMap 数据结构时，说过 ctrl 是一个指向哈希表堆地址末端 ctrl 区的地址，所以我们可以通过这个地址，计算出哈希表堆地址的起始地址。</p>
+<p>因为哈希表有 8 个 bucket（0x7 + 1），每个 bucket 大小是 key（char） + value（i32） 的大小，也就是 8 个字节，所以一共是 64 个字节。对于这个例子，<strong>通过 ctrl 地址减去 64，就可以得到哈希表的堆内存起始地址</strong>。然后，我们可以用 rust-gdb/rust-lldb 来打印这个内存（如果你对 rust-gdb/rust-lldb 感兴趣，可以看文末的参考阅读）。</p>
+<p>这里我用 Linux 下的 rust-gdb 设置断点，依次查看哈希表有一个、三个、四个值，以及删除一个值的状态：</p>
+<pre><code>❯ rust-gdb ~/.target/debug/hashmap2
+GNU gdb (Ubuntu 9.2-0ubuntu2) 9.2
+...
+(gdb) b hashmap2.rs:32
+Breakpoint 1 at 0xa43e: file src/hashmap2.rs, line 32.
+(gdb) r
+Starting program: /home/tchen/.target/debug/hashmap2
+...
+# 最初的状态，哈希表为空
+empty: bucket_mask 0x0, ctrl 0x555555597be0, growth_left: 0, items: 0
+
+Breakpoint 1, hashmap2::explain (name=..., map=...) at src/hashmap2.rs:32
+32	    unsafe { std::mem::transmute(arr) }
+(gdb) c
+Continuing.
+# 插入了一个元素后，bucket 有 4 个（0x3+1），堆地址起始位置 0x5555555a7af0 - 4*8(0x20)
+added 1: bucket_mask 0x3, ctrl 0x5555555a7af0, growth_left: 2, items: 1
+
+Breakpoint 1, hashmap2::explain (name=..., map=...) at src/hashmap2.rs:32
+32	    unsafe { std::mem::transmute(arr) }
+(gdb) x /12x 0x5555555a7ad0
+0x5555555a7ad0:	0x00000061	0x00000001	0x00000000	0x00000000
+0x5555555a7ae0:	0x00000000	0x00000000	0x00000000	0x00000000
+0x5555555a7af0:	0x0affffff	0xffffffff	0xffffffff	0xffffffff
+(gdb) c
+Continuing.
+# 插入了三个元素后，哈希表没有剩余空间，堆地址起始位置不变 0x5555555a7af0 - 4*8(0x20)
+added 3: bucket_mask 0x3, ctrl 0x5555555a7af0, growth_left: 0, items: 3
+
+Breakpoint 1, hashmap2::explain (name=..., map=...) at src/hashmap2.rs:32
+32	    unsafe { std::mem::transmute(arr) }
+(gdb) x /12x 0x5555555a7ad0
+0x5555555a7ad0:	0x00000061	0x00000001	0x00000062	0x00000002
+0x5555555a7ae0:	0x00000000	0x00000000	0x00000063	0x00000003
+0x5555555a7af0:	0x0a72ff02	0xffffffff	0xffffffff	0xffffffff
+(gdb) c
+Continuing.
+# 插入第四个元素后，哈希表扩容，堆地址起始位置变为 0x5555555a7b50 - 8*8(0x40)
+added 4: bucket_mask 0x7, ctrl 0x5555555a7b50, growth_left: 3, items: 4
+
+Breakpoint 1, hashmap2::explain (name=..., map=...) at src/hashmap2.rs:32
+32	    unsafe { std::mem::transmute(arr) }
+(gdb) x /20x 0x5555555a7b10
+0x5555555a7b10:	0x00000061	0x00000001	0x00000000	0x00000000
+0x5555555a7b20:	0x00000064	0x00000004	0x00000063	0x00000003
+0x5555555a7b30:	0x00000000	0x00000000	0x00000062	0x00000002
+0x5555555a7b40:	0x00000000	0x00000000	0x00000000	0x00000000
+0x5555555a7b50:	0xff72ffff	0x0aff6502	0xffffffff	0xffffffff
+(gdb) c
+Continuing.
+# 删除 a 后，剩余 4 个位置。注意 ctrl bit 的变化，以及 0x61 0x1 并没有被清除
+final: bucket_mask 0x7, ctrl 0x5555555a7b50, growth_left: 4, items: 3
+
+Breakpoint 1, hashmap2::explain (name=..., map=...) at src/hashmap2.rs:32
+32	    unsafe { std::mem::transmute(arr) }
+(gdb) x /20x 0x5555555a7b10
+0x5555555a7b10:	0x00000061	0x00000001	0x00000000	0x00000000
+0x5555555a7b20:	0x00000064	0x00000004	0x00000063	0x00000003
+0x5555555a7b30:	0x00000000	0x00000000	0x00000062	0x00000002
+0x5555555a7b40:	0x00000000	0x00000000	0x00000000	0x00000000
+0x5555555a7b50:	0xff72ffff	0xffff6502	0xffffffff	0xffffffff
+</code></pre>
+<p>这段输出蕴藏了很多信息，我们结合示意图来仔细梳理。</p>
+<p>首先，插入第一个元素 ‘a’: 1 后，哈希表的内存布局如下：<img alt="" src="assets/d126ceb74605b168d36bc1e83d4c9e87.jpg"/></p>
+<p>key ‘a’ 的 hash 和 bucket_mask 0x3 运算后得到第 0 个位置插入。同时，这个 hash 的头 7 位取出来，在 ctrl 表中对应的位置，也就是第 0 个字节，把这个值写入。</p>
+<p>要理解这个步骤，关键就是要搞清楚这个 ctrl 表是什么。</p>
+<h3 id="ctrl-表">ctrl 表</h3>
+<p>ctrl 表的主要目的是快速查找。它的设计非常优雅，值得我们学习。</p>
+<p>一张 ctrl 表里，有若干个 128bit 或者说 16 个字节的分组（group），group 里的每个字节叫 ctrl byte，对应一个 bucket，那么一个 group 对应 16 个 bucket。如果一个 bucket 对应的 ctrl byte 首位不为 1，就表示这个 ctrl byte 被使用；如果所有位都是 1，或者说这个字节是 0xff，那么它是空闲的。</p>
+<p>一组 control byte 的整个 128 bit 的数据，可以通过一条指令被加载进来，然后和某个值进行 mask，找到它所在的位置。这就是一开始提到的<strong>SIMD 查表</strong>。</p>
+<p>我们知道，现代 CPU 都支持单指令多数据集的操作，而Rust 充分利用了 CPU 这种能力，一条指令可以让多个相关的数据载入到缓存中处理，大大加快查表的速度。所以，Rust 的哈希表查询的效率非常高。</p>
+<p>具体怎么操作，我们来看 HashMap 是如何通过 ctrl 表来进行数据查询的。假设这张表里已经添加了一些数据，我们现在要查找 key 为 ‘c’ 的数据：</p>
+<ol>
+<li>首先对 ‘c’ 做哈希，得到一个哈希值 h；</li>
+<li>把 h 跟 bucket_mask 做与，得到一个值，图中是 139；</li>
+<li>拿着这个 139，找到对应的 ctrl group 的起始位置，因为 ctrl group 以 16 为一组，所以这里找到 128；</li>
+<li>用 SIMD 指令加载从 128 对应地址开始的 16 个字节；</li>
+<li>对 hash 取头 7 个 bit，然后和刚刚取出的 16 个字节一起做与，找到对应的匹配，如果找到了，它（们）很大概率是要找的值；</li>
+<li>如果不是，那么以二次探查（以 16 的倍数不断累积）的方式往后查找，直到找到为止。</li>
+</ol>
+<p>你可以结合下图理解这个算法：<img alt="" src="assets/d2a3cc569c9a9b0728a659c030eb6560.jpg"/></p>
+<p>所以，当 HashMap 插入和删除数据，以及因此导致重新分配的时候，主要工作就是在维护这张 ctrl 表和数据的对应。</p>
+<p>因为 ctrl 表是所有操作最先触及的内存，所以，在 HashMap 的结构中，<strong>堆内存的指针直接指向 ctrl 表</strong>，而不是指向堆内存的起始位置，这样可以减少一次内存的访问。</p>
+<h3 id="哈希表重新分配与增长">哈希表重新分配与增长</h3>
+<p>好，回到刚才讲的内存布局继续说。在插入第一条数据后，我们的哈希表只有 4 个 bucket，所以只有头 4 个字节的 ctrl 表有用。随着哈希表的增长，bucket 不够，就会导致重新分配。由于 bucket_mask 永远比 bucket 数量少 1，所以插入三个元素后就会重新分配。</p>
+<p>根据 rust-gdb 中得到的信息，我们看插入三个元素后没有剩余空间的哈希表，在加入 ‘d’: 4 时，是如何增长的。</p>
+<p>首先，<strong>哈希表会按幂扩容</strong>，从 4 个 bucket 扩展到 8 个 bucket。</p>
+<p>这会导致分配新的堆内存，然后原来的 ctrl table 和对应的kv数据会被移动到新的内存中。这个例子里因为 char 和 i32 实现了 Copy trait，所以是拷贝；如果 key 的类型是 String，那么只有 String 的 24 个字节 (ptr|cap|len) 的结构被移动，String 的实际内存不需要变动。</p>
+<p>在移动的过程中，会涉及<strong>哈希的重分配</strong>。从下图可以看到，‘a’/‘c’ 的相对位置和它们的 ctrl byte 没有变化，但重新做 hash 后，‘b’ 的 ctrl byte 和位置都发生了变化：-
+<img alt="" src="assets/ec62494f0c576f932c9716195a1ba6e0.jpg"/></p>
+<h3 id="删除一个值">删除一个值</h3>
+<p>明白了哈希表是如何增长的，我们再来看删除的时候会发生什么。</p>
+<p>当要在哈希表中删除一个值时，整个过程和查找类似，先要找到要被删除的 key 所在的位置。在找到具体位置后，<strong>并不需要实际清除内存，只需要将它的 ctrl byte 设回 0xff</strong>（或者标记成删除状态）。这样，这个 bucket 就可以被再次使用了：-
+<img alt="" src="assets/828f746528039b15b8601ee6f8cdd79e.jpg"/></p>
+<p>这里有一个问题，当 key/value 有额外的内存时，比如 String，它的内存不会立即回收，只有在下一次对应的 bucket 被使用时，让 HashMap 不再拥有这个 String 的所有权之后，这个 String 的内存才被回收。我们看下面的示意图：-
+<img alt="" src="assets/0d191c99c4201bb88fb5a11d70a9434d.jpg"/></p>
+<p>一般来说，这并不会带来什么问题，顶多是内存占用率稍高一些。但某些极端情况下，比如在哈希表中添加大量内容，又删除大量内容后运行，这时你可以通过 shrink_to_fit/shrink_to 释放掉不需要的内存。</p>
+<h3 id="让自定义的数据结构做-hash-key">让自定义的数据结构做 Hash key</h3>
+<p>有时候，我们需要让自定义的数据结构成为 HashMap 的 key。此时，要使用到三个 trait：<a href="https://doc.rust-lang.org/std/hash/trait.Hash.html" target="_blank">Hash</a>、<a href="https://doc.rust-lang.org/std/cmp/trait.PartialEq.html" target="_blank">PartialEq</a>、<a href="https://doc.rust-lang.org/std/cmp/trait.Eq.html" target="_blank">Eq</a>，不过这三个 trait 都可以通过派生宏自动生成。其中：</p>
+<ul>
+<li>实现了 Hash ，可以让数据结构计算哈希；</li>
+<li>实现了 PartialEq/Eq，可以让数据结构进行相等和不相等的比较。Eq 实现了比较的自反性（a == a）、对称性（a == b 则 b == a）以及传递性（a == b，b == c，则 a == c），PartialEq 没有实现自反性。</li>
+</ul>
+<p>我们可以写个例子，看看自定义数据结构如何支持 HashMap：</p>
+<pre><code>use std::{
+    collections::{hash_map::DefaultHasher, HashMap},
+    hash::{Hash, Hasher},
+};
+
+// 如果要支持 Hash，可以用 #[derive(Hash)]，前提是每个字段都实现了 Hash
+// 如果要能作为 HashMap 的 key，还需要 PartialEq 和 Eq
+#[derive(Debug, Hash, PartialEq, Eq)]
+struct Student&lt;'a&gt; {
+    name: &amp;'a str,
+    age: u8,
+}
+
+impl&lt;'a&gt; Student&lt;'a&gt; {
+    pub fn new(name: &amp;'a str, age: u8) -&gt; Self {
+        Self { name, age }
+    }
+}
+fn main() {
+    let mut hasher = DefaultHasher::new();
+    let student = Student::new("Tyr", 18);
+    // 实现了 Hash 的数据结构可以直接调用 hash 方法
+    student.hash(&amp;mut hasher);
+    let mut map = HashMap::new();
+    // 实现了 Hash/PartialEq/Eq 的数据结构可以作为 HashMap 的 key
+    map.insert(student, vec!["Math", "Writing"]);
+    println!("hash: 0x{:x}, map: {:?}", hasher.finish(), map);
+}
+</code></pre>
+<h2 id="hashset-btreemap-btreeset">HashSet/BTreeMap/BTreeSet</h2>
+<p>最后我们简单讲讲和 HashMap 相关的其它几个数据结构。</p>
+<p>有时我们只需要简单确认元素是否在集合中，如果用 HashMap 就有些浪费空间了。这时可以用HashSet，它就是简化的 HashMap，可以用来存放无序的集合，定义直接是 HashMap<k, ()="">：</k,></p>
+<pre><code>use hashbrown::hash_set as base;
+
+pub struct HashSet&lt;T, S = RandomState&gt; {
+    base: base::HashSet&lt;T, S&gt;,
+}
+
+pub struct HashSet&lt;T, S = DefaultHashBuilder, A: Allocator + Clone = Global&gt; {
+    pub(crate) map: HashMap&lt;T, (), S, A&gt;,
+}
+</code></pre>
+<p>使用 HashSet 查看一个元素是否属于集合的效率非常高。</p>
+<p>另一个和 HashMap 一样常用的数据结构就是BTreeMap了。BTreeMap 是内部使用 <a href="https://en.wikipedia.org/wiki/B-tree" target="_blank">B-tree</a> 来组织哈希表的数据结构。另外 BTreeSet 和 HashSet 类似，是 BTreeMap 的简化版，可以用来存放有序集合。</p>
+<p>我们这里重点看下BTreeMap，它的数据结构如下：</p>
+<pre><code>pub struct BTreeMap&lt;K, V&gt; {
+    root: Option&lt;Root&lt;K, V&gt;&gt;,
+    length: usize,
+}
+
+pub type Root&lt;K, V&gt; = NodeRef&lt;marker::Owned, K, V, marker::LeafOrInternal&gt;;
+
+pub struct NodeRef&lt;BorrowType, K, V, Type&gt; {
+    height: usize,
+    node: NonNull&lt;LeafNode&lt;K, V&gt;&gt;,
+    _marker: PhantomData&lt;(BorrowType, Type)&gt;,
+}
+
+struct LeafNode&lt;K, V&gt; {
+    parent: Option&lt;NonNull&lt;InternalNode&lt;K, V&gt;&gt;&gt;,
+    parent_idx: MaybeUninit&lt;u16&gt;,
+    len: u16,
+    keys: [MaybeUninit&lt;K&gt;; CAPACITY],
+    vals: [MaybeUninit&lt;V&gt;; CAPACITY],
+}
+
+struct InternalNode&lt;K, V&gt; {
+    data: LeafNode&lt;K, V&gt;,
+    edges: [MaybeUninit&lt;BoxedNode&lt;K, V&gt;&gt;; 2 * B],
+}
+</code></pre>
+<p>和 HashMap 不同的是，BTreeMap 是有序的。我们看个例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=711b0bd9ac7dbdd882c4b84809212778" target="_blank">代码</a>）:</p>
+<pre><code>use std::collections::BTreeMap;
+
+fn main() {
+    let map = BTreeMap::new();
+    let mut map = explain("empty", map);
+
+    for i in 0..16usize {
+        map.insert(format!("Tyr {}", i), i);
+    }
+
+    let mut map = explain("added", map);
+
+    map.remove("Tyr 1");
+
+    let map = explain("remove 1", map);
+
+    for item in map.iter() {
+        println!("{:?}", item);
+    }
+}
+
+// BTreeMap 结构有 height，node 和 length
+// 我们 transmute 打印之后，再 transmute 回去
+fn explain&lt;K, V&gt;(name: &amp;str, map: BTreeMap&lt;K, V&gt;) -&gt; BTreeMap&lt;K, V&gt; {
+    let arr: [usize; 3] = unsafe { std::mem::transmute(map) };
+    println!(
+        "{}: height: {}, root node: 0x{:x}, len: 0x{:x}",
+        name, arr[0], arr[1], arr[2]
+    );
+    unsafe { std::mem::transmute(arr) }
+}
+</code></pre>
+<p>它的输出如下：</p>
+<pre><code>empty: height: 0, root node: 0x0, len: 0x0
+added: height: 1, root node: 0x7f8286406190, len: 0x10
+remove 1: height: 1, root node: 0x7f8286406190, len: 0xf
+("Tyr 0", 0)
+("Tyr 10", 10)
+("Tyr 11", 11)
+("Tyr 12", 12)
+("Tyr 13", 13)
+("Tyr 14", 14)
+("Tyr 15", 15)
+("Tyr 2", 2)
+("Tyr 3", 3)
+("Tyr 4", 4)
+("Tyr 5", 5)
+("Tyr 6", 6)
+("Tyr 7", 7)
+("Tyr 8", 8)
+("Tyr 9", 9)
+</code></pre>
+<p>可以看到，在遍历时，BTreeMap 会按照 key 的顺序把值打印出来。如果你想让自定义的数据结构可以作为 BTreeMap 的 key，那么需要实现 <a href="https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html" target="_blank">PartialOrd</a> 和 <a href="https://doc.rust-lang.org/std/cmp/trait.Ord.html" target="_blank">Ord</a>，这两者的关系和 PartialEq/Eq 类似，PartialOrd 也没有实现自反性。同样的，PartialOrd 和 Ord 也可以通过派生宏来实现。</p>
+<h2 id="小结">小结</h2>
+<p>在学习数据结构的时候，常用数据结构的内存布局和基本算法你一定要理解清楚，对它在不同情况下如何增长，也要尽量做到心里有数。</p>
+<p>这一讲我们花大精力详细学习了 HashMap 的数据结构以及算法的基本思路，算是抛砖引玉。这门课无论多深入讲解，也只能触及 Rust 整个生态圈的九牛一毛，不可能面面俱到。</p>
+<p>我的原则是“授人以鱼不如授人以渔”，在你掌握这样的分析方法后，以后遇到标准库或者第三方库的其它的数据结构，也可以用类似的方法深入探索学习。</p>
+<p>此外，我们程序员学东西，<strong>会用是第一层，知道它是如何设计的是第二层，能够自己写出来才是第三层</strong>。Rust借鉴的 Google Swiss table 算法简单精巧，虽然 hashbrown 在实现时，为了最大化性能和利用 SSE 指令集，使用了很多 unsafe 代码，但我们撰写一个性能不那么好的 safe 版本，并不是复杂的事情，非常推荐你实现一下。</p>
+<p>集合类型我们就暂时讲解到这里，未来实战要使用到某些数据结构时，比如 VecDeque，我们再深入探索。其他的集合类型，你也可以在要用的时候自行阅读<a href="https://doc.rust-lang.org/std/collections/index.html" target="_blank">文档</a>。</p>
+<p>如果你想了解这两讲中集合类型的时间复杂度，可以看下表（<a href="https://doc.rust-lang.org/std/collections/index.html#performance" target="_blank">来源</a>）：<img alt="" src="assets/60733157bd6e6171a7fee22981469b2f.jpg"/></p>
+<h3 id="思考题">思考题</h3>
+<p>1.修改下面代码的错误，使其编译通过（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=c29bbe5c06183eec0892101298dfc510" target="_blank">代码</a>）。</p>
+<pre><code>use std::collections::BTreeMap;
+
+#[derive(Debug)]
+struct Name {
+    pub name: String,
+    pub flags: u32,
+}
+
+impl Name {
+    pub fn new(name: impl AsRef&lt;str&gt;, flags: u32) -&gt; Self {
+        Self {
+            name: name.as_ref().to_string(),
+            flags,
+        }
+    }
+}
+
+fn main() {
+    let mut map = BTreeMap::new();
+    map.insert(Name::new("/etc/password", 0x1), 12);
+    map.insert(Name::new("/etc/hosts", 0x1), 4);
+    map.insert(Name::new("/home/tchen", 0x0), 28);
+
+    for item in map.iter() {
+        println!("{:?}", item);
+    }
+}
+</code></pre>
+<p>2.思考一下，如果一个 session 表的 key 是 (Source IP、Source Port、Dst IP、Dst Port、Proto) 这样的长度 15 个字节的五元组，value 是 200 字节的 Session 结构，要容纳 1200000 个 Session，整个哈希表要占多大的堆内存？内存的利用率如何？</p>
+<p>3.使用文中同样的方式，结合 rust-gdb/rust-lldb 探索 BTreeMap。你能画出来在插入以 26 个字母为 key，1～26 为 value 后的 BTreeMap 的内存布局么？</p>
+<p>今天你完成了Rust学习的第17次打卡，我们下节课见。</p>
+<h3 id="参考资料">参考资料</h3>
+<p>1.为什么 Rust 的 HashMap 要缺省采用加密安全的哈希算法？</p>
+<p>我们知道哈希表在软件系统中的重要地位，但哈希表在最坏情况下，如果绝大多数 key 的 hash 都碰撞在一起，性能会到 O(n)，这会极大拖累系统的效率。</p>
+<p>比如 1M 大小的 session 表，正常情况下查表速度是 O(1)，但极端情况下，需要比较 1M 个数据后才能找到，这样的系统就容易被 DoS 攻击。所以如果不是加密安全的哈希函数，只要黑客知道哈希算法，就可以构造出大量的 key 产生足够多的哈希碰撞，造成目标系统 DoS。</p>
+<p><a href="https://en.wikipedia.org/wiki/SipHash" target="_blank">SipHash</a> 就是为了回应 DoS 攻击而创建的哈希算法，虽然和 sha2 这样的加密哈希不同（不要将 SipHash 用于加密！），但它可以提供类似等级的安全性。把 SipHash 作为 HashMap 的缺省的哈希算法，Rust 可以避免开发者在不知情的情况下被 DoS，就像曾经在 <a href="https://arstechnica.com/information-technology/2011/12/huge-portions-of-web-vulnerable-to-hashing-denial-of-service-attack/" target="_blank">Web 世界</a>发生的那样。</p>
+<p>当然，这一切的代价是性能损耗，虽然 SipHash 非常快，但它比 hashbrown 缺省使用的 <a href="https://github.com/tkaitchuck/aHash" target="_blank">Ahash</a> 慢了不少。如果你确定使用的 HashMap 不需要 DoS 防护（比如一个完全内部使用的 HashMap），那么可以用 Ahash 来替换。你只需要使用 Ahash 提供的 RandomState 即可：</p>
+<pre><code>use ahash::{AHasher, RandomState};
+use std::collections::HashMap;
+let mut map: HashMap&lt;char, i32, RandomState&gt; = HashMap::default();
+map.insert('a', 1);
+</code></pre>
+<p>2.如何使用 rust-gdb/rust-lldb？</p>
+<p>之前的愚昧之巅[加餐]提过 <a href="https://www.gnu.org/software/gdb/" target="_blank">gdb</a>/<a href="https://lldb.llvm.org/" target="_blank">lldb</a> ，今天就是使用示例。没有使用过的朋友，可以看看它们的文档了解一下。</p>
+<p>gdb 适合在 Linux 下，lldb 可以在 OS X 下调试 Rust 程序。<a href="https://github.com/rust-lang/rust/blob/master/src/etc/rust-gdb" target="_blank">rust-gdb</a>/<a href="https://github.com/rust-lang/rust/blob/master/src/etc/rust-lldb" target="_blank">rust-lldb</a> 提供了一些对 Rust 更友好的 pretty-print 功能，在安装 Rust 时，它们也会被安装。使用过 gdb 的同学，可以看 <a href="https://darkdust.net/files/GDB%20Cheat%20Sheet.pdf" target="_blank">gdb 速查手册</a>，也可以看看 <a href="https://lldb.llvm.org/use/map.html" target="_blank">gdb/lldb 命令对应手册</a>。</p>
+<p>我一般不用它们调试程序。<strong>不管任何语言，如果开发时，你发现自己总在设置断点调试程序，说明你撰写代码的方式有问题</strong>。要么，没有把接口和算法设计清楚，想到哪写到哪；要么，是你的函数写得过于复杂，太多状态纠缠，没有遵循 SRP（Single Responsibility Principle）。</p>
+<p><strong>好的代码是写出来的，不是调出来的。与其把时间花在调试上，不如把时间花在设计、日志，以及单元测试上</strong>。所以，gdb/lldb 对我来说，是一个理解数据结构在内存中布局以及探索算法如何运行的工具。你可以仔细阅读文中展示的 gdb session 和与之相关的代码，看看如何构造代码来结合 gdb 探索 HashMap 在不同状态下的行为。</p>
+<p>如果你觉得有收获，也欢迎分享给你身边的朋友，邀TA一起讨论～</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#cfa3a3a3f6fbfefefff88fa8a2aea6a3e1aca0a2" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93595077d93a082b',t:'MTc0NTUzNjY0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

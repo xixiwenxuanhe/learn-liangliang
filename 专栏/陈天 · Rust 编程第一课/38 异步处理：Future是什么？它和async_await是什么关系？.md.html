@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="38 异步处理：Future是什么？它和async_await是什么关系？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>38 异步处理：Future是什么？它和async_await是什么关系？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e8%ae%a9Rust%e6%88%90%e4%b8%ba%e4%bd%a0%e7%9a%84%e4%b8%8b%e4%b8%80%e9%97%a8%e4%b8%bb%e5%8a%9b%e8%af%ad%e8%a8%80.md.html" id="00 开篇词 让Rust成为你的下一门主力语言.md.html">00 开篇词 让Rust成为你的下一门主力语言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/01%20%e5%86%85%e5%ad%98%ef%bc%9a%e5%80%bc%e6%94%be%e5%a0%86%e4%b8%8a%e8%bf%98%e6%98%af%e6%94%be%e6%a0%88%e4%b8%8a%ef%bc%8c%e8%bf%99%e6%98%af%e4%b8%80%e4%b8%aa%e9%97%ae%e9%a2%98.md.html" id="01 内存：值放堆上还是放栈上，这是一个问题.md.html">01 内存：值放堆上还是放栈上，这是一个问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/02%20%e4%b8%b2%e8%ae%b2%ef%bc%9a%e7%bc%96%e7%a8%8b%e5%bc%80%e5%8f%91%e4%b8%ad%ef%bc%8c%e9%82%a3%e4%ba%9b%e4%bd%a0%e9%9c%80%e8%a6%81%e6%8e%8c%e6%8f%a1%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5.md.html" id="02 串讲：编程开发中，那些你需要掌握的基本概念.md.html">02 串讲：编程开发中，那些你需要掌握的基本概念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/03%20%e5%88%9d%e7%aa%a5%e9%97%a8%e5%be%84%ef%bc%9a%e4%bb%8e%e4%bd%a0%e7%9a%84%e7%ac%ac%e4%b8%80%e4%b8%aaRust%e7%a8%8b%e5%ba%8f%e5%bc%80%e5%a7%8b%ef%bc%81.md.html" id="03 初窥门径：从你的第一个Rust程序开始！.md.html">03 初窥门径：从你的第一个Rust程序开始！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/04%20get%20hands%20dirty%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%aa%e5%ae%9e%e7%94%a8%e7%9a%84CLI%e5%b0%8f%e5%b7%a5%e5%85%b7.md.html" id="04 get hands dirty：来写个实用的CLI小工具.md.html">04 get hands dirty：来写个实用的CLI小工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/05%20get%20hands%20dirty%ef%bc%9a%e5%81%9a%e4%b8%80%e4%b8%aa%e5%9b%be%e7%89%87%e6%9c%8d%e5%8a%a1%e5%99%a8%e6%9c%89%e5%a4%9a%e9%9a%be%ef%bc%9f.md.html" id="05 get hands dirty：做一个图片服务器有多难？.md.html">05 get hands dirty：做一个图片服务器有多难？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/06%20get%20hands%20dirty%ef%bc%9aSQL%e6%9f%a5%e8%af%a2%e5%b7%a5%e5%85%b7%e6%80%8e%e4%b9%88%e4%b8%80%e9%b1%bc%e5%a4%9a%e5%90%83%ef%bc%9f.md.html" id="06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html">06 get hands dirty：SQL查询工具怎么一鱼多吃？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/07%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e7%94%9f%e6%9d%80%e5%a4%a7%e6%9d%83%e5%88%b0%e5%ba%95%e5%9c%a8%e8%b0%81%e6%89%8b%e4%b8%8a%ef%bc%9f.md.html" id="07 所有权：值的生杀大权到底在谁手上？.md.html">07 所有权：值的生杀大权到底在谁手上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/08%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e5%80%bc%e7%9a%84%e5%80%9f%e7%94%a8%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="08 所有权：值的借用是如何工作的？.md.html">08 所有权：值的借用是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/09%20%e6%89%80%e6%9c%89%e6%9d%83%ef%bc%9a%e4%b8%80%e4%b8%aa%e5%80%bc%e5%8f%af%e4%bb%a5%e6%9c%89%e5%a4%9a%e4%b8%aa%e6%89%80%e6%9c%89%e8%80%85%e4%b9%88%ef%bc%9f.md.html" id="09 所有权：一个值可以有多个所有者么？.md.html">09 所有权：一个值可以有多个所有者么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/10%20%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9a%e4%bd%a0%e5%88%9b%e5%bb%ba%e7%9a%84%e5%80%bc%e7%a9%b6%e7%ab%9f%e8%83%bd%e6%b4%bb%e5%a4%9a%e4%b9%85%ef%bc%9f.md.html" id="10 生命周期：你创建的值究竟能活多久？.md.html">10 生命周期：你创建的值究竟能活多久？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/11%20%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9a%e4%bb%8e%e5%88%9b%e5%bb%ba%e5%88%b0%e6%b6%88%e4%ba%a1%ef%bc%8c%e5%80%bc%e9%83%bd%e7%bb%8f%e5%8e%86%e4%ba%86%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="11 内存管理：从创建到消亡，值都经历了什么？.md.html">11 内存管理：从创建到消亡，值都经历了什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/12%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9aRust%e7%9a%84%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%e6%9c%89%e4%bb%80%e4%b9%88%e7%89%b9%e7%82%b9%ef%bc%9f.md.html" id="12 类型系统：Rust的类型系统有什么特点？.md.html">12 类型系统：Rust的类型系统有什么特点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/13%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8trait%e6%9d%a5%e5%ae%9a%e4%b9%89%e6%8e%a5%e5%8f%a3%ef%bc%9f.md.html" id="13 类型系统：如何使用trait来定义接口？.md.html">13 类型系统：如何使用trait来定义接口？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/14%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%bf%85%e9%a1%bb%e6%8e%8c%e6%8f%a1%e7%9a%84trait%ef%bc%9f.md.html" id="14 类型系统：有哪些必须掌握的trait？.md.html">14 类型系统：有哪些必须掌握的trait？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/15%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bf%99%e4%ba%9b%e6%b5%93%e7%9c%89%e5%a4%a7%e7%9c%bc%e7%9a%84%e7%bb%93%e6%9e%84%e7%ab%9f%e7%84%b6%e9%83%bd%e6%98%af%e6%99%ba%e8%83%bd%e6%8c%87%e9%92%88%ef%bc%9f.md.html" id="15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html">15 数据结构：这些浓眉大眼的结构竟然都是智能指针？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/16%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9aVec_T_%e3%80%81&amp;[T]%e3%80%81Box_[T]_%20%ef%bc%8c%e4%bd%a0%e7%9c%9f%e7%9a%84%e4%ba%86%e8%a7%a3%e9%9b%86%e5%90%88%e5%ae%b9%e5%99%a8%e4%b9%88%ef%bc%9f.md.html" id="16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html">16 数据结构：Vec_T_、&amp;[T]、Box_[T]_ ，你真的了解集合容器么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/17%20%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%ef%bc%9a%e8%bd%af%e4%bb%b6%e7%b3%bb%e7%bb%9f%e6%a0%b8%e5%bf%83%e9%83%a8%e4%bb%b6%e5%93%88%e5%b8%8c%e8%a1%a8%ef%bc%8c%e5%86%85%e5%ad%98%e5%a6%82%e4%bd%95%e5%b8%83%e5%b1%80%ef%bc%9f.md.html" id="17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html">17 数据结构：软件系统核心部件哈希表，内存如何布局？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88Rust%e7%9a%84%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%e4%b8%8e%e4%bc%97%e4%b8%8d%e5%90%8c%ef%bc%9f.md.html" id="18 错误处理：为什么Rust的错误处理与众不同？.md.html">18 错误处理：为什么Rust的错误处理与众不同？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/19%20%e9%97%ad%e5%8c%85%ef%bc%9aFnOnce%e3%80%81FnMut%e5%92%8cFn%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e7%b1%bb%e5%9e%8b%ef%bc%9f.md.html" id="19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html">19 闭包：FnOnce、FnMut和Fn，为什么有这么多类型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/20%204%20Steps%20%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9b%b4%e5%a5%bd%e5%9c%b0%e9%98%85%e8%af%bbRust%e6%ba%90%e7%a0%81%ef%bc%9f.md.html" id="20 4 Steps ：如何更好地阅读Rust源码？.md.html">20 4 Steps ：如何更好地阅读Rust源码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/21%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%881%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html">21 阶段实操（1）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/22%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%882%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%9f%ba%e6%9c%ac%e6%b5%81%e7%a8%8b.md.html" id="22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html">22 阶段实操（2）：构建一个简单的KV server-基本流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/23%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="23 类型系统：如何在实战中使用泛型编程？.md.html">23 类型系统：如何在实战中使用泛型编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/24%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%9e%e6%88%98%e4%b8%ad%e4%bd%bf%e7%94%a8trait%20object%ef%bc%9f.md.html" id="24 类型系统：如何在实战中使用trait object？.md.html">24 类型系统：如何在实战中使用trait object？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/25%20%e7%b1%bb%e5%9e%8b%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9b%b4%e7%bb%95trait%e6%9d%a5%e8%ae%be%e8%ae%a1%e5%92%8c%e6%9e%b6%e6%9e%84%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="25 类型系统：如何围绕trait来设计和架构系统？.md.html">25 类型系统：如何围绕trait来设计和架构系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/26%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%883%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%ab%98%e7%ba%a7trait%e6%8a%80%e5%b7%a7.md.html" id="26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html">26 阶段实操（3）：构建一个简单的KV server-高级trait技巧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/27%20%e7%94%9f%e6%80%81%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e6%9c%89%e7%9a%84Rust%e5%ba%93%e5%8f%af%e4%bb%a5%e4%b8%ba%e6%88%91%e6%89%80%e7%94%a8%ef%bc%9f.md.html" id="27 生态系统：有哪些常有的Rust库可以为我所用？.md.html">27 生态系统：有哪些常有的Rust库可以为我所用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/28%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="28 网络开发（上）：如何使用Rust处理网络请求？.md.html">28 网络开发（上）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/29%20%e7%bd%91%e7%bb%9c%e5%bc%80%e5%8f%91%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8Rust%e5%a4%84%e7%90%86%e7%bd%91%e7%bb%9c%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="29 网络开发（下）：如何使用Rust处理网络请求？.md.html">29 网络开发（下）：如何使用Rust处理网络请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/30%20Unsafe%20Rust%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8C++%e7%9a%84%e6%96%b9%e5%bc%8f%e6%89%93%e5%bc%80Rust%ef%bc%9f.md.html" id="30 Unsafe Rust：如何用C++的方式打开Rust？.md.html">30 Unsafe Rust：如何用C++的方式打开Rust？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/31%20FFI%ef%bc%9aRust%e5%a6%82%e4%bd%95%e5%92%8c%e4%bd%a0%e7%9a%84%e8%af%ad%e8%a8%80%e6%9e%b6%e8%b5%b7%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html">31 FFI：Rust如何和你的语言架起沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/32%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e4%bd%bf%e7%94%a8PyO3%e5%bc%80%e5%8f%91Python3%e6%a8%a1%e5%9d%97.md.html" id="32 实操项目：使用PyO3开发Python3模块.md.html">32 实操项目：使用PyO3开发Python3模块.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html">33 并发处理（上）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8eatomics%e5%88%b0Channel%ef%bc%8cRust%e9%83%bd%e6%8f%90%e4%be%9b%e4%ba%86%e4%bb%80%e4%b9%88%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html">34 并发处理（下）：从atomics到Channel，Rust都提供了什么工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/35%20%e5%ae%9e%e6%93%8d%e9%a1%b9%e7%9b%ae%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84MPSC%20channel%ef%bc%9f.md.html" id="35 实操项目：如何实现一个基本的MPSC channel？.md.html">35 实操项目：如何实现一个基本的MPSC channel？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/36%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%884%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%a4%84%e7%90%86.md.html" id="36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html">36 阶段实操（4）：构建一个简单的KV server-网络处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/37%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%885%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8.md.html" id="37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html">37 阶段实操（5）：构建一个简单的KV server-网络安全.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/38%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aFuture%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f%e5%ae%83%e5%92%8casync_await%e6%98%af%e4%bb%80%e4%b9%88%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="38 异步处理：Future是什么？它和async_await是什么关系？.md.html">38 异步处理：Future是什么？它和async_await是什么关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/39%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9aasync_await%e5%86%85%e9%83%a8%e6%98%af%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="39 异步处理：async_await内部是怎么实现的？.md.html">39 异步处理：async_await内部是怎么实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/40%20%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%bc%82%e6%ad%a5IO%ef%bc%9f.md.html" id="40 异步处理：如何处理异步IO？.md.html">40 异步处理：如何处理异步IO？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/41%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%886%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86.md.html" id="41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html">41 阶段实操（6）：构建一个简单的KV server-异步处理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/42%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%887%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e5%a6%82%e4%bd%95%e5%81%9a%e5%a4%a7%e7%9a%84%e9%87%8d%e6%9e%84%ef%bc%9f.md.html" id="42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html">42 阶段实操（7）：构建一个简单的KV server-如何做大的重构？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/43%20%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%ef%bc%9a%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e4%b8%8b%e7%9a%84%e4%b8%80%e4%b8%aaRust%e9%a1%b9%e7%9b%ae%e5%8c%85%e5%90%ab%e5%93%aa%e4%ba%9b%e8%a6%81%e7%b4%a0%ef%bc%9f.md.html" id="43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html">43 生产环境：真实世界下的一个Rust项目包含哪些要素？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/44%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%92%8c%e6%95%b0%e6%8d%ae%e5%a6%82%e4%bd%95%e6%89%93%e4%ba%a4%e9%81%93%ef%bc%9f.md.html" id="44 数据处理：应用程序和数据如何打交道？.md.html">44 数据处理：应用程序和数据如何打交道？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/45%20%e9%98%b6%e6%ae%b5%e5%ae%9e%e6%93%8d%ef%bc%888%ef%bc%89%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84KV%20server-%e9%85%8d%e7%bd%ae_%e6%b5%8b%e8%af%95_%e7%9b%91%e6%8e%a7_CI_CD.md.html" id="45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html">45 阶段实操（8）：构建一个简单的KV server-配置_测试_监控_CI_CD.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/46%20%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8Rust%e6%9e%b6%e6%9e%84%e5%a4%8d%e6%9d%82%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="46 软件架构：如何用Rust架构复杂系统？.md.html">46 软件架构：如何用Rust架构复杂系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20Rust2021%e7%89%88%e6%ac%a1%e9%97%ae%e4%b8%96%e4%ba%86%ef%bc%81.md.html" id="加餐 Rust2021版次问世了！.md.html">加餐 Rust2021版次问世了！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e4%bb%a3%e7%a0%81%e5%8d%b3%e6%95%b0%e6%8d%ae%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e9%9c%80%e8%a6%81%e5%ae%8f%e7%bc%96%e7%a8%8b%e8%83%bd%e5%8a%9b%ef%bc%9f.md.html" id="加餐 代码即数据：为什么我们需要宏编程能力？.md.html">加餐 代码即数据：为什么我们需要宏编程能力？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e7%94%a8%e6%9c%80%e2%80%9c%e7%ac%a8%e2%80%9d%e7%9a%84%e6%96%b9%e5%bc%8f%e6%92%b0%e5%86%99%e5%ae%8f.md.html" id="加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html">加餐 宏编程（上）：用最“笨”的方式撰写宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e5%ae%8f%e7%bc%96%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e7%94%a8%20syn_quote%20%e4%bc%98%e9%9b%85%e5%9c%b0%e6%9e%84%e5%bb%ba%e5%ae%8f.md.html" id="加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html">加餐 宏编程（下）：用 syn_quote 优雅地构建宏.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%84%9a%e6%98%a7%e4%b9%8b%e5%b7%85%ef%bc%9a%e4%bd%a0%e7%9a%84Rust%e5%ad%a6%e4%b9%a0%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98%e6%b1%87%e6%80%bb.md.html" id="加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html">加餐 愚昧之巅：你的Rust学习常见问题汇总.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e5%8f%82%e8%80%83%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="加餐 期中测试：参考实现讲解.md.html">加餐 期中测试：参考实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e6%9c%9f%e4%b8%ad%e6%b5%8b%e8%af%95%ef%bc%9a%e6%9d%a5%e5%86%99%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84grep%e5%91%bd%e4%bb%a4%e8%a1%8c.md.html" id="加餐 期中测试：来写一个简单的grep命令行.md.html">加餐 期中测试：来写一个简单的grep命令行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%8a%a0%e9%a4%90%20%e8%bf%99%e4%b8%aa%e4%b8%93%e6%a0%8f%e4%bd%a0%e5%8f%af%e4%bb%a5%e6%80%8e%e4%b9%88%e5%ad%a6%ef%bc%8c%e4%bb%a5%e5%8f%8aRust%e6%98%af%e5%90%a6%e5%80%bc%e5%be%97%e5%ad%a6%ef%bc%9f.md.html" id="加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html">加餐 这个专栏你可以怎么学，以及Rust是否值得学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（上）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e5%bc%80%e6%82%9f%e4%b9%8b%e5%9d%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRust%e7%9a%84%e7%8e%b0%e7%8a%b6%e3%80%81%e6%9c%ba%e9%81%87%e4%b8%8e%e6%8c%91%e6%88%98.md.html" id="大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html">大咖助场 开悟之坡（下）：Rust的现状、机遇与挑战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（一）：听听课代表们怎么说.md.html">特别策划 学习锦囊（一）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（三）：听听课代表们怎么说.md.html">特别策划 学习锦囊（三）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%89%b9%e5%88%ab%e7%ad%96%e5%88%92%20%e5%ad%a6%e4%b9%a0%e9%94%a6%e5%9b%8a%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%90%ac%e5%90%ac%e8%af%be%e4%bb%a3%e8%a1%a8%e4%bb%ac%e6%80%8e%e4%b9%88%e8%af%b4.md.html" id="特别策划 学习锦囊（二）：听听课代表们怎么说.md.html">特别策划 学习锦囊（二）：听听课代表们怎么说.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%bb%9d%e6%9c%9b%e4%b9%8b%e8%b0%b7%ef%bc%9a%e6%94%b9%e5%8f%98%e4%bb%8e%e5%ad%a6%e4%b9%a0%e5%bc%80%e5%a7%8b.md.html" id="用户故事 绝望之谷：改变从学习开始.md.html">用户故事 绝望之谷：改变从学习开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%af%ad%e8%a8%80%e4%b8%8d%e4%bb%85%e6%98%af%e5%b7%a5%e5%85%b7%ef%bc%8c%e8%bf%98%e6%98%af%e6%80%9d%e7%bb%b4%e6%96%b9%e5%bc%8f.md.html" id="用户故事 语言不仅是工具，还是思维方式.md.html">用户故事 语言不仅是工具，还是思维方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%99%88%e5%a4%a9%20%c2%b7%20Rust%20%e7%bc%96%e7%a8%8b%e7%ac%ac%e4%b8%80%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%b0%b8%e7%bb%ad%e4%b9%8b%e5%8e%9f%ef%bc%9aRust%e5%ad%a6%e4%b9%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e6%8c%81%e7%bb%ad%e7%b2%be%e8%bf%9b%ef%bc%9f.md.html" id="结束语 永续之原：Rust学习，如何持续精进？.md.html">结束语 永续之原：Rust学习，如何持续精进？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="38 异步处理：Future是什么？它和async_await是什么关系？" id="title">38 异步处理：Future是什么？它和async_await是什么关系？</h1>
+<div><p>你好，我是陈天。</p>
+<p>通过前几讲的学习，我们对并发处理，尤其是常用的并发原语，有了一个比较清晰的认识。并发原语是并发任务之间同步的手段，今天我们要学习的 Future 以及在更高层次上处理 Future 的 async/await，是<strong>产生和运行并发任务</strong>的手段。</p>
+<p>不过产生和运行并发任务的手段有很多，async/await 只是其中之一。在一个分布式系统中，并发任务可以运行在系统的某个节点上；在某个节点上，并发任务又可以运行在多个进程中；而在某个进程中，并发任务可以运行在多个线程中；在某个（些）线程上，并发任务可以运行在多个 Promise/Future/Goroutine/Erlang process 这样的协程上。</p>
+<p>它们的粒度从大到小如图所示：-
+<img alt="" src="assets/7575380e2255ae078569bb7e185da666.jpg"/></p>
+<p>在之前的课程里，我们大量应用了线程这种并发工具，在 kv server 的构建过程中，也通过 async/await 用到了 Future 这样的无栈协程。</p>
+<p>其实 Rust 的 Future 跟 JavaScript 的 Promise 非常类似。</p>
+<p>如果你熟悉 JavaScript，应该熟悉 Promise 的概念，[02]也简单讲过，它代表了<strong>在未来的某个时刻才能得到的结果的值</strong>，Promise 一般存在三个状态；</p>
+<ol>
+<li>初始状态，Promise 还未运行；</li>
+<li>等待（pending）状态，Promise 已运行，但还未结束；</li>
+<li>结束状态，Promise 成功解析出一个值，或者执行失败。</li>
+</ol>
+<p>只不过 JavaScript 的 Promise 和线程类似，一旦创建就开始执行，对 Promise await 只是为了“等待”并获取解析出来的值；而 Rust 的 Future，只有在主动 await 后才开始执行。</p>
+<p>讲到这里估计你也看出来了，谈 Future 的时候，我们总会谈到 async/await。一般而言，<strong>async 定义了一个可以并发执行的任务，而 await 则触发这个任务并发执行</strong>。大多数语言，包括 Rust，async/await 都是一个语法糖（syntactic sugar），它们使用状态机将 Promise/Future 这样的结构包装起来进行处理。</p>
+<p>这一讲我们先把内部的实现放在一边，主要聊 Future/async/await 的基本概念和使用方法，下一讲再来详细介绍它们的原理。</p>
+<h2 id="为什么需要-future">为什么需要 Future？</h2>
+<p>首先，谈一谈为什么需要 Future 这样的并发结构。</p>
+<p>在 Future 出现之前，我们的 Rust 代码都是同步的。也就是说，当你执行一个函数，CPU 处理完函数中的每一个指令才会返回。如果这个函数里有 IO 的操作，实际上，操作系统会把函数对应的线程挂起，放在一个等待队列中，直到 IO 操作完成，才恢复这个线程，并从挂起的位置继续执行下去。</p>
+<p>这个模型非常简单直观，代码是一行一行执行的，开发者并不需要考虑哪些操作会阻塞，哪些不会，只关心他的业务逻辑就好。</p>
+<p>然而，随着 CPU 技术的不断发展，新世纪应用软件的主要矛盾不再是 CPU 算力不足，而是<strong>过于充沛的 CPU 算力和提升缓慢的 IO 速度之间的矛盾</strong>。如果有大量的 IO 操作，你的程序大部分时间并没有在运算，而是在不断地等待 IO。</p>
+<p>我们来看一个例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=7448400dca4444c1309dc1af2df91b7c" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use serde_yaml::Value;
+use std::fs;
+
+fn main() -&gt; Result&lt;()&gt; {
+    // 读取 Cargo.toml，IO 操作 1
+    let content1 = fs::read_to_string("./Cargo.toml")?;
+    // 读取 Cargo.lock，IO 操作 2
+    let content2 = fs::read_to_string("./Cargo.lock")?;
+
+    // 计算
+    let yaml1 = toml2yaml(&amp;content1)?;
+    let yaml2 = toml2yaml(&amp;content2)?;
+
+    // 写入 /tmp/Cargo.yml，IO 操作 3
+    fs::write("/tmp/Cargo.yml", &amp;yaml1)?;
+    // 写入 /tmp/Cargo.lock，IO 操作 4
+    fs::write("/tmp/Cargo.lock", &amp;yaml2)?;
+
+    // 打印
+    println!("{}", yaml1);
+    println!("{}", yaml2);
+
+    Ok(())
+}
+
+fn toml2yaml(content: &amp;str) -&gt; Result&lt;String&gt; {
+    let value: Value = toml::from_str(&amp;content)?;
+    Ok(serde_yaml::to_string(&amp;value)?)
+}
+</code></pre>
+<p>这段代码读取 Cargo.toml 和 Cargo.lock 将其转换成 yaml，再分别写入到 /tmp 下。</p>
+<p>虽然说这段代码的逻辑并没有问题，但性能有很大的问题。在读 Cargo.toml 时，整个主线程被阻塞，直到 Cargo.toml 读完，才能继续读下一个待处理的文件。整个主线程，只有在运行 toml2yaml 的时间片内，才真正在执行计算任务，之前的读取文件以及之后的写入文件，CPU 都在闲置。-
+<img alt="" src="assets/c11148d0647e5f3217a77e06d233923e.jpg"/></p>
+<p>当然，你会辩解，在读文件的过程中，我们不得不等待，因为 toml2yaml 函数的执行有赖于读取文件的结果。嗯没错，但是，这里还有很大的 CPU 浪费：我们读完第一个文件才开始读第二个文件，有没有可能两个文件同时读取呢？这样总共等待的时间是 max(time_for_file1, time_for_file2)，而非 time_for_file1 + time_for_file2 。</p>
+<p>这并不难，我们可以把文件读取和写入的操作放入单独的线程中执行，比如（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=89c5a55179f966a364268c584db8a477" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::{anyhow, Result};
+use serde_yaml::Value;
+use std::{
+    fs,
+    thread::{self, JoinHandle},
+};
+
+/// 包装一下 JoinHandle，这样可以提供额外的方法
+struct MyJoinHandle&lt;T&gt;(JoinHandle&lt;Result&lt;T&gt;&gt;);
+
+impl&lt;T&gt; MyJoinHandle&lt;T&gt; {
+    /// 等待 thread 执行完（类似 await）
+    pub fn thread_await(self) -&gt; Result&lt;T&gt; {
+        self.0.join().map_err(|_| anyhow!("failed"))?
+    }
+}
+
+fn main() -&gt; Result&lt;()&gt; {
+    // 读取 Cargo.toml，IO 操作 1
+    let t1 = thread_read("./Cargo.toml");
+    // 读取 Cargo.lock，IO 操作 2
+    let t2 = thread_read("./Cargo.lock");
+
+    let content1 = t1.thread_await()?;
+    let content2 = t2.thread_await()?;
+
+    // 计算
+    let yaml1 = toml2yaml(&amp;content1)?;
+    let yaml2 = toml2yaml(&amp;content2)?;
+
+    // 写入 /tmp/Cargo.yml，IO 操作 3
+    let t3 = thread_write("/tmp/Cargo.yml", yaml1);
+    // 写入 /tmp/Cargo.lock，IO 操作 4
+    let t4 = thread_write("/tmp/Cargo.lock", yaml2);
+
+    let yaml1 = t3.thread_await()?;
+    let yaml2 = t4.thread_await()?;
+
+    fs::write("/tmp/Cargo.yml", &amp;yaml1)?;
+    fs::write("/tmp/Cargo.lock", &amp;yaml2)?;
+
+    // 打印
+    println!("{}", yaml1);
+    println!("{}", yaml2);
+
+    Ok(())
+}
+
+fn thread_read(filename: &amp;'static str) -&gt; MyJoinHandle&lt;String&gt; {
+    let handle = thread::spawn(move || {
+        let s = fs::read_to_string(filename)?;
+        Ok::&lt;_, anyhow::Error&gt;(s)
+    });
+    MyJoinHandle(handle)
+}
+
+fn thread_write(filename: &amp;'static str, content: String) -&gt; MyJoinHandle&lt;String&gt; {
+    let handle = thread::spawn(move || {
+        fs::write(filename, &amp;content)?;
+        Ok::&lt;_, anyhow::Error&gt;(content)
+    });
+    MyJoinHandle(handle)
+}
+
+fn toml2yaml(content: &amp;str) -&gt; Result&lt;String&gt; {
+    let value: Value = toml::from_str(&amp;content)?;
+    Ok(serde_yaml::to_string(&amp;value)?)
+}
+</code></pre>
+<p>这样，读取或者写入多个文件的过程并发执行，使等待的时间大大缩短。</p>
+<p>但是，如果要同时读取 100 个文件呢？显然，创建 100 个线程来做这样的事情不是一个好主意。在操作系统中，线程的数量是有限的，创建/阻塞/唤醒/销毁线程，都涉及不少的动作，每个线程也都会被分配一个不小的调用栈，所以从 CPU 和内存的角度来看，<strong>创建过多的线程会大大增加系统的开销</strong>。</p>
+<p>其实，绝大多数操作系统对 I/O 操作提供了非阻塞接口，也就是说，你可以发起一个读取的指令，自己处理类似 <code>EWOULDBLOCK</code>这样的错误码，来更好地在同一个线程中处理多个文件的 IO，而不是依赖操作系统通过调度帮你完成这件事。</p>
+<p>不过这样就意味着，你需要定义合适的数据结构来追踪每个文件的读取，在用户态进行相应的调度，阻塞等待 IO 的数据结构的运行，让没有等待 IO 的数据结构得到机会使用 CPU，以及当 IO 操作结束后，恢复等待 IO 的数据结构的运行等等。这样的操作粒度更小，可以最大程度利用 CPU 资源。这就是类似 Future 这样的并发结构的主要用途。</p>
+<p>然而，如果这么处理，我们需要在用户态做很多事情，包括处理 IO 任务的事件通知、创建 Future、合理地调度 Future。这些事情，统统交给开发者做显然是不合理的。所以，Rust 提供了相应处理手段 async/await ：<strong>async 来方便地生成 Future，await 来触发 Future 的调度和执行</strong>。</p>
+<p>我们看看，同样的任务，如何用 async/await 更高效地处理（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=a13d1fdbf7b4d3e0afa18082b6d077b3" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use serde_yaml::Value;
+use tokio::{fs, try_join};
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    // 读取 Cargo.toml，IO 操作 1
+    let f1 = fs::read_to_string("./Cargo.toml");
+    // 读取 Cargo.lock，IO 操作 2
+    let f2 = fs::read_to_string("./Cargo.lock");
+    let (content1, content2) = try_join!(f1, f2)?;
+
+    // 计算
+    let yaml1 = toml2yaml(&amp;content1)?;
+    let yaml2 = toml2yaml(&amp;content2)?;
+
+    // 写入 /tmp/Cargo.yml，IO 操作 3
+    let f3 = fs::write("/tmp/Cargo.yml", &amp;yaml1);
+    // 写入 /tmp/Cargo.lock，IO 操作 4
+    let f4 = fs::write("/tmp/Cargo.lock", &amp;yaml2);
+    try_join!(f3, f4)?;
+
+    // 打印
+    println!("{}", yaml1);
+    println!("{}", yaml2);
+
+    Ok(())
+}
+
+fn toml2yaml(content: &amp;str) -&gt; Result&lt;String&gt; {
+    let value: Value = toml::from_str(&amp;content)?;
+    Ok(serde_yaml::to_string(&amp;value)?)
+}
+</code></pre>
+<p>在这段代码里，我们使用了 tokio::fs，而不是 std::fs，tokio::fs 的文件操作都会返回一个 Future，然后可以 join 这些 Future，得到它们运行后的结果。join/try_join 是用来轮询多个 Future 的宏，它会依次处理每个 Future，遇到阻塞就处理下一个，直到所有 Future 产生结果。</p>
+<p>整个等待文件读取的时间是 max(time_for_file1, time_for_file2)，性能和使用线程的版本几乎一致，但是消耗的资源（主要是线程）要少很多。</p>
+<p>建议你好好对比这三个版本的代码，写一写，运行一下，感受它们的处理逻辑。注意在最后的 async/await 的版本中，我们不能把代码写成这样：</p>
+<pre><code>// 读取 Cargo.toml，IO 操作 1
+let content1 = fs::read_to_string("./Cargo.toml").await?;
+// 读取 Cargo.lock，IO 操作 2
+let content1 = fs::read_to_string("./Cargo.lock").await?;
+</code></pre>
+<p>这样写的话，和第一版同步的版本没有区别，因为 await 会运行 Future 直到 Future 执行结束，所以依旧是先读取 Cargo.toml，再读取 Cargo.lock，并没有达到并发的效果。</p>
+<h2 id="深入了解">深入了解</h2>
+<p>好，了解了 Future 在软件开发中的必要性，来深入研究一下 Future/async/await。</p>
+<p>在前面代码撰写过程中，不知道你有没有发现，异步函数（async fn）的返回值是一个奇怪的 impl Future<output> 的结构：-
+<img alt="" src="assets/159d35852d585f9b00b4d78ac9b7a26e.png"/></output></p>
+<p>我们知道，一般会用 impl 关键字为数据结构实现 trait，也就是说接在 impl 关键字后面的东西是一个 trait，所以，显然 Future 是一个 trait，并且还有一个关联类型 Output。</p>
+<p>来看 <a href="https://doc.rust-lang.org/std/future/trait.Future.html" target="_blank">Future</a> 的定义：</p>
+<pre><code>pub trait Future {
+    type Output;
+    fn poll(self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Self::Output&gt;;
+}
+
+pub enum Poll&lt;T&gt; {
+    Ready(T),
+    Pending,
+}
+</code></pre>
+<p>除了 Output 外，它还有一个 poll() 方法，这个方法返回 Poll<a href="Self::Output" target="_blank">Self::Output</a>。而 Poll<t> 是个 enum，包含 Ready 和 Pending 两个状态。显然，当 Future 返回 Pending 状态时，活还没干完，但干不下去了，需要阻塞一阵子，等某个事件将其唤醒；当 Future 返回 Ready 状态时，Future 对应的值已经得到，此时可以返回了。</t></p>
+<p>你看，这样一个简单的数据结构，就托起了庞大的 Rust 异步 async/await 处理的生态。</p>
+<p>回到 async fn 的返回值我们接着说，显然它是一个 impl Future，那么如果我们给一个普通的函数返回 impl Future<output>，它的行为和 async fn 是不是一致呢？来写个简单的实验（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=29cab825b46862f4e3b285cd4cb642f0" target="_blank">代码</a>）：</output></p>
+<pre><code>use futures::executor::block_on;
+use std::future::Future;
+
+#[tokio::main]
+async fn main() {
+    let name1 = "Tyr".to_string();
+    let name2 = "Lindsey".to_string();
+
+    say_hello1(&amp;name1).await;
+    say_hello2(&amp;name2).await;
+
+    // Future 除了可以用 await 来执行外，还可以直接用 executor 执行
+    block_on(say_hello1(&amp;name1));
+    block_on(say_hello2(&amp;name2));
+}
+
+async fn say_hello1(name: &amp;str) -&gt; usize {
+    println!("Hello {}", name);
+    42
+}
+
+// async fn 关键字相当于一个返回 impl Future&lt;Output&gt; 的语法糖
+fn say_hello2&lt;'fut&gt;(name: &amp;'fut str) -&gt; impl Future&lt;Output = usize&gt; + 'fut {
+    async move {
+        println!("Hello {}", name);
+        42
+    }
+}
+</code></pre>
+<p>运行这段代码你会发现，say_hello1 和 say_hello2 是等价的，二者都可以使用 await 来执行，也可以将其提供给一个 executor 来执行。</p>
+<p>这里我们见到了一个新的名词：executor。</p>
+<h3 id="什么是-executor">什么是 executor？</h3>
+<p>你可以把 executor 大致想象成一个 Future 的调度器。对于线程来说，操作系统负责调度；但操作系统不会去调度用户态的协程（比如 Future），所以任何使用了协程来处理并发的程序，都需要有一个 executor 来负责协程的调度。</p>
+<p>很多在语言层面支持协程的编程语言，比如 Golang/Erlang，都自带一个用户态的调度器。Rust 虽然也提供 Future 这样的协程，但它<strong>在语言层面并不提供 executor</strong>，把要不要使用 executor 和使用什么样的 executor 的自主权交给了开发者。好处是，当我的代码中不需要使用协程时，不需要引入任何运行时；而需要使用协程时，可以在生态系统中选择最合适我应用的 executor。</p>
+<p>常见的 executor 有：</p>
+<ul>
+<li>futures 库自带的很简单的 executor，上面的代码就使用了它的 block_on 函数；</li>
+<li>tokio 提供的 executor，当使用 #[tokio::main] 时，就隐含引入了 tokio 的 executor；</li>
+<li><a href="https://github.com/async-rs/async-std" target="_blank">async-std</a> 提供的 executor，和 tokio 类似；</li>
+<li><a href="https://github.com/smol-rs/smol" target="_blank">smol</a> 提供的 async-executor，主要提供了 block_on。</li>
+</ul>
+<p>注意，上面的代码我们混用了 #[tokio::main] 和 futures:executor::block_on，这只是为了展示 Future 使用的不同方式，<strong>在正式代码里，不建议混用不同的 executor</strong>，会降低程序的性能，还可能引发奇怪的问题。</p>
+<p>当我们谈到 executor 时，就不得不提 reactor，它俩都是 <a href="https://en.wikipedia.org/wiki/Reactor_pattern" target="_blank">Reactor Pattern</a> 的组成部分，作为构建高性能事件驱动系统的一个很典型模式，Reactor pattern 它包含三部分：</p>
+<ul>
+<li>task，待处理的任务。任务可以被打断，并且把控制权交给 executor，等待之后的调度；</li>
+<li>executor，一个调度器。维护等待运行的任务（ready queue），以及被阻塞的任务（wait queue）；</li>
+<li>reactor，维护事件队列。当事件来临时，通知 executor 唤醒某个任务等待运行。</li>
+</ul>
+<p>executor 会调度执行待处理的任务，当任务无法继续进行却又没有完成时，它会挂起任务，并设置好合适的唤醒条件。之后，如果 reactor 得到了满足条件的事件，它会唤醒之前挂起的任务，然后 executor 就有机会继续执行这个任务。这样一直循环下去，直到任务执行完毕。</p>
+<h3 id="怎么用-future-做异步处理">怎么用 Future 做异步处理？</h3>
+<p>理解了 Reactor pattern 后，Rust 使用 Future 做异步处理的整个结构就清晰了，我们以 tokio 为例：async/await 提供语法层面的支持，Future 是异步任务的数据结构，当 fut.await 时，executor 就会调度并执行它。</p>
+<p>tokio 的调度器（executor）会运行在多个线程上，运行线程自己的 ready queue 上的任务（Future），如果没有，就去别的线程的调度器上“偷”一些过来运行。当某个任务无法再继续取得进展，此时 Future 运行的结果是 Poll::Pending，那么调度器会挂起任务，并设置好合适的唤醒条件（Waker），等待被 reactor 唤醒。</p>
+<p>而 reactor 会利用操作系统提供的异步 I/O，比如 epoll/kqueue/IOCP，来监听操作系统提供的 IO 事件，当遇到满足条件的事件时，就会调用 Waker.wake() 唤醒被挂起的 Future。这个 Future 会回到 ready queue 等待执行。</p>
+<p>整个流程如下：-
+<img alt="" src="assets/69faf0cc944c1a19e8eba7f5ee878330.jpg"/></p>
+<p>我们以一个具体的代码示例来进一步理解这个过程（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=c75ff383ac2696eb420ad4f10b9269b2" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use futures::{SinkExt, StreamExt};
+use tokio::net::TcpListener;
+use tokio_util::codec::{Framed, LinesCodec};
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let addr = "0.0.0.0:8080";
+    let listener = TcpListener::bind(addr).await?;
+    println!("listen to: {}", addr);
+    loop {
+        let (stream, addr) = listener.accept().await?;
+        println!("Accepted: {:?}", addr);
+        tokio::spawn(async move {
+            // 使用 LinesCodec 把 TCP 数据切成一行行字符串处理
+            let framed = Framed::new(stream, LinesCodec::new());
+            // split 成 writer 和 reader
+            let (mut w, mut r) = framed.split();
+            for line in r.next().await {
+                // 每读到一行就加个前缀发回
+                w.send(format!("I got: {}", line?)).await?;
+            }
+            Ok::&lt;_, anyhow::Error&gt;(())
+        });
+    }
+}
+</code></pre>
+<p>这是一个简单的 TCP 服务器，服务器每收到一个客户端的请求，就会用 <a href="https://docs.rs/tokio/1.13.0/tokio/fn.spawn.html" target="_blank">tokio::spawn</a> 创建一个异步任务，放入 executor 中执行。这个异步任务接受客户端发来的按行分隔（分隔符是 “\r\n”）的数据帧，服务器每收到一行，就加个前缀把内容也按行发回给客户端。</p>
+<p>你可以用 telnet 和这个服务器交互：</p>
+<pre><code>❯ telnet localhost 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+hello
+I got: hello
+Connection closed by foreign host.
+</code></pre>
+<p>假设我们在客户端输入了很大的一行数据，服务器在做 <code>r.next().await</code> 在执行的时候，收不完一行的数据，因而这个 Future 返回 Poll::Pending，此时它被挂起。当后续客户端的数据到达时，reactor 会知道这个 socket 上又有数据了，于是找到 socket 对应的 Future，将其唤醒，继续接收数据。</p>
+<p>这样反复下去，最终 r.next().await 得到 Poll::Ready(Ok(line))，于是它返回 Ok(line)，程序继续往下走，进入到 w.send() 的阶段。</p>
+<p>从这段代码中你可以看到，在 Rust 下使用异步处理是一件非常简单的事情，除了几个你可能不太熟悉的概念，比如今天讲到的用于创建 Future 的 async 关键字，用于执行和等待 Future 执行完毕的 await 关键字，以及用于调度 Future 执行的运行时 #[tokio:main] 外，<strong>整体的代码和使用线程处理的代码完全一致</strong>。所以，它的上手难度非常低，很容易使用。</p>
+<h2 id="使用-future-的注意事项">使用 Future 的注意事项</h2>
+<p>目前我们已经基本明白 Future 运行的基本原理了，也可以在程序的不同部分自如地使用 Future/async/await 来进行异步处理。</p>
+<p>但是要注意，<strong>不是所有的应用场景都适合用 async/await</strong>，在使用的时候，有一些不容易注意到的坑需要我们妥善考虑。</p>
+<h3 id="1-处理计算密集型任务时">1. 处理计算密集型任务时</h3>
+<p>当你要处理的任务是 CPU 密集型，而非 IO 密集型，更适合使用线程，而非 Future。</p>
+<p>这是因为 Future 的调度是协作式多任务（Cooperative Multitasking），也就是说，除非 Future 主动放弃 CPU，不然它就会一直被执行，直到运行结束。我们看一个例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=caccd8cca9612f6db17c540c0d915cd9" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use std::time::Duration;
+
+// 强制 tokio 只使用一个工作线程，这样 task 2 不会跑到其它线程执行
+#[tokio::main(worker_threads = 1)]
+async fn main() -&gt; Result&lt;()&gt; {
+    // 先开始执行 task 1 的话会阻塞，让 task 2 没有机会运行
+    tokio::spawn(async move {
+        eprintln!("task 1");
+        // 试试把这句注释掉看看会产生什么结果
+        // tokio::time::sleep(Duration::from_millis(1)).await;
+        loop {}
+    });
+
+    tokio::spawn(async move {
+        eprintln!("task 2");
+    });
+
+    tokio::time::sleep(Duration::from_millis(1)).await;
+    Ok(())
+}
+</code></pre>
+<p>task 1 里有一个死循环，你可以把它想象成是执行时间很长又不包括 IO 处理的代码。运行这段代码，你会发现，task 2 没有机会得到执行。这是因为 task 1 不执行结束，或者不让出 CPU，task 2 没有机会被调度。</p>
+<p>如果你的确需要在 tokio（或者其它异步运行时）下运行运算量很大的代码，那么最好使用 yield 来主动让出 CPU，比如 <a href="https://docs.rs/tokio/1.13.0/tokio/task/fn.yield_now.html" target="_blank">tokio::task::yield_now()</a>。这样可以避免某个计算密集型的任务饿死其它任务。</p>
+<h3 id="2-异步代码中使用mutex时">2. 异步代码中使用Mutex时</h3>
+<p>大部分时候，标准库的 Mutex 可以用在异步代码中，而且，这是推荐的用法。</p>
+<p>然而，标准库的 MutexGuard 不能安全地跨越 await，所以，当我们需要获得锁之后执行异步操作，必须使用 tokio 自带的 Mutex，看下面的例子（<a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=19aa6ac57f79c3766c1775c03ece072d" target="_blank">代码</a>）：</p>
+<pre><code>use anyhow::Result;
+use std::{sync::Arc, time::Duration};
+use tokio::sync::Mutex;
+
+struct DB;
+
+impl DB {
+    // 假装在 commit 数据
+    async fn commit(&amp;mut self) -&gt; Result&lt;usize&gt; {
+        Ok(42)
+    }
+}
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let db1 = Arc::new(Mutex::new(DB));
+    let db2 = Arc::clone(&amp;db1);
+
+    tokio::spawn(async move {
+        let mut db = db1.lock().await;
+        // 因为拿到的 MutexGuard 要跨越 await，所以不能用 std::sync::Mutex
+        // 只能用 tokio::sync::Mutex
+        let affected = db.commit().await?;
+        println!("db1: Total affected rows: {}", affected);
+        Ok::&lt;_, anyhow::Error&gt;(())
+    });
+
+    tokio::spawn(async move {
+        let mut db = db2.lock().await;
+        let affected = db.commit().await?;
+        println!("db2: Total affected rows: {}", affected);
+
+        Ok::&lt;_, anyhow::Error&gt;(())
+    });
+
+    // 让两个 task 有机会执行完
+    tokio::time::sleep(Duration::from_millis(1)).await;
+
+    Ok(())
+}
+</code></pre>
+<p>这个例子模拟了一个数据库的异步 commit() 操作。如果我们需要在多个 tokio task 中使用这个 DB，需要使用 Arc<mutext<db>&gt;。然而，db1.lock() 拿到锁后，我们需要运行 db.commit().await，这是一个异步操作。</mutext<db></p>
+<p>前面讲过，因为 tokio 实现了 work-stealing 调度，<strong>Future 有可能在不同的线程中执行，普通的 MutexGuard 编译直接就会出错</strong>，所以需要使用 tokio 的 Mutex。更多信息可以看<a href="https://docs.rs/tokio/1.13.0/tokio/sync/struct.Mutex.html" target="_blank">文档</a>。</p>
+<p>在这个例子里，我们又见识到了 Rust 编译器的伟大之处：如果一件事，它觉得你不能做，会通过编译器错误阻止你，而不是任由编译通过，然后让程序在运行过程中听天由命，让你无休止地和捉摸不定的并发 bug 斗争。</p>
+<h3 id="3-在线程和异步任务间做同步时">3. 在线程和异步任务间做同步时</h3>
+<p>在一个复杂的应用程序中，会兼有计算密集和 IO 密集的任务。</p>
+<p>前面说了，要避免在 tokio 这样的异步运行时中运行大量计算密集型的任务，一来效率不高，二来还容易饿死其它任务。</p>
+<p>所以，一般的做法是我们使用 channel 来在线程和future两者之间做同步。看一个例子：</p>
+<pre><code>use std::thread;
+
+use anyhow::Result;
+use blake3::Hasher;
+use futures::{SinkExt, StreamExt};
+use rayon::prelude::*;
+use tokio::{
+    net::TcpListener,
+    sync::{mpsc, oneshot},
+};
+use tokio_util::codec::{Framed, LinesCodec};
+
+pub const PREFIX_ZERO: &amp;[u8] = &amp;[0, 0, 0];
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let addr = "0.0.0.0:8080";
+    let listener = TcpListener::bind(addr).await?;
+    println!("listen to: {}", addr);
+
+    // 创建 tokio task 和 thread 之间的 channel
+    let (sender, mut receiver) = mpsc::unbounded_channel::&lt;(String, oneshot::Sender&lt;String&gt;)&gt;();
+
+    // 使用 thread 处理计算密集型任务
+    thread::spawn(move || {
+        // 读取从 tokio task 过来的 msg，注意这里用的是 blocking_recv，而非 await
+        while let Some((line, reply)) = receiver.blocking_recv() {
+            // 计算 pow
+            let result = match pow(&amp;line) {
+                Some((hash, nonce)) =&gt; format!("hash: {}, once: {}", hash, nonce),
+                None =&gt; "Not found".to_string(),
+            };
+            // 把计算结果从 oneshot channel 里发回
+            if let Err(e) = reply.send(result) {
+                println!("Failed to send: {}", e);
+            }
+        }
+    });
+
+    // 使用 tokio task 处理 IO 密集型任务
+    loop {
+        let (stream, addr) = listener.accept().await?;
+        println!("Accepted: {:?}", addr);
+        let sender1 = sender.clone();
+        tokio::spawn(async move {
+            // 使用 LinesCodec 把 TCP 数据切成一行行字符串处理
+            let framed = Framed::new(stream, LinesCodec::new());
+            // split 成 writer 和 reader
+            let (mut w, mut r) = framed.split();
+            for line in r.next().await {
+                // 为每个消息创建一个 oneshot channel，用于发送回复
+                let (reply, reply_receiver) = oneshot::channel();
+                sender1.send((line?, reply))?;
+
+                // 接收 pow 计算完成后的 hash 和 nonce
+                if let Ok(v) = reply_receiver.await {
+                    w.send(format!("Pow calculated: {}", v)).await?;
+                }
+            }
+            Ok::&lt;_, anyhow::Error&gt;(())
+        });
+    }
+}
+
+// 使用 rayon 并发计算 u32 空间下所有 nonce，直到找到有头 N 个 0 的哈希
+pub fn pow(s: &amp;str) -&gt; Option&lt;(String, u32)&gt; {
+    let hasher = blake3_base_hash(s.as_bytes());
+    let nonce = (0..u32::MAX).into_par_iter().find_any(|n| {
+        let hash = blake3_hash(hasher.clone(), n).as_bytes().to_vec();
+        &amp;hash[..PREFIX_ZERO.len()] == PREFIX_ZERO
+    });
+    nonce.map(|n| {
+        let hash = blake3_hash(hasher, &amp;n).to_hex().to_string();
+        (hash, n)
+    })
+}
+
+// 计算携带 nonce 后的哈希
+fn blake3_hash(mut hasher: blake3::Hasher, nonce: &amp;u32) -&gt; blake3::Hash {
+    hasher.update(&amp;nonce.to_be_bytes()[..]);
+    hasher.finalize()
+}
+
+// 计算数据的哈希
+fn blake3_base_hash(data: &amp;[u8]) -&gt; Hasher {
+    let mut hasher = Hasher::new();
+    hasher.update(data);
+    hasher
+}
+</code></pre>
+<p>在这个例子里，我们使用了之前撰写的 TCP server，只不过这次，客户端输入过来的一行文字，会被计算出一个 POW（Proof of Work）的哈希：调整 nonce，不断计算哈希，直到哈希的头三个字节全是零为止。服务器要返回计算好的哈希和获得该哈希的 nonce。这是一个典型的计算密集型任务，所以我们需要使用线程来处理它。</p>
+<p>而在 tokio task 和 thread 间使用 channel 进行同步。我们使用了一个 ubounded MPSC channel 从 tokio task 侧往 thread 侧发送消息，每条消息都附带一个 oneshot channel 用于 thread 侧往 tokio task 侧发送数据。</p>
+<p>建议你仔细读读这段代码，最好自己写一遍，感受一下使用 channel 在计算密集型和 IO 密集型任务同步的方式。如果你用 telnet 连接，发送 “hello world!”，会得到不同的哈希和 nonce，它们都是正确的结果：</p>
+<pre><code>❯ telnet localhost 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+hello world!
+Pow calculated: hash: 0000006e6e9370d0f60f06bdc288efafa203fd99b9af0480d040b2cc89c44df0, once: 403407307
+Connection closed by foreign host.
+
+❯ telnet localhost 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+hello world!
+Pow calculated: hash: 000000e23f0e9b7aeba9060a17ac676f3341284800a2db843e2f0e85f77f52dd, once: 36169623
+Connection closed by foreign host.
+</code></pre>
+<h2 id="小结">小结</h2>
+<p>通过拆解async fn 有点奇怪的返回值结构，我们学习了 Reactor pattern，大致了解了 tokio 如何通过 executor 和 reactor 共同作用，完成 Future 的调度、执行、阻塞，以及唤醒。这是一个完整的循环，直到 Future 返回 Poll::Ready(T)。</p>
+<p>在学习 Future 的使用时，估计你也发现了，我们可以对比线程来学习，可以看到，下列代码的结构多么相似：</p>
+<pre><code>fn thread_async() -&gt; JoinHandle&lt;usize&gt; {
+    thread::spawn(move || {
+        println!("hello thread!");
+        42
+    })
+}
+
+fn task_async() -&gt; impl Future&lt;Output = usize&gt; {
+    async move {
+        println!("hello async!");
+        42
+    }
+}
+</code></pre>
+<p>在使用 Future 时，主要有3点注意事项：</p>
+<ol>
+<li>我们要避免在异步任务中处理大量计算密集型的工作；</li>
+<li>在使用 Mutex 等同步原语时，要注意标准库的 MutexGuard 无法跨越 .await，所以，此时要使用对异步友好的 Mutex，如 tokio::sync::Mutex；</li>
+<li>如果要在线程和异步任务间同步，可以使用 channel。</li>
+</ol>
+<p>今天为了帮助你深入理解，我们写了很多代码，每一段你都可以再仔细阅读几遍，把它们搞懂，最好自己也能直接写出来，这样你对 Future 才会有更深的理解。</p>
+<h3 id="思考题">思考题</h3>
+<p>想想看，为什么标准库的 Mutex 不能跨越 await？你可以把文中使用 tokio::sync::Mutex 的代码改成使用 std::sync::Mutex，并对使用的接口做相应的改动（把 lock().await 改成 lock().unwrap()），看看编译器会报什么错。对着错误提示，你明白为什么了么？</p>
+<p>欢迎在留言区分享你的学习感悟和思考。今天你完成Rust学习的第38次打卡啦，感谢你的收听，如果你觉得有收获，也欢迎你分享给身边的朋友，邀他一起讨论。我们下节课见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#f9959595c0cdc8c8c9ceb99e94989095d79a9694" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935952acbb473952',t:'MTc0NTUzNjczOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
