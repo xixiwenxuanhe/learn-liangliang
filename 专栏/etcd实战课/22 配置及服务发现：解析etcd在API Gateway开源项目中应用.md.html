@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="22 配置及服务发现：解析etcd在API Gateway开源项目中应用" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>22 配置及服务发现：解析etcd在API Gateway开源项目中应用 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%a0%e8%a6%81%e5%ad%a6%e4%b9%a0etcd_.md.html" id="00 开篇词 为什么你要学习etcd_.md.html">00 开篇词 为什么你要学习etcd_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/01%20etcd%e7%9a%84%e5%89%8d%e4%b8%96%e4%bb%8a%e7%94%9f%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88Kubernetes%e4%bd%bf%e7%94%a8etcd%ef%bc%9f.md.html" id="01 etcd的前世今生：为什么Kubernetes使用etcd？.md.html">01 etcd的前世今生：为什么Kubernetes使用etcd？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/02%20%e5%9f%ba%e7%a1%80%e6%9e%b6%e6%9e%84%ef%bc%9aetcd%e4%b8%80%e4%b8%aa%e8%af%bb%e8%af%b7%e6%b1%82%e6%98%af%e5%a6%82%e4%bd%95%e6%89%a7%e8%a1%8c%e7%9a%84%ef%bc%9f.md.html" id="02 基础架构：etcd一个读请求是如何执行的？.md.html">02 基础架构：etcd一个读请求是如何执行的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/03%20%e5%9f%ba%e7%a1%80%e6%9e%b6%e6%9e%84%ef%bc%9aetcd%e4%b8%80%e4%b8%aa%e5%86%99%e8%af%b7%e6%b1%82%e6%98%af%e5%a6%82%e4%bd%95%e6%89%a7%e8%a1%8c%e7%9a%84%ef%bc%9f.md.html" id="03 基础架构：etcd一个写请求是如何执行的？.md.html">03 基础架构：etcd一个写请求是如何执行的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/04%20Raft%e5%8d%8f%e8%ae%ae%ef%bc%9aetcd%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%ab%98%e5%8f%af%e7%94%a8%e3%80%81%e6%95%b0%e6%8d%ae%e5%bc%ba%e4%b8%80%e8%87%b4%e7%9a%84%ef%bc%9f.md.html" id="04 Raft协议：etcd如何实现高可用、数据强一致的？.md.html">04 Raft协议：etcd如何实现高可用、数据强一致的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/05%20%e9%89%b4%e6%9d%83%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e6%8a%a4%e4%bd%a0%e7%9a%84%e6%95%b0%e6%8d%ae%e5%ae%89%e5%85%a8%ef%bc%9f.md.html" id="05 鉴权：如何保护你的数据安全？.md.html">05 鉴权：如何保护你的数据安全？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/06%20%e7%a7%9f%e7%ba%a6%ef%bc%9a%e5%a6%82%e4%bd%95%e6%a3%80%e6%b5%8b%e4%bd%a0%e7%9a%84%e5%ae%a2%e6%88%b7%e7%ab%af%e5%ad%98%e6%b4%bb%ef%bc%9f.md.html" id="06 租约：如何检测你的客户端存活？.md.html">06 租约：如何检测你的客户端存活？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/07%20MVCC%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%a4%9a%e7%89%88%e6%9c%ac%e5%b9%b6%e5%8f%91%e6%8e%a7%e5%88%b6%ef%bc%9f.md.html" id="07 MVCC：如何实现多版本并发控制？.md.html">07 MVCC：如何实现多版本并发控制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/08%20Watch%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e8%8e%b7%e5%8f%96%e6%95%b0%e6%8d%ae%e5%8f%98%e5%8c%96%e9%80%9a%e7%9f%a5%ef%bc%9f.md.html" id="08 Watch：如何高效获取数据变化通知？.md.html">08 Watch：如何高效获取数据变化通知？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/09%20%e4%ba%8b%e5%8a%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%89%e5%85%a8%e5%9c%b0%e5%ae%9e%e7%8e%b0%e5%a4%9akey%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="09 事务：如何安全地实现多key操作？.md.html">09 事务：如何安全地实现多key操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/10%20boltdb%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8c%81%e4%b9%85%e5%8c%96%e5%ad%98%e5%82%a8%e4%bd%a0%e7%9a%84key-value%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="10 boltdb：如何持久化存储你的key-value数据？.md.html">10 boltdb：如何持久化存储你的key-value数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/11%20%e5%8e%8b%e7%bc%a9%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9b%9e%e6%94%b6%e6%97%a7%e7%89%88%e6%9c%ac%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="11 压缩：如何回收旧版本数据？.md.html">11 压缩：如何回收旧版本数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/12%20%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e5%9f%ba%e4%ba%8eRaft%e5%ae%9e%e7%8e%b0%e7%9a%84etcd%e8%bf%98%e4%bc%9a%e5%87%ba%e7%8e%b0%e6%95%b0%e6%8d%ae%e4%b8%8d%e4%b8%80%e8%87%b4%ef%bc%9f.md.html" id="12 一致性：为什么基于Raft实现的etcd还会出现数据不一致？.md.html">12 一致性：为什么基于Raft实现的etcd还会出现数据不一致？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/13%20db%e5%a4%a7%e5%b0%8f%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88etcd%e7%a4%be%e5%8c%ba%e5%bb%ba%e8%ae%aedb%e5%a4%a7%e5%b0%8f%e4%b8%8d%e8%b6%85%e8%bf%878G%ef%bc%9f.md.html" id="13 db大小：为什么etcd社区建议db大小不超过8G？.md.html">13 db大小：为什么etcd社区建议db大小不超过8G？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/14%20%e5%bb%b6%e6%97%b6%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%a0%e7%9a%84etcd%e8%af%b7%e6%b1%82%e4%bc%9a%e5%87%ba%e7%8e%b0%e8%b6%85%e6%97%b6%ef%bc%9f.md.html" id="14 延时：为什么你的etcd请求会出现超时？.md.html">14 延时：为什么你的etcd请求会出现超时？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/15%20%e5%86%85%e5%ad%98%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%a0%e7%9a%84etcd%e5%86%85%e5%ad%98%e5%8d%a0%e7%94%a8%e9%82%a3%e4%b9%88%e9%ab%98%ef%bc%9f.md.html" id="15 内存：为什么你的etcd内存占用那么高？.md.html">15 内存：为什么你的etcd内存占用那么高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/16%20%e6%80%a7%e8%83%bd%e5%8f%8a%e7%a8%b3%e5%ae%9a%e6%80%a7%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bc%98%e5%8c%96%e5%8f%8a%e6%89%a9%e5%b1%95etcd%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="16 性能及稳定性（上）：如何优化及扩展etcd性能？.md.html">16 性能及稳定性（上）：如何优化及扩展etcd性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/17%20%e6%80%a7%e8%83%bd%e5%8f%8a%e7%a8%b3%e5%ae%9a%e6%80%a7%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bc%98%e5%8c%96%e5%8f%8a%e6%89%a9%e5%b1%95etcd%e6%80%a7%e8%83%bd_.md.html" id="17 性能及稳定性（下）：如何优化及扩展etcd性能_.md.html">17 性能及稳定性（下）：如何优化及扩展etcd性能_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/18%20%e5%ae%9e%e6%88%98%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8eRaft%e4%bb%8e0%e5%88%b01%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e6%94%af%e6%8c%81%e5%a4%9a%e5%ad%98%e5%82%a8%e5%bc%95%e6%93%8e%e5%88%86%e5%b8%83%e5%bc%8fKV%e6%9c%8d%e5%8a%a1%ef%bc%9f.md.html" id="18 实战：如何基于Raft从0到1构建一个支持多存储引擎分布式KV服务？.md.html">18 实战：如何基于Raft从0到1构建一个支持多存储引擎分布式KV服务？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/19%20Kubernetes%e5%9f%ba%e7%a1%80%e5%ba%94%e7%94%a8%ef%bc%9a%e5%88%9b%e5%bb%ba%e4%b8%80%e4%b8%aaPod%e8%83%8c%e5%90%8eetcd%e5%8f%91%e7%94%9f%e4%ba%86%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="19 Kubernetes基础应用：创建一个Pod背后etcd发生了什么？.md.html">19 Kubernetes基础应用：创建一个Pod背后etcd发生了什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/20%20Kubernetes%e9%ab%98%e7%ba%a7%e5%ba%94%e7%94%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bc%98%e5%8c%96%e4%b8%9a%e5%8a%a1%e5%9c%ba%e6%99%af%e4%bd%bfetcd%e8%83%bd%e6%94%af%e6%92%91%e4%b8%8a%e4%b8%87%e8%8a%82%e7%82%b9%e9%9b%86%e7%be%a4%ef%bc%9f.md.html" id="20 Kubernetes高级应用：如何优化业务场景使etcd能支撑上万节点集群？.md.html">20 Kubernetes高级应用：如何优化业务场景使etcd能支撑上万节点集群？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/21%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e5%9f%ba%e4%ba%8eetcd%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%e6%af%94Redis%e9%94%81%e6%9b%b4%e5%ae%89%e5%85%a8%ef%bc%9f.md.html" id="21 分布式锁：为什么基于etcd实现分布式锁比Redis锁更安全？.md.html">21 分布式锁：为什么基于etcd实现分布式锁比Redis锁更安全？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/22%20%e9%85%8d%e7%bd%ae%e5%8f%8a%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0%ef%bc%9a%e8%a7%a3%e6%9e%90etcd%e5%9c%a8API%20Gateway%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae%e4%b8%ad%e5%ba%94%e7%94%a8.md.html" id="22 配置及服务发现：解析etcd在API Gateway开源项目中应用.md.html">22 配置及服务发现：解析etcd在API Gateway开源项目中应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/23%20%e9%80%89%e5%9e%8b%ef%bc%9aetcd_ZooKeeper_Consul%e7%ad%89%e6%88%91%e4%bb%ac%e8%af%a5%e5%a6%82%e4%bd%95%e9%80%89%e6%8b%a9%ef%bc%9f.md.html" id="23 选型：etcd_ZooKeeper_Consul等我们该如何选择？.md.html">23 选型：etcd_ZooKeeper_Consul等我们该如何选择？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/24%20%e8%bf%90%e7%bb%b4%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e9%ab%98%e5%8f%af%e9%9d%a0%e7%9a%84etcd%e9%9b%86%e7%be%a4%e8%bf%90%e7%bb%b4%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="24 运维：如何构建高可靠的etcd集群运维体系？.md.html">24 运维：如何构建高可靠的etcd集群运维体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e6%88%90%e5%91%98%e5%8f%98%e6%9b%b4%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9b%86%e7%be%a4%e7%9c%8b%e8%b5%b7%e6%9d%a5%e6%ad%a3%e5%b8%b8%ef%bc%8c%e7%a7%bb%e9%99%a4%e8%8a%82%e7%82%b9%e5%8d%b4%e4%bc%9a%e5%a4%b1%e8%b4%a5%e5%91%a2%ef%bc%9f.md.html" id="特别放送 成员变更：为什么集群看起来正常，移除节点却会失败呢？.md.html">特别放送 成员变更：为什么集群看起来正常，移除节点却会失败呢？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/etcd%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%90%9e%e6%87%82etcd%ef%bc%8c%e6%8e%8c%e6%8f%a1%e9%80%9a%e5%be%80%e5%88%86%e5%b8%83%e5%bc%8f%e5%ad%98%e5%82%a8%e7%b3%bb%e7%bb%9f%e4%b9%8b%e9%97%a8%e7%9a%84%e9%92%a5%e5%8c%99.md.html" id="结束语 搞懂etcd，掌握通往分布式存储系统之门的钥匙.md.html">结束语 搞懂etcd，掌握通往分布式存储系统之门的钥匙.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="22 配置及服务发现：解析etcd在API Gateway开源项目中应用" id="title">22 配置及服务发现：解析etcd在API Gateway开源项目中应用</h1>
+<div><p>你好，我是唐聪。</p>
+<p>在软件开发的过程中，为了提升代码的灵活性和开发效率，我们大量使用配置去控制程序的运行行为。</p>
+<p>从简单的数据库账号密码配置，到<a href="https://github.com/kelseyhightower/confd" target="_blank">confd</a>支持以etcd为后端存储的本地配置及模板管理，再到<a href="https://github.com/apache/apisix" target="_blank">Apache APISIX</a>等API Gateway项目使用etcd存储服务配置、路由信息等，最后到Kubernetes更实现了Secret和ConfigMap资源对象来解决配置管理的问题。</p>
+<p>那么它们是如何实现实时、动态调整服务配置而不需要重启相关服务的呢？</p>
+<p>今天我就和你聊聊etcd在配置和服务发现场景中的应用。我将以开源项目Apache APISIX为例，为你分析服务发现的原理，带你了解etcd的key-value模型，Watch机制，鉴权机制，Lease特性，事务特性在其中的应用。</p>
+<p>希望通过这节课，让你了解etcd在配置系统和服务发现场景工作原理，帮助你选型适合业务场景的配置系统、服务发现组件。同时，在使用Apache APISIX等开源项目过程中遇到etcd相关问题时，你能独立排查、分析，并向社区提交issue和PR解决。</p>
+<h2 id="服务发现">服务发现</h2>
+<p>首先和你聊聊服务发现，服务发现是指什么？为什么需要它呢?</p>
+<p>为了搞懂这个问题，我首先和你分享下程序部署架构的演进。</p>
+<h3 id="单体架构">单体架构</h3>
+<p>在早期软件开发时使用的是单体架构，也就是所有功能耦合在同一个项目中，统一构建、测试、发布。单体架构在项目刚启动的时候，架构简单、开发效率高，比较容易部署、测试。但是随着项目不断增大，它具有若干缺点，比如：</p>
+<ul>
+<li>所有功能耦合在同一个项目中，修复一个小Bug就需要发布整个大工程项目，增大引入问题风险。同时随着开发人员增多、单体项目的代码增长、各模块堆砌在一起、代码质量参差不齐，内部复杂度会越来越高，可维护性差。</li>
+<li>无法按需针对仅出现瓶颈的功能模块进行弹性扩容，只能作为一个整体继续扩展，因此扩展性较差。</li>
+<li>一旦单体应用宕机，将导致所有服务不可用，因此可用性较差。</li>
+</ul>
+<h3 id="分布式及微服务架构">分布式及微服务架构</h3>
+<p>如何解决以上痛点呢？</p>
+<p>当然是将单体应用进行拆分，大而化小。如何拆分呢？ 这里我就以一个我曾经参与重构建设的电商系统为案例给你分析一下。在一个单体架构中，完整的电商系统应包括如下模块：</p>
+<ul>
+<li>商城系统，负责用户登录、查看及搜索商品、购物车商品管理、优惠券管理、订单管理、支付等功能。</li>
+<li>物流及仓储系统，根据用户订单，进行发货、退货、换货等一系列仓储、物流管理。</li>
+<li>其他客服系统、客户管理系统等。</li>
+</ul>
+<p>因此在分布式架构中，你可以按整体功能，将单体应用垂直拆分成以上三大功能模块，各个功能模块可以选择不同的技术栈实现，按需弹性扩缩容，如下图所示。</p>
+<p><img alt="" src="assets/f2d27285a4804bb98fb076a7e35644e7.jpg"/></p>
+<p>那什么又是微服务架构呢？</p>
+<p>它是对各个功能模块进行更细立度的拆分，比如商城系统模块可以拆分成：</p>
+<ul>
+<li>用户鉴权模块；</li>
+<li>商品模块；</li>
+<li>购物车模块；</li>
+<li>优惠券模块；</li>
+<li>支付模块；</li>
+<li>……</li>
+</ul>
+<p>在微服务架构中，每个模块职责更单一、独立部署、开发迭代快，如下图所示。</p>
+<p><img alt="" src="assets/2d65a1d1b7244c76b99cb55d01f999f8.jpg"/></p>
+<p>那么在分布式及微服务架构中，各个模块之间如何及时知道对方网络地址与端口、协议，进行接口调用呢？</p>
+<h3 id="为什么需要服务发现中间件">为什么需要服务发现中间件?</h3>
+<p>其实这个知道的过程，就是服务发现。在早期的时候我们往往通过硬编码、配置文件声明各个依赖模块的网络地址、端口，然而这种方式在分布式及微服务架构中，其运维效率、服务可用性是远远不够的。</p>
+<p>那么我们能否实现通过一个特殊服务就查询到各个服务的后端部署地址呢？ 各服务启动的时候，就自动将IP和Port、协议等信息注册到特殊服务上，当某服务出现异常的时候，特殊服务就自动删除异常实例信息？</p>
+<p>是的，当然可以，这个特殊服务就是注册中心服务，你可以基于etcd、ZooKeeper、consul等实现。</p>
+<h3 id="etcd服务发现原理">etcd服务发现原理</h3>
+<p>那么如何基于etcd实现服务发现呢?</p>
+<p>下面我给出了一个通用的服务发现原理架构图，通过此图，为你介绍下服务发现的基本原理。详细如下：</p>
+<ul>
+<li>整体上分为四层，client层、proxy层(可选)、业务server、etcd存储层组成。引入proxy层的原因是使client更轻、逻辑更简单，无需直接访问存储层，同时可通过proxy层支持各种协议。</li>
+<li>client层通过负载均衡访问proxy组件。proxy组件启动的时候，通过etcd的Range RPC方法从etcd读取初始化服务配置数据，随后通过Watch接口持续监听后端业务server扩缩容变化，实时修改路由。</li>
+<li>proxy组件收到client的请求后，它根据从etcd读取到的对应服务的路由配置、负载均衡算法（比如Round-robin）转发到对应的业务server。</li>
+<li>业务server启动的时候，通过etcd的写接口Txn/Put等，注册自身地址信息、协议到高可用的etcd集群上。业务server缩容、故障时，对应的key应能自动从etcd集群删除，因此相关key需要关联lease信息，设置一个合理的TTL，并定时发送keepalive请求给Leader续租，以防止租约及key被淘汰。</li>
+</ul>
+<p><img alt="" src="assets/0162dc5974df4d669a999bec96f400c0.jpg"/></p>
+<p>当然，在分布式及微服务架构中，我们面对的问题不仅仅是服务发现，还包括如下痛点：</p>
+<ul>
+<li>限速；</li>
+<li>鉴权；</li>
+<li>安全；</li>
+<li>日志；</li>
+<li>监控；</li>
+<li>丰富的发布策略；</li>
+<li>链路追踪；</li>
+<li>……</li>
+</ul>
+<p>为了解决以上痛点，各大公司及社区开发者推出了大量的开源项目。这里我就以国内开发者广泛使用的Apache APISIX项目为例，为你分析etcd在其中的应用，了解下它是怎么玩转服务发现的。</p>
+<h3 id="apache-apisix原理">Apache APISIX原理</h3>
+<p>Apache APISIX它具备哪些功能呢？</p>
+<p>它的本质是一个无状态、高性能、实时、动态、可水平扩展的API网关。核心原理就是基于你配置的服务信息、路由规则等信息，将收到的请求通过一系列规则后，正确转发给后端的服务。</p>
+<p>Apache APISIX其实就是上面服务发现原理架构图中的proxy组件，如下图红色虚线框所示。</p>
+<p><img alt="" src="assets/d2de3d432d7549bba0d98a4a155bc823.jpg"/></p>
+<p>Apache APISIX详细架构图如下（<a href="https://github.com/apache/apisix" target="_blank">引用自社区项目文档</a>）。从图中你可以看到，它由控制面和数据面组成。</p>
+<p>控制面顾名思义，就是你通过Admin API下发服务、路由、安全配置的操作。控制面默认的服务发现存储是etcd，当然也支持consul、nacos等。</p>
+<p>你如果没有使用过Apache APISIX的话，可以参考下这个<a href="https://github.com/apache/apisix-docker/tree/master/example" target="_blank">example</a>，快速、直观的了解下Apache APISIX是如何通过Admin API下发服务和路由配置的。</p>
+<p>数据面是在实现基于服务路由信息数据转发的基础上，提供了限速、鉴权、安全、日志等一系列功能，也就是解决了我们上面提的分布式及微服务架构中的典型痛点。</p>
+<p><img alt="" src="assets/c12225e49422469aad051d5c37aa013e.jpg"/></p>
+<p>那么当我们通过控制面API新增一个服务时，Apache APISIX是是如何实现实时、动态调整服务配置，而不需要重启网关服务的呢？</p>
+<p>下面，我就和你聊聊etcd在Apache APISIX项目中的应用。</p>
+<h3 id="etcd在apache-apisix中的应用">etcd在Apache APISIX中的应用</h3>
+<p>在搞懂这个问题之前，我们先看看Apache APISIX在etcd中，都存储了哪些数据呢？它的数据存储格式是怎样的？</p>
+<h4 id="数据存储格式">数据存储格式</h4>
+<p>下面我参考Apache APISIX的<a href="https://github.com/apache/apisix-docker/tree/master/example" target="_blank">example</a>案例（apisix:2.3），通过Admin API新增了两个服务、路由规则后，执行如下查看etcd所有key的命令：</p>
+<pre><code>etcdctl get "" --prefix --keys-only
+</code></pre>
+<p>etcd输出结果如下：</p>
+<pre><code>/apisix/consumers/
+/apisix/data_plane/server_info/f7285805-73e9-4ce4-acc6-a38d619afdc3
+/apisix/global_rules/
+/apisix/node_status/
+/apisix/plugin_metadata/
+/apisix/plugins
+/apisix/plugins/
+/apisix/proto/
+/apisix/routes/
+/apisix/routes/12
+/apisix/routes/22
+/apisix/services/
+/apisix/services/1
+/apisix/services/2
+/apisix/ssl/
+/apisix/ssl/1
+/apisix/ssl/2
+/apisix/stream_routes/
+/apisix/upstreams/
+</code></pre>
+<p>然后我们继续通过etcdctl get命令查看下services都存储了哪些信息呢？</p>
+<pre><code>root@e9d3b477ca1f:/opt/bitnami/etcd# etcdctl get /apisix/services --prefix
+/apisix/services/
+init_dir
+/apisix/services/1
+{"update_time":1614293352,"create_time":1614293352,"upstream":{"type":"roundrobin","nodes":{"172.18.5.12:80":1},"hash_on":"vars","scheme":"http","pass_host":"pass"},"id":"1"}
+/apisix/services/2
+{"update_time":1614293361,"create_time":1614293361,"upstream":
+{"type":"roundrobin","nodes":{"172.18.5.13:80":1},"hash_on":"vars","scheme":"http","pass_host":"pass"},"id":"2"}
+</code></pre>
+<p>从中我们可以总结出如下信息：</p>
+<ul>
+<li>Apache APSIX 2.x系列版本使用的是etcd3。</li>
+<li>服务、路由、ssl、插件等配置存储格式前缀是/apisix + “/” + 功能特性类型（routes/services/ssl等），我们通过Admin API添加的路由、服务等配置就保存在相应的前缀下。</li>
+<li>路由和服务配置的value是个Json对象，其中服务对象包含了id、负载均衡算法、后端节点、协议等信息。</li>
+</ul>
+<p>了解完Apache APISIX在etcd中的数据存储格式后，那么它是如何动态、近乎实时地感知到服务配置变化的呢？</p>
+<h4 id="watch机制的应用">Watch机制的应用</h4>
+<p>与Kubernetes一样，它们都是通过etcd的<strong>Watch机制</strong>来实现的。</p>
+<p>Apache APISIX在启动的时候，首先会通过Range操作获取网关的配置、路由等信息，随后就通过Watch机制，获取增量变化事件。</p>
+<p>使用Watch机制最容易犯错的地方是什么呢？</p>
+<p>答案是不处理Watch返回的相关错误信息，比如已压缩ErrCompacted错误。Apache APISIX项目在从etcd v2中切换到etcd v3早期的时候，同样也犯了这个错误。</p>
+<p>去年某日收到小伙伴求助，说使用Apache APISIX后，获取不到新的服务配置了，是不是etcd出什么Bug了？</p>
+<p>经过一番交流和查看日志，发现原来是Apache APISIX未处理ErrCompacted错误导致的。根据我们<a href="https://time.geekbang.org/column/article/340226" target="_blank">07</a>Watch原理的介绍，当你请求Watch的版本号已被etcd压缩后，etcd就会取消这个watcher，这时你需要重建watcher，才能继续监听到最新数据变化事件。</p>
+<p>查清楚问题后，小伙伴向社区提交了issue反馈，随后Apache APISIX相关同学通过<a href="https://github.com/apache/apisix/pull/2687" target="_blank">PR 2687</a>修复了此问题，更多信息你可参考Apache APISIX访问etcd<a href="https://github.com/apache/apisix/blob/v2.3/apisix/core/etcd.lua" target="_blank">相关实现代码文件</a>。</p>
+<h4 id="鉴权机制的应用">鉴权机制的应用</h4>
+<p>除了Watch机制，Apache APISIX项目还使用了鉴权，毕竟配置网关是个高危操作，那它是如何使用etcd鉴权机制的呢？ <strong>etcd鉴权机制</strong>中最容易踩的坑是什么呢？</p>
+<p>答案是不复用client和鉴权token，频繁发起Authenticate操作，导致etcd高负载。正如我在<a href="https://time.geekbang.org/column/article/346471" target="_blank">17</a>和你介绍的，一个8核32G的高配节点在100个连接时，Authenticate QPS仅为8。可想而知，你如果不复用token，那么出问题就很自然不过了。</p>
+<p>Apache APISIX是否也踩了这个坑呢？</p>
+<p>Apache APISIX是基于Lua构建的，使用的是<a href="https://github.com/api7/lua-resty-etcd/blob/master/lib/resty/etcd/v3.lua" target="_blank">lua-resty-etcd</a>这个项目访问etcd，从相关<a href="https://github.com/apache/apisix/issues/2899" target="_blank">issue</a>反馈看，的确也踩了这个坑。社区用户反馈后，随后通过复用client、更完善的token复用机制解决了Authenticate的性能瓶颈，详细信息你可参考<a href="https://github.com/apache/apisix/pull/2932" target="_blank">PR 2932</a>、<a href="https://github.com/api7/lua-resty-etcd/pull/100" target="_blank">PR 100</a>。</p>
+<p>除了以上介绍的Watch机制、鉴权机制，Apache APISIX还使用了etcd的Lease特性和事务接口。</p>
+<h4 id="lease特性的应用">Lease特性的应用</h4>
+<p>为什么Apache APISIX项目需要Lease特性呢？</p>
+<p>服务发现的核心工作原理是服务启动的时候将地址信息登录到注册中心，服务异常时自动从注册中心删除。</p>
+<p>这是不是跟我们前面<a href="https://time.geekbang.org/column/article/338524" target="_blank">05</a>节介绍的<lease特性: 如何检测客户端的存活性="">应用场景很匹配呢？</lease特性:></p>
+<p>没错，Apache APISIX通过etcd v2的TTL特性、etcd v3的Lease特性来实现类似的效果，它提供的增加服务路由API，支持设置TTL属性，如下面所示：</p>
+<pre><code># Create a route expires after 60 seconds, then it's deleted automatically
+$ curl http://127.0.0.1:9080/apisix/admin/routes/2?ttl=60 -H 'X-API-KEY: edd1c9f034335f136f87ad84b625c8f1' -X PUT -i -d '
+{
+    "uri": "/aa/index.html",
+    "upstream": {
+        "type": "roundrobin",
+        "nodes": {
+            "39.97.63.215:80": 1
+        }
+    }
+}'
+</code></pre>
+<p>当一个路由设置非0 TTL后，Apache APISIX就会为它创建Lease，关联key，相关代码如下：</p>
+<pre><code>-- lease substitute ttl in v3
+local res, err
+if ttl then
+    local data, grant_err = etcd_cli:grant(tonumber(ttl))
+    if not data then
+        return nil, grant_err
+    end
+    res, err = etcd_cli:set(prefix .. key, value, {prev_kv = true, lease = data.body.ID})
+else
+    res, err = etcd_cli:set(prefix .. key, value, {prev_kv = true})
+end
+</code></pre>
+<h4 id="事务特性的应用">事务特性的应用</h4>
+<p>介绍完Lease特性在Apache APISIX项目中的应用后，我们再来思考两个问题。为什么它还依赖etcd的事务特性呢？简单的执行put接口有什么问题？</p>
+<p>答案是它跟Kubernetes是一样的使用目的。使用事务是为了防止并发场景下的数据写冲突，比如你可能同时发起两个Patch Admin API去修改配置等。如果简单地使用put接口，就会导致第一个写请求的结果被覆盖。</p>
+<p>Apache APISIX是如何使用事务接口提供的乐观锁机制去解决并发冲突的问题呢？</p>
+<p>核心依然是我们前面课程中一直强调的mod_revision，它会比较事务提交时的mod_revision与预期是否一致，一致才能执行put操作，Apache APISIX相关使用代码如下：</p>
+<pre><code>local compare = {
+    {
+        key = key,
+        target = "MOD",
+        result = "EQUAL",
+        mod_revision = mod_revision,
+    }
+}
+local success = {
+    {
+        requestPut = {
+            key = key,
+            value = value,
+            lease = lease_id,
+        }
+    }
+}
+local res, err = etcd_cli:txn(compare, success)
+if not res then
+    return nil, err
+end
+</code></pre>
+<p>关于Apache APISIX事务特性的引入、背景以及更详细的实现，你也可以参考<a href="https://github.com/apache/apisix/pull/2216" target="_blank">PR 2216</a>。</p>
+<h2 id="小结">小结</h2>
+<p>最后我们来小结下今天的内容。今天我给你介绍了服务部署架构的演进，我们从单体架构的缺陷开始、到分布式及微服务架构的诞生，和你分享了分布式及微服务架构中面临的一系列痛点（如服务发现，鉴权，安全，限速等等）。</p>
+<p>而开源项目Apache APISIX正是一个基于etcd的项目，它为后端存储提供了一系列的解决方案，我通过它的架构图为你介绍了其控制面和数据面的工作原理。</p>
+<p>随后我从数据存储格式、Watch机制、鉴权机制、Lease特性以及事务特性维度，和你分析了它们在Apache APISIX项目中的应用。</p>
+<p>数据存储格式上，APISIX采用典型的prefix + 功能特性组织格式。key是相关配置id，value是个json对象，包含一系列业务所需要的核心数据。你需要注意的是Apache APISIX 1.x版本使用的etcd v2 API，2.x版本使用的是etcd v3 API，要求至少是etcd v3.4版本以上。</p>
+<p>Watch机制上，APISIX依赖它进行配置的动态、实时更新，避免了传统的修改配置，需要服务重启等缺陷。</p>
+<p>鉴权机制上，APISIX使用密码认证，进行多租户认证、授权，防止用户出现越权访问，保护网关服务的安全。</p>
+<p>Lease及事务特性上，APISIX通过Lease来设置自动过期的路由规则，解决服务发现中的节点异常自动剔除等问题，通过事务特性的乐观锁机制来实现并发场景下覆盖更新等问题。</p>
+<p>希望通过本节课的学习，让你从etcd角度更深入了解APISIX项目的原理，了解etcd各个特性在其中的应用，学习它的最佳实践经验和经历的各种坑，避免重复踩坑。在以后的工作中，在你使用APISIX等开源项目遇到etcd相关错误时，能独立分析、排查，甚至给社区提交PR解决。</p>
+<h2 id="思考题">思考题</h2>
+<p>好了，这节课到这里也就结束了，最后我给你留了一个开放的配置系统设计思考题。</p>
+<p>假设老板让你去设计一个大型配置系统，满足公司各个业务场景的诉求，期望的设计目标如下：</p>
+<ul>
+<li>高可靠。配置系统的作为核心基础设施，期望可用性能达到99.99%。</li>
+<li>高性能。公司业务多，规模大，配置系统应具备高性能、并能水平扩容。</li>
+<li>支持多业务、多版本管理、多种发布策略。</li>
+</ul>
+<p>你认为etcd适合此业务场景吗？如果适合，分享下你的核心想法、整体架构，如果不适合，你心目中的理想存储和架构又是怎样的呢？</p>
+<p>欢迎大家留言一起讨论，后面我也将在答疑篇中分享我的一些想法和曾经大规模TO C业务中的实践经验。</p>
+<p>感谢你阅读，也欢迎你把这篇文章分享给更多的朋友一起阅读。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#dfb3b3b3e6ebeeeeefe89fb8b2beb6b3f1bcb0b2" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357e7253f83c5a3',t:'MTc0NTUyMTg0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
