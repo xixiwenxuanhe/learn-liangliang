@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="16 ZooKeeper是如何保证数据一致性的？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>16 ZooKeeper是如何保证数据一致性的？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4%e6%af%8f%e4%b8%aa%e8%bd%af%e4%bb%b6%e5%b7%a5%e7%a8%8b%e5%b8%88%e9%83%bd%e5%ba%94%e8%af%a5%e6%87%82%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%8a%80%e6%9c%af%ef%bc%9f.md.html" id="00 开篇词 为什么说每个软件工程师都应该懂大数据技术？.md.html">00 开篇词 为什么说每个软件工程师都应该懂大数据技术？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/01%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%8a%80%e6%9c%af%e5%8f%91%e5%b1%95%e5%8f%b2%ef%bc%9a%e5%a4%a7%e6%95%b0%e6%8d%ae%e7%9a%84%e5%89%8d%e4%b8%96%e4%bb%8a%e7%94%9f.md.html" id="01 大数据技术发展史：大数据的前世今生.md.html">01 大数据技术发展史：大数据的前世今生.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/02%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%ba%94%e7%94%a8%e5%8f%91%e5%b1%95%e5%8f%b2%ef%bc%9a%e4%bb%8e%e6%90%9c%e7%b4%a2%e5%bc%95%e6%93%8e%e5%88%b0%e4%ba%ba%e5%b7%a5%e6%99%ba%e8%83%bd.md.html" id="02 大数据应用发展史：从搜索引擎到人工智能.md.html">02 大数据应用发展史：从搜索引擎到人工智能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/03%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%ba%94%e7%94%a8%e9%a2%86%e5%9f%9f%ef%bc%9a%e6%95%b0%e6%8d%ae%e9%a9%b1%e5%8a%a8%e4%b8%80%e5%88%87.md.html" id="03 大数据应用领域：数据驱动一切.md.html">03 大数据应用领域：数据驱动一切.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/04%20%e7%a7%bb%e5%8a%a8%e8%ae%a1%e7%ae%97%e6%af%94%e7%a7%bb%e5%8a%a8%e6%95%b0%e6%8d%ae%e6%9b%b4%e5%88%92%e7%ae%97.md.html" id="04 移动计算比移动数据更划算.md.html">04 移动计算比移动数据更划算.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/05%20%e4%bb%8eRAID%e7%9c%8b%e5%9e%82%e7%9b%b4%e4%bc%b8%e7%bc%a9%e5%88%b0%e6%b0%b4%e5%b9%b3%e4%bc%b8%e7%bc%a9%e7%9a%84%e6%bc%94%e5%8c%96.md.html" id="05 从RAID看垂直伸缩到水平伸缩的演化.md.html">05 从RAID看垂直伸缩到水平伸缩的演化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/06%20%e6%96%b0%e6%8a%80%e6%9c%af%e5%b1%82%e5%87%ba%e4%b8%8d%e7%a9%b7%ef%bc%8cHDFS%e4%be%9d%e7%84%b6%e6%98%af%e5%ad%98%e5%82%a8%e7%9a%84%e7%8e%8b%e8%80%85.md.html" id="06 新技术层出不穷，HDFS依然是存储的王者.md.html">06 新技术层出不穷，HDFS依然是存储的王者.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/07%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4MapReduce%e6%97%a2%e6%98%af%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%9e%8b%e5%8f%88%e6%98%af%e8%ae%a1%e7%ae%97%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="07 为什么说MapReduce既是编程模型又是计算框架？.md.html">07 为什么说MapReduce既是编程模型又是计算框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/08%20MapReduce%e5%a6%82%e4%bd%95%e8%ae%a9%e6%95%b0%e6%8d%ae%e5%ae%8c%e6%88%90%e4%b8%80%e6%ac%a1%e6%97%85%e8%a1%8c%ef%bc%9f.md.html" id="08 MapReduce如何让数据完成一次旅行？.md.html">08 MapReduce如何让数据完成一次旅行？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/09%20%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%bb%ac%e7%ae%a1Yarn%e5%8f%ab%e4%bd%9c%e8%b5%84%e6%ba%90%e8%b0%83%e5%ba%a6%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="09 为什么我们管Yarn叫作资源调度框架？.md.html">09 为什么我们管Yarn叫作资源调度框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/10%20%e6%a8%a1%e5%9d%97%e7%ad%94%e7%96%91%ef%bc%9a%e6%88%91%e4%bb%ac%e8%83%bd%e4%bb%8eHadoop%e5%ad%a6%e5%88%b0%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 模块答疑：我们能从Hadoop学到什么？.md.html">10 模块答疑：我们能从Hadoop学到什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/11%20Hive%e6%98%af%e5%a6%82%e4%bd%95%e8%ae%a9MapReduce%e5%ae%9e%e7%8e%b0SQL%e6%93%8d%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="11 Hive是如何让MapReduce实现SQL操作的？.md.html">11 Hive是如何让MapReduce实现SQL操作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/12%20%e6%88%91%e4%bb%ac%e5%b9%b6%e6%b2%a1%e6%9c%89%e8%a7%89%e5%be%97MapReduce%e9%80%9f%e5%ba%a6%e6%85%a2%ef%bc%8c%e7%9b%b4%e5%88%b0Spark%e5%87%ba%e7%8e%b0.md.html" id="12 我们并没有觉得MapReduce速度慢，直到Spark出现.md.html">12 我们并没有觉得MapReduce速度慢，直到Spark出现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/13%20%e5%90%8c%e6%a0%b7%e7%9a%84%e6%9c%ac%e8%b4%a8%ef%bc%8c%e4%b8%ba%e4%bd%95Spark%e5%8f%af%e4%bb%a5%e6%9b%b4%e9%ab%98%e6%95%88%ef%bc%9f.md.html" id="13 同样的本质，为何Spark可以更高效？.md.html">13 同样的本质，为何Spark可以更高效？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/14%20BigTable%e7%9a%84%e5%bc%80%e6%ba%90%e5%ae%9e%e7%8e%b0%ef%bc%9aHBase.md.html" id="14 BigTable的开源实现：HBase.md.html">14 BigTable的开源实现：HBase.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/15%20%e6%b5%81%e5%bc%8f%e8%ae%a1%e7%ae%97%e7%9a%84%e4%bb%a3%e8%a1%a8%ef%bc%9aStorm%e3%80%81Flink%e3%80%81Spark%20Streaming.md.html" id="15 流式计算的代表：Storm、Flink、Spark Streaming.md.html">15 流式计算的代表：Storm、Flink、Spark Streaming.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/16%20ZooKeeper%e6%98%af%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e6%95%b0%e6%8d%ae%e4%b8%80%e8%87%b4%e6%80%a7%e7%9a%84%ef%bc%9f.md.html" id="16 ZooKeeper是如何保证数据一致性的？.md.html">16 ZooKeeper是如何保证数据一致性的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/17%20%e6%a8%a1%e5%9d%97%e7%ad%94%e7%96%91%ef%bc%9a%e8%bf%99%e4%b9%88%e5%a4%9a%e6%8a%80%e6%9c%af%ef%bc%8c%e5%88%b0%e5%ba%95%e9%83%bd%e8%83%bd%e7%94%a8%e5%9c%a8%e4%bb%80%e4%b9%88%e5%9c%ba%e6%99%af%e9%87%8c%ef%bc%9f.md.html" id="17 模块答疑：这么多技术，到底都能用在什么场景里？.md.html">17 模块答疑：这么多技术，到底都能用在什么场景里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/18%20%e5%a6%82%e4%bd%95%e8%87%aa%e5%b7%b1%e5%bc%80%e5%8f%91%e4%b8%80%e4%b8%aa%e5%a4%a7%e6%95%b0%e6%8d%aeSQL%e5%bc%95%e6%93%8e%ef%bc%9f.md.html" id="18 如何自己开发一个大数据SQL引擎？.md.html">18 如何自己开发一个大数据SQL引擎？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/19%20Spark%e7%9a%84%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="19 Spark的性能优化案例分析（上）.md.html">19 Spark的性能优化案例分析（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/20%20Spark%e7%9a%84%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="20 Spark的性能优化案例分析（下）.md.html">20 Spark的性能优化案例分析（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/21%20%e4%bb%8e%e9%98%bf%e9%87%8c%e5%86%85%e9%83%a8%e4%ba%a7%e5%93%81%e7%9c%8b%e6%b5%b7%e9%87%8f%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%e7%b3%bb%e7%bb%9f%e7%9a%84%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aDoris%e7%9a%84%e7%ab%8b%e9%a1%b9.md.html" id="21 从阿里内部产品看海量数据处理系统的设计（上）：Doris的立项.md.html">21 从阿里内部产品看海量数据处理系统的设计（上）：Doris的立项.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/22%20%e4%bb%8e%e9%98%bf%e9%87%8c%e5%86%85%e9%83%a8%e4%ba%a7%e5%93%81%e7%9c%8b%e6%b5%b7%e9%87%8f%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%e7%b3%bb%e7%bb%9f%e7%9a%84%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%9e%b6%e6%9e%84%e4%b8%8e%e5%88%9b%e6%96%b0.md.html" id="22 从阿里内部产品看海量数据处理系统的设计（下）：架构与创新.md.html">22 从阿里内部产品看海量数据处理系统的设计（下）：架构与创新.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/23%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%9f%ba%e5%87%86%e6%b5%8b%e8%af%95%e5%8f%af%e4%bb%a5%e5%b8%a6%e6%9d%a5%e4%bb%80%e4%b9%88%e5%a5%bd%e5%a4%84%ef%bc%9f.md.html" id="23 大数据基准测试可以带来什么好处？.md.html">23 大数据基准测试可以带来什么好处？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/24%20%e4%bb%8e%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e5%b7%a5%e5%85%b7Dew%e7%9c%8b%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e5%bc%80%e5%8f%91%e5%a4%a7%e6%95%b0%e6%8d%ae%e7%b3%bb%e7%bb%9f.md.html" id="24 从大数据性能测试工具Dew看如何快速开发大数据系统.md.html">24 从大数据性能测试工具Dew看如何快速开发大数据系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/25%20%e6%a8%a1%e5%9d%97%e7%ad%94%e7%96%91%ef%bc%9a%e6%88%91%e8%83%bd%e4%bb%8e%e5%a4%a7%e5%8e%82%e7%9a%84%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e8%b7%b5%e4%b8%ad%e5%ad%a6%e5%88%b0%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="25 模块答疑：我能从大厂的大数据开发实践中学到什么？.md.html">25 模块答疑：我能从大厂的大数据开发实践中学到什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/26%20%e4%ba%92%e8%81%94%e7%bd%91%e4%ba%a7%e5%93%81%20+%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e4%ba%a7%e5%93%81%20=%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%b9%b3%e5%8f%b0.md.html" id="26 互联网产品 + 大数据产品 = 大数据平台.md.html">26 互联网产品 + 大数据产品 = 大数据平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/27%20%e5%a4%a7%e6%95%b0%e6%8d%ae%e4%bb%8e%e5%93%aa%e9%87%8c%e6%9d%a5%ef%bc%9f.md.html" id="27 大数据从哪里来？.md.html">27 大数据从哪里来？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/28%20%e7%9f%a5%e5%90%8d%e5%a4%a7%e5%8e%82%e5%a6%82%e4%bd%95%e6%90%ad%e5%bb%ba%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%b9%b3%e5%8f%b0%ef%bc%9f.md.html" id="28 知名大厂如何搭建大数据平台？.md.html">28 知名大厂如何搭建大数据平台？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/29%20%e7%9b%98%e7%82%b9%e5%8f%af%e4%be%9b%e4%b8%ad%e5%b0%8f%e4%bc%81%e4%b8%9a%e5%8f%82%e8%80%83%e7%9a%84%e5%95%86%e4%b8%9a%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%b9%b3%e5%8f%b0.md.html" id="29 盘点可供中小企业参考的商业大数据平台.md.html">29 盘点可供中小企业参考的商业大数据平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/30%20%e5%bd%93%e5%a4%a7%e6%95%b0%e6%8d%ae%e9%81%87%e4%b8%8a%e7%89%a9%e8%81%94%e7%bd%91.md.html" id="30 当大数据遇上物联网.md.html">30 当大数据遇上物联网.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/31%20%e6%a8%a1%e5%9d%97%e7%ad%94%e7%96%91%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e5%a4%a7%e6%95%b0%e6%8d%ae%e5%b9%b3%e5%8f%b0%e8%87%b3%e5%85%b3%e9%87%8d%e8%a6%81%ef%bc%9f.md.html" id="31 模块答疑：为什么大数据平台至关重要？.md.html">31 模块答疑：为什么大数据平台至关重要？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/32%20%e4%ba%92%e8%81%94%e7%bd%91%e8%bf%90%e8%90%a5%e6%95%b0%e6%8d%ae%e6%8c%87%e6%a0%87%e4%b8%8e%e5%8f%af%e8%a7%86%e5%8c%96%e7%9b%91%e6%8e%a7.md.html" id="32 互联网运营数据指标与可视化监控.md.html">32 互联网运营数据指标与可视化监控.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/33%20%e4%b8%80%e4%b8%aa%e7%94%b5%e5%95%86%e7%bd%91%e7%ab%99%e8%ae%a2%e5%8d%95%e4%b8%8b%e9%99%8d%e7%9a%84%e6%95%b0%e6%8d%ae%e5%88%86%e6%9e%90%e6%a1%88%e4%be%8b.md.html" id="33 一个电商网站订单下降的数据分析案例.md.html">33 一个电商网站订单下降的数据分析案例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/34%20A_B%e6%b5%8b%e8%af%95%e4%b8%8e%e7%81%b0%e5%ba%a6%e5%8f%91%e5%b8%83%e5%bf%85%e7%9f%a5%e5%bf%85%e4%bc%9a.md.html" id="34 A_B测试与灰度发布必知必会.md.html">34 A_B测试与灰度发布必知必会.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/35%20%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8%e5%a4%a7%e6%95%b0%e6%8d%ae%e6%88%90%e4%b8%ba%e2%80%9c%e5%a2%9e%e9%95%bf%e9%bb%91%e5%ae%a2%e2%80%9d%ef%bc%9f.md.html" id="35 如何利用大数据成为“增长黑客”？.md.html">35 如何利用大数据成为“增长黑客”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/36%20%e6%a8%a1%e5%9d%97%e7%ad%94%e7%96%91%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4%e6%95%b0%e6%8d%ae%e9%a9%b1%e5%8a%a8%e8%bf%90%e8%90%a5%ef%bc%9f.md.html" id="36 模块答疑：为什么说数据驱动运营？.md.html">36 模块答疑：为什么说数据驱动运营？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/37%20%e5%a6%82%e4%bd%95%e5%af%b9%e6%95%b0%e6%8d%ae%e8%bf%9b%e8%a1%8c%e5%88%86%e7%b1%bb%e5%92%8c%e9%a2%84%e6%b5%8b%ef%bc%9f.md.html" id="37 如何对数据进行分类和预测？.md.html">37 如何对数据进行分类和预测？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/38%20%e5%a6%82%e4%bd%95%e5%8f%91%e6%8e%98%e6%95%b0%e6%8d%ae%e4%b9%8b%e9%97%b4%e7%9a%84%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="38 如何发掘数据之间的关系？.md.html">38 如何发掘数据之间的关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/39%20%e5%a6%82%e4%bd%95%e9%a2%84%e6%b5%8b%e7%94%a8%e6%88%b7%e7%9a%84%e5%96%9c%e5%a5%bd%ef%bc%9f.md.html" id="39 如何预测用户的喜好？.md.html">39 如何预测用户的喜好？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/40%20%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e7%9a%84%e6%95%b0%e5%ad%a6%e5%8e%9f%e7%90%86%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="40 机器学习的数学原理是什么？.md.html">40 机器学习的数学原理是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/41%20%e4%bb%8e%e6%84%9f%e7%9f%a5%e6%9c%ba%e5%88%b0%e7%a5%9e%e7%bb%8f%e7%bd%91%e7%bb%9c%e7%ae%97%e6%b3%95.md.html" id="41 从感知机到神经网络算法.md.html">41 从感知机到神经网络算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/42%20%e6%a8%a1%e5%9d%97%e7%ad%94%e7%96%91%ef%bc%9a%e8%bd%af%e4%bb%b6%e5%b7%a5%e7%a8%8b%e5%b8%88%e5%a6%82%e4%bd%95%e8%bf%9b%e5%85%a5%e4%ba%ba%e5%b7%a5%e6%99%ba%e8%83%bd%e9%a2%86%e5%9f%9f%ef%bc%9f.md.html" id="42 模块答疑：软件工程师如何进入人工智能领域？.md.html">42 模块答疑：软件工程师如何进入人工智能领域？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/%e6%89%80%e6%9c%89%e7%9a%84%e4%b8%8d%e7%a1%ae%e5%ae%9a%e9%83%bd%e6%98%af%e6%9c%ba%e4%bc%9a%e2%80%94%e2%80%94%e6%99%ba%e6%85%a7%e5%86%99%e7%bb%99%e4%bd%a0%e7%9a%84%e6%96%b0%e5%b9%b4%e5%af%84%e8%af%ad.md.html" id="所有的不确定都是机会——智慧写给你的新年寄语.md.html">所有的不确定都是机会——智慧写给你的新年寄语.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/%e7%ac%ac2%e5%ad%a3%e5%9b%9e%e5%bd%92%e4%b8%a8%e5%a4%a7%e6%95%b0%e6%8d%ae%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%ae%a9%e6%88%91%e4%bb%ac%e5%9b%9e%e5%bd%92%e5%90%8e%e7%ab%af.md.html" id="第2季回归丨大数据之后，让我们回归后端.md.html">第2季回归丨大数据之后，让我们回归后端.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e4%bb%8e0%e5%bc%80%e5%a7%8b%e5%ad%a6%e5%a4%a7%e6%95%b0%e6%8d%ae/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%9c%aa%e6%9d%a5%e7%9a%84%e4%bd%a0%ef%bc%8c%e6%9c%89%e6%97%a0%e9%99%90%e5%8f%af%e8%83%bd.md.html" id="结束语 未来的你，有无限可能.md.html">结束语 未来的你，有无限可能.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="16 ZooKeeper是如何保证数据一致性的？" id="title">16 ZooKeeper是如何保证数据一致性的？</h1>
+<div><p>你可能还记得，我们在讲HDFS和HBase架构分析时都提到了ZooKeeper。在分布式系统里的多台服务器要对数据状态达成一致，其实是一件很有难度和挑战的事情，因为服务器集群环境的软硬件故障随时会发生，多台服务器对一个数据的记录保持一致，需要一些技巧和设计。</p>
+<p>这也就是我们今天要讨论的分布式系统一致性与ZooKeeper的架构。</p>
+<p>在讲分布式系统一致性前，我们先回顾一下HDFS。HDFS为了保证整个集群的高可用，需要部署两台NameNode服务器，一台作为主服务器，一台作为从服务器。当主服务器不可用的时候，就切换到从服务器上访问。但是如果不同的应用程序（Client）或者DataNode做出的关于主服务器是否可用的判断不同，那么就会导致HDFS集群混乱。</p>
+<p>比如两个应用程序都需要对一个文件路径进行写操作，但是如果两个应用程序对于哪台服务器是主服务器的判断不同，就会分别连接到两个不同的NameNode上，并都得到了对同一个文件路径的写操作权限，这样就会引起文件数据冲突，同一个文件指向了两份不同的数据。</p>
+<p>这种不同主服务器做出不同的响应，在分布式系统中被称作“脑裂”。光看这个词你也可以看出问题的严重性，这时候集群处于混乱状态，根本无法使用。那我们引入一个专门进行判断的服务器当“裁判”，让“裁判”决定哪个服务器是主服务器不就完事了吗？</p>
+<p>但是这个做出判断决策的服务器也有可能会出现故障不可访问，同样整个服务器集群也不能正常运行。所以这个做出判断决策的服务器必须由多台服务器组成，来保证高可用，任意一台服务器宕机都不会影响系统的可用性。</p>
+<p>那么问题又来了，这几台做出判断决策的服务器又如何防止“脑裂”，自己不会出现混乱状态呢？有时候真的很无奈，分布式系统设计就像是一个追着自己尾巴咬的喵喵，兜兜转转回到开头。</p>
+<p>但是问题必须还要解决，我们比较常用的多台服务器状态一致性的解决方案就是ZooKeeper。</p>
+<h2 id="分布式一致性原理">分布式一致性原理</h2>
+<p>讲分布式一致性时，相信你肯定多少听过著名的CAP原理。CAP原理认为，一个提供数据服务的分布式系统无法同时满足数据<strong>一致性</strong>（Consistency）、<strong>可用性</strong>（Availibility）、<strong>分区耐受性</strong>（Patition Tolerance）这三个条件，如下图所示。</p>
+<p><img alt="" src="assets/9bf0f4e50c3e48cda1bc206df5b88ff7.jpg"/></p>
+<p>一致性是说，每次读取的数据都应该是最近写入的数据或者返回一个错误（Every read receives the most recent write or an error），而不是过期数据，也就是说，数据是一致的。</p>
+<p>可用性是说，每次请求都应该得到一个响应，而不是返回一个错误或者失去响应，不过这个响应不需要保证数据是最近写入的（Every request receives a (non-error) response, without the guarantee that it contains the most recent write），也就是说系统需要一直都是可以正常使用的，不会引起调用者的异常，但是并不保证响应的数据是最新的。</p>
+<p>分区耐受性是说，即使因为网络原因，部分服务器节点之间消息丢失或者延迟了，系统依然应该是可以操作的（The system continues to operate despite an arbitrary number of messages being dropped (or delayed) by the network between nodes）。</p>
+<p>当网络分区失效发生的时候，我们要么取消操作，这样数据就是一致的，但是系统却不可用；要么我们继续写入数据，但是数据的一致性就得不到保证。</p>
+<p>对于一个分布式系统而言，网络失效一定会发生，也就是说，分区耐受性是必须要保证的，那么在可用性和一致性上就必须二选一。当网络分区失效，也就是网络不可用的时候，如果选择了一致性，系统就可能返回一个错误码或者干脆超时，即系统不可用。如果选择了可用性，那么系统总是可以返回一个数据，但是并不能保证这个数据是最新的。</p>
+<p>所以，关于CAP原理，更准确的说法是，在分布式系统必须要满足分区耐受性的前提下，可用性和一致性无法同时满足。</p>
+<h2 id="zab算法与zookeeper架构">ZAB算法与ZooKeeper架构</h2>
+<p>ZooKeeper主要提供数据的一致性服务，其实现分布式系统的状态一致性依赖一个叫Paxos的算法。Paxos算法在多台服务器通过内部的投票表决机制决定一个数据的更新与写入。Paxos的基本思路请看下面的图。</p>
+<p><img alt="" src="assets/47c5499763d54192953c3207492be701.jpg"/></p>
+<p>应用程序连接到任意一台服务器后提起状态修改请求（也可以是获得某个状态锁的请求），从图上看也就是服务器1，会将这个请求发送给集群中其他服务器进行表决。如果某个服务器同时收到了另一个应用程序同样的修改请求，它可能会拒绝服务器1的表决，并且自己也发起一个同样的表决请求，那么其他服务器就会根据时间戳和服务器排序规则进行表决。</p>
+<p>表决结果会发送给其他所有服务器，最终发起表决的服务器也就是服务器1，会根据收到的表决结果决定该修改请求是否可以执行，事实上，只有在收到多数表决同意的情况下才会决定执行。当有多个请求同时修改某个数据的情况下，服务器的表决机制保证只有一个请求会通过执行，从而保证了数据的一致性。</p>
+<p>Paxos算法有点过于复杂、实现难度也比较高，所以ZooKeeper在编程实现的时候将其简化成了一种叫做ZAB的算法（Zookeeper Atomic Broadcast， Zookeeper原子广播）。</p>
+<p><img alt="" src="assets/57a2e7fcd38e4928bea4bbc63207314c.jpg"/></p>
+<p>ZAB算法的目的，同样是在多台服务器之间达成一致，保证这些服务器上存储的数据是一致的。ZAB算法的主要特点在于：需要在这些服务器中选举一个Leader，所有的写请求都必须提交给Leader。由Leader服务器向其他服务器（Follower）发起Propose，通知所有服务器：我们要完成一个写操作请求，大家检查自己的数据状态，是否有问题。</p>
+<p>如果所有Follower服务器都回复Leader服务器ACK，即没有问题，那么Leader服务器会向所有Follower发送Commit命令，要求所有服务器完成写操作。这样包括Leader服务器在内的所有ZooKeeper集群服务器的数据，就都更新并保持一致了。如果有两个客户端程序同时请求修改同一个数据，因为必须要经过Leader的审核，而Leader只接受其中一个请求，数据也会保持一致。</p>
+<p>在实际应用中，客户端程序可以连接任意一个Follower，进行数据读写操作。如果是写操作，那么这个请求会被这个Follower发送给Leader，进行如上所述的处理；如果是读操作，因为所有服务器的数据都是一致的，那么这个Follower直接返回自己本地的数据给客户端就可以了。</p>
+<p>ZooKeeper通过一种树状结构记录数据，如下图所示。</p>
+<p><img alt="" src="assets/22edf4ed0d3b4597bfa69bd9b44ebec9.jpg"/></p>
+<p>应用程序可以通过路径的方式访问ZooKeeper中的数据，比如/services/YaView/services/stupidname这样的路径方式修改、读取数据。ZooKeeper还支持监听模式，当数据发生改变的时候，通知应用程序。</p>
+<p>因为大数据系统通常都是主从架构，主服务器管理集群的状态和元信息（meta-info），为了保证集群状态一致防止“脑裂”，所以运行期只能有一个主服务器工作（active master），但是为了保证高可用，必须有另一个主服务器保持热备（standby master）。那么应用程序和集群其他服务器如何才能知道当前哪个服务器是实际工作的主服务器呢？</p>
+<p>所以很多大数据系统都依赖ZooKeeper提供的一致性数据服务，用于选举集群当前工作的主服务器。一台主服务器启动后向ZooKeeper注册自己为当前工作的主服务器，而另一台服务器就只能成为热备主服务器，应用程序运行期都和当前工作的主服务器通信。</p>
+<p>如果当前工作的主服务器宕机（在ZooKeeper上记录的心跳数据不再更新），热备主服务器通过ZooKeeper的监控机制发现当前工作的主服务器宕机，就向ZooKeeper注册自己成为当前工作的主服务器。应用程序和集群其他服务器跟新的主服务器通信，保证系统正常运行。</p>
+<p>利用ZooKeeper选主服务器的伪代码如下：</p>
+<pre><code>//读取path路径/servers/leader的值
+//第二个参数true，表示监听这个path的变化。
+1 value = getdata(“/servers/leader”, true) 
+
+//如果有返回值，表示主服务器已经产生(即path中记录的value，为当前主服务器的机器名)
+//当前函数退出
+2 if(value != null){exit}
+
+//执行到这里，表示还没有主服务器，将自己的主机名写入/servers/leader
+//EPHEMERAL表示这是一个临时路径，如果当前程序崩溃，即主服务器崩溃，ZooKeeper会删除这个path
+3 result = create(“/servers/leader”, hostname, EPHEMERAL) 
+
+//如果上一步创建path成功，当前函数退出
+4 if result = successful{exit}
+
+//执行到这里，表示既没有主服务器，自己也没有成功成为主服务器，从头再来
+5.goto step 1
+</code></pre>
+<p>使用ZooKeeper提供的API接口，代码非常简单。所有要选举成为主服务器的服务器在启动的时候都在自己的服务器上执行上面这段伪代码的逻辑，其中的getdata、create会连接到ZooKeeper集群去处理。但是根据ZAB算法，只有一个服务器能将自己的hostname写入到ZooKeeper的主服务器路径/servers/leader中，保证集群只有一个主服务器。</p>
+<p>而成功成为主服务器的服务器在创建/servers/leader路径的时候，已指定当前路径为EPHEMERAL，即临时路径。如果当前的主服务器宕机，那么该服务器和ZooKeeper的长连接也就中断了，ZooKeeper据此判断该服务器宕机，删除这个路径。其他监听这个路径的服务器（即在伪代码1中，第二个参数设置为true）就会收到通知，所有服务器重新执行以上的伪代码，重新选举出新的、唯一的主服务器。</p>
+<p>此外，说到ZooKeeper的性能，因为ZooKeeper系统的多台服务器存储相同数据，并且每次数据更新都要所有服务器投票表决，所以和一般的分布式系统相反，ZooKeeper集群的写操作性能会随着服务器数量的增加而下降。</p>
+<p><img alt="" src="assets/e6c1a452f9df48a9b0babf93e112624b.jpg"/></p>
+<p>ZooKeeper通过ZAB算法实现数据一致性，并为各种大数据系统提供主服务器选举服务。虽然ZooKeeper并没有什么特别强大的功能，但是在各类分布式系统和大数据系统中，ZooKeeper的出镜率非常高，因此也是很多系统的基础设施。</p>
+<h2 id="小结">小结</h2>
+<p>如果我们单独看大数据和分布式系统的很多解决方案，如果不把它们放在大规模数据和大规模服务器集群的场景下思考，可能会觉得很多问题和方案都很莫名其妙。比如要保证分布式系统中数据的一致性，才诞生了Paxos、ZAB这样专门的算法和ZooKeeper这样的产品。</p>
+<p>Paxos算法只考虑所有服务器都是可信任的情况。但在分布式系统中还有一类场景，需要考虑当集群中的服务器存在恶意服务器的情况。当这些恶意服务器企图篡改伪造数据，或者传递虚假信息的时候，如何保证系统继续有效运行呢？比如目前非常火的区块链，就需要考虑这种场景。</p>
+<p>区块链采取的解决方案是工作量证明。一台服务器要想在分布式集群中记录数据（即所谓分布式记账），必须进行一个规模庞大的计算，比如计算一个256Bit的hash值，这个值的前若干位必须为0。比特币区块链就是采用类似这样的工作量证明算法，为了进行这样的hash计算，目前比特币区块链消耗的电量相当于一个中等规模国家的用电量。</p>
+<p>通过这种工作量证明方式，保证了恶意服务器要想伪造篡改数据，必须拥有强大的计算能力（占整个集群服务器计算能力的51%以上），而只要我们认为大多数服务器是善意的，那么这样的区块链分布式集群就是可靠的。</p>
+<h2 id="思考题">思考题</h2>
+<p>除了工作量证明，还有什么方法可以保证分布式系统中不可信任的机器无法篡改或伪造数据？</p>
+<p>欢迎你写下自己的思考或疑问，与我和其他同学一起讨论。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#c2aeaeaefbf6f3f3f2f582a5afa3abaeeca1adaf" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357dca71a50d695',t:'MTc0NTUyMTQxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
