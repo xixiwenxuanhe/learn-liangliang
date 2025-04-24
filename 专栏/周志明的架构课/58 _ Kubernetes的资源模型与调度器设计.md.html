@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="58 _ Kubernetes的资源模型与调度器设计" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>58 _ Kubernetes的资源模型与调度器设计 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/00%20_%e5%af%bc%e8%af%bb%20_%20%e4%bb%80%e4%b9%88%e6%98%af%e2%80%9cThe%20Fenix%20Project%e2%80%9d%ef%bc%9f.md.html" id="00 _导读 _ 什么是“The Fenix Project”？.md.html">00 _导读 _ 什么是“The Fenix Project”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20_%20%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%8f%af%e9%9d%a0%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="00 开篇词 _ 如何构建一个可靠的分布式系统？.md.html">00 开篇词 _ 如何构建一个可靠的分布式系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/01%20_%20%e5%8e%9f%e5%a7%8b%e5%88%86%e5%b8%83%e5%bc%8f%e6%97%b6%e4%bb%a3%ef%bc%9aUnix%e8%ae%be%e8%ae%a1%e5%93%b2%e5%ad%a6%e4%b8%8b%e7%9a%84%e6%9c%8d%e5%8a%a1%e6%8e%a2%e7%b4%a2.md.html" id="01 _ 原始分布式时代：Unix设计哲学下的服务探索.md.html">01 _ 原始分布式时代：Unix设计哲学下的服务探索.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/02%20_%20%e5%8d%95%e4%bd%93%e7%b3%bb%e7%bb%9f%e6%97%b6%e4%bb%a3%ef%bc%9a%e5%ba%94%e7%94%a8%e6%9c%80%e5%b9%bf%e6%b3%9b%e7%9a%84%e6%9e%b6%e6%9e%84%e9%a3%8e%e6%a0%bc.md.html" id="02 _ 单体系统时代：应用最广泛的架构风格.md.html">02 _ 单体系统时代：应用最广泛的架构风格.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/03%20_%20SOA%e6%97%b6%e4%bb%a3%ef%bc%9a%e6%88%90%e5%8a%9f%e7%90%86%e8%ae%ba%e4%b8%8e%e5%a4%b1%e8%b4%a5%e5%ae%9e%e8%b7%b5.md.html" id="03 _ SOA时代：成功理论与失败实践.md.html">03 _ SOA时代：成功理论与失败实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/04%20_%20%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%97%b6%e4%bb%a3%ef%bc%9aSOA%e7%9a%84%e9%9d%a9%e5%91%bd%e8%80%85.md.html" id="04 _ 微服务时代：SOA的革命者.md.html">04 _ 微服务时代：SOA的革命者.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/05%20_%20%e5%90%8e%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%97%b6%e4%bb%a3%ef%bc%9a%e8%b7%a8%e8%b6%8a%e8%bd%af%e4%bb%b6%e4%b8%8e%e7%a1%ac%e4%bb%b6%e4%b9%8b%e9%97%b4%e7%9a%84%e7%95%8c%e9%99%90.md.html" id="05 _ 后微服务时代：跨越软件与硬件之间的界限.md.html">05 _ 后微服务时代：跨越软件与硬件之间的界限.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/06%20_%20%e6%97%a0%e6%9c%8d%e5%8a%a1%e6%97%b6%e4%bb%a3%ef%bc%9a%e2%80%9c%e4%b8%8d%e5%88%86%e5%b8%83%e5%bc%8f%e2%80%9d%e4%ba%91%e7%ab%af%e7%b3%bb%e7%bb%9f%e7%9a%84%e8%b5%b7%e7%82%b9.md.html" id="06 _ 无服务时代：“不分布式”云端系统的起点.md.html">06 _ 无服务时代：“不分布式”云端系统的起点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/07%20_%20%e8%bf%9c%e7%a8%8b%e6%9c%8d%e5%8a%a1%e8%b0%83%e7%94%a8%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bb%8e%e6%9c%ac%e5%9c%b0%e6%96%b9%e6%b3%95%e5%88%b0%e8%bf%9c%e7%a8%8b%e6%96%b9%e6%b3%95%e7%9a%84%e6%a1%a5%e6%a2%81.md.html" id="07 _ 远程服务调用（上）：从本地方法到远程方法的桥梁.md.html">07 _ 远程服务调用（上）：从本地方法到远程方法的桥梁.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/08%20_%20%e8%bf%9c%e7%a8%8b%e6%9c%8d%e5%8a%a1%e8%b0%83%e7%94%a8%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%89%e6%8b%a9%e9%80%82%e5%90%88%e8%87%aa%e5%b7%b1%e7%9a%84RPC%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="08 _ 远程服务调用（下）：如何选择适合自己的RPC框架？.md.html">08 _ 远程服务调用（下）：如何选择适合自己的RPC框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/09%20_%20RESTful%e6%9c%8d%e5%8a%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bb%8e%e9%9d%a2%e5%90%91%e8%bf%87%e7%a8%8b%e7%bc%96%e7%a8%8b%e5%88%b0%e9%9d%a2%e5%90%91%e8%b5%84%e6%ba%90%e7%bc%96%e7%a8%8b.md.html" id="09 _ RESTful服务（上）：从面向过程编程到面向资源编程.md.html">09 _ RESTful服务（上）：从面向过程编程到面向资源编程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/10%20_%20RESTful%e6%9c%8d%e5%8a%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%af%84%e4%bb%b7%e6%9c%8d%e5%8a%a1%e6%98%af%e5%90%a6RESTful%ef%bc%9f.md.html" id="10 _ RESTful服务（下）：如何评价服务是否RESTful？.md.html">10 _ RESTful服务（下）：如何评价服务是否RESTful？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/11%20_%20%e6%9c%ac%e5%9c%b0%e4%ba%8b%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%8e%9f%e5%ad%90%e6%80%a7%e5%92%8c%e6%8c%81%e4%b9%85%e6%80%a7%ef%bc%9f.md.html" id="11 _ 本地事务如何实现原子性和持久性？.md.html">11 _ 本地事务如何实现原子性和持久性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/12%20_%20%e6%9c%ac%e5%9c%b0%e4%ba%8b%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9a%94%e7%a6%bb%e6%80%a7%ef%bc%9f.md.html" id="12 _ 本地事务如何实现隔离性？.md.html">12 _ 本地事务如何实现隔离性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/13%20_%20%e5%85%a8%e5%b1%80%e4%ba%8b%e5%8a%a1%e5%92%8c%e5%85%b1%e4%ba%ab%e4%ba%8b%e5%8a%a1%e6%98%af%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%9a%84%ef%bc%9f.md.html" id="13 _ 全局事务和共享事务是如何实现的？.md.html">13 _ 全局事务和共享事务是如何实现的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/14%20_%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%e4%b9%8b%e5%8f%af%e9%9d%a0%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97.md.html" id="14 _ 分布式事务之可靠消息队列.md.html">14 _ 分布式事务之可靠消息队列.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/15%20_%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%e4%b9%8bTCC%e4%b8%8eSAGA.md.html" id="15 _ 分布式事务之TCC与SAGA.md.html">15 _ 分布式事务之TCC与SAGA.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/16%20_%20%e5%9f%9f%e5%90%8d%e8%a7%a3%e6%9e%90%e7%b3%bb%e7%bb%9f%ef%bc%8c%e4%bc%98%e5%8c%96HTTP%e6%80%a7%e8%83%bd%e7%9a%84%e7%ac%ac%e4%b8%80%e6%ad%a5.md.html" id="16 _ 域名解析系统，优化HTTP性能的第一步.md.html">16 _ 域名解析系统，优化HTTP性能的第一步.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/17%20_%20%e5%ae%a2%e6%88%b7%e7%ab%af%e7%bc%93%e5%ad%98%e6%98%af%e5%a6%82%e4%bd%95%e5%b8%ae%e5%8a%a9%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%88%86%e6%8b%85%e6%b5%81%e9%87%8f%e7%9a%84%ef%bc%9f.md.html" id="17 _ 客户端缓存是如何帮助服务器分担流量的？.md.html">17 _ 客户端缓存是如何帮助服务器分担流量的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/18%20_%20%e4%bc%a0%e8%be%93%e9%93%be%e8%b7%af%ef%bc%8c%e4%bc%98%e5%8c%96HTTP%e4%bc%a0%e8%be%93%e9%80%9f%e5%ba%a6%e7%9a%84%e5%b0%8f%e6%8a%80%e5%b7%a7.md.html" id="18 _ 传输链路，优化HTTP传输速度的小技巧.md.html">18 _ 传输链路，优化HTTP传输速度的小技巧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/19%20_%20%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8%e5%86%85%e5%ae%b9%e5%88%86%e5%8f%91%e7%bd%91%e7%bb%9c%e6%9d%a5%e6%8f%90%e9%ab%98%e7%bd%91%e7%bb%9c%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="19 _ 如何利用内容分发网络来提高网络性能？.md.html">19 _ 如何利用内容分发网络来提高网络性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/20%20_%20%e5%b8%b8%e8%a7%81%e7%9a%84%e5%9b%9b%e5%b1%82%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%9a%84%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e6%98%af%e6%80%8e%e6%a0%b7%e7%9a%84%ef%bc%9f.md.html" id="20 _ 常见的四层负载均衡的工作模式是怎样的？.md.html">20 _ 常见的四层负载均衡的工作模式是怎样的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/21%20_%20%e6%9c%8d%e5%8a%a1%e7%ab%af%e7%bc%93%e5%ad%98%e7%9a%84%e4%b8%89%e7%a7%8d%e5%b1%9e%e6%80%a7.md.html" id="21 _ 服务端缓存的三种属性.md.html">21 _ 服务端缓存的三种属性.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/22%20_%20%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98%e5%a6%82%e4%bd%95%e4%b8%8e%e6%9c%ac%e5%9c%b0%e7%bc%93%e5%ad%98%e9%85%8d%e5%90%88%ef%bc%8c%e6%8f%90%e9%ab%98%e7%b3%bb%e7%bb%9f%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="22 _ 分布式缓存如何与本地缓存配合，提高系统性能？.md.html">22 _ 分布式缓存如何与本地缓存配合，提高系统性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/23%20_%20%e8%ae%a4%e8%af%81%ef%bc%9a%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%88%86%e8%be%a8%e6%93%8d%e4%bd%9c%e7%94%a8%e6%88%b7%e7%9a%84%e7%9c%9f%e5%ae%9e%e8%ba%ab%e4%bb%bd%ef%bc%9f.md.html" id="23 _ 认证：系统如何正确分辨操作用户的真实身份？.md.html">23 _ 认证：系统如何正确分辨操作用户的真实身份？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/24%20_%20%e6%8e%88%e6%9d%83%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e7%a1%ae%e4%bf%9d%e6%8e%88%e6%9d%83%e7%9a%84%e8%bf%87%e7%a8%8b%e5%8f%af%e9%9d%a0%ef%bc%9f.md.html" id="24 _ 授权（上）：系统如何确保授权的过程可靠？.md.html">24 _ 授权（上）：系统如何确保授权的过程可靠？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/25%20_%20%e6%8e%88%e6%9d%83%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e7%a1%ae%e4%bf%9d%e6%8e%88%e6%9d%83%e7%9a%84%e7%bb%93%e6%9e%9c%e5%8f%af%e6%8e%a7%ef%bc%9f.md.html" id="25 _ 授权（下）：系统如何确保授权的结果可控？.md.html">25 _ 授权（下）：系统如何确保授权的结果可控？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/26%20_%20%e5%87%ad%e8%af%81%ef%bc%9a%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e4%b8%8e%e7%94%a8%e6%88%b7%e4%b9%8b%e9%97%b4%e7%9a%84%e6%89%bf%e8%af%ba%e6%98%af%e5%87%86%e7%a1%ae%e5%ae%8c%e6%95%b4%e4%b8%94%e4%b8%8d%e5%8f%af%e6%8a%b5%e8%b5%96%e7%9a%84%ef%bc%9f.md.html" id="26 _ 凭证：系统如何保证与用户之间的承诺是准确完整且不可抵赖的？.md.html">26 _ 凭证：系统如何保证与用户之间的承诺是准确完整且不可抵赖的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/27%20_%20%e4%bf%9d%e5%af%86%ef%bc%9a%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e6%95%8f%e6%84%9f%e6%95%b0%e6%8d%ae%e6%97%a0%e6%b3%95%e8%a2%ab%e5%86%85%e5%a4%96%e9%83%a8%e4%ba%ba%e5%91%98%e7%aa%83%e5%8f%96%e6%bb%a5%e7%94%a8%ef%bc%9f.md.html" id="27 _ 保密：系统如何保证敏感数据无法被内外部人员窃取滥用？.md.html">27 _ 保密：系统如何保证敏感数据无法被内外部人员窃取滥用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/28%20_%20%e4%bc%a0%e8%be%93%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bc%a0%e8%be%93%e5%ae%89%e5%85%a8%e7%9a%84%e5%9f%ba%e7%a1%80%ef%bc%8c%e6%91%98%e8%a6%81%e3%80%81%e5%8a%a0%e5%af%86%e4%b8%8e%e7%ad%be%e5%90%8d.md.html" id="28 _ 传输（上）：传输安全的基础，摘要、加密与签名.md.html">28 _ 传输（上）：传输安全的基础，摘要、加密与签名.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/29%20_%20%e4%bc%a0%e8%be%93%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%95%b0%e5%ad%97%e8%af%81%e4%b9%a6%e4%b8%8e%e4%bc%a0%e8%be%93%e5%ae%89%e5%85%a8%e5%b1%82.md.html" id="29 _ 传输（下）：数字证书与传输安全层.md.html">29 _ 传输（下）：数字证书与传输安全层.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/30%20_%20%e9%aa%8c%e8%af%81%ef%bc%9a%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e7%a1%ae%e4%bf%9d%e6%8f%90%e4%ba%a4%e7%bb%99%e6%9c%8d%e5%8a%a1%e7%9a%84%e6%95%b0%e6%8d%ae%e6%98%af%e5%ae%89%e5%85%a8%e7%9a%84%ef%bc%9f.md.html" id="30 _ 验证：系统如何确保提交给服务的数据是安全的？.md.html">30 _ 验证：系统如何确保提交给服务的数据是安全的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/31%20_%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%85%b1%e8%af%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%83%b3%e7%94%a8%e5%a5%bd%e5%88%86%e5%b8%83%e5%bc%8f%e6%a1%86%e6%9e%b6%ef%bc%8c%e5%85%88%e5%ad%a6%e4%bc%9aPaxos%e7%ae%97%e6%b3%95%e5%90%a7.md.html" id="31 _ 分布式共识（上）：想用好分布式框架，先学会Paxos算法吧.md.html">31 _ 分布式共识（上）：想用好分布式框架，先学会Paxos算法吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/32%20_%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%85%b1%e8%af%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aMulti%20Paxos%e3%80%81Raft%e4%b8%8eGossip%ef%bc%8c%e5%88%86%e5%b8%83%e5%bc%8f%e9%a2%86%e5%9f%9f%e7%9a%84%e5%9f%ba%e7%9f%b3.md.html" id="32 _ 分布式共识（下）：Multi Paxos、Raft与Gossip，分布式领域的基石.md.html">32 _ 分布式共识（下）：Multi Paxos、Raft与Gossip，分布式领域的基石.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/33%20_%20%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e6%8c%81%e7%bb%ad%e7%bb%b4%e6%8a%a4%e6%9c%8d%e5%8a%a1%e5%9c%b0%e5%9d%80%e5%9c%a8%e5%8a%a8%e6%80%81%e8%bf%90%e7%bb%b4%e4%b8%ad%e7%9a%84%e6%97%b6%e6%95%88%e6%80%a7%ef%bc%9f.md.html" id="33 _ 服务发现如何做到持续维护服务地址在动态运维中的时效性？.md.html">33 _ 服务发现如何做到持续维护服务地址在动态运维中的时效性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/34%20_%20%e8%b7%af%e7%94%b1%e5%87%ad%e4%bb%80%e4%b9%88%e4%bd%9c%e4%b8%ba%e5%be%ae%e6%9c%8d%e5%8a%a1%e7%bd%91%e5%85%b3%e7%9a%84%e5%9f%ba%e7%a1%80%e8%81%8c%e8%83%bd%ef%bc%9f.md.html" id="34 _ 路由凭什么作为微服务网关的基础职能？.md.html">34 _ 路由凭什么作为微服务网关的基础职能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/35%20_%20%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%a2%e6%88%b7%e7%ab%af%e5%ae%9e%e7%8e%b0%e6%9c%8d%e5%8a%a1%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9f.md.html" id="35 _ 如何在客户端实现服务的负载均衡？.md.html">35 _ 如何在客户端实现服务的负载均衡？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/36%20_%20%e9%9d%a2%e5%af%b9%e7%a8%8b%e5%ba%8f%e6%95%85%e9%9a%9c%ef%bc%8c%e6%88%91%e4%bb%ac%e8%af%a5%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="36 _ 面对程序故障，我们该做些什么？.md.html">36 _ 面对程序故障，我们该做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/37%20_%20%e8%a6%81%e5%ae%9e%e7%8e%b0%e6%9f%90%e7%a7%8d%e5%ae%b9%e9%94%99%e7%ad%96%e7%95%a5%ef%bc%8c%e6%88%91%e4%bb%ac%e8%af%a5%e6%80%8e%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="37 _ 要实现某种容错策略，我们该怎么做？.md.html">37 _ 要实现某种容错策略，我们该怎么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/38%20_%20%e9%99%90%e6%b5%81%e7%9a%84%e7%9b%ae%e6%a0%87%e4%b8%8e%e6%a8%a1%e5%bc%8f.md.html" id="38 _ 限流的目标与模式.md.html">38 _ 限流的目标与模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/39%20_%20%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e9%9b%b6%e4%bf%a1%e4%bb%bb%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8%ef%bc%9f.md.html" id="39 _ 如何构建零信任网络安全？.md.html">39 _ 如何构建零信任网络安全？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/40%20_%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9b%b6%e4%bf%a1%e4%bb%bb%e7%bd%91%e7%bb%9c%e4%b8%8b%e5%ae%89%e5%85%a8%e7%9a%84%e6%9c%8d%e5%8a%a1%e8%ae%bf%e9%97%ae%ef%bc%9f.md.html" id="40 _ 如何实现零信任网络下安全的服务访问？.md.html">40 _ 如何实现零信任网络下安全的服务访问？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/41%20_%20%e5%88%86%e5%b8%83%e5%bc%8f%e6%9e%b6%e6%9e%84%e4%b8%ad%e7%9a%84%e5%8f%af%e8%a7%82%e6%b5%8b%e5%88%b0%e5%ba%95%e8%af%b4%e7%9a%84%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="41 _ 分布式架构中的可观测到底说的是什么？.md.html">41 _ 分布式架构中的可观测到底说的是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/42%20_%20%e5%88%86%e6%9e%90%e6%97%a5%e5%bf%97%e7%9c%9f%e7%9a%84%e6%b2%a1%e9%82%a3%e4%b9%88%e7%ae%80%e5%8d%95.md.html" id="42 _ 分析日志真的没那么简单.md.html">42 _ 分析日志真的没那么简单.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/43%20_%20%e4%b8%80%e4%b8%aa%e5%ae%8c%e6%95%b4%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e8%bf%bd%e8%b8%aa%e7%b3%bb%e7%bb%9f%e6%98%af%e4%bb%80%e4%b9%88%e6%a0%b7%e5%ad%90%e7%9a%84%ef%bc%9f.md.html" id="43 _ 一个完整的分布式追踪系统是什么样子的？.md.html">43 _ 一个完整的分布式追踪系统是什么样子的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/44%20_%20%e8%81%9a%e5%90%88%e5%ba%a6%e9%87%8f%e8%83%bd%e7%bb%99%e6%88%91%e4%bb%ac%e8%a7%a3%e5%86%b3%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="44 _ 聚合度量能给我们解决什么问题？.md.html">44 _ 聚合度量能给我们解决什么问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/45%20_%20%e6%a8%a1%e5%9d%97%e5%af%bc%e5%ad%a6%ef%bc%9a%e4%bb%8e%e5%be%ae%e6%9c%8d%e5%8a%a1%e5%88%b0%e4%ba%91%e5%8e%9f%e7%94%9f.md.html" id="45 _ 模块导学：从微服务到云原生.md.html">45 _ 模块导学：从微服务到云原生.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/46%20_%20%e5%ae%b9%e5%99%a8%e7%9a%84%e5%b4%9b%e8%b5%b7%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%96%87%e4%bb%b6%e3%80%81%e8%ae%bf%e9%97%ae%e3%80%81%e8%b5%84%e6%ba%90%e7%9a%84%e9%9a%94%e7%a6%bb.md.html" id="46 _ 容器的崛起（上）：文件、访问、资源的隔离.md.html">46 _ 容器的崛起（上）：文件、访问、资源的隔离.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/47%20_%20%e5%ae%b9%e5%99%a8%e7%9a%84%e5%b4%9b%e8%b5%b7%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e7%b3%bb%e7%bb%9f%e3%80%81%e5%ba%94%e7%94%a8%e3%80%81%e9%9b%86%e7%be%a4%e7%9a%84%e5%b0%81%e8%a3%85.md.html" id="47 _ 容器的崛起（下）：系统、应用、集群的封装.md.html">47 _ 容器的崛起（下）：系统、应用、集群的封装.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/48%20_%20%e4%bb%a5%e5%ae%b9%e5%99%a8%e6%9e%84%e5%bb%ba%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%9a%94%e7%a6%bb%e4%b8%8e%e5%8d%8f%e4%bd%9c.md.html" id="48 _ 以容器构建系统（上）：隔离与协作.md.html">48 _ 以容器构建系统（上）：隔离与协作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/49%20_%20%e4%bb%a5%e5%ae%b9%e5%99%a8%e6%9e%84%e5%bb%ba%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e9%9f%a7%e6%80%a7%e4%b8%8e%e5%bc%b9%e6%80%a7.md.html" id="49 _ 以容器构建系统（下）：韧性与弹性.md.html">49 _ 以容器构建系统（下）：韧性与弹性.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/50%20_%20%e5%ba%94%e7%94%a8%e4%b8%ba%e4%b8%ad%e5%bf%83%e7%9a%84%e5%b0%81%e8%a3%85%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aKustomize%e4%b8%8eHelm.md.html" id="50 _ 应用为中心的封装（上）：Kustomize与Helm.md.html">50 _ 应用为中心的封装（上）：Kustomize与Helm.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/51%20_%20%e5%ba%94%e7%94%a8%e4%b8%ba%e4%b8%ad%e5%bf%83%e7%9a%84%e5%b0%81%e8%a3%85%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aOperator%e4%b8%8eOAM.md.html" id="51 _ 应用为中心的封装（下）：Operator与OAM.md.html">51 _ 应用为中心的封装（下）：Operator与OAM.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/52%20_%20Linux%e7%bd%91%e7%bb%9c%e8%99%9a%e6%8b%9f%e5%8c%96%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bf%a1%e6%81%af%e6%98%af%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e7%bd%91%e7%bb%9c%e4%bc%a0%e8%be%93%e8%a2%ab%e5%8f%a6%e4%b8%80%e4%b8%aa%e7%a8%8b%e5%ba%8f%e6%8e%a5%e6%94%b6%e5%88%b0%e7%9a%84%ef%bc%9f.md.html" id="52 _ Linux网络虚拟化（上）：信息是如何通过网络传输被另一个程序接收到的？.md.html">52 _ Linux网络虚拟化（上）：信息是如何通过网络传输被另一个程序接收到的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/53%20_%20Linux%e7%bd%91%e7%bb%9c%e8%99%9a%e6%8b%9f%e5%8c%96%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aDocker%e6%89%80%e6%8f%90%e4%be%9b%e7%9a%84%e5%ae%b9%e5%99%a8%e9%80%9a%e8%ae%af%e6%96%b9%e6%a1%88%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="53 _ Linux网络虚拟化（下）：Docker所提供的容器通讯方案有哪些？.md.html">53 _ Linux网络虚拟化（下）：Docker所提供的容器通讯方案有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/54%20_%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e4%b8%8e%e7%94%9f%e6%80%81%ef%bc%9a%e4%b8%8eCNM%e7%ab%9e%e4%ba%89%e8%bf%87%e5%90%8e%e7%9a%84CNI%e4%b8%8b%e7%9a%84%e7%bd%91%e7%bb%9c%e6%8f%92%e4%bb%b6%e7%94%9f%e6%80%81.md.html" id="54 _ 容器网络与生态：与CNM竞争过后的CNI下的网络插件生态.md.html">54 _ 容器网络与生态：与CNM竞争过后的CNI下的网络插件生态.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/55%20_%20%e8%b0%88%e8%b0%88Kubernetes%e7%9a%84%e5%ad%98%e5%82%a8%e8%ae%be%e8%ae%a1%e7%90%86%e5%bf%b5.md.html" id="55 _ 谈谈Kubernetes的存储设计理念.md.html">55 _ 谈谈Kubernetes的存储设计理念.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/56%20_%20Kubernetes%e5%ad%98%e5%82%a8%e6%89%a9%e5%b1%95%e6%9e%b6%e6%9e%84%ef%bc%9a%e4%b8%80%e4%b8%aa%e7%9c%9f%e5%ae%9e%e7%9a%84%e5%ad%98%e5%82%a8%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e6%8e%a5%e5%85%a5%e6%88%96%e7%a7%bb%e9%99%a4%e6%96%b0%e5%ad%98%e5%82%a8%e8%ae%be%e5%a4%87%ef%bc%9f.md.html" id="56 _ Kubernetes存储扩展架构：一个真实的存储系统如何接入或移除新存储设备？.md.html">56 _ Kubernetes存储扩展架构：一个真实的存储系统如何接入或移除新存储设备？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/57%20_%20Kubernetes%e5%ad%98%e5%82%a8%e7%94%9f%e6%80%81%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%87%a0%e7%a7%8d%e6%9c%89%e4%bb%a3%e8%a1%a8%e6%80%a7%e7%9a%84CSI%e5%ad%98%e5%82%a8%e6%8f%92%e4%bb%b6%e7%9a%84%e5%ae%9e%e7%8e%b0.md.html" id="57 _ Kubernetes存储生态系统：几种有代表性的CSI存储插件的实现.md.html">57 _ Kubernetes存储生态系统：几种有代表性的CSI存储插件的实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/58%20_%20Kubernetes%e7%9a%84%e8%b5%84%e6%ba%90%e6%a8%a1%e5%9e%8b%e4%b8%8e%e8%b0%83%e5%ba%a6%e5%99%a8%e8%ae%be%e8%ae%a1.md.html" id="58 _ Kubernetes的资源模型与调度器设计.md.html">58 _ Kubernetes的资源模型与调度器设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/59%20_%20%e9%80%8f%e6%98%8e%e9%80%9a%e8%ae%af%e7%9a%84%e6%b6%85%e6%a7%83%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%80%9a%e8%ae%af%e7%9a%84%e6%88%90%e6%9c%ac.md.html" id="59 _ 透明通讯的涅槃（上）：通讯的成本.md.html">59 _ 透明通讯的涅槃（上）：通讯的成本.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/60%20_%20%e9%80%8f%e6%98%8e%e9%80%9a%e8%ae%af%e7%9a%84%e6%b6%85%e6%a7%83%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%8e%a7%e5%88%b6%e5%b9%b3%e9%9d%a2%e4%b8%8e%e6%95%b0%e6%8d%ae%e5%b9%b3%e9%9d%a2.md.html" id="60 _ 透明通讯的涅槃（下）：控制平面与数据平面.md.html">60 _ 透明通讯的涅槃（下）：控制平面与数据平面.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/61%20_%20%e6%9c%8d%e5%8a%a1%e7%bd%91%e6%a0%bc%e4%b8%8e%e7%94%9f%e6%80%81%ef%bc%9a%e8%81%8a%e8%81%8a%e6%9c%8d%e5%8a%a1%e7%bd%91%e6%a0%bc%e7%9a%84%e4%b8%a4%e9%a1%b9%e6%a0%87%e5%87%86%e8%a7%84%e8%8c%83.md.html" id="61 _ 服务网格与生态：聊聊服务网格的两项标准规范.md.html">61 _ 服务网格与生态：聊聊服务网格的两项标准规范.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/62%20_%20Fenix%27s%20Bookstore%e7%9a%84%e5%89%8d%e7%ab%af%e5%b7%a5%e7%a8%8b.md.html" id="62 _ Fenix's Bookstore的前端工程.md.html">62 _ Fenix's Bookstore的前端工程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/63%20_%20%e5%9f%ba%e4%ba%8eSpring%20Boot%e7%9a%84%e5%8d%95%e4%bd%93%e6%9e%b6%e6%9e%84.md.html" id="63 _ 基于Spring Boot的单体架构.md.html">63 _ 基于Spring Boot的单体架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/64%20_%20%e5%9f%ba%e4%ba%8eSpring%20Cloud%e7%9a%84%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84.md.html" id="64 _ 基于Spring Cloud的微服务架构.md.html">64 _ 基于Spring Cloud的微服务架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/65%20_%20%e5%9f%ba%e4%ba%8eKubernetes%e7%9a%84%e5%be%ae%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84.md.html" id="65 _ 基于Kubernetes的微服务架构.md.html">65 _ 基于Kubernetes的微服务架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/66%20_%20%e5%9f%ba%e4%ba%8eIstio%e7%9a%84%e6%9c%8d%e5%8a%a1%e7%bd%91%e6%a0%bc%e6%9e%b6%e6%9e%84.md.html" id="66 _ 基于Istio的服务网格架构.md.html">66 _ 基于Istio的服务网格架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/67%20_%20%e5%9f%ba%e4%ba%8e%e4%ba%91%e8%ae%a1%e7%ae%97%e7%9a%84%e6%97%a0%e6%9c%8d%e5%8a%a1%e6%9e%b6%e6%9e%84.md.html" id="67 _ 基于云计算的无服务架构.md.html">67 _ 基于云计算的无服务架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/%e6%98%a5%e8%8a%82%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%b8%8a%ef%bc%89_%20%e6%9c%89%e7%9a%84%e6%94%be%e7%9f%a2%ef%bc%8c%e4%ba%8b%e5%8d%8a%e5%8a%9f%e5%80%8d.md.html" id="春节特别放送（上）_ 有的放矢，事半功倍.md.html">春节特别放送（上）_ 有的放矢，事半功倍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/%e6%98%a5%e8%8a%82%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%ef%bc%88%e4%b8%8b%ef%bc%89_%20%e7%a7%af%e7%b4%af%e6%b2%89%e6%b7%80%ef%bc%8c%e7%9f%a5%e8%a1%8c%e5%90%88%e4%b8%80.md.html" id="春节特别放送（下）_ 积累沉淀，知行合一.md.html">春节特别放送（下）_ 积累沉淀，知行合一.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20_%20%e8%a9%b9%e5%ba%94%e8%be%be%ef%bc%9a%e6%8c%81%e7%bb%ad%e6%88%90%e9%95%bf%ef%bc%8c%e4%b8%8d%e6%83%a7%e6%9c%aa%e6%9d%a5.md.html" id="用户故事 _ 詹应达：持续成长，不惧未来.md.html">用户故事 _ 詹应达：持续成长，不惧未来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20_%20%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b9%8b%e8%b7%af.md.html" id="结束语 _ 程序员之路.md.html">结束语 _ 程序员之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%91%a8%e5%bf%97%e6%98%8e%e7%9a%84%e6%9e%b6%e6%9e%84%e8%af%be/%e7%bb%93%e8%af%be%e6%b5%8b%e8%af%95%20_%20%e4%b8%80%e5%a5%97%e4%b9%a0%e9%a2%98%ef%bc%8c%e6%b5%8b%e5%87%ba%e4%bd%a0%e7%9a%84%e6%8e%8c%e6%8f%a1%e7%a8%8b%e5%ba%a6.md.html" id="结课测试 _ 一套习题，测出你的掌握程度.md.html">结课测试 _ 一套习题，测出你的掌握程度.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="58 _ Kubernetes的资源模型与调度器设计" id="title">58 _ Kubernetes的资源模型与调度器设计</h1>
+<div><p>你好，我是周志明。</p>
+<p><strong>调度是容器编排系统最核心的功能之一</strong>，“编排”这个词本来也包含了“调度”的含义。调度是指为新创建出来的Pod，寻找到一个最恰当的宿主机节点来运行它，而这个过程成功与否、结果恰当与否，关键就取决于容器编排系统是怎么管理和分配集群节点的资源的。</p>
+<p>那么这样一来，我们就可以认为，调度必须要以容器编排系统的资源管控为前提。</p>
+<p>因此这节课，我们就从Kubernetes的资源模型谈起，来学习下Kubernetes是如何为一个新创建出来的Pod，寻找到一个最恰当的宿主机节点来运行的。</p>
+<h2 id="资源模型">资源模型</h2>
+<p>在开始之前，我们先来理清一个概念：<strong>资源是什么</strong>。</p>
+<p>在Kubernetes中，资源是非常常用的术语，<strong>从广义上来讲，Kubernetes系统中所有你能接触的方方面面，都被抽象成了资源</strong>，比如表示工作负荷的资源（Pod、ReplicaSet、Service、……），表示存储的资源（Volume、PersistentVolume、Secret、……），表示策略的资源（SecurityContext、ResourceQuota、LimitRange、……），表示身份的资源（ServiceAccount、Role、ClusterRole、……），等等。</p>
+<p>事实上，“一切皆为资源”的设计也是Kubernetes能够顺利施行声明式API的必要前提。Kubernetes以资源为载体，建立了一套同时囊括了抽象元素（如策略、依赖、权限）和物理元素（如软件、硬件、网络）的<a href="https://en.wikipedia.org/wiki/Domain-specific_language" target="_blank">领域特定语言</a>。它通过不同层级间资源的使用关系，来描述上至整个集群甚至是集群联邦，下至某一块内存区域或者一小部分的处理器核心的状态，这些对资源状态的描述的集合，就共同构成了一幅信息系统工作运行的全景图。</p>
+<p>在<a href="https://time.geekbang.org/column/article/351933" target="_blank">第48讲</a>“以容器构建系统”里，我第一次提到了Kubernetes的资源模型，把它跟控制器模式一并列为了Kubernetes中最重要的两个设计思想。当然在这节课中，我们还会再次讨论资源模型，但是这里所说的主要是<strong>狭义上的物理资源，即特指排除了广义的那些逻辑上的抽象资源，只包括能够与真实物理底层硬件对应起来的资源</strong>，比如处理器资源、内存资源、磁盘存储资源，等等。</p>
+<p>另外需要说明的是，因为咱们今天讨论的话题是调度，而作为调度最基本单位的<strong>Pod</strong>，只会与这些和物理硬件直接相关的资源产生供需关系，所以后面我提到的资源，如果没有额外说明的话，就都是特指狭义上的物理资源。</p>
+<p>OK，现在我们说回到Kubernetes的资源模型上来。</p>
+<p>首先，从编排系统的角度来看，Node是资源的提供者，Pod是资源的使用者，而调度是将两者进行恰当的撮合。</p>
+<p>那么Kubernetes具体是如何撮合它们俩的呢？别着急，我们先从Node开始来了解。</p>
+<p>Node通常能够提供三方面的资源：计算资源（如处理器、图形处理器、内存）、存储资源（如磁盘容量、不同类型的介质）和网络资源（如带宽、网络地址）。其中与调度关系最密切的是处理器和内存，虽然它们都属于计算资源，但两者在调度时又有一些微妙的差别：</p>
+<ul>
+<li><strong>处理器这样的资源，被叫做是可压缩资源</strong>（Compressible Resources），特点是当可压缩资源不足时，Pod只会处于“饥饿状态”，运行变慢，但不会被系统杀死，也就是容器会被直接终止，或者是被要求限时退出。</li>
+<li><strong>而像内存这样的资源，则被叫做是不可压缩资源</strong>（Incompressible Resources），特点是当不可压缩资源不足，或者超过了容器自己声明的最大限度时，Pod就会因为内存溢出（Out-Of-Memory，OOM）而被系统直接杀掉。</li>
+</ul>
+<p><strong>Kubernetes给处理器资源设定的默认计量单位是“逻辑处理器的个数”。</strong>至于具体“一个逻辑处理器”应该如何理解，就要取决于节点的宿主机是如何解释的，它通常会是我们在<code>/proc/cpuinfo</code>中看到的处理器数量。比如，它有可能会是多路处理器系统上的一个处理器、多核处理器中的一个核心、云计算主机上的一个<a href="https://en.wikipedia.org/wiki/Central_processing_unit#Virtual_CPUs" target="_blank">虚拟化处理器</a>（Virtual CPU，vCPU），或者是处理器核心里的一条<a href="https://en.wikipedia.org/wiki/Hyper-threading" target="_blank">超线程</a>（Hyper-Threading）。</p>
+<p>总之，Kubernetes只负责保证Pod能够使用到“一个处理器”的计算能力，而对不同硬件环境构成的Kubernetes集群，乃至同一个集群中不同硬件的宿主机节点来说，“一个处理器”所代表的真实算力完全有可能是不一样的。</p>
+<p>另外在具体设置方面，Kubernetes沿用了云计算中处理器限额设置的一贯做法。如果不明确标注单位，比如直接写0.5，默认单位就是<code>Core</code>，即0.5个处理器；当然也可以明确使用<code>Millcores</code>为单位，比如写成500 m，同样也代表0.5个处理器，因为Kubernetes规定了<code>1 Core = 1000 Millcores</code>。</p>
+<p><strong>而对于内存来说，它早已经有了广泛使用的计量单位，即Bytes</strong>，如果设置中不明确标注单位，就会默认以Bytes计数。</p>
+<p>为了实际设置的方便，Kubernetes还支持以<code>Ei</code>、<code>Pi</code>、<code>Ti</code>、<code>Gi</code>、<code>Mi</code>、<code>Ki</code>，以及<code>E</code>、<code>P</code>、<code>T</code>、<code>G</code>、<code>M</code>、<code>K</code>为单位，这两者略微有一点儿差别。这里我就以<code>Mi</code>和<code>M</code>为例，它们分别是<code>Mebibytes</code>与<code>Megabytes</code>的缩写，前者表示1024×1024 Bytes，后者表示1000×1000 Bytes。</p>
+<h2 id="服务质量与优先级">服务质量与优先级</h2>
+<p>那么到这里，我们要知道设定资源计量单位的目的，是为了管理员能够限制某个Pod对资源的过度占用，避免影响到其他Pod的正常运行。</p>
+<p>Pod是由一个到多个容器组成的，资源最终是交由Pod的各个容器去使用，所以资源的需求是设定在容器上的，具体的配置是Pod的<code>spec.containers[].resource.limits/requests.cpu/memory</code>字段。但是，对资源需求的配额则不是针对容器，而是针对Pod整体，Pod的资源配额不需要手动设置，因为Pod的资源配额就是Pod包含的每个容器资源需求的累加值。</p>
+<p>实际上，为容器设定最大的资源配额的做法，从cgroups诞生后就已经屡见不鲜了，但不知你有没有注意到，Kubernetes给出的配置中有<code>limits</code>和<code>requests</code>两个设置项？</p>
+<p>这两者的区别其实很简单：<code>request</code>是给调度器用的，Kubernetes选择哪个节点运行Pod，只会根据<code>requests</code>的值来进行决策；而<code>limits</code>才是给cgroups用的，Kubernetes在向cgroups的传递资源配额时，会按照<code>limits</code>的值来进行设置。</p>
+<p>Kubernetes会采用这样的设计，完全是基于“心理学”的原因，因为Google根据Borg和Omega系统长期运行的实践经验，总结出了一条经验法则：用户提交工作负载时设置的资源配额，并不是容器调度一定必须严格遵守的值，因为根据实际经验，大多数的工作负载运行过程中，真正使用到的资源，其实都远小于它所请求的资源配额。</p>
+<blockquote>
+<p><strong>额外知识：Purchase Quota</strong>-
+Even though we encourage users to purchase no more quota than they need, many users overbuy because it insulates them against future shortages when their application’s user base grows.-
+即使我们已经努力建议用户不要过度申请资源配额，但仍难免有大量用户过度消费，他们总希望避免因用户增长而产生资源不足的现象。-
+—— <a href="https://pdos.csail.mit.edu/6.824/papers/borg.pdf" target="_blank">Large-Scale Cluster Management at Google with Borg</a>，Google</p>
+</blockquote>
+<p>当然，“多多益善”的想法完全符合人类的心理，大家提交的资源需求通常都是按照可能面临的最大压力去估计的，甚至考虑到了未来用户增长所导致的新需求。为了避免服务因资源不足而中断，都会往大了去申请，这点我们可以理解。</p>
+<p>但是，如果直接按照申请的资源去分配限额，必然会导致服务器出现两方面的影响：一方面，在大多数时间里服务器都会有大量的硬件资源闲置；而另一方面，这些闲置资源又已经分配出去，有了明确的所有者，不能再被其他人利用，难以真正发挥价值。</p>
+<p>不过我们也能想到，Kubernetes不太可能因为把一个资源配额的设置，拆分成了<code>limits</code>和<code>requests</code>两个设置项 ，就能完全解决这个矛盾。所以为此，Kubernetes还进行了许多额外的处理。</p>
+<p>比如现在我们知道，一旦选择不按照最保守、最安全的方式去分配资源，就意味着容器编排系统必须要为有可能出现的极端情况买单。而如果允许节点给Pod分配的资源总和，超过了Kubernetes自己最大的可提供资源的话，假如某个时刻，这些Pod的总消耗真的超标了，就会不可避免地导致节点无法继续遵守调度时对Pod许下的资源承诺。</p>
+<p>那么此时，Kubernetes就迫不得已要杀掉一部分Pod，以腾出资源来保证其余Pod能正常运行，这个操作就是我后面要给你介绍的<strong>驱逐机制</strong>（Eviction）。</p>
+<p>而要想进行驱逐，首先Kubernetes就必须拿出当资源不足时，该先牺牲哪些Pod、该保留哪些Pod的明确准则，所以由此就形成了Kubernetes的<strong>服务质量等级（Quality of Service Level，QoS Level）和优先级</strong>（Priority）的概念。</p>
+<p>我们先来了解下Kubernetes的服务质量等级的概念。</p>
+<h3 id="服务质量等级">服务质量等级</h3>
+<p>质量等级是Pod的一个隐含属性，也是Kubernetes优先保障重要的服务，放弃一些没那么重要的服务的衡量准绳。</p>
+<p>那到这里，不知道你有没有想到这样一个细节：<strong>如果不去设置<code>limits</code>和<code>requests</code>会怎样？</strong></p>
+<p>答案是不设置处理器和内存的资源，就意味着没有上限，该Pod可以使用节点上所有可用的计算资源。不过你先别高兴得太早，这类Pod能以最灵活的方式去使用资源，但也正是这类Pod在扮演着最不稳定的风险来源的角色。</p>
+<p>在论文《<a href="https://pdos.csail.mit.edu/6.824/papers/borg.pdf" target="_blank">Large-Scale Cluster Management at Google with Borg</a>》中，Google明确地提出了针对这类Pod的一种近乎带着惩罚性质的处理建议：当节点硬件资源不足时，优先杀掉这类Pod。说得文雅一点的话，就是给予这类Pod最低的服务质量等级。</p>
+<p>Kubernetes目前提供的服务质量等级一共分为三级，由高到低分别为<strong>Guaranteed</strong>、<strong>Burstable</strong>和<strong>BestEffort</strong>：</p>
+<ol>
+<li>如果Pod中所有的容器都设置了<code>limits</code>和<code>requests</code>，且两者的值相等，那此Pod的服务质量等级就是最高的Guaranteed；</li>
+<li>如果Pod中有部分容器的requests值小于<code>limits</code>值，或者只设置了<code>requests</code>而未设置<code>limits</code>，那此Pod的服务质量等级就是第二级Burstable；</li>
+<li>如果是前面说的那种情况，<code>limits</code>和<code>requests</code>两个都没设置，那就是最低的BestEffort了。</li>
+</ol>
+<p>一般来说，我们会建议把数据库应用等有状态的应用，或者是一些重要的、要保证不能中断的业务的服务质量等级定为Guaranteed。这样，除非是Pod使用超过了它们的<code>limits</code>所描述的不可压缩资源，或者节点的内存压力大到Kubernetes已经杀光所有等级更低的Pod了，否则它们都不会被系统自动杀死。</p>
+<p>而相对地，我们也应该把一些临时的、不那么重要的任务设置为BestEffort，这样有利于它们调度时能在更大的节点范围中寻找宿主机，也利于它们在宿主机中利用更多的资源，快速地完成任务，然后退出，尽量缩减影响范围；当然，遇到系统资源紧张时，它们也更容易被系统杀掉。</p>
+<blockquote>
+<p><strong>小说《动物庄园》：</strong>-
+All animals are equal, but some animals are more equal than others.-
+所有动物生来平等，但有些动物比其他动物更加平等。-
+—— <a href="https://en.wikipedia.org/wiki/Animal_Farm" target="_blank">Animal Farm: A Fairy Story</a>，<a href="https://en.wikipedia.org/wiki/George_Orwell" target="_blank">George Orwell</a>, 1945</p>
+</blockquote>
+<h3 id="优先级">优先级</h3>
+<p>除了服务质量等级以外，Kubernetes还允许系统管理员自行决定Pod的优先级，这是通过类型为PriorityClass的资源来实现的。优先级决定了Pod之间并不是平等的关系，而且这种不平等还不是谁会多占用一点儿的资源的问题，而是会直接影响Pod调度与生存的关键。</p>
+<p>优先级会影响调度，这很容易理解，这就是说当多个Pod同时被调度的话，高优先级的Pod会优先被调度。而Pod越晚被调度，就越大概率地会因节点资源已被占用而不能成功。</p>
+<p>但优先级影响更大的一方面，是指<strong>Kubernetes的抢占机制</strong>（Preemption），正常在没有设置优先级的情况下，如果Pod调度失败，就会暂时处于Pending状态被搁置起来，直到集群中有新节点加入或者旧Pod退出。</p>
+<p>但是，如果有一个被设置了明确优先级的Pod调度失败，无法创建的话，Kubernetes就会在系统中寻找出一批牺牲者（Victims），把它们杀掉以便给更高优先级的Pod让出资源。</p>
+<p>而这个寻找的原则，就是在优先级低于待调度Pod的所有已调度的Pod里，按照优先级从低到高排序，从最低的杀起，直至腾出的资源可以满足待调度Pod的成功调度为止，或者已经找不到更低优先级的Pod为止。</p>
+<h2 id="驱逐机制">驱逐机制</h2>
+<p>说实话，前面我动不动就提要杀掉某个Pod，听起来实在是不够优雅，其实在Kubernetes中更专业的称呼是“驱逐”（Eviction，即资源回收），这也是我在前面提过要给你介绍的概念。</p>
+<p><strong>Pod的驱逐机制是通过kubelet来执行的</strong>，kubelet是部署在每个节点的集群管理程序，因为它本身就运行在节点中，所以最容易感知到节点的资源实时耗用情况。kubelet一旦发现某种不可压缩资源将要耗尽，就会主动终止节点上服务质量等级比较低的Pod，以保证其他更重要的Pod的安全。而被驱逐的Pod中，所有的容器都会被终止，Pod的状态会被更改为Failed。</p>
+<p>现在，我们已经了解了内存这种最重要的不可压缩资源，那么在默认配置下，前面我所说的“资源即将耗尽”的“即将”，其具体阈值是可用内存小于100 Mi。</p>
+<p>而除了可用内存（<code>memory.available</code>）外，其他不可压缩资源还包括有：宿主机的可用磁盘空间（<code>nodefs.available</code>）、文件系统可用<a href="https://en.wikipedia.org/wiki/Inode" target="_blank">inode</a>数量（<code>nodefs.inodesFree</code>），以及可用的容器运行时镜像存储空间（<code>imagefs.available</code>）。后面三个的阈值，都是按照实际容量的百分比来计算的，具体的默认值如下：</p>
+<pre><code>memory.available &lt; 100Mi
+nodefs.available &lt; 10%
+nodefs.inodesFree &lt; 5%
+imagefs.available &lt; 15%
+</code></pre>
+<p>管理员可以在kubelet启动时，通过命令行参数来修改这些默认值，比如说，如果是在可用内存只剩余100 Mi时才启动驱逐，那对大多数生产系统来说都过于危险了，所以我建议在生产环境中，可以考虑当内存剩余10%时就开始驱逐，具体的调整命令如下所示：</p>
+<pre><code>$ kubelet --eviction-hard=memory.available&lt;10%
+</code></pre>
+<p>如果你是一名Java、C#、Golang等习惯了自动内存管理机制的程序员，我还要提醒你一下，<strong>Kubernetes的驱逐不能完全等同于编程语言中的垃圾收集器。</strong></p>
+<p>这里主要体现在两个方面。</p>
+<p>一方面，我们要知道垃圾收集是安全的内存回收行为，而驱逐Pod是一种毁坏性的清理行为，它有可能会导致服务产生中断，因而必须更加谨慎。比如说，要同时兼顾到硬件资源可能只是短时间内，间歇性地超过了阈值的场景，以及资源正在被快速消耗，很快就会危及高服务质量的Pod、甚至是整个节点稳定的场景。</p>
+<p>如此一来，驱逐机制中就有了软驱逐（Soft Eviction）、硬驱逐（Hard Eviction）以及优雅退出期（Grace Period）的概念：</p>
+<ul>
+<li><strong>软驱逐</strong>：通常会配置一个比较低的警戒线（比如可用内存仅剩20%），当触及此线时，系统就会进入一段观察期。如果只是暂时的资源抖动，在观察期内能够恢复到正常水平的话，那就不会真正启动驱逐操作。否则，资源持续超过警戒线一段时间，就会触发Pod的优雅退出（Grace Shutdown），系统会通知Pod进行必要的清理工作（比如将缓存的数据落盘），然后自行结束。在优雅退出期结束后，系统会强制杀掉还没有自行了断的Pod。</li>
+<li><strong>硬驱逐</strong>：通常会配置一个比较高的终止线（比如可用内存仅剩10%），一旦触及此线，系统就会立即强制杀掉Pod，不理会优雅退出。</li>
+</ul>
+<p><strong>软驱逐是为了减少资源抖动对服务的影响，硬驱逐是为了保障核心系统的稳定，它们并不矛盾，一般会同时使用</strong>，如以下例子中所示：</p>
+<pre><code>$ kubelet --eviction-hard=memory.available&lt;10% \
+		  --eviction-soft=memory.available&lt;20% \
+		  --eviction-soft-grace-period=memory.available=1m30s \
+		  --eviction-max-pod-grace-period=600
+</code></pre>
+<p>另一方面，Kubernetes的驱逐跟垃圾收集器的不同之处，还在于垃圾收集可以“应收尽收”，而驱逐显然不行，系统不能无缘无故地把整个节点中所有可驱逐的Pod都清空掉。但是，系统通常也不能只清理到刚刚低于警戒线就停止，必须要考虑到驱逐之后的新Pod调度与旧Pod运行的新增消耗。</p>
+<p>比如，kubelet驱逐了若干个Pod，让资源使用率勉强低于阈值，那么很可能在极短的时间内，资源使用率又会因为某个Pod稍微占用了些许资源，而重新超过阈值，再产生新一次驱逐，如此往复。</p>
+<p><strong>为此，Kubernetes提供了<code>--eviction-minimum-reclaim</code>参数，用于设置一旦驱逐发生之后，至少要清理出来多少资源才会终止。</strong></p>
+<p>不过，问题到这里还是没有全部解决。要知道，Kubernetes中很少会单独创建Pod，通常都是由ReplicaSet、Deployment等更高层资源来管理的。而这就意味着，当Pod被驱逐之后，它不会从此彻底消失，Kubernetes会自动生成一个新的Pod来取代，并经过调度，选择一个节点继续运行。</p>
+<p>这样也就是说，如果没有进行额外的处理，那很大概率这个新生成的Pod，就会被调度到当前这个节点上重新创建，因为上一次调度就选择了这个节点，而且这个节点刚刚驱逐完一批Pod，得到了空闲资源，那它显然应该符合此Pod的调度需求。</p>
+<p>所以，为了避免被驱逐的Pod出现“阴魂不散”的问题，Kubernetes还提供了另一个参数<code>--eviction-pressure-transition-period</code>来约束调度器，在驱逐发生之后多长时间内，不能往该节点调度Pod。</p>
+<p>另外，关于驱逐机制，你还应该意识到，既然这些措施被设计为以参数的形式开启，那就说明了它们一定不是放之四海皆准的通用准则。</p>
+<p>举个例子，假设当前Pod是由DaemonSet控制的，一旦该Pod被驱逐，你又强行不允许节点在一段时间内接受调度，那显然就有违DaemonSet的语义了。</p>
+<p>不过到目前，Kubernetes其实并没有办法区分Pod是由DaemonSet，还是别的高层次资源创建的，所以刚刚的这种假设情况确实有可能发生，而比较合理的解决方案，是让DaemonSet创建Guaranteed而不是BestEffort的Pod。</p>
+<p>总而言之，在Kubernetes还没有成熟到变为“傻瓜式”容器编排系统之前，<strong>因地制宜地合理配置和运维</strong>是都非常必要的。</p>
+<p>最后我还想说明的是，关于服务质量、优先级、驱逐机制这些概念，都是<strong>在Pod层面上限制资源，是仅针对单个Pod的低层次约束</strong>。而在现实中，我们还经常会遇到面向更高层次去控制资源的需求，比如，想限制由多个Pod构成的微服务系统耗用的总资源，或者是由多名成员组成的团队耗用的总资源。</p>
+<p>我举个具体例子，现在你想要在拥有32 GiB内存和16个处理器的集群里，允许A团队使用20 GiB内存和10个处理器的资源，再允许B团队使用10 GiB内存和4个处理器的资源，再预留2 GiB内存和2个处理器供将来分配。那么要满足这种资源限制的需求，Kubernetes的解决方案是应该先为它们建立一个专用的名称空间，然后再在名称空间里建立ResourceQuota对象，来描述如何进行整体的资源约束。</p>
+<p>但是这样，ResourceQuota与调度就没有直接关系了，它针对的对象也不是Pod，所以这里我所说的资源，可以是广义上的资源，系统不仅能够设置处理器、内存等物理资源的限额，还可以设置诸如Pod最大数量、ReplicaSet最大数量、Service最大数量、全部PersistentVolumeClaim的总存储容量等各种抽象资源的限额。</p>
+<p>甚至，当Kubernetes预置的资源模型不能满足约束需要的时候，还能够根据实际情况去拓展，比如要控制GPU的使用数量，完全可以通过Kubernetes的设备插件（Device Plugin）机制，拓展出诸如<code>nvidia.com/gpu: 4</code>这样的配置来。</p>
+<h2 id="默认调度器">默认调度器</h2>
+<p>好，了解了Kubernetes的资源模型和服务质量、优先级、驱逐机制这些概念以后，我们再回过头来，探讨下前面开头我提出的问题：<strong>Kubernetes是如何撮合Pod与Node的？</strong>这其实也是最困难的一个问题。</p>
+<p>现在我们知道，调度是为新创建出来的Pod，寻找到一个最恰当的宿主机节点去运行它。而在这句话里，就包含有“运行”和“恰当”两个调度中的关键过程，它们具体是指：</p>
+<ol>
+<li><strong>运行</strong>：从集群的所有节点中，找出一批剩余资源可以满足该Pod运行的节点。为此，Kubernetes调度器设计了一组名为<strong>Predicate的筛选算法</strong>。</li>
+<li><strong>恰当</strong>：从符合运行要求的节点中，找出一个最适合的节点完成调度。为此，Kubernetes调度器设计了一组名为<strong>Priority的评价算法</strong>。</li>
+</ol>
+<p>这两个算法的具体内容稍后我会详细给你解释，这里我要先说明白一点：在几个、十几个节点的集群里进行调度，调度器怎么实现都不会太困难，但是对于数千个、乃至更多节点的大规模集群，要实现高效的调度就绝不简单。</p>
+<p>请你想象一下，现在有一个由数千节点组成的集群，每次Pod的创建，都必须依据各节点的实时资源状态来确定调度的目标节点，然而我们知道，各节点的资源是随着程序运行无时无刻都在变动的，资源状况只有它本身才清楚。</p>
+<p>这样，如果每次调度都要发生数千次的远程访问来获取这些信息的话，那压力与耗时都很难降下来。所以结果不仅会让调度器成为集群管理的性能瓶颈，还会出现因耗时过长，某些节点上资源状况已发生变化，调度器的资源信息过时，而导致调度结果不准确等问题。</p>
+<blockquote>
+<p><strong>额外知识：</strong><strong>Scheduler</strong>-
+Clusters and their workloads keep growing, and since the scheduler’s workload is roughly proportional to the cluster size, the scheduler is at risk of becoming a scalability bottleneck.-
+由于调度器的工作负载与集群规模大致成正比，随着集群和它们的工作负载不断增长，调度器很有可能会成为扩展性瓶颈所在。-
+—— <a href="https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/41684.pdf" target="_blank">Omega: Flexible, Scalable Schedulers for Large Compute Clusters</a>，Google</p>
+</blockquote>
+<p>因此，针对前面所说的问题，Google在论文《<a href="https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/41684.pdf" target="_blank">Omega: Flexible, Scalable Schedulers for Large Compute Clusters</a>》里总结了自身的经验，并参考了当时<a href="https://en.wikipedia.org/wiki/Apache_Mesos" target="_blank">Apache Mesos</a>和<a href="https://hadoop.apache.org/docs/r1.0.4/cn/hod.html" target="_blank">Hadoop on Demand</a>（HOD）的实现，提出了一种<strong>共享状态（Shared State）的双循环调度机制</strong>。</p>
+<p>这种调度机制后来不仅应用在Google的Omega系统（Borg的下一代集群管理系统）中，也同样被Kubernetes继承了下来，它整体的工作流程如下图所示：</p>
+<p><img alt="" src="assets/2640b9c4055e4a5e9019e6c7d0ae6f12.jpg"/></p>
+<p>状态共享的双循环</p>
+<p>“状态共享的双循环”中，第一个控制循环可被称为“<strong>Informer Loop</strong>”，它是一系列<a href="https://godoc.org/k8s.io/client-go/informers" target="_blank">Informer</a>的集合，这些Informer会持续监视etcd中与调度相关资源（主要是Pod和Node）的变化情况，一旦Pod、Node等资源出现变动，就会触发对应Informer的Handler。</p>
+<p>Informer Loop的职责是根据etcd中的资源变化，去更新调度队列（Priority Queue）和调度缓存（Scheduler Cache）中的信息。</p>
+<p>比如当有新Pod生成，就将其入队（Enqueue）到调度队列中，如有必要，还会根据优先级触发上节课我提到的插队和抢占操作。再比如，当有新的节点加入集群，或者已有的节点资源信息发生变动，Informer也会把这些信息更新同步到调度缓存之中。</p>
+<p>另一个控制循环可被称为“<strong>Scheduler Loop</strong>”，它的核心逻辑是不停地把调度队列中的Pod出队（Pop），然后使用Predicate算法进行节点选择。</p>
+<p>Predicate本质上是一组节点过滤器（Filter），它会根据预设的过滤策略来筛选节点。Kubernetes中默认有三种过滤策略，分别是：</p>
+<ul>
+<li><strong>通用过滤策略</strong>：最基础的调度过滤策略，用来检查节点是否能满足Pod声明中需要的资源。比如处理器、内存资源是否满足，主机端口与声明的NodePort是否存在冲突，Pod的选择器或者<a href="https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity" target="_blank">nodeAffinity</a>指定的节点是否与目标相匹配，等等。</li>
+<li><strong>卷过滤策略</strong>：与存储相关的过滤策略，用来检查节点挂载的Volume是否存在冲突（比如将一个块设备挂载到两个节点上），或者Volume的<a href="https://icyfenix.cn/distribution/connect/load-balancing.html#%E5%9C%B0%E5%9F%9F%E4%B8%8E%E5%8C%BA%E5%9F%9F" target="_blank">可用区域</a>是否与目标节点冲突，等等。在“<a href="https://time.geekbang.org/column/article/357689" target="_blank">Kubernetes存储设计</a>”中提到的Local PersistentVolume的调度检查，就是在这里处理的。</li>
+<li><strong>节点过滤策略</strong>：与宿主机相关的过滤策略，最典型的是Kubernetes的<a href="https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/" target="_blank">污点与容忍度机制</a>（Taints and Tolerations），比如默认情况下，Kubernetes会设置Master节点不允许被调度，这就是通过在Master中施加污点来避免的。前面我提到的控制节点处于驱逐状态，或者在驱逐后一段时间不允许调度，也是在这个策略里实现的。</li>
+</ul>
+<p>此外，Predicate算法所使用的一切数据，都来自于<strong>调度缓存</strong>，它绝对不会去远程访问节点本身。这里你要知道，只有Informer Loop与etcd的监视操作才会涉及到远程调用，而Scheduler Loop中，除了最后的异步绑定要发起一次远程的etcd写入外，其余全部都是进程内访问，这一点正是调度器执行效率的重要保证。</p>
+<p><strong>所谓的调度缓存，就是两个控制循环的共享状态（Shared State）</strong>，这样的设计避免了调度器每次调度时主动去轮询所有集群节点，保证了调度器的执行效率。</p>
+<p>但是它也存在一定的局限，也就是调度缓存并不能完全避免因节点信息同步不及时，而导致调度过程中实际资源发生变化的情况，比如节点的某个端口在获取调度信息后、发生实际调度前被意外占用了。</p>
+<p>为此，当调度结果出来以后，在kubelet真正创建Pod以前，还必须执行一次Admit操作，在该节点上重新做一遍Predicate，来进行二次确认。<strong>经过Predicate算法筛选出来符合要求的节点集，会交给Priorities算法来打分（0~10分）排序，以便挑选出“最恰当”的一个。</strong></p>
+<p>这里的“恰当”其实是带有主观色彩的词语，Kubernetes也提供了不同的打分规则来满足不同的主观需求，比如最常用的LeastRequestedPriority规则，它的计算公式是：</p>
+<pre><code>score = (cpu((capacity-sum(requested))×10/capacity) + memory((capacity-sum(requested))×10/capacity))/2
+</code></pre>
+<p>从公式上，我们能很容易地看出，这就是在选择处理器和内存空闲资源最多的节点，因为这些资源剩余越多，得分就越高。经常与它一起工作的是BalancedResourceAllocation规则，它的公式是：</p>
+<pre><code>score = 10 - variance(cpuFraction,memoryFraction,volumeFraction)×10
+</code></pre>
+<p>在这个公式中，三种Fraction的含义是Pod请求的资源除以节点上的可用资源，variance函数的作用是计算各种资源之间的差距，差距越大，函数值越大。由此可知，BalancedResourceAllocation规则的意图是希望调度完成后，所有节点里各种资源分配尽量均衡，避免节点上出现诸如处理器资源被大量分配、而内存大量剩余的尴尬状况。</p>
+<p>Kubernetes内置的其他的评分规则，还有ImageLocalityPriority、NodeAffinityPriority、TaintTolerationPriority，等等，有兴趣的话你可以去阅读Kubernetes的源码，这里我就不再逐一解释了。</p>
+<p>这样，经过Predicate的筛选、Priorities的评分之后，调度器已经选出了调度的最终目标节点，最后一步就是通知目标节点的kubelet可以去创建Pod了。我们要知道，调度器并不会直接与kubelet通讯来创建Pod，它只需要把待调度的Pod的<code>nodeName</code>字段更新为目标节点的名字即可，kubelet本身会监视该值的变化来接手后续工作。</p>
+<p>不过，从调度器在etcd中更新<code>nodeName</code>，到kubelet从etcd中检测到变化，再执行Admit操作二次确认调度可行性，最后到Pod开始实际创建，这个过程可能会持续一段不短的时间，如果一直等待这些工作都完成了，才宣告调度最终完成，那势必也会显著影响调度器的效率。</p>
+<p>所以实际上，Kubernetes调度器采用了<strong>乐观绑定（Optimistic Binding）</strong>的策略来解决这个问题，它会同步地更新调度缓存中Pod的<code>nodeName</code>字段，并异步地更新etcd中Pod的<code>nodeName</code>字段，这个操作被称为绑定（Binding）。如果最终调度成功了，那etcd与调度缓存中的信息最终必定会保持一致，否则如果调度失败了，那就会由Informer来根据Pod的变动，将调度成功却没有创建成功的Pod清空<code>nodeName</code>字段，重新同步回调度缓存中，以便促使另外一次调度的开始。</p>
+<p>最后，你可能会注意到这个部分的小标题，我用的是“默认调度器”，这其实是在强调以上行为仅是Kubernetes默认的行为。对调度过程的大部分行为，你都可以通过Scheduler Framework暴露的接口来进行扩展和自定义，如下图所示：</p>
+<p><img alt="" src="assets/4bbb441d07664ed7aac6822ca8dbdc2b.jpg"/></p>
+<p><a href="https://medium.com/dev-genius/kubernetes-scheduling-system-f8705e7ee226" target="_blank">Scheduler Framework的可扩展性</a></p>
+<p>可以看到，图中绿色的部分，就是Scheduler Framework暴露的扩展点。由于Scheduler Framework属于Kubernetes内部的扩展机制（通过Golang的Plugin机制来实现的，需静态编译），它的通用性跟我在前面课程中提到的其他扩展机制（比如CRI、CNI、CSI那些）无法相提并论，属于比较高级的Kubernetes管理技能了，这里我就简单地提一下，你稍作了解就行。</p>
+<h2 id="小结">小结</h2>
+<p>调度可以分解为几个相对独立的子问题来研究，比如说，如何衡量工作任务的算力需求；如何区分工作任务的优先级，保障较重要的任务有较高的服务质量；如何在资源紧张时自动驱逐相对不重要的任务，等等。解决这一系列子问题的组件，就称为容器编排系统的调度器。</p>
+<p>这节课，我带你学习了Kubernetes是如何为一个新创建出来的Pod，寻找到一个最恰当的宿主机节点来运行的。由于Kubernetes基于“超卖”所设计的资源调度机制，在更合理充分利用物理服务器资源的同时，也让资源调度成为了一项具有风险和挑战性的工作，所以你只有正确理解了这节课介绍的服务质量、优先级、驱逐机制等概念，在生产实践中，才能在资源利用率最大化与服务稳定性之间取得良好平衡。</p>
+<h2 id="一课一思">一课一思</h2>
+<p>调度是容器编排系统的核心功能之一，但调度却不仅仅存在于容器编排之中。除了Kubernetes等编排系统外，你还遇到过哪些需要进行资源调度的场景呢？</p>
+<p>欢迎在留言区分享你的答案。如果你觉得有收获，也欢迎把今天的内容分享给更多的朋友。感谢你的阅读，我们下一讲再见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#335f5f5f0a070202030473545e525a5f1d505c5e" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358b6151bbfd68c',t:'MTc0NTUzMDMyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
