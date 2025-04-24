@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="06 分布式事务：All or nothing" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>06 分布式事务：All or nothing </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9b%9b%e7%ba%b5%e5%9b%9b%e6%a8%aa%ef%bc%8c%e5%b8%a6%e4%bd%a0%e9%80%8f%e5%bd%bb%e7%90%86%e8%a7%a3%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af.md.html" id="00 开篇词 四纵四横，带你透彻理解分布式技术.md.html">00 开篇词 四纵四横，带你透彻理解分布式技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/01%20%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%98%e4%bd%95%e8%80%8c%e8%b5%b7%ef%bc%9a%e4%bb%8e%e5%8d%95%e5%85%b5%ef%bc%8c%e5%88%b0%e6%b8%b8%e5%87%bb%e9%98%9f%ef%bc%8c%e5%88%b0%e9%9b%86%e5%9b%a2%e5%86%9b.md.html" id="01 分布式缘何而起：从单兵，到游击队，到集团军.md.html">01 分布式缘何而起：从单兵，到游击队，到集团军.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/02%20%e5%88%86%e5%b8%83%e5%bc%8f%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%8c%87%e6%a0%87%ef%bc%9a%e5%95%a5%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f%e7%9a%84%e4%b8%89%e5%9b%b4.md.html" id="02 分布式系统的指标：啥是分布式的三围.md.html">02 分布式系统的指标：啥是分布式的三围.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/03%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%92%e6%96%a5%ef%bc%9a%e6%9c%89%e4%bd%a0%e6%b2%a1%e6%88%91%ef%bc%8c%e6%9c%89%e6%88%91%e6%b2%a1%e4%bd%a0.md.html" id="03 分布式互斥：有你没我，有我没你.md.html">03 分布式互斥：有你没我，有我没你.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/04%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%80%89%e4%b8%be%ef%bc%9a%e5%9b%bd%e4%b8%8d%e5%8f%af%e4%b8%80%e6%97%a5%e6%97%a0%e5%90%9b.md.html" id="04 分布式选举：国不可一日无君.md.html">04 分布式选举：国不可一日无君.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/05%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%85%b1%e8%af%86%ef%bc%9a%e5%ad%98%e5%bc%82%e6%b1%82%e5%90%8c.md.html" id="05 分布式共识：存异求同.md.html">05 分布式共识：存异求同.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/06%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%ef%bc%9aAll%20or%20nothing.md.html" id="06 分布式事务：All or nothing.md.html">06 分布式事务：All or nothing.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/07%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%ef%bc%9a%e5%85%b3%e9%94%ae%e9%87%8d%e5%9c%b0%ef%bc%8c%e9%9d%9e%e8%af%b7%e5%8b%bf%e5%85%a5.md.html" id="07 分布式锁：关键重地，非请勿入.md.html">07 分布式锁：关键重地，非请勿入.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/08%20%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e6%98%af%e5%a6%82%e4%bd%95%e5%bc%95%e7%88%86%e4%ba%ba%e5%b7%a5%e6%99%ba%e8%83%bd%e7%9a%84%ef%bc%9f.md.html" id="08 分布式技术是如何引爆人工智能的？.md.html">08 分布式技术是如何引爆人工智能的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/09%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%93%e7%b3%bb%e7%bb%93%e6%9e%84%e4%b9%8b%e9%9b%86%e4%b8%ad%e5%bc%8f%e7%bb%93%e6%9e%84%ef%bc%9a%e4%b8%80%e4%ba%ba%e5%9c%a8%e4%b8%8a%ef%bc%8c%e4%b8%87%e4%ba%ba%e5%9c%a8%e4%b8%8b.md.html" id="09 分布式体系结构之集中式结构：一人在上，万人在下.md.html">09 分布式体系结构之集中式结构：一人在上，万人在下.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/10%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%93%e7%b3%bb%e7%bb%93%e6%9e%84%e4%b9%8b%e9%9d%9e%e9%9b%86%e4%b8%ad%e5%bc%8f%e7%bb%93%e6%9e%84%ef%bc%9a%e4%bc%97%e7%94%9f%e5%b9%b3%e7%ad%89.md.html" id="10 分布式体系结构之非集中式结构：众生平等.md.html">10 分布式体系结构之非集中式结构：众生平等.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/11%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%b0%83%e5%ba%a6%e6%9e%b6%e6%9e%84%e4%b9%8b%e5%8d%95%e4%bd%93%e8%b0%83%e5%ba%a6%ef%bc%9a%e7%89%a9%e8%b4%a8%e6%96%87%e6%98%8e%e3%80%81%e7%b2%be%e7%a5%9e%e6%96%87%e6%98%8e%e4%b8%80%e6%89%8b%e6%8a%93.md.html" id="11 分布式调度架构之单体调度：物质文明、精神文明一手抓.md.html">11 分布式调度架构之单体调度：物质文明、精神文明一手抓.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/12%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%b0%83%e5%ba%a6%e6%9e%b6%e6%9e%84%e4%b9%8b%e4%b8%a4%e5%b1%82%e8%b0%83%e5%ba%a6%ef%bc%9a%e7%89%a9%e8%b4%a8%e6%96%87%e6%98%8e%e3%80%81%e7%b2%be%e7%a5%9e%e6%96%87%e6%98%8e%e4%b8%a4%e6%89%8b%e6%8a%93.md.html" id="12 分布式调度架构之两层调度：物质文明、精神文明两手抓.md.html">12 分布式调度架构之两层调度：物质文明、精神文明两手抓.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/13%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%b0%83%e5%ba%a6%e6%9e%b6%e6%9e%84%e4%b9%8b%e5%85%b1%e4%ba%ab%e7%8a%b6%e6%80%81%e8%b0%83%e5%ba%a6%ef%bc%9a%e7%89%a9%e8%b4%a8%e6%96%87%e6%98%8e%e3%80%81%e7%b2%be%e7%a5%9e%e6%96%87%e6%98%8e%e5%a4%9a%e6%89%8b%e5%8d%8f%e5%95%86%e6%8a%93.md.html" id="13 分布式调度架构之共享状态调度：物质文明、精神文明多手协商抓.md.html">13 分布式调度架构之共享状态调度：物质文明、精神文明多手协商抓.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/14%20%e7%ad%94%e7%96%91%e7%af%87%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%e4%b8%8e%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%e7%9b%b8%e5%85%b3%e9%97%ae%e9%a2%98.md.html" id="14 答疑篇：分布式事务与分布式锁相关问题.md.html">14 答疑篇：分布式事务与分布式锁相关问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/15%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%a1%e7%ae%97%e6%a8%a1%e5%bc%8f%e4%b9%8bMR%ef%bc%9a%e4%b8%80%e9%97%a8%e5%90%8c%e6%b5%81%e5%90%88%e6%b1%a1%e7%9a%84%e8%89%ba%e6%9c%af.md.html" id="15 分布式计算模式之MR：一门同流合污的艺术.md.html">15 分布式计算模式之MR：一门同流合污的艺术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/16%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%a1%e7%ae%97%e6%a8%a1%e5%bc%8f%e4%b9%8bStream%ef%bc%9a%e4%b8%80%e9%97%a8%e8%83%8c%e9%94%85%e7%9a%84%e8%89%ba%e6%9c%af.md.html" id="16 分布式计算模式之Stream：一门背锅的艺术.md.html">16 分布式计算模式之Stream：一门背锅的艺术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/17%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%a1%e7%ae%97%e6%a8%a1%e5%bc%8f%e4%b9%8bActor%ef%bc%9a%e4%b8%80%e9%97%a8%e7%94%a9%e9%94%85%e7%9a%84%e8%89%ba%e6%9c%af.md.html" id="17 分布式计算模式之Actor：一门甩锅的艺术.md.html">17 分布式计算模式之Actor：一门甩锅的艺术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/18%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%a1%e7%ae%97%e6%a8%a1%e5%bc%8f%e4%b9%8b%e6%b5%81%e6%b0%b4%e7%ba%bf%ef%bc%9a%e4%bd%a0%e6%96%b9%e5%94%b1%e7%bd%a2%e6%88%91%e7%99%bb%e5%9c%ba.md.html" id="18 分布式计算模式之流水线：你方唱罢我登场.md.html">18 分布式计算模式之流水线：你方唱罢我登场.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/19%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%80%9a%e4%bf%a1%e4%b9%8b%e8%bf%9c%e7%a8%8b%e8%b0%83%e7%94%a8%ef%bc%9a%e6%88%91%e6%98%af%e4%bd%a0%e7%9a%84%e5%8d%83%e9%87%8c%e7%9c%bc.md.html" id="19 分布式通信之远程调用：我是你的千里眼.md.html">19 分布式通信之远程调用：我是你的千里眼.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/20%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%80%9a%e4%bf%a1%e4%b9%8b%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%ef%bc%9a%e9%80%81%e8%b4%a7%e4%b8%8a%e9%97%a8.md.html" id="20 分布式通信之发布订阅：送货上门.md.html">20 分布式通信之发布订阅：送货上门.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/21%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%80%9a%e4%bf%a1%e4%b9%8b%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%ef%bc%9a%e8%b4%a7%e7%89%a9%e8%87%aa%e5%8f%96.md.html" id="21 分布式通信之消息队列：货物自取.md.html">21 分布式通信之消息队列：货物自取.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/22%20%e7%ad%94%e7%96%91%e7%af%87%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%93%e7%b3%bb%e6%9e%b6%e6%9e%84%e4%b8%8e%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%a1%e7%ae%97%e7%9b%b8%e5%85%b3%e9%97%ae%e9%a2%98.md.html" id="22 答疑篇：分布式体系架构与分布式计算相关问题.md.html">22 答疑篇：分布式体系架构与分布式计算相关问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/23%20CAP%e7%90%86%e8%ae%ba%ef%bc%9a%e8%bf%99%e9%a1%b6%e5%b8%bd%e5%ad%90%e6%88%91%e4%b8%8d%e6%83%b3%e8%a6%81.md.html" id="23 CAP理论：这顶帽子我不想要.md.html">23 CAP理论：这顶帽子我不想要.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/24%20%e5%88%86%e5%b8%83%e5%bc%8f%e6%95%b0%e6%8d%ae%e5%ad%98%e5%82%a8%e7%b3%bb%e7%bb%9f%e4%b9%8b%e4%b8%89%e8%a6%81%e7%b4%a0%ef%bc%9a%e9%a1%be%e5%ae%a2%e3%80%81%e5%af%bc%e8%b4%ad%e4%b8%8e%e8%b4%a7%e6%9e%b6.md.html" id="24 分布式数据存储系统之三要素：顾客、导购与货架.md.html">24 分布式数据存储系统之三要素：顾客、导购与货架.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/25%20%e6%95%b0%e6%8d%ae%e5%88%86%e5%b8%83%e6%96%b9%e5%bc%8f%e4%b9%8b%e5%93%88%e5%b8%8c%e4%b8%8e%e4%b8%80%e8%87%b4%e6%80%a7%e5%93%88%e5%b8%8c%ef%bc%9a%e2%80%9c%e6%8e%90%e6%8c%87%e4%b8%80%e7%ae%97%e2%80%9d%e4%b8%8e%e2%80%9c%e6%8e%90%e6%8c%87%e4%b8%a4%e7%ae%97%e2%80%9d%e7%9a%84%e4%ba%8b.md.html" id="25 数据分布方式之哈希与一致性哈希：“掐指一算”与“掐指两算”的事.md.html">25 数据分布方式之哈希与一致性哈希：“掐指一算”与“掐指两算”的事.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/26%20%e5%88%86%e5%b8%83%e5%bc%8f%e6%95%b0%e6%8d%ae%e5%a4%8d%e5%88%b6%e6%8a%80%e6%9c%af%ef%bc%9a%e5%88%86%e8%ba%ab%e6%9c%89%e6%9c%af.md.html" id="26 分布式数据复制技术：分身有术.md.html">26 分布式数据复制技术：分身有术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/27%20%e5%88%86%e5%b8%83%e5%bc%8f%e6%95%b0%e6%8d%ae%e4%b9%8b%e7%bc%93%e5%ad%98%e6%8a%80%e6%9c%af%ef%bc%9a%e2%80%9c%e8%ba%ab%e6%89%8b%e9%92%a5%e9%92%b1%e2%80%9d%e9%9a%8f%e8%ba%ab%e5%b8%a6.md.html" id="27 分布式数据之缓存技术：“身手钥钱”随身带.md.html">27 分布式数据之缓存技术：“身手钥钱”随身带.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/28%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%ab%98%e5%8f%af%e9%9d%a0%e4%b9%8b%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e4%b8%8d%e6%82%a3%e5%af%a1%ef%bc%8c%e8%80%8c%e6%82%a3%e4%b8%8d%e5%9d%87.md.html" id="28 分布式高可靠之负载均衡：不患寡，而患不均.md.html">28 分布式高可靠之负载均衡：不患寡，而患不均.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/29%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%ab%98%e5%8f%af%e9%9d%a0%e4%b9%8b%e6%b5%81%e9%87%8f%e6%8e%a7%e5%88%b6%ef%bc%9a%e5%a4%a7%e7%a6%b9%e6%b2%bb%e6%b0%b4%ef%bc%8c%e5%9c%a8%e7%96%8f%e4%b8%8d%e5%9c%a8%e5%a0%b5.md.html" id="29 分布式高可靠之流量控制：大禹治水，在疏不在堵.md.html">29 分布式高可靠之流量控制：大禹治水，在疏不在堵.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/30%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%ab%98%e5%8f%af%e7%94%a8%e4%b9%8b%e6%95%85%e9%9a%9c%e9%9a%94%e7%a6%bb%ef%bc%9a%e5%bd%93%e6%96%ad%e4%b8%8d%e6%96%ad%ef%bc%8c%e5%8f%8d%e5%8f%97%e5%85%b6%e4%b9%b1.md.html" id="30 分布式高可用之故障隔离：当断不断，反受其乱.md.html">30 分布式高可用之故障隔离：当断不断，反受其乱.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/31%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%ab%98%e5%8f%af%e7%94%a8%e4%b9%8b%e6%95%85%e9%9a%9c%e6%81%a2%e5%a4%8d%ef%bc%9a%e7%9f%a5%e9%94%99%e8%83%bd%e6%94%b9%ef%bc%8c%e5%96%84%e8%8e%ab%e5%a4%a7%e7%84%89.md.html" id="31 分布式高可用之故障恢复：知错能改，善莫大焉.md.html">31 分布式高可用之故障恢复：知错能改，善莫大焉.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/32%20%e7%ad%94%e7%96%91%e7%af%87%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a4%e6%96%ad%e5%b9%b6%e8%a7%a3%e5%86%b3%e7%bd%91%e7%bb%9c%e5%88%86%e5%8c%ba%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="32 答疑篇：如何判断并解决网络分区问题？.md.html">32 答疑篇：如何判断并解决网络分区问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/33%20%e7%9f%a5%e8%af%86%e4%b8%b2%e8%81%94%ef%bc%9a%e4%bb%a5%e8%b4%ad%e4%b9%b0%e7%81%ab%e8%bd%a6%e7%a5%a8%e7%9a%84%e6%b5%81%e7%a8%8b%e4%b8%b2%e8%81%94%e5%88%86%e5%b8%83%e5%bc%8f%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af.md.html" id="33 知识串联：以购买火车票的流程串联分布式核心技术.md.html">33 知识串联：以购买火车票的流程串联分布式核心技术.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/34%20%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%88%86%e5%b8%83%e5%bc%8f%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83%ef%bc%9a%e7%ba%b8%e4%b8%8a%e5%be%97%e6%9d%a5%e7%bb%88%e8%a7%89%e6%b5%85%ef%bc%8c%e7%bb%9d%e7%9f%a5%e6%ad%a4%e4%ba%8b%e8%a6%81%e8%ba%ac%e8%a1%8c.md.html" id="34 搭建一个分布式实验环境：纸上得来终觉浅，绝知此事要躬行.md.html">34 搭建一个分布式实验环境：纸上得来终觉浅，绝知此事要躬行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Jackey%ef%bc%9a%e5%af%84%e8%af%ad%e5%a4%a9%e6%b6%af%e5%ae%a2%ef%bc%8c%e8%bd%bb%e5%af%92%e5%ba%95%e7%94%a8%e6%84%81.md.html" id="特别放送 Jackey：寄语天涯客，轻寒底用愁.md.html">特别放送 Jackey：寄语天涯客，轻寒底用愁.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%b8%8b%e7%9a%84%e4%b8%80%e8%87%b4%e6%80%a7%e6%9d%82%e8%b0%88.md.html" id="特别放送 分布式下的一致性杂谈.md.html">特别放送 分布式下的一致性杂谈.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%b4%94%e6%96%b0%ef%bc%9a%e8%bf%bd%e6%a0%b9%e6%ba%af%e6%ba%90%ef%bc%8c%e6%8b%a8%e5%bc%80%e4%ba%91%e9%9b%be%e8%a7%81%e9%9d%92%e5%a4%a9.md.html" id="特别放送 崔新：追根溯源，拨开云雾见青天.md.html">特别放送 崔新：追根溯源，拨开云雾见青天.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%be%90%e5%bf%97%e5%bc%ba%ef%bc%9a%e5%ad%a6%e4%b9%a0%e8%bf%99%e4%bb%b6%e4%ba%8b%e5%84%bf%ef%bc%8c%e4%b8%8d%e5%88%b0%e9%95%bf%e5%9f%8e%e9%9d%9e%e5%a5%bd%e6%b1%89.md.html" id="特别放送 徐志强：学习这件事儿，不到长城非好汉.md.html">特别放送 徐志强：学习这件事儿，不到长城非好汉.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e9%82%a3%e4%ba%9b%e4%bd%a0%e4%b8%8d%e8%83%bd%e9%94%99%e8%bf%87%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e7%b3%bb%e7%bb%9f%e8%ae%ba%e6%96%87.md.html" id="特别放送 那些你不能错过的分布式系统论文.md.html">特别放送 那些你不能错过的分布式系统论文.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e7%ae%97%e6%b3%95%e8%a7%a3%e6%9e%90/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%af%b4%e6%8f%90%e5%8d%87%e8%81%8c%e4%b8%9a%e7%ab%9e%e4%ba%89%e5%8a%9b%e8%a6%81%e4%bb%8e%e5%b0%8a%e9%87%8d%e3%80%81%e8%af%9a%e5%ae%9e%e5%bc%80%e5%a7%8b%ef%bc%9f.md.html" id="结束语 为什么说提升职业竞争力要从尊重、诚实开始？.md.html">结束语 为什么说提升职业竞争力要从尊重、诚实开始？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="06 分布式事务：All or nothing" id="title">06 分布式事务：All or nothing</h1>
+<div><p>你好，我是聂鹏程。今天，我来继续带你打卡分布式核心技术。</p>
+<p>对于网上购物的每一笔订单来说，电商平台一般都会有两个核心步骤：一是订单业务采取下订单操作，二是库存业务采取减库存操作。</p>
+<p>通常，这两个业务会运行在不同的机器上，甚至是运行在不同区域的机器上。针对同一笔订单，当且仅当订单操作和减库存操作一致时，才能保证交易的正确性。也就是说一笔订单，只有这两个操作都完成，才能算做处理成功，否则处理失败，充分体现了“All or nothing”的思想。</p>
+<p>在分布式领域中，这个问题就是分布式事务问题。那么今天，我们就一起打卡分布式事务吧。</p>
+<h2 id="什么是分布式事务">什么是分布式事务？</h2>
+<p>在介绍分布式事务之前，我们首先来看一下什么是事务。</p>
+<p>事务（Transaction）提供一种机制，将包含一系列操作的工作序列纳入到一个不可分割的执行单元。只有所有操作均被正确执行才能提交事务；任意一个操作失败都会导致整个事务回滚（Rollback）到之前状态，即所有操作均被取消。简单来说，事务提供了一种机制，使得工作要么全部都不做，要么完全被执行，即all or nothing。</p>
+<p>通常情况下，我们所说的事务指的都是本地事务，也就是在单机上的事务。而事务具备四大基本特征ACID，具体含义如下。</p>
+<ul>
+<li><strong>A：原子性（Atomicity</strong>），即事务最终的状态只有两种，全部执行成功和全部不执行，不会停留在中间某个环节。若处理事务的任何一项操作不成功，就会导致整个事务失败。一旦操作失败，所有操作都会被取消（即回滚），使得事务仿佛没有被执行过一样。就好比买一件商品，购买成功时，则给商家付了钱，商品到手；购买失败时，则商品在商家手中，消费者的钱也没花出去。</li>
+<li><strong>C：一致性（Consistency）</strong>，是指事务操作前和操作后，数据满足完整性约束，数据库保持一致性状态。比如，用户A和用户B在银行分别有800元和600元，总共1400元，用户A给用户B转账200元，分为两个步骤，从A的账户扣除200元和对B的账户增加200元。一致性就是要求上述步骤操作后，最后的结果是用户A还有600元，用户B有800元，总共1400元，而不会出现用户A扣除了200元，但用户B未增加的情况（该情况，用户A和B均为600元，总共1200元）。</li>
+<li><strong>I：隔离性（Isolation）</strong>，是指当系统内有多个事务并发执行时，多个事务同时使用相同的数据时，不会相互干扰，每个事务都有一个完整的数据空间，对其他并发事务是隔离的。也就是说，消费者购买商品这个事务，是不影响其他消费者购买的。</li>
+<li><strong>D：持久性（Durability）</strong>，也被称为永久性，是指一个事务被执行后，那么它对数据库所做的更新就永久地保存下来了。即使发生系统崩溃或宕机等故障，重新启动数据库系统后，只要数据库能够重新被访问，那么一定能够将其恢复到事务完成时的状态。就像消费者在网站上的购买记录，即使换了手机，也依然可以查到。</li>
+</ul>
+<p>只有在数据操作请求满足上述四个特性的条件下，存储系统才能保证处于正确的工作状态。因此，无论是在传统的集中式存储系统还是在分布式存储系统中，任何数据操作请求都必须满足 ACID 特性。</p>
+<p><strong>分布式事务，就是在分布式系统中运行的事务，由多个本地事务组合而成。</strong>在分布式场景下，对事务的处理操作可能来自不同的机器，甚至是来自不同的操作系统。文章开头提到的电商处理订单问题，就是典型的分布式事务。</p>
+<p>分布式事务由多个事务组成，因此基本满足ACID，其中的C是强一致性，也就是所有操作均执行成功，才提交最终结果，以保证数据一致性或完整性。但随着分布式系统规模不断扩大，复杂度急剧上升，达成强一致性所需时间周期较长，限定了复杂业务的处理。为了适应复杂业务，出现了BASE理论，该理论的一个关键点就是采用最终一致性代替强一致性。我会在“知识扩展”模块与你详细展开BASE理论这部分内容。</p>
+<p>介绍完什么是事务和分布式事务，以及它们的基本特征后，就进入“怎么做”的阶段啦。所以接下来，我们就看看如何实现分布式事务吧。</p>
+<h2 id="如何实现分布式事务">如何实现分布式事务？</h2>
+<p>实际上，分布式事务主要是解决在分布式环境下，组合事务的一致性问题。实现分布式事务有以下3种基本方法：</p>
+<ul>
+<li>基于XA协议的二阶段提交协议方法；</li>
+<li>三阶段提交协议方法；</li>
+<li>基于消息的最终一致性方法。</li>
+</ul>
+<p>其中，基于XA协议的二阶段提交协议方法和三阶段提交协议方法，采用了强一致性，遵从ACID。基于消息的最终一致性方法，采用了最终一致性，遵从BASE理论。下面，我将带你一起学习这三种方法。</p>
+<h3 id="基于xa协议的二阶段提交方法">基于XA协议的二阶段提交方法</h3>
+<p>XA是一个分布式事务协议，规定了事务管理器和资源管理器接口。因此，XA协议包括事务管理器和本地资源管理器两个部分。</p>
+<p><strong>XA实现分布式事务的原理，就类似于我在</strong><a href="https://time.geekbang.org/column/article/141772" target="_blank"><strong>第3讲</strong></a><strong>中与你介绍的集中式算法</strong>：事务管理器相当于协调者，负责各个本地资源的提交和回滚；而资源管理器就是分布式事务的参与者，通常由数据库实现，比如Oracle、DB2等商业数据库都实现了XA接口。</p>
+<p>基于 XA协议的二阶段提交方法中，二阶段提交协议（Two-phase Commit Protocol，2PC），用于保证分布式系统中事务提交时的数据一致性，是XA在全局事务中用于协调多个资源的机制。</p>
+<p>那么，<strong>两阶段提交协议如何保证分布在不同节点上的分布式事务的一致性呢</strong>？为了保证它们的一致性，我们需要引入一个协调者来管理所有的节点，并确保这些节点正确提交操作结果，若提交失败则放弃事务。接下来，我们看看两阶段提交协议的具体过程。</p>
+<p>两阶段提交协议的执行过程，分为投票（Voting）和提交（Commit）两个阶段。</p>
+<p>首先，我们看一下<strong>第一阶段投票</strong>：在这一阶段，协调者（Coordinator，即事务管理器）会向事务的参与者（Cohort，即本地资源管理器）发起执行操作的CanCommit请求，并等待参与者的响应。参与者接收到请求后，会执行请求中的事务操作，将操作信息记录到事务日志中但不提交（即不会修改数据库中的数据），待参与者执行成功，则向协调者发送“Yes”消息，表示同意操作；若不成功，则发送“No”消息，表示终止操作。</p>
+<p>当所有的参与者都返回了操作结果（Yes或No消息）后，<strong>系统进入了第二阶段提交阶段</strong>（也可以称为，执行阶段）。在提交阶段，协调者会根据所有参与者返回的信息向参与者发送DoCommit（提交）或DoAbort（取消）指令。具体规则如下：</p>
+<ul>
+<li>若协调者从参与者那里收到的都是“Yes”消息，则向参与者发送“DoCommit”消息。参与者收到“DoCommit”消息后，完成剩余的操作（比如修改数据库中的数据）并释放资源（整个事务过程中占用的资源），然后向协调者返回“HaveCommitted”消息；</li>
+<li>若协调者从参与者收到的消息中包含“No”消息，则向所有参与者发送“DoAbort”消息。此时投票阶段发送“Yes”消息的参与者，则会根据之前执行操作时的事务日志对操作进行回滚，就好像没有执行过请求操作一样，然后所有参与者会向协调者发送“HaveCommitted”消息；</li>
+<li>协调者接收到来自所有参与者的“HaveCommitted”消息后，就意味着整个事务结束了。</li>
+</ul>
+<p>接下来，<strong>我以用户A要在网上下单购买100件T恤为例，重点与你介绍下单操作和减库存操作这两个操作</strong>，帮助你加深对二阶段提交协议的理解。</p>
+<p>第一阶段：订单系统中将与用户A有关的订单数据库锁住，准备好增加一条关于用户A购买100件T恤的信息，并将同意消息“Yes”回复给协调者。而库存系统由于T恤库存不足，出货失败，因此向协调者回复了一个终止消息“No”。</p>
+<p><img alt="" src="assets/8fbcd52800714eba94a94bf3d38f31ae.jpg"/></p>
+<p>第二阶段：由于库存系统操作不成功，因此，协调者就会向订单系统和库存系统发送“DoAbort”消息。订单系统接收到“DoAbort”消息后，将系统内的数据退回到没有用户A购买100件T恤的版本，并释放锁住的数据库资源。订单系统和库存系统完成操作后，向协调者发送“HaveCommitted”消息，表示完成了事务的撤销操作。</p>
+<p>至此，用户A购买100件T恤这一事务已经结束，用户A购买失败。</p>
+<p><img alt="" src="assets/85877bbad9ce461bab82e35582a46e47.jpg"/></p>
+<p>由上述流程可以看出，<strong>二阶段提交的算法思路可以概括为</strong>：协调者向参与者下发请求事务操作，参与者接收到请求后，进行相关操作并将操作结果通知协调者，协调者根据所有参与者的反馈结果决定各参与者是要提交操作还是撤销操作。</p>
+<p>虽然基于XA的二阶段提交算法尽量保证了数据的强一致性，而且实现成本低，但依然有些不足。主要有以下三个问题：</p>
+<ul>
+<li><strong>同步阻塞问题</strong>：二阶段提交算法在执行过程中，所有参与节点都是事务阻塞型的。也就是说，当本地资源管理器占有临界资源时，其他资源管理器如果要访问同一临界资源，会处于阻塞状态。因此，基于XA的二阶段提交协议不支持高并发场景。</li>
+<li><strong>单点故障问题：</strong>该算法类似于集中式算法，一旦事务管理器发生故障，整个系统都处于停滞状态。尤其是在提交阶段，一旦事务管理器发生故障，资源管理器会由于等待管理器的消息，而一直锁定事务资源，导致整个系统被阻塞。</li>
+<li><strong>数据不一致问题：</strong>在提交阶段，当协调者向所有参与者发送“DoCommit”请求时，如果发生了局部网络异常，或者在发送提交请求的过程中协调者发生了故障，就会导致只有一部分参与者接收到了提交请求并执行提交操作，但其他未接到提交请求的那部分参与者则无法执行事务提交。于是整个分布式系统便出现了数据不一致的问题。</li>
+</ul>
+<h3 id="三阶段提交方法">三阶段提交方法</h3>
+<p>三阶段提交协议（Three-phase Commit Protocol，3PC），是对二阶段提交（2PC）的改进。为了更好地处理两阶段提交的同步阻塞和数据不一致问题，<strong>三阶段提交引入了超时机制和准备阶段</strong>。</p>
+<ul>
+<li>与2PC只是在协调者引入超时机制不同，3PC同时在协调者和参与者中引入了超时机制。如果协调者或参与者在规定的时间内没有接收到来自其他节点的响应，就会根据当前的状态选择提交或者终止整个事务，从而减少了整个集群的阻塞时间，在一定程度上减少或减弱了2PC中出现的同步阻塞问题。</li>
+<li>在第一阶段和第二阶段中间引入了一个准备阶段，或者说把2PC的投票阶段一分为二，也就是在提交阶段之前，加入了一个预提交阶段。在预提交阶段尽可能排除一些不一致的情况，保证在最后提交之前各参与节点的状态是一致的。</li>
+</ul>
+<p>三阶段提交协议就有CanCommit、PreCommit、DoCommit三个阶段，下面我们来看一下这个三个阶段。</p>
+<p><strong>第一，CanCommit阶段。</strong></p>
+<p>协调者向参与者发送请求操作（CanCommit请求），询问参与者是否可以执行事务提交操作，然后等待参与者的响应；参与者收到CanCommit请求之后，回复Yes，表示可以顺利执行事务；否则回复No。</p>
+<p>3PC的CanCommit阶段与2PC的Voting阶段相比：</p>
+<ul>
+<li>类似之处在于：协调者均需要向参与者发送请求操作（CanCommit请求），询问参与者是否可以执行事务提交操作，然后等待参与者的响应。参与者收到CanCommit请求之后，回复Yes，表示可以顺利执行事务；否则回复No。</li>
+<li>不同之处在于，在2PC中，在投票阶段，若参与者可以执行事务，会将操作信息记录到事务日志中但不提交，并返回结果给协调者。但在3PC中，在CanCommit阶段，参与者仅会判断是否可以顺利执行事务，并返回结果。而操作信息记录到事务日志但不提交的操作由第二阶段预提交阶段执行。</li>
+</ul>
+<p>CanCommit阶段不同节点之间的事务请求成功和失败的流程，如下所示。</p>
+<p><img alt="" src="assets/ee8e4afd87a74abfbd70adf1a6bf0544.jpg"/></p>
+<p>当协调者接收到所有参与者回复的消息后，进入预提交阶段（PreCommit阶段）。</p>
+<p><strong>第二，PreCommit阶段。</strong></p>
+<p>协调者根据参与者的回复情况，来决定是否可以进行PreCommit操作（预提交阶段）。</p>
+<ul>
+<li><p>如果所有参与者回复的都是“Yes”，那么协调者就会执行事务的预执行：</p></li>
+<li><p>协调者向参与者发送PreCommit请求，进入预提交阶段。</p></li>
+<li><p>参与者接收到PreCommit请求后执行事务操作，并将Undo和Redo信息记录到事务日志中。</p></li>
+<li><p>如果参与者成功执行了事务操作，则返回ACK响应，同时开始等待最终指令。</p></li>
+<li><p>假如任何一个参与者向协调者发送了“No”消息，或者等待超时之后，协调者都没有收到参与者的响应，就执行中断事务的操作：</p></li>
+<li><p>协调者向所有参与者发送“Abort”消息。</p></li>
+<li><p>参与者收到“Abort”消息之后，或超时后仍未收到协调者的消息，执行事务的中断操作。</p></li>
+</ul>
+<p>预提交阶段，不同节点上事务执行成功和失败的流程，如下所示。</p>
+<p><img alt="" src="assets/2bcc541fae3e49c6ba65853fe716a133.jpg"/></p>
+<p>预提交阶段保证了在最后提交阶段（DoCmmit阶段）之前所有参与者的状态是一致的。</p>
+<p><strong>第三，DoCommit阶段。</strong></p>
+<p>DoCmmit阶段进行真正的事务提交，根据PreCommit阶段协调者发送的消息，进入执行提交阶段或事务中断阶段。</p>
+<ul>
+<li><p><strong>执行提交阶段：</strong></p></li>
+<li><p>若协调者接收到所有参与者发送的Ack响应，则向所有参与者发送DoCommit消息，开始执行阶段。</p></li>
+<li><p>参与者接收到DoCommit消息之后，正式提交事务。完成事务提交之后，释放所有锁住的资源，并向协调者发送Ack响应。</p></li>
+<li><p>协调者接收到所有参与者的Ack响应之后，完成事务。</p></li>
+<li><p><strong>事务中断阶段：</strong></p></li>
+<li><p>协调者向所有参与者发送Abort请求。</p></li>
+<li><p>参与者接收到Abort消息之后，利用其在PreCommit阶段记录的Undo信息执行事务的回滚操作，释放所有锁住的资源，并向协调者发送Ack消息。</p></li>
+<li><p>协调者接收到参与者反馈的Ack消息之后，执行事务的中断，并结束事务。</p></li>
+</ul>
+<p>执行阶段不同节点上事务执行成功和失败(事务中断)的流程，如下所示。</p>
+<p><img alt="" src="assets/607927923cbb46dbb3c9171929d1151f.jpg"/></p>
+<p>3PC协议在协调者和参与者均引入了超时机制。即当参与者在预提交阶段向协调者发送 Ack消息后，如果长时间没有得到协调者的响应，在默认情况下，参与者会自动将超时的事务进行提交，从而减少整个集群的阻塞时间，在一定程度上减少或减弱了2PC中出现的同步阻塞问题。</p>
+<p>但三阶段提交仍然存在数据不一致的情况，比如在PreCommit阶段，部分参与者已经接受到ACK消息进入执行阶段，但部分参与者与协调者网络不通，导致接收不到ACK消息，此时接收到ACK消息的参与者会执行任务，未接收到ACK消息且网络不通的参与者无法执行任务，最终导致数据不一致。</p>
+<h3 id="基于分布式消息的最终一致性方案">基于分布式消息的最终一致性方案</h3>
+<p>2PC和3PC核心思想均是以集中式的方式实现分布式事务，这两种方法都存在两个共同的缺点，一是，同步执行，性能差；二是，数据不一致问题。为了解决这两个问题，通过分布式消息来确保事务最终一致性的方案便出现了。</p>
+<p>在eBay的分布式系统架构中，架构师解决一致性问题的核心思想就是：将需要分布式处理的事务通过消息或者日志的方式异步执行，消息或日志可以存到本地文件、数据库或消息队列中，再通过业务规则进行失败重试。这个案例，就是使用<strong>基于分布式消息的最终一致性方案</strong>解决了分布式事务的问题。</p>
+<p>基于分布式消息的最终一致性方案的事务处理，引入了一个消息中间件（在本案例中，我们采用Message Queue，MQ，消息队列），用于在多个应用之间进行消息传递。实际使用中，阿里就是采用RocketMQ 机制来支持消息事务。</p>
+<p>基于消息中间件协商多个节点分布式事务执行操作的示意图，如下所示。</p>
+<p><img alt="" src="assets/33dfe3e2ce8a4ceebcacec156129d73d.jpg"/></p>
+<p>仍然以网上购物为例。假设用户A在某电商平台下了一个订单，需要支付50元，发现自己的账户余额共150元，就使用余额支付，支付成功之后，订单状态修改为支付成功，然后通知仓库发货。</p>
+<p>在该事件中，涉及到了订单系统、支付系统、仓库系统，这三个系统是相互独立的应用，通过远程服务进行调用。</p>
+<p><img alt="" src="assets/7407d73f457c4826884501e6a64e6191.jpg"/></p>
+<p>根据基于分布式消息的最终一致性方案，用户A通过终端手机首先在订单系统上操作，通过消息队列完成整个购物流程。然后整个购物的流程如下所示。</p>
+<p><img alt="" src="assets/333cdfe48f074dcc8370cdad14c00b79.jpg"/></p>
+<ol>
+<li>订单系统把订单消息发给消息中间件，消息状态标记为“待确认”。</li>
+<li>消息中间件收到消息后，进行消息持久化操作，即在消息存储系统中新增一条状态为“待发送”的消息。</li>
+<li>消息中间件返回消息持久化结果（成功/失败），订单系统根据返回结果判断如何进行业务操作。失败，放弃订单，结束（必要时向上层返回失败结果）；成功，则创建订单。</li>
+<li>订单操作完成后，把操作结果（成功/失败）发送给消息中间件。</li>
+<li>消息中间件收到业务操作结果后，根据结果进行处理：失败，删除消息存储中的消息，结束；成功，则更新消息存储中的消息状态为“待发送（可发送）”，并执行消息投递。</li>
+<li>如果消息状态为“可发送”，则MQ会将消息发送给支付系统，表示已经创建好订单，需要对订单进行支付。支付系统也按照上述方式进行订单支付操作。</li>
+<li>订单系统支付完成后，会将支付消息返回给消息中间件，中间件将消息传送给订单系统。若支付失败，则订单操作失败，订单系统回滚到上一个状态，MQ中相关消息将被删除；若支付成功，则订单系统再调用库存系统，进行出货操作，操作流程与支付系统类似。</li>
+</ol>
+<p>在上述过程中，可能会产生如下异常情况，其对应的解决方案为：</p>
+<ol>
+<li>订单消息未成功存储到MQ中，则订单系统不执行任何操作，数据保持一致；</li>
+<li>MQ成功将消息发送给支付系统（或仓库系统），但是支付系统（或仓库系统）操作成功的ACK消息回传失败（由于通信方面的原因），导致订单系统与支付系统（或仓库系统）数据不一致，此时MQ会确认各系统的操作结果，删除相关消息，支付系统（或仓库系统）操作回滚，使得各系统数据保持一致；</li>
+<li>MQ成功将消息发送给支付系统（或仓库系统），但是支付系统（或仓库系统）操作成功的ACK消息回传成功，订单系统操作后的最终结果（成功或失败）未能成功发送给MQ，此时各系统数据可能不一致，MQ也需确认各系统的操作结果，若数据一致，则更新消息；若不一致，则回滚操作、删除消息。</li>
+</ol>
+<p>基于分布式消息的最终一致性方案采用消息传递机制，并使用异步通信的方式，避免了通信阻塞，从而增加系统的吞吐量。同时，这种方案还可以屏蔽不同系统的协议规范，使其可以直接交互。</p>
+<p>在不需要请求立即返回结果的场景下， 这些特性就带来了明显的通信优势，并且通过引入消息中间件，实现了消息生成方（如上述的订单系统）本地事务和消息发送的原子性，采用最终一致性的方式，只需保证数据最终一致即可，一定程度上解决了二阶段和三阶段方法要保证强一致性而在某些情况导致的数据不一致问题。</p>
+<p>可以看出，分布式事务中，当且仅当所有的事务均成功时整个流程才成功。所以，<strong>分布式事务的一致性是实现分布式事务的关键问题，目前来看还没有一种很简单、完美的方案可以应对所有场景。</strong></p>
+<h3 id="三种实现方式对比">三种实现方式对比</h3>
+<p>现在，为了方便你理解并记忆这三种方法，我总结了一张表格，从算法一致性、执行方式、性能等角度进行了对比：</p>
+<p><img alt="" src="assets/0961db86497a4a3095711484cba6f9df.jpg"/></p>
+<h2 id="知识扩展-刚性事务与柔性事务">知识扩展：刚性事务与柔性事务</h2>
+<p>在讨论事务的时候，我们经常会提到刚性事务与柔性事务，但却很难区分这两种事务。所以，今天的知识扩展内容，我就来和你说说什么是刚性事务、柔性事务，以及两者之间有何区别？</p>
+<ul>
+<li>刚性事务，遵循ACID原则，具有强一致性。比如，数据库事务。</li>
+<li>柔性事务，其实就是根据不同的业务场景使用不同的方法实现最终一致性，也就是说我们可以根据业务的特性做部分取舍，容忍一定时间内的数据不一致。</li>
+</ul>
+<p>总结来讲，与刚性事务不同，柔性事务允许一定时间内，数据不一致，但要求最终一致。而柔性事务的最终一致性，遵循的是BASE理论。</p>
+<p>那，<strong>什么是BASE理论</strong>呢？</p>
+<p>eBay 公司的工程师 Dan Pritchett曾提出了一种分布式存储系统的设计模式——BASE理论。 BASE理论包括基本可用（Basically Available）、柔性状态（Soft State）和最终一致性（Eventual Consistency）。</p>
+<ul>
+<li>基本可用：分布式系统出现故障的时候，允许损失一部分功能的可用性，保证核心功能可用。比如，某些电商618大促的时候，会对一些非核心链路的功能进行降级处理。</li>
+<li>柔性状态：在柔性事务中，允许系统存在中间状态，且这个中间状态不会影响系统整体可用性。比如，数据库读写分离，写库同步到读库（主库同步到从库）会有一个延时，其实就是一种柔性状态。</li>
+<li>最终一致性：事务在操作过程中可能会由于同步延迟等问题导致不一致，但最终状态下，所有数据都是一致的。</li>
+</ul>
+<p>BASE理论为了支持大型分布式系统，通过牺牲强一致性，保证最终一致性，来获得高可用性，是对ACID原则的弱化。ACID 与 BASE 是对一致性和可用性的权衡所产生的不同结果，但二者都保证了数据的持久性。ACID 选择了强一致性而放弃了系统的可用性。与ACID原则不同的是，BASE理论保证了系统的可用性，允许数据在一段时间内可以不一致，最终达到一致状态即可，也即牺牲了部分的数据一致性，选择了最终一致性。</p>
+<p>具体到今天的三种分布式事务实现方式，二阶段提交、三阶段提交方法，遵循的是ACID原则，而消息最终一致性方案遵循的就是BASE理论。</p>
+<h2 id="总结">总结</h2>
+<p>我从事务的ACID特性出发，介绍了分布式事务的概念、特征，以及如何实现分布式事务。在关于如何实现分布式的部分，我以网购为例，与你介绍了常见的三种实现方式，即基于XA协议的二阶段提交方法，三阶段方法以及基于分布式消息的最终一致性方法。</p>
+<p>二阶段和三阶段方法是维护强一致性的算法，它们针对刚性事务，实现的是事务的ACID特性。而基于分布式消息的最终一致性方案更适用于大规模分布式系统，它维护的是事务的最终一致性，遵循的是BASE理论，因此适用于柔性事务。</p>
+<p>在分布式系统的设计与实现中，分布式事务是不可或缺的一部分。可以说，没有实现分布式事务的分布式系统，不是一个完整的分布式系统。分布式事务的实现过程看似复杂，但将方法分解剖析后，你就会发现分布式事务的实现是有章可循的。</p>
+<p>我将实现分布式事务常用的三个算法整理为了一张思维导图，以帮助你加深理解与记忆。</p>
+<p><img alt="" src="assets/79b2ee95e09547de9316c56b39ccdbf5.jpg"/></p>
+<h2 id="思考题">思考题</h2>
+<p>你觉得分布式互斥与分布式事务之间的关系是什么呢？</p>
+<p>我是聂鹏程，感谢你的收听，欢迎你在评论区给我留言分享你的观点，也欢迎你把这篇文章分享给更多的朋友一起阅读。我们下期再会！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#b2dedede8b8683838285f2d5dfd3dbde9cd1dddf" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935947926e5f7048',t:'MTc0NTUzNjI4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
