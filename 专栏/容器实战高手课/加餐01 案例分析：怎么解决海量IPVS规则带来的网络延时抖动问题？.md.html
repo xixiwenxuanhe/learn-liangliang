@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%80%e4%b8%aa%e6%80%81%e5%ba%a6%e4%b8%a4%e4%b8%aa%e6%ad%a5%e9%aa%a4%ef%bc%8c%e6%88%90%e4%b8%ba%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b.md.html" id="00 开篇词 一个态度两个步骤，成为容器实战高手.md.html">00 开篇词 一个态度两个步骤，成为容器实战高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/01%20%e8%ae%a4%e8%af%86%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%e5%92%8c%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="01 认识容器：容器的基本操作和实现原理.md.html">01 认识容器：容器的基本操作和实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/02%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%881%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%83%bdkill%201%e5%8f%b7%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html">02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/03%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%882%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e5%83%b5%e5%b0%b8%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html">03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/04%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%883%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e8%bf%9b%e7%a8%8b%e8%a2%ab%e5%bc%ba%e5%88%b6%e6%9d%80%e6%ad%bb%e4%ba%86%ef%bc%9f.md.html" id="04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html">04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/05%20%e5%ae%b9%e5%99%a8CPU%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e9%99%90%e5%88%b6%e5%ae%b9%e5%99%a8%e7%9a%84CPU%e4%bd%bf%e7%94%a8%ef%bc%9f.md.html" id="05 容器CPU（1）：怎么限制容器的CPU使用？.md.html">05 容器CPU（1）：怎么限制容器的CPU使用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/06%20%e5%ae%b9%e5%99%a8CPU%ef%bc%882%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%9c%b0%e6%8b%bf%e5%88%b0%e5%ae%b9%e5%99%a8CPU%e7%9a%84%e5%bc%80%e9%94%80%ef%bc%9f.md.html" id="06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html">06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/07%20Load%20Average%ef%bc%9a%e5%8a%a0%e4%ba%86CPU%20Cgroup%e9%99%90%e5%88%b6%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e8%bf%98%e6%98%af%e5%be%88%e6%85%a2%ef%bc%9f.md.html" id="07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html">07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/08%20%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a2%ab%e6%9d%80%e4%ba%86%ef%bc%9f.md.html" id="08 容器内存：我的容器为什么被杀了？.md.html">08 容器内存：我的容器为什么被杀了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/09%20Page%20Cache%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%e4%bd%bf%e7%94%a8%e9%87%8f%e6%80%bb%e6%98%af%e5%9c%a8%e4%b8%b4%e7%95%8c%e7%82%b9.md.html" id="09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html">09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/10%20Swap%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%8f%af%e4%bb%a5%e4%bd%bf%e7%94%a8Swap%e7%a9%ba%e9%97%b4%e5%90%97%ef%bc%9f.md.html" id="10 Swap：容器可以使用Swap空间吗？.md.html">10 Swap：容器可以使用Swap空间吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/11%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e8%af%bb%e5%86%99%e6%96%87%e4%bb%b6%e6%80%8e%e4%b9%88%e5%8f%98%e6%85%a2%e4%ba%86%ef%bc%9f.md.html" id="11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html">11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/12%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6Quota%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e6%8a%8a%e5%ae%bf%e4%b8%bb%e6%9c%ba%e7%9a%84%e7%a3%81%e7%9b%98%e5%86%99%e6%bb%a1%e4%ba%86%ef%bc%9f.md.html" id="12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html">12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/13%20%e5%ae%b9%e5%99%a8%e7%a3%81%e7%9b%98%e9%99%90%e9%80%9f%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e7%a3%81%e7%9b%98%e8%af%bb%e5%86%99%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%a8%b3%e5%ae%9a_.md.html" id="13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html">13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/14%20%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e5%86%85%e5%ad%98%e4%b8%8eIO%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%86%99%e6%96%87%e4%bb%b6%e7%9a%84%e5%bb%b6%e6%97%b6%e4%b8%ba%e4%bb%80%e4%b9%88%e6%b3%a2%e5%8a%a8%e5%be%88%e5%a4%a7%ef%bc%9f.md.html" id="14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html">14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/15%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%ef%bc%9a%e6%88%91%e4%bf%ae%e6%94%b9%e4%ba%86_proc_sys_net%e4%b8%8b%e7%9a%84%e5%8f%82%e6%95%b0%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%b5%b7%e6%95%88%ef%bc%9f.md.html" id="15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html">15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/16%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%881%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e4%b8%8d%e9%80%9a%e4%ba%86%e8%a6%81%e6%80%8e%e4%b9%88%e8%b0%83%e8%af%95.md.html" id="16 容器网络配置（1）：容器网络不通了要怎么调试.md.html">16 容器网络配置（1）：容器网络不通了要怎么调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/17%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%882%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e8%a6%81%e6%af%94%e5%ae%bf%e4%b8%bb%e6%9c%ba%e4%b8%8a%e7%9a%84%e9%ab%98%e5%90%97.md.html" id="17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html">17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/18%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%883%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e7%bd%91%e7%bb%9c%e4%b9%b1%e5%ba%8f%e5%8c%85%e6%80%8e%e4%b9%88%e8%bf%99%e4%b9%88%e9%ab%98%ef%bc%9f.md.html" id="18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html">18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/19%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%881%ef%bc%89%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e7%9c%9f%e7%9a%84%e9%9c%80%e8%a6%81privileged%e6%9d%83%e9%99%90%e5%90%97.md.html" id="19 容器安全（1）：我的容器真的需要privileged权限吗.md.html">19 容器安全（1）：我的容器真的需要privileged权限吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/20%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%882%ef%bc%89%ef%bc%9a%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%ef%bc%8c%e6%88%91%e4%b8%8d%e4%bb%a5root%e7%94%a8%e6%88%b7%e6%9d%a5%e8%bf%90%e8%a1%8c%e7%a8%8b%e5%ba%8f%e5%8f%af%e4%bb%a5%e5%90%97%ef%bc%9f.md.html" id="20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html">20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90%ef%bc%9a%e6%80%8e%e4%b9%88%e8%a7%a3%e5%86%b3%e6%b5%b7%e9%87%8fIPVS%e8%a7%84%e5%88%99%e5%b8%a6%e6%9d%a5%e7%9a%84%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e6%8a%96%e5%8a%a8%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html">加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e7%90%86%e8%a7%a3perf%ef%bc%9a%e6%80%8e%e4%b9%88%e7%94%a8perf%e8%81%9a%e7%84%a6%e7%83%ad%e7%82%b9%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐02 理解perf：怎么用perf聚焦热点函数？.md.html">加餐02 理解perf：怎么用perf聚焦热点函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e7%90%86%e8%a7%a3ftrace%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e5%ba%94%e7%94%a8ftrace%e6%9f%a5%e7%9c%8b%e9%95%bf%e5%bb%b6%e6%97%b6%e5%86%85%e6%a0%b8%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html">加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e7%90%86%e8%a7%a3ftrace%ef%bc%882%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e7%90%86%e8%a7%a3ftrace%e8%83%8c%e5%90%8e%e7%9a%84%e6%8a%80%e6%9c%aftracepoint%e5%92%8ckprobe%ef%bc%9f.md.html" id="加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html">加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9005%20eBPF%ef%bc%9a%e6%80%8e%e4%b9%88%e6%9b%b4%e5%8a%a0%e6%b7%b1%e5%85%a5%e5%9c%b0%e6%9f%a5%e7%9c%8b%e5%86%85%e6%a0%b8%e4%b8%ad%e7%9a%84%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html">加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9006%20BCC%ef%bc%9a%e5%85%a5%e9%97%a8eBPF%e7%9a%84%e5%89%8d%e7%ab%af%e5%b7%a5%e5%85%b7.md.html" id="加餐06 BCC：入门eBPF的前端工具.md.html">加餐06 BCC：入门eBPF的前端工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e8%b7%b3%e5%87%ba%e8%88%92%e9%80%82%e5%8c%ba%ef%bc%8c%e7%aa%81%e7%a0%b4%e6%80%9d%e8%80%83%e7%9a%84%e6%83%b0%e6%80%a7.md.html" id="结束语 跳出舒适区，突破思考的惰性.md.html">结束语 跳出舒适区，突破思考的惰性.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？" id="title">加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？</h1>
+<div><p>你好，我是程远。</p>
+<p>今天，我们进入到了加餐专题部分。我在结束语的彩蛋里就和你说过，在这个加餐案例中，我们会用到perf、ftrace、bcc/ebpf这几个Linux调试工具，了解它们的原理，熟悉它们在调试问题的不同阶段所发挥的作用。</p>
+<p>加餐内容我是这样安排的，专题的第1讲我先完整交代这个案例的背景，带你回顾我们当时整个的调试过程和思路，然后用5讲内容，对这个案例中用到的调试工具依次进行详细讲解。</p>
+<p>好了，话不多说。这一讲，我们先来整体看一下这个容器网络延时的案例。</p>
+<h2 id="问题的背景">问题的背景</h2>
+<p>在2020年初的时候，我们的一个用户把他们的应用从虚拟机迁移到了Kubernetes平台上。迁移之后，用户发现他们的应用在容器中的出错率很高，相比在之前虚拟机上的出错率要高出一个数量级。</p>
+<p>那为什么会有这么大的差别呢？我们首先分析了应用程序的出错日志，发现在Kubernetes平台上，几乎所有的出错都是因为网络超时导致的。</p>
+<p>经过网络环境排查和比对测试，我们排除了网络设备上的问题，那么这个超时就只能是容器和宿主机上的问题了。</p>
+<p>这里要先和你说明的是，尽管应用程序的出错率在容器中比在虚拟机里高出一个数量级，不过这个出错比例仍然是非常低的，在虚拟机中的出错率是0.001%，而在容器中的出错率是0.01%~0.04%。</p>
+<p>因为这个出错率还是很低，所以对于这种低概率事件，我们想复现和排查问题，难度就很大了。</p>
+<p>当时我们查看了一些日常的节点监控数据，比如CPU使用率、Load Average、内存使用、网络流量和丢包数量、磁盘I/O，发现从这些数据中都看不到任何的异常。</p>
+<p>既然常规手段无效，那我们应该如何下手去调试这个问题呢？</p>
+<p>你可能会想到用 <strong>tcpdump</strong>看一看，因为它是网络抓包最常见的工具。其实我们当时也这样想过，不过马上就被自己否定了，因为这个方法存在下面三个问题。</p>
+<p>第一，我们遇到的延时问题是偶尔延时，所以需要长时间地抓取数据，这样抓取的数据量就会很大。</p>
+<p>第二，在抓完数据之后，需要单独设计一套分析程序来找到长延时的数据包。</p>
+<p>第三，即使我们找到了长延时的数据包，也只是从实际的数据包层面证实了问题。但是这样做无法取得新进展，也无法帮助我们发现案例中网络超时的根本原因。</p>
+<h2 id="调试过程">调试过程</h2>
+<p>对于这种非常偶然的延时问题，之前我们能做的是依靠经验，去查看一些可疑点碰碰“运气”。</p>
+<p>不过这一次，我们想用更加系统的方法来调试这个问题。所以接下来，我会从ebpf破冰，perf进一步定位以及用ftrace最终锁定这三个步骤，带你一步步去解决这个复杂的网络延时问题。</p>
+<h3 id="ebpf的破冰">ebpf的破冰</h3>
+<p>我们的想法是这样的：因为延时产生在节点上，所以可以推测，这个延时有很大的概率发生在Linux内核处理数据包的过程中。</p>
+<p>沿着这个思路，还需要进一步探索。我们想到，可以给每个数据包在内核协议栈关键的函数上都打上时间戳，然后计算数据包在每两个函数之间的时间差，如果这个时间差比较大，就可以说明问题出在这两个内核函数之间。</p>
+<p>要想找到内核协议栈中的关键函数，还是比较容易的。比如下面的这张示意图里，就列出了Linux内核在接收数据包和发送数据包过程中的主要函数：</p>
+<p><img alt="img" src="assets/7aeb58d336ab808b74e8a34e56efa69d.jpeg">
+找到这些主要函数之后，下一个问题就是，想给每个数据包在经过这些函数的时候打上时间戳做记录，应该用什么方法呢？接下来我们一起来看看。</img></p>
+<p>在不修改内核源代码的情况，要截获内核函数，我们可以利用<a href="https://www.kernel.org/doc/Documentation/kprobes.txt" target="_blank">kprobe</a>或者<a href="https://www.kernel.org/doc/Documentation/trace/tracepoints.txt" target="_blank">tracepoint</a>的接口。</p>
+<p>使用这两种接口的方法也有两种：一是直接写kernel module来调用kprobe或者tracepoint的接口，第二种方法是通过<a href="https://www.kernel.org/doc/html/latest/bpf/index.html" target="_blank">ebpf</a>的接口来调用它们。在后面的课程里，我还会详细讲解ebpf、kprobe、tracepoint，这里你先有个印象就行。</p>
+<p>在这里，我们选择了第二种方法，也就是使用ebpf来调用kprobe或者tracepoint接口，记录数据包处理过程中这些协议栈函数的每一次调用。</p>
+<p>选择ebpf的原因主要是两个：一是ebpf的程序在内核中加载会做很严格的检查，这样在生产环境中使用比较安全；二是ebpf map功能可以方便地进行内核态与用户态的通讯，这样实现一个工具也比较容易。</p>
+<p>决定了方法之后，这里我们需要先实现一个ebpf工具，然后用这个工具来对内核网络函数做trace。</p>
+<p>我们工具的具体实现是这样的，针对用户的一个TCP/IP数据流，记录这个流的数据发送包与数据接收包的传输过程，也就是数据发送包从容器的Network Namespace发出，一直到它到达宿主机的eth0的全过程，以及数据接收包从宿主机的eth0返回到容器Network Namespace的eth0的全程。</p>
+<p>在收集了数十万条记录后，我们对数据做了分析，找出前后两步时间差大于50毫秒（ms）的记录。最后，我们终于发现了下面这段记录：</p>
+<p><img alt="img" src="assets/31da6708b94be43cccfd5dd70aa34e4a.jpg"/></p>
+<p>在这段记录中，我们先看一下“Network Namespace”这一列。编号3对应的Namespace ID 4026535252是容器里的，而ID4026532057是宿主机上的Host Namespace。</p>
+<p>数据包从1到7的数据表示了，一个数据包从容器里的eth0通过veth发到宿主机上的peer veth cali29cf0fa56ce，然后再通过路由从宿主机的obr0（openvswitch）接口和eth0接口发出。</p>
+<p>为了方便你理解，我在下面画了一张示意图，描述了这个数据包的传输过程：</p>
+<p><img alt="img" src="assets/8941bdb41a760382e7382124e6410f67.jpeg"/></p>
+<p>在这个过程里，我们发现了当数据包从容器的eth0发送到宿主机上的cali29cf0fa56ce，也就是从第3步到第4步之间，花费的时间是10865291752980718-10865291551180388=201800330。</p>
+<p>因为时间戳的单位是纳秒ns，而201800330超过了200毫秒（ms），这个时间显然是不正常的。</p>
+<p>你还记得吗？我们在容器网络模块的[第17讲]说过veth pair之间数据的发送，它会触发一个softirq，并且在我们ebpf的记录中也可以看到，当数据包到达cali29cf0fa56ce后，就是softirqd进程在CPU32上对它做处理。</p>
+<p>那么这时候，我们就可以把关注点放到CPU32的softirq处理上了。我们再仔细看看CPU32上的si（softirq）的CPU使用情况（运行top命令之后再按一下数字键1，就可以列出每个CPU的使用率了），会发现在CPU32上时不时出现si CPU使用率超过20%的现象。</p>
+<p>具体的输出情况如下：</p>
+<pre><code class="language-shell">%Cpu32 :  8.7 us,  0.0 sy,  0.0 ni, 62.1 id,  0.0 wa,  0.0 hi, 29.1 si,  0.0 st
+</code></pre>
+<p>其实刚才说的这点，在最初的节点监控数据上，我们是不容易注意到的。这是因为我们的节点上有80个CPU，单个CPUsi偶尔超过20%，平均到80个CPU上就只有 0.25%了。要知道，对于一个普通节点，1%的si使用率都是很正常的。</p>
+<p>好了，到这里我们已经缩小了问题的排查范围。可以看到，使用了ebpf帮助我们在毫无头绪的情况，找到了一个比较明确的方向。那么下一步，我们自然要顺藤摸瓜，进一步去搞清楚，为什么在CPU32上的softirq CPU使用率会时不时突然增高？</p>
+<h3 id="perf-定位热点">perf 定位热点</h3>
+<p>对于查找高CPU使用率情况下的热点函数，perf显然是最有力的工具。我们只需要执行一下后面的这条命令，看一下CPU32上的函数调用的热度。</p>
+<pre><code class="language-shell"># perf record -C 32 -g -- sleep 10
+</code></pre>
+<p>为了方便查看，我们可以把 <code>perf record</code> 输出的结果做成一个火焰图，具体的方法我在下一讲里介绍，这里你需要先理解定位热点的整体思路。</p>
+<p><img alt="img" src="assets/7f66d31a3e32f8bcfc8600abe713962e.png"/></p>
+<p>结合前面的数据分析，我们已经知道了问题出现在softirq的处理过程中，那么在查看火焰图的时候，就要特别关注在softirq中被调用到的函数。</p>
+<p>从上面这张图里，我们可以看到，run_timer_softirq所占的比例是比较大的，而在run_timer_softirq中的绝大部分比例又是被一个叫作estimation_timer()的函数所占用的。</p>
+<p>运行完perf之后，我们离真相又近了一步。现在，我们知道了CPU32上softirq的繁忙是因为TIMER softirq引起的，而TIMER softirq里又在不断地调用 <strong>estimation_timer() 这个函数</strong>。</p>
+<p>沿着这个思路继续分析，对于TIMER softirq的高占比，一般有这两种情况，一是softirq发生的频率很高，二是softirq中的函数执行的时间很长。</p>
+<p>那怎么判断具体是哪种情况呢？我们用/proc/softirqs查看CPU32上TIMER softirq每秒钟的次数，就会发现TIMER softirq在CPU32上的频率其实并不高。</p>
+<p>这样第一种情况就排除了，那我们下面就来看看，Timer softirq中的那个函数estimation_timer()，是不是它的执行时间太长了？</p>
+<h3 id="ftrace-锁定长延时函数">ftrace 锁定长延时函数</h3>
+<p>我们怎样才能得到estimation_timer()函数的执行时间呢？</p>
+<p>你还记得，我们在容器I/O与内存[那一讲]里用过的<a href="https://www.kernel.org/doc/Documentation/trace/ftrace.txt" target="_blank">ftrace</a>么？当时我们把ftrace的tracer设置为function_graph，通过这个办法查看内核函数的调用时间。在这里我们也可以用同样的方法，查看estimation_timer()的调用时间。</p>
+<p>这时候，我们会发现在CPU32上的estimation_timer()这个函数每次被调用的时间都特别长，比如下面图里的记录，可以看到CPU32上的时间高达310毫秒！</p>
+<p><img alt="img" src="assets/880a8ce02a8412d2e8d31b4c923cdd29.png"/></p>
+<p>现在，我们可以确定问题就出在estimation_timer()这个函数里了。</p>
+<p>接下来，我们需要读一下estimation_timer()在内核中的源代码，看看这个函数到底是干什么的，它为什么耗费了这么长的时间。其实定位到这一步，后面的工作就比较容易了。</p>
+<p>estimation_timer()是<a href="http://www.linuxvirtualserver.org/software/ipvs.html" target="_blank">IPVS</a>模块中每隔2秒钟就要调用的一个函数，它主要用来更新节点上每一条IPVS规则的状态。Kubernetes Cluster里每建一个service，在所有的节点上都会为这个service建立相应的IPVS规则。</p>
+<p>通过下面这条命令，我们可以看到节点上IPVS规则的数目：</p>
+<pre><code class="language-shell"># ipvsadm -L -n | wc -l
+79004
+</code></pre>
+<p>我们的节点上已经建立了将近80K条IPVS规则，而estimation_timer()每次都需要遍历所有的规则来更新状态，这样就导致estimation_timer()函数时间开销需要上百毫秒。</p>
+<p>我们还有最后一个问题，estimation_timer()是TIMER softirq里执行的函数，那它为什么会影响到网络RX softirq的延时呢？</p>
+<p>这个问题，我们只要看一下softirq的处理函数<a href="https://github.com/torvalds/linux/blob/219d54332a09e8d8741c1e1982f5eae56099de85/kernel/softirq.c#L280" target="_blank">__do_softirq()</a>，就会明白了。因为在同一个CPU上，__do_softirq()会串行执行每一种类型的softirq，所以TIMER softirq执行的时间长了，自然会影响到下一个RX softirq的执行。</p>
+<p>好了，分析这里，这个网络延时问题产生的原因我们已经完全弄清楚了。接下来，我带你系统梳理一下这个问题的解决思路。</p>
+<h2 id="问题小结">问题小结</h2>
+<p>首先回顾一下今天这一讲的问题，我们分析了一个在容器平台的生产环境中，用户的应用程序网络延时的问题。这个延时只是偶尔发生，并且出错率只有0.01%~0.04%，所以我们从常规的监控数据中无法看到任何异常。</p>
+<p>那调试这个问题该如何下手呢？</p>
+<p>我们想到的方法是使用ebpf调用kprobe/tracepoint的接口，这样就可以追踪数据包在内核协议栈主要函数中花费的时间。</p>
+<p>我们实现了一个ebpf工具，并且用它缩小了排查范围，我们发现当数据包从容器的veth接口发送到宿主机上的veth接口，在某个CPU上的softirq的处理会有很长的延时。并且由此发现了，在对应的CPU上si的CPU使用率时不时会超过20%。</p>
+<p>找到了这个突破口之后，我们用perf工具专门查找了这个CPU上的热点函数，发现TIMER softirq中调用estimation_timer()的占比是比较高的。</p>
+<p>接下来，我们使用ftrace进一步确认了，在这个特定CPU上estimation_timer()所花费的时间需要几百毫秒。</p>
+<p>通过这些步骤，我们最终锁定了问题出在IPVS的这个estimation_timer()函数里，也找到了问题的根本原因：<strong>在我们的节点上存在大量的IPVS规则，每次遍历这些规则都会消耗很多时间，最终导致了网络超时现象。</strong></p>
+<p>知道了原因之后，因为我们在生产环境中并不需要读取IPVS规则状态，所以为了快速解决生产环境上的问题，我们可以使用内核<a href="https://www.kernel.org/doc/html/latest/livepatch/livepatch.html" target="_blank">livepatch</a>的机制在线地把estimation_timer()函数替换成了一个空函数。</p>
+<p>这样，我们就暂时规避了因为estimation_timer()耗时长而影响其他softirq的问题。至于长期的解决方案，我们可以把IPVS规则的状态统计从TIMER softirq中转移到kernel thread中处理。</p>
+<h2 id="思考题">思考题</h2>
+<p>如果不使用ebpf工具，你还有什么方法来找到这个问题的突破口呢？</p>
+<p>欢迎你在留言区和我交流讨论。如果这一讲的内容对你有帮助的话，也欢迎转发给你的朋友、同事，和他一起学习进步。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#d7bbbbbbeee3e6e6e7e097b0bab6bebbf9b4b8ba" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935958b2bf42e5bc',t:'MTc0NTUzNjk4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

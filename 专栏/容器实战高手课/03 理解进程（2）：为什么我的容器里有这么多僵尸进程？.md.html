@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="03 理解进程（2）：为什么我的容器里有这么多僵尸进程？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>03 理解进程（2）：为什么我的容器里有这么多僵尸进程？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%80%e4%b8%aa%e6%80%81%e5%ba%a6%e4%b8%a4%e4%b8%aa%e6%ad%a5%e9%aa%a4%ef%bc%8c%e6%88%90%e4%b8%ba%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b.md.html" id="00 开篇词 一个态度两个步骤，成为容器实战高手.md.html">00 开篇词 一个态度两个步骤，成为容器实战高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/01%20%e8%ae%a4%e8%af%86%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%e5%92%8c%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="01 认识容器：容器的基本操作和实现原理.md.html">01 认识容器：容器的基本操作和实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/02%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%881%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%83%bdkill%201%e5%8f%b7%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html">02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/03%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%882%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e5%83%b5%e5%b0%b8%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html">03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/04%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%883%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e8%bf%9b%e7%a8%8b%e8%a2%ab%e5%bc%ba%e5%88%b6%e6%9d%80%e6%ad%bb%e4%ba%86%ef%bc%9f.md.html" id="04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html">04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/05%20%e5%ae%b9%e5%99%a8CPU%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e9%99%90%e5%88%b6%e5%ae%b9%e5%99%a8%e7%9a%84CPU%e4%bd%bf%e7%94%a8%ef%bc%9f.md.html" id="05 容器CPU（1）：怎么限制容器的CPU使用？.md.html">05 容器CPU（1）：怎么限制容器的CPU使用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/06%20%e5%ae%b9%e5%99%a8CPU%ef%bc%882%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%9c%b0%e6%8b%bf%e5%88%b0%e5%ae%b9%e5%99%a8CPU%e7%9a%84%e5%bc%80%e9%94%80%ef%bc%9f.md.html" id="06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html">06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/07%20Load%20Average%ef%bc%9a%e5%8a%a0%e4%ba%86CPU%20Cgroup%e9%99%90%e5%88%b6%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e8%bf%98%e6%98%af%e5%be%88%e6%85%a2%ef%bc%9f.md.html" id="07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html">07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/08%20%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a2%ab%e6%9d%80%e4%ba%86%ef%bc%9f.md.html" id="08 容器内存：我的容器为什么被杀了？.md.html">08 容器内存：我的容器为什么被杀了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/09%20Page%20Cache%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%e4%bd%bf%e7%94%a8%e9%87%8f%e6%80%bb%e6%98%af%e5%9c%a8%e4%b8%b4%e7%95%8c%e7%82%b9.md.html" id="09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html">09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/10%20Swap%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%8f%af%e4%bb%a5%e4%bd%bf%e7%94%a8Swap%e7%a9%ba%e9%97%b4%e5%90%97%ef%bc%9f.md.html" id="10 Swap：容器可以使用Swap空间吗？.md.html">10 Swap：容器可以使用Swap空间吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/11%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e8%af%bb%e5%86%99%e6%96%87%e4%bb%b6%e6%80%8e%e4%b9%88%e5%8f%98%e6%85%a2%e4%ba%86%ef%bc%9f.md.html" id="11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html">11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/12%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6Quota%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e6%8a%8a%e5%ae%bf%e4%b8%bb%e6%9c%ba%e7%9a%84%e7%a3%81%e7%9b%98%e5%86%99%e6%bb%a1%e4%ba%86%ef%bc%9f.md.html" id="12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html">12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/13%20%e5%ae%b9%e5%99%a8%e7%a3%81%e7%9b%98%e9%99%90%e9%80%9f%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e7%a3%81%e7%9b%98%e8%af%bb%e5%86%99%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%a8%b3%e5%ae%9a_.md.html" id="13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html">13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/14%20%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e5%86%85%e5%ad%98%e4%b8%8eIO%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%86%99%e6%96%87%e4%bb%b6%e7%9a%84%e5%bb%b6%e6%97%b6%e4%b8%ba%e4%bb%80%e4%b9%88%e6%b3%a2%e5%8a%a8%e5%be%88%e5%a4%a7%ef%bc%9f.md.html" id="14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html">14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/15%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%ef%bc%9a%e6%88%91%e4%bf%ae%e6%94%b9%e4%ba%86_proc_sys_net%e4%b8%8b%e7%9a%84%e5%8f%82%e6%95%b0%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%b5%b7%e6%95%88%ef%bc%9f.md.html" id="15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html">15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/16%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%881%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e4%b8%8d%e9%80%9a%e4%ba%86%e8%a6%81%e6%80%8e%e4%b9%88%e8%b0%83%e8%af%95.md.html" id="16 容器网络配置（1）：容器网络不通了要怎么调试.md.html">16 容器网络配置（1）：容器网络不通了要怎么调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/17%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%882%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e8%a6%81%e6%af%94%e5%ae%bf%e4%b8%bb%e6%9c%ba%e4%b8%8a%e7%9a%84%e9%ab%98%e5%90%97.md.html" id="17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html">17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/18%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%883%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e7%bd%91%e7%bb%9c%e4%b9%b1%e5%ba%8f%e5%8c%85%e6%80%8e%e4%b9%88%e8%bf%99%e4%b9%88%e9%ab%98%ef%bc%9f.md.html" id="18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html">18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/19%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%881%ef%bc%89%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e7%9c%9f%e7%9a%84%e9%9c%80%e8%a6%81privileged%e6%9d%83%e9%99%90%e5%90%97.md.html" id="19 容器安全（1）：我的容器真的需要privileged权限吗.md.html">19 容器安全（1）：我的容器真的需要privileged权限吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/20%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%882%ef%bc%89%ef%bc%9a%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%ef%bc%8c%e6%88%91%e4%b8%8d%e4%bb%a5root%e7%94%a8%e6%88%b7%e6%9d%a5%e8%bf%90%e8%a1%8c%e7%a8%8b%e5%ba%8f%e5%8f%af%e4%bb%a5%e5%90%97%ef%bc%9f.md.html" id="20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html">20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90%ef%bc%9a%e6%80%8e%e4%b9%88%e8%a7%a3%e5%86%b3%e6%b5%b7%e9%87%8fIPVS%e8%a7%84%e5%88%99%e5%b8%a6%e6%9d%a5%e7%9a%84%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e6%8a%96%e5%8a%a8%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html">加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e7%90%86%e8%a7%a3perf%ef%bc%9a%e6%80%8e%e4%b9%88%e7%94%a8perf%e8%81%9a%e7%84%a6%e7%83%ad%e7%82%b9%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐02 理解perf：怎么用perf聚焦热点函数？.md.html">加餐02 理解perf：怎么用perf聚焦热点函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e7%90%86%e8%a7%a3ftrace%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e5%ba%94%e7%94%a8ftrace%e6%9f%a5%e7%9c%8b%e9%95%bf%e5%bb%b6%e6%97%b6%e5%86%85%e6%a0%b8%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html">加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e7%90%86%e8%a7%a3ftrace%ef%bc%882%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e7%90%86%e8%a7%a3ftrace%e8%83%8c%e5%90%8e%e7%9a%84%e6%8a%80%e6%9c%aftracepoint%e5%92%8ckprobe%ef%bc%9f.md.html" id="加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html">加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9005%20eBPF%ef%bc%9a%e6%80%8e%e4%b9%88%e6%9b%b4%e5%8a%a0%e6%b7%b1%e5%85%a5%e5%9c%b0%e6%9f%a5%e7%9c%8b%e5%86%85%e6%a0%b8%e4%b8%ad%e7%9a%84%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html">加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9006%20BCC%ef%bc%9a%e5%85%a5%e9%97%a8eBPF%e7%9a%84%e5%89%8d%e7%ab%af%e5%b7%a5%e5%85%b7.md.html" id="加餐06 BCC：入门eBPF的前端工具.md.html">加餐06 BCC：入门eBPF的前端工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e8%b7%b3%e5%87%ba%e8%88%92%e9%80%82%e5%8c%ba%ef%bc%8c%e7%aa%81%e7%a0%b4%e6%80%9d%e8%80%83%e7%9a%84%e6%83%b0%e6%80%a7.md.html" id="结束语 跳出舒适区，突破思考的惰性.md.html">结束语 跳出舒适区，突破思考的惰性.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="03 理解进程（2）：为什么我的容器里有这么多僵尸进程？" id="title">03 理解进程（2）：为什么我的容器里有这么多僵尸进程？</h1>
+<div><p>你好，我是程远。今天我们来聊一聊容器里僵尸进程这个问题。</p>
+<p>说起僵尸进程，相信你并不陌生。很多面试官经常会问到这个知识点，用来考察候选人的操作系统背景。通过这个问题，可以了解候选人对Linux进程管理和信号处理这些基础知识的理解程度，他的基本功扎不扎实。</p>
+<p>所以，今天我们就一起来看看容器里为什么会产生僵尸进程，然后去分析如何怎么解决。</p>
+<p>通过这一讲，你就会对僵尸进程的产生原理有一个清晰的认识，也会更深入地理解容器init进程的特性。</p>
+<h2 id="问题再现">问题再现</h2>
+<p>我们平时用容器的时候，有的同学会发现，自己的容器运行久了之后，运行ps命令会看到一些进程，进程名后面加了<defunct>标识。那么你自然会有这样的疑问，这些是什么进程呢？</defunct></p>
+<p>你可以自己做个容器镜像来模拟一下，我们先下载这个<a href="https://github.com/chengyli/training/tree/master/init_proc/zombie_proc" target="_blank">例子</a>，运行 <code>make image</code> 之后，再启动容器。</p>
+<p>在容器里我们可以看到，1号进程fork出1000个子进程。当这些子进程运行结束后，它们的进程名字后面都加了标识。</p>
+<p>从它们的Z stat（进程状态）中我们可以知道，这些都是僵尸进程（Zombie Process）。运行top命令，我们也可以看到输出的内容显示有 <code>1000 zombie</code> 进程。</p>
+<pre><code class="language-yaml"># docker run --name zombie-proc -d registry/zombie-proc:v1
+02dec161a9e8b18922bd3599b922dbd087a2ad60c9b34afccde7c91a463bde8a
+# docker exec -it zombie-proc bash
+# ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0   4324  1436 ?        Ss   01:23   0:00 /app-test 1000
+root         6  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root         7  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root         8  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root         9  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root        10  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+
+…
+
+root       999  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root      1000  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root      1001  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root      1002  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root      1003  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root      1004  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root      1005  0.0  0.0      0     0 ?        Z    01:23   0:00 [app-test] &lt;defunct&gt;
+root      1023  0.0  0.0  12020  3392 pts/0    Ss   01:39   0:00 bash
+
+# top
+top - 02:18:57 up 31 days, 15:17,  0 users,  load average: 0.00, 0.01, 0.00
+Tasks: 1003 total,   1 running,   2 sleeping,   0 stopped, 1000 zombie
+…
+</code></pre>
+<p>那么问题来了，什么是僵尸进程？它们是怎么产生的？僵尸进程太多会导致什么问题？想要回答这些问题，我们就要从进程状态的源头学习，看看僵尸进程到底处于进程整个生命周期里的哪一环。</p>
+<h2 id="知识详解">知识详解</h2>
+<h3 id="linux的进程状态">Linux的进程状态</h3>
+<p>无论进程还是线程，在Linux内核里其实都是用 <strong>task_struct{}这个结构</strong>来表示的。它其实就是任务（task），也就是Linux里基本的调度单位。为了方便讲解，我们在这里暂且称它为进程。</p>
+<p>那一个进程从创建（fork）到退出（exit），这个过程中的状态转化还是很简单的。</p>
+<p>下面这个图是 《Linux Kernel Development》这本书里的Linux进程状态转化图。</p>
+<p>我们从这张图中可以看出来，在进程“活着”的时候就只有两个状态：运行态（TASK_RUNNING）和睡眠态（TASK_INTERRUPTIBLE，TASK_UNINTERRUPTIBLE）。</p>
+<p><img alt="img" src="assets/ddbd530325e12ec8b4ec1ab7e3fc8170.jpeg"/></p>
+<p>那运行态和睡眠态这两种状态分别是什么意思呢？</p>
+<p>运行态的意思是，无论进程是正在运行中（也就是获得了CPU资源），还是进程在run queue队列里随时可以运行，都处于这个状态。</p>
+<p>我们想要查看进程是不是处于运行态，其实也很简单，比如使用ps命令，可以看到处于这个状态的进程显示的是R stat。</p>
+<p>睡眠态是指，进程需要等待某个资源而进入的状态，要等待的资源可以是一个信号量（Semaphore）, 或者是磁盘I/O，这个状态的进程会被放入到wait queue队列里。</p>
+<p>这个睡眠态具体还包括两个子状态：一个是可以被打断的（TASK_INTERRUPTIBLE），我们用ps查看到的进程，显示为S stat。还有一个是不可被打断的（TASK_UNINTERRUPTIBLE），用ps查看进程，就显示为D stat。</p>
+<p>这两个子状态，我们在后面的课程里碰到新的问题时，会再做详细介绍，这里你只要知道这些就行了。</p>
+<p>除了上面进程在活的时候的两个状态，进程在调用do_exit()退出的时候，还有两个状态。</p>
+<p>一个是 EXIT_DEAD，也就是进程在真正结束退出的那一瞬间的状态；第二个是 <strong>EXIT_ZOMBIE状态，这是进程在EXIT_DEAD前的一个状态，而我们今天讨论的僵尸进程，也就是处于这个状态中。</strong></p>
+<h3 id="限制容器中进程数目">限制容器中进程数目</h3>
+<p>理解了Linux进程状态之后，我们还需要知道，在Linux系统中怎么限制进程数目。因为弄清楚这个问题，我们才能更深入地去理解僵尸进程的危害。</p>
+<p>一台Linux机器上的进程总数目是有限制的。如果超过这个最大值，那么系统就无法创建出新的进程了，比如你想SSH登录到这台机器上就不行了。</p>
+<p>这个最大值可以我们在 /proc/sys/kernel/pid_max这个参数中看到。</p>
+<p>Linux内核在初始化系统的时候，会根据机器CPU的数目来设置pid_max的值。</p>
+<p>比如说，如果机器中CPU数目小于等于32，那么pid_max就会被设置为32768（32K）；如果机器中的CPU数目大于32，那么pid_max就被设置为 N*1024 （N就是CPU数目）。</p>
+<p>对于Linux系统而言，容器就是一组进程的集合。如果容器中的应用创建过多的进程或者出现bug，就会产生类似fork bomb的行为。</p>
+<p>这个fork bomb就是指在计算机中，通过不断建立新进程来消耗系统中的进程资源，它是一种黑客攻击方式。这样，容器中的进程数就会把整个节点的可用进程总数给消耗完。</p>
+<p>这样，不但会使同一个节点上的其他容器无法工作，还会让宿主机本身也无法工作。所以对于每个容器来说，我们都需要限制它的最大进程数目，而这个功能由pids Cgroup这个子系统来完成。</p>
+<p>而这个功能的实现方法是这样的：pids Cgroup通过Cgroup文件系统的方式向用户提供操作接口，一般它的Cgroup文件系统挂载点在 /sys/fs/cgroup/pids。</p>
+<p>在一个容器建立之后，创建容器的服务会在/sys/fs/cgroup/pids下建立一个子目录，就是一个控制组，控制组里<strong>最关键的一个文件就是pids.max</strong>。我们可以向这个文件写入数值，而这个值就是这个容器中允许的最大进程数目。</p>
+<p>我们对这个值做好限制，容器就不会因为创建出过多进程而影响到其他容器和宿主机了。思路讲完了，接下来我们就实际上手试一试。</p>
+<p>下面是对一个Docker容器的pids Cgroup的操作，你可以跟着操作一下。</p>
+<pre><code class="language-shell"># pwd
+/sys/fs/cgroup/pids
+# df ./
+Filesystem     1K-blocks  Used Available Use% Mounted on
+cgroup                 0     0         0    - /sys/fs/cgroup/pids
+# docker ps
+CONTAINER ID        IMAGE                      COMMAND                  CREATED             STATUS              PORTS               NAMES
+7ecd3aa7fdc1        registry/zombie-proc:v1   "/app-test 1000"         37 hours ago        Up 37 hours                             frosty_yalow
+
+# pwd
+/sys/fs/cgroup/pids/system.slice/docker-7ecd3aa7fdc15a1e183813b1899d5d939beafb11833ad6c8b0432536e5b9871c.scope
+
+# ls
+cgroup.clone_children  cgroup.procs  notify_on_release  pids.current  pids.events  pids.max  tasks
+# echo 1002 &gt; pids.max
+# cat pids.max
+1002
+</code></pre>
+<h2 id="解决问题">解决问题</h2>
+<p>刚才我给你解释了两个基本概念，进程状态和进程数目限制，那我们现在就可以解决容器中的僵尸进程问题了。</p>
+<p>在前面Linux进程状态的介绍里，我们知道了，僵尸进程是Linux进程退出状态的一种。</p>
+<p>从内核进程的do_exit()函数我们也可以看到，这时候进程task_struct里的mm/shm/sem/files等文件资源都已经释放了，只留下了一个stask_struct instance空壳。</p>
+<p>就像下面这段代码显示的一样，从进程对应的/proc/<pid> 文件目录下，我们也可以看出来，对应的资源都已经没有了。</pid></p>
+<pre><code class="language-shell"># cat /proc/6/cmdline
+# cat /proc/6/smaps
+# cat /proc/6/maps
+# ls /proc/6/fd
+</code></pre>
+<p>并且，这个进程也已经不响应任何的信号了，无论SIGTERM(15)还是SIGKILL(9)。例如上面pid 6的僵尸进程，这两个信号都已经被响应了。</p>
+<pre><code class="language-shell"># kill -15 6
+# kill -9 6
+# ps -ef | grep 6
+root         6     1  0 13:59 ?        00:00:00 [app-test] &lt;defunct&gt;
+</code></pre>
+<p>当多个容器运行在同一个宿主机上的时候，为了避免一个容器消耗完我们整个宿主机进程号资源，我们会配置pids Cgroup来限制每个容器的最大进程数目。也就是说，进程数目在每个容器中也是有限的，是一种很宝贵的资源。</p>
+<p>既然进程号资源在宿主机上是有限的，显然残留的僵尸进程多了以后，给系统带来最大问题就是它占用了进程号。<strong>这就意味着，残留的僵尸进程，在容器里仍然占据着进程号资源，很有可能会导致新的进程不能运转。</strong></p>
+<p>这里我再次借用开头的那个例子，也就是一个产生了1000个僵尸进程的容器，带你理解一下这个例子中进程数的上限。我们可以看一下，1个init进程+1000个僵尸进程+1个bash进程 ，总共就是1002个进程。</p>
+<p>如果pids Cgroup也限制了这个容器的最大进程号的数量，限制为1002的话，我们在pids Cgroup里可以看到，pids.current == pids.max，也就是已经达到了容器进程号数的上限。</p>
+<p>这时候，如果我们在容器里想再启动一个进程，例如运行一下ls命令，就会看到 <code>Resource temporarily unavailable</code> 的错误消息。已经退出的无用进程，却阻碍了有用进程的启动，显然这样是不合理的。</p>
+<p>具体代码如下：</p>
+<pre><code class="language-shell">### On host
+# docker ps
+CONTAINER ID        IMAGE                      COMMAND             CREATED             STATUS              PORTS               NAMES
+09e6e8e16346        registry/zombie-proc:v1   "/app-test 1000"    29 minutes ago      Up 29 minutes                           peaceful_ritchie
+
+# pwd
+/sys/fs/cgroup/pids/system.slice/docker-09e6e8e1634612580a03dd3496d2efed2cf2a510b9688160b414ce1d1ea3e4ae.scope
+
+# cat pids.max
+1002
+# cat pids.current
+1002
+
+### On Container
+[root@09e6e8e16346 /]# ls
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+</code></pre>
+<p>所以，接下来我们还要看看这些僵尸进程到底是怎么产生的。因为只有理解它的产生机制，我们才能想明白怎么避免僵尸进程的出现。</p>
+<p>我们先看一下刚才模拟僵尸进程的那段小程序。这段程序里，<strong>父进程在创建完子进程之后就不管了，这就是造成子进程变成僵尸进程的原因。</strong></p>
+<pre><code class="language-shell">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+#include &lt;unistd.h&gt;
+
+ 
+
+int main(int argc, char *argv[])
+{
+       int i;
+       int total;
+
+       if (argc &lt; 2) {
+              total = 1;
+       } else {
+              total = atoi(argv[1]);
+       }
+
+       printf("To create %d processes\n", total);
+
+       for (i = 0; i &lt; total; i++) {
+              pid_t pid = fork();
+ 
+              if (pid == 0) {
+                      printf("Child =&gt; PPID: %d PID: %d\n", getppid(),
+                             getpid());
+                      sleep(60);
+                      printf("Child process exits\n");
+                      exit(EXIT_SUCCESS);
+              } else if (pid &gt; 0) {
+                      printf("Parent created child %d\n", i);
+              } else {
+                      printf("Unable to create child process. %d\n", i);
+                      break;
+              }
+       }
+
+       printf("Paraent is sleeping\n");
+       while (1) {
+              sleep(100);
+       }
+
+       return EXIT_SUCCESS;
+}
+</code></pre>
+<p>前面我们通过分析，发现子进程变成僵尸进程的原因在于父进程“不负责”，那找到原因后，我们再想想，如何来解决。</p>
+<p>其实解决思路很好理解，就好像熊孩子犯了事儿，你要去找他家长来管教，那子进程在容器里“赖着不走”，我们就需要让父进程出面处理了。</p>
+<p>所以，在Linux中的进程退出之后，如果进入僵尸状态，我们就需要父进程调用wait()这个系统调用，去回收僵尸进程的最后的那些系统资源，比如进程号资源。</p>
+<p>那么，我们在刚才那段代码里，主进程进入sleep(100)之前，加上一段wait()函数调用，就不会出现僵尸进程的残留了。</p>
+<pre><code class="language-shell">      for (i = 0; i &lt; total; i++) {
+            int status;
+            wait(&amp;status);
+      }
+</code></pre>
+<p>而容器中所有进程的最终父进程，就是我们所说的init进程，由它负责生成容器中的所有其他进程。因此，容器的init进程有责任回收容器中的所有僵尸进程。</p>
+<p>前面我们知道了wait()系统调用可以回收僵尸进程，但是wait()系统调用有一个问题，需要你注意。</p>
+<p>wait()系统调用是一个阻塞的调用，也就是说，如果没有子进程是僵尸进程的话，这个调用就一直不会返回，那么整个进程就会被阻塞住，而不能去做别的事了。</p>
+<p>不过这也没有关系，我们还有另一个方法处理。Linux还提供了一个类似的系统调用waitpid()，这个调用的参数更多。</p>
+<p>其中就有一个参数WNOHANG，它的含义就是，如果在调用的时候没有僵尸进程，那么函数就马上返回了，而不会像wait()调用那样一直等待在那里。</p>
+<p>比如社区的一个<a href="https://github.com/krallin/tini" target="_blank">容器init项目tini</a>。在这个例子中，它的主进程里，就是不断在调用带WNOHANG参数的waitpid()，通过这个方式清理容器中所有的僵尸进程。</p>
+<pre><code class="language-shell">int reap_zombies(const pid_t child_pid, int* const child_exitcode_ptr) {
+        pid_t current_pid;
+        int current_status;
+
+        while (1) {
+                current_pid = waitpid(-1, &amp;current_status, WNOHANG);
+
+                switch (current_pid) {
+                        case -1:
+                                if (errno == ECHILD) {
+                                        PRINT_TRACE("No child to wait");
+                                        break;
+                                }
+
+…
+</code></pre>
+<h2 id="重点总结">重点总结</h2>
+<p>今天我们讨论的问题是容器中的僵尸进程。</p>
+<p>首先，我们先用代码来模拟了这个情况，还原了在一个容器中大量的僵尸进程是如何产生的。为了理解它的产生原理和危害，我们先要掌握两个知识点：</p>
+<ul>
+<li>Linux进程状态中，僵尸进程处于EXIT_ZOMBIE这个状态；</li>
+<li>容器需要对最大进程数做限制。具体方法是这样的，我们可以向Cgroup中 <strong>pids.max</strong>这个文件写入数值（这个值就是这个容器中允许的最大进程数目）。</li>
+</ul>
+<p>掌握了基本概念之后，我们找到了僵尸进程的产生原因。父进程在创建完子进程之后就不管了。</p>
+<p>所以，我们需要父进程调用wait()或者waitpid()系统调用来避免僵尸进程产生。</p>
+<p>关于本节内容，你只要记住下面三个主要的知识点就可以了：</p>
+<ol>
+<li>每一个Linux进程在退出的时候都会进入一个僵尸状态（EXIT_ZOMBIE）；</li>
+<li>僵尸进程如果不清理，就会消耗系统中的进程数资源，最坏的情况是导致新的进程无法启动；</li>
+<li>僵尸进程一定需要父进程调用wait()或者waitpid()系统调用来清理，这也是容器中init进程必须具备的一个功能。</li>
+</ol>
+<h2 id="思考题">思考题</h2>
+<p>如果容器的init进程创建了子进程B，B又创建了自己的子进程C。如果C运行完之后，退出成了僵尸进程，B进程还在运行，而容器的init进程还在不断地调用waitpid()，那C这个僵尸进程可以被回收吗？</p>
+<p>欢迎留言和我分享你的想法。如果你的朋友也被僵尸进程占用资源而困扰，欢迎你把这篇文章分享给他，也许就能帮他解决一个问题。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#3f535353060b0e0e0f087f58525e5653115c5052" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935956cf1f2cc578',t:'MTc0NTUzNjkwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

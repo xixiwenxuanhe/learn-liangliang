@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="18 容器网络配置（3）：容器中的网络乱序包怎么这么高？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>18 容器网络配置（3）：容器中的网络乱序包怎么这么高？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%80%e4%b8%aa%e6%80%81%e5%ba%a6%e4%b8%a4%e4%b8%aa%e6%ad%a5%e9%aa%a4%ef%bc%8c%e6%88%90%e4%b8%ba%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b.md.html" id="00 开篇词 一个态度两个步骤，成为容器实战高手.md.html">00 开篇词 一个态度两个步骤，成为容器实战高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/01%20%e8%ae%a4%e8%af%86%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%e5%92%8c%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="01 认识容器：容器的基本操作和实现原理.md.html">01 认识容器：容器的基本操作和实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/02%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%881%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%83%bdkill%201%e5%8f%b7%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html">02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/03%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%882%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e5%83%b5%e5%b0%b8%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html">03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/04%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%883%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e8%bf%9b%e7%a8%8b%e8%a2%ab%e5%bc%ba%e5%88%b6%e6%9d%80%e6%ad%bb%e4%ba%86%ef%bc%9f.md.html" id="04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html">04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/05%20%e5%ae%b9%e5%99%a8CPU%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e9%99%90%e5%88%b6%e5%ae%b9%e5%99%a8%e7%9a%84CPU%e4%bd%bf%e7%94%a8%ef%bc%9f.md.html" id="05 容器CPU（1）：怎么限制容器的CPU使用？.md.html">05 容器CPU（1）：怎么限制容器的CPU使用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/06%20%e5%ae%b9%e5%99%a8CPU%ef%bc%882%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%9c%b0%e6%8b%bf%e5%88%b0%e5%ae%b9%e5%99%a8CPU%e7%9a%84%e5%bc%80%e9%94%80%ef%bc%9f.md.html" id="06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html">06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/07%20Load%20Average%ef%bc%9a%e5%8a%a0%e4%ba%86CPU%20Cgroup%e9%99%90%e5%88%b6%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e8%bf%98%e6%98%af%e5%be%88%e6%85%a2%ef%bc%9f.md.html" id="07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html">07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/08%20%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a2%ab%e6%9d%80%e4%ba%86%ef%bc%9f.md.html" id="08 容器内存：我的容器为什么被杀了？.md.html">08 容器内存：我的容器为什么被杀了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/09%20Page%20Cache%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%e4%bd%bf%e7%94%a8%e9%87%8f%e6%80%bb%e6%98%af%e5%9c%a8%e4%b8%b4%e7%95%8c%e7%82%b9.md.html" id="09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html">09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/10%20Swap%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%8f%af%e4%bb%a5%e4%bd%bf%e7%94%a8Swap%e7%a9%ba%e9%97%b4%e5%90%97%ef%bc%9f.md.html" id="10 Swap：容器可以使用Swap空间吗？.md.html">10 Swap：容器可以使用Swap空间吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/11%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e8%af%bb%e5%86%99%e6%96%87%e4%bb%b6%e6%80%8e%e4%b9%88%e5%8f%98%e6%85%a2%e4%ba%86%ef%bc%9f.md.html" id="11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html">11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/12%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6Quota%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e6%8a%8a%e5%ae%bf%e4%b8%bb%e6%9c%ba%e7%9a%84%e7%a3%81%e7%9b%98%e5%86%99%e6%bb%a1%e4%ba%86%ef%bc%9f.md.html" id="12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html">12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/13%20%e5%ae%b9%e5%99%a8%e7%a3%81%e7%9b%98%e9%99%90%e9%80%9f%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e7%a3%81%e7%9b%98%e8%af%bb%e5%86%99%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%a8%b3%e5%ae%9a_.md.html" id="13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html">13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/14%20%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e5%86%85%e5%ad%98%e4%b8%8eIO%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%86%99%e6%96%87%e4%bb%b6%e7%9a%84%e5%bb%b6%e6%97%b6%e4%b8%ba%e4%bb%80%e4%b9%88%e6%b3%a2%e5%8a%a8%e5%be%88%e5%a4%a7%ef%bc%9f.md.html" id="14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html">14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/15%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%ef%bc%9a%e6%88%91%e4%bf%ae%e6%94%b9%e4%ba%86_proc_sys_net%e4%b8%8b%e7%9a%84%e5%8f%82%e6%95%b0%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%b5%b7%e6%95%88%ef%bc%9f.md.html" id="15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html">15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/16%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%881%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e4%b8%8d%e9%80%9a%e4%ba%86%e8%a6%81%e6%80%8e%e4%b9%88%e8%b0%83%e8%af%95.md.html" id="16 容器网络配置（1）：容器网络不通了要怎么调试.md.html">16 容器网络配置（1）：容器网络不通了要怎么调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/17%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%882%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e8%a6%81%e6%af%94%e5%ae%bf%e4%b8%bb%e6%9c%ba%e4%b8%8a%e7%9a%84%e9%ab%98%e5%90%97.md.html" id="17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html">17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/18%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%883%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e7%bd%91%e7%bb%9c%e4%b9%b1%e5%ba%8f%e5%8c%85%e6%80%8e%e4%b9%88%e8%bf%99%e4%b9%88%e9%ab%98%ef%bc%9f.md.html" id="18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html">18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/19%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%881%ef%bc%89%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e7%9c%9f%e7%9a%84%e9%9c%80%e8%a6%81privileged%e6%9d%83%e9%99%90%e5%90%97.md.html" id="19 容器安全（1）：我的容器真的需要privileged权限吗.md.html">19 容器安全（1）：我的容器真的需要privileged权限吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/20%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%882%ef%bc%89%ef%bc%9a%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%ef%bc%8c%e6%88%91%e4%b8%8d%e4%bb%a5root%e7%94%a8%e6%88%b7%e6%9d%a5%e8%bf%90%e8%a1%8c%e7%a8%8b%e5%ba%8f%e5%8f%af%e4%bb%a5%e5%90%97%ef%bc%9f.md.html" id="20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html">20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90%ef%bc%9a%e6%80%8e%e4%b9%88%e8%a7%a3%e5%86%b3%e6%b5%b7%e9%87%8fIPVS%e8%a7%84%e5%88%99%e5%b8%a6%e6%9d%a5%e7%9a%84%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e6%8a%96%e5%8a%a8%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html">加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e7%90%86%e8%a7%a3perf%ef%bc%9a%e6%80%8e%e4%b9%88%e7%94%a8perf%e8%81%9a%e7%84%a6%e7%83%ad%e7%82%b9%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐02 理解perf：怎么用perf聚焦热点函数？.md.html">加餐02 理解perf：怎么用perf聚焦热点函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e7%90%86%e8%a7%a3ftrace%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e5%ba%94%e7%94%a8ftrace%e6%9f%a5%e7%9c%8b%e9%95%bf%e5%bb%b6%e6%97%b6%e5%86%85%e6%a0%b8%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html">加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e7%90%86%e8%a7%a3ftrace%ef%bc%882%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e7%90%86%e8%a7%a3ftrace%e8%83%8c%e5%90%8e%e7%9a%84%e6%8a%80%e6%9c%aftracepoint%e5%92%8ckprobe%ef%bc%9f.md.html" id="加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html">加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9005%20eBPF%ef%bc%9a%e6%80%8e%e4%b9%88%e6%9b%b4%e5%8a%a0%e6%b7%b1%e5%85%a5%e5%9c%b0%e6%9f%a5%e7%9c%8b%e5%86%85%e6%a0%b8%e4%b8%ad%e7%9a%84%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html">加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9006%20BCC%ef%bc%9a%e5%85%a5%e9%97%a8eBPF%e7%9a%84%e5%89%8d%e7%ab%af%e5%b7%a5%e5%85%b7.md.html" id="加餐06 BCC：入门eBPF的前端工具.md.html">加餐06 BCC：入门eBPF的前端工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e8%b7%b3%e5%87%ba%e8%88%92%e9%80%82%e5%8c%ba%ef%bc%8c%e7%aa%81%e7%a0%b4%e6%80%9d%e8%80%83%e7%9a%84%e6%83%b0%e6%80%a7.md.html" id="结束语 跳出舒适区，突破思考的惰性.md.html">结束语 跳出舒适区，突破思考的惰性.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="18 容器网络配置（3）：容器中的网络乱序包怎么这么高？" id="title">18 容器网络配置（3）：容器中的网络乱序包怎么这么高？</h1>
+<div><p>你好，我是程远。这一讲，我们来聊一下容器中发包乱序的问题。</p>
+<p>这个问题也同样来自于工作实践，我们的用户把他们的应用程序从物理机迁移到容器之后，从网络监控中发现，容器中数据包的重传的数量要比在物理机里高了不少。</p>
+<p>在网络的前面几讲里，我们已经知道了容器网络缺省的接口是veth，veth接口都是成对使用的。容器通过veth接口向外发送数据，首先需要从veth的一个接口发送给跟它成对的另一个接口。</p>
+<p>那么这种接口会不会引起更多的网络重传呢？如果会引起重传，原因是什么，我们又要如何解决呢？接下来我们就带着这三个问题开始今天的学习。</p>
+<h2 id="问题重现">问题重现</h2>
+<p>我们可以在容器里运行一下 <code>iperf3</code> 命令，向容器外部发送一下数据，从iperf3的输出”Retr”列里，我们可以看到有多少重传的数据包。</p>
+<p>比如下面的例子里，我们可以看到有162个重传的数据包。</p>
+<pre><code class="language-shell"># iperf3 -c 192.168.147.51
+Connecting to host 192.168.147.51, port 5201
+[  5] local 192.168.225.12 port 51700 connected to 192.168.147.51 port 5201
+[ ID] Interval           Transfer     Bitrate                        Retr    Cwnd
+[  5]   0.00-1.00   sec  1001 MBytes  8.40 Gbits/sec  162    192 KBytes
+…
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  9.85 GBytes  8.46 Gbits/sec  162             sender
+[  5]   0.00-10.04  sec  9.85 GBytes  8.42 Gbits/sec                  receiver
+ 
+iperf Done.
+</code></pre>
+<p><strong>网络中发生了数据包的重传，有可能是数据包在网络中丢了，也有可能是数据包乱序导致的。</strong>那么，我们怎么来判断到底是哪一种情况引起的重传呢？</p>
+<p>最直接的方法就是用tcpdump去抓包，不过对于大流量的网络，用tcpdump抓包瞬间就会有几个GB的数据。可是这样做的话，带来的额外系统开销比较大，特别是在生产环境中这个方法也不太好用。</p>
+<p>所以这里我们有一个简单的方法，那就是运行netstat命令来查看协议栈中的丢包和重传的情况。比如说，在运行上面的iperf3命令前后，我们都在容器的Network Namespace里运行一下netstat看看重传的情况。</p>
+<p>我们会发现，一共发生了162次（604-442）快速重传（fast retransmits），这个数值和iperf3中的Retr列里的数值是一样的。</p>
+<pre><code class="language-shell">-bash-4.2# nsenter -t 51598 -n netstat -s | grep retran
+    454 segments retransmited
+    442 fast retransmits
+-bash-4.2# nsenter -t 51598 -n netstat -s | grep retran
+    616 segments retransmited
+    604 fast retransmits
+</code></pre>
+<h2 id="问题分析">问题分析</h2>
+<h3 id="快速重传-fast-retransmit">快速重传（fast retransmit）</h3>
+<p>在刚才的问题重现里，我们运行netstat命令后，统计了快速重传的次数。那什么是快速重传（fast retransmit）呢？这里我给你解释一下。</p>
+<p>我们都知道TCP协议里，发送端（sender）向接受端（receiver）发送一个数据包，接受端（receiver）都回应ACK。如果超过一个协议栈规定的时间（RTO），发送端没有收到ACK包，那么发送端就会重传（Retransmit）数据包，就像下面的示意图一样。</p>
+<p><img alt="img" src="assets/bc6a6059f49a5b61e95ba3705894b64b.jpeg"/></p>
+<p>不过呢，这样等待一个超时之后再重传数据，对于实际应用来说太慢了，所以TCP协议又定义了快速重传 （fast retransmit）的概念。它的基本定义是这样的：<strong>如果发送端收到3个重复的ACK，那么发送端就可以立刻重新发送ACK对应的下一个数据包。</strong></p>
+<p>就像下面示意图里描述的那样，接受端没有收到Seq 2这个包，但是收到了Seq 3–5的数据包，那么接收端在回应Ack的时候，Ack的数值只能是2。这是因为按顺序来说收到Seq 1的包之后，后面Seq 2一直没有到，所以接收端就只能一直发送Ack 2。</p>
+<p>那么当发送端收到3个重复的Ack 2后，就可以马上重新发送 Seq 2这个数据包了，而不用再等到重传超时之后了。</p>
+<p><img alt="img" src="assets/21935661dda5069f8dyy91e6cd5b295d.jpeg"/></p>
+<p>虽然TCP快速重传的标准定义是需要收到3个重复的Ack，不过你会发现在Linux中常常收到一个Dup Ack（重复的Ack）后，就马上重传数据了。这是什么原因呢？</p>
+<p>这里先需要提到 <strong>SACK</strong> 这个概念，SACK也就是选择性确认（Selective Acknowledgement）。其实跟普通的ACK相比呢，SACK会把接收端收到的所有包的序列信息，都反馈给发送端。</p>
+<p>你看看下面这张图，就能明白这是什么意思了。</p>
+<p><img alt="img" src="assets/2d61334e4066391ceeb90cac0bb25d55.jpeg"/></p>
+<p>那有了SACK，对于发送端来说，在收到SACK之后就已经知道接收端收到了哪些数据，没有收到哪些数据。</p>
+<p>在Linux内核中会有个判断（你可以看看下面的这个函数），大概意思是这样的：如果在接收端收到的数据和还没有收到的数据之间，两者数据量差得太大的话（超过了reordering*mss_cache），也可以马上重传数据。</p>
+<p>这里你需要注意一下，<strong>这里的数据量差是根据bytes来计算的，而不是按照包的数目来计算的，所以你会看到即使只收到一个SACK，Linux也可以重发数据包。</strong></p>
+<pre><code class="language-shell">static bool tcp_force_fast_retransmit(struct sock *sk)
+{
+        struct tcp_sock *tp = tcp_sk(sk);
+ 
+        return after(tcp_highest_sack_seq(tp),
+                     tp-&gt;snd_una + tp-&gt;reordering * tp-&gt;mss_cache);
+}
+</code></pre>
+<p>好了，了解了快速重传的概念之后，我们再来看看，如果netstat中有大量的”fast retransmits”意味着什么？</p>
+<p>如果你再用netstat查看”reordering”，就可以看到大量的SACK发现的乱序包。</p>
+<pre><code class="language-shell">-bash-4.2# nsenter -t 51598 -n netstat -s  | grep reordering
+    Detected reordering 501067 times using SACK
+</code></pre>
+<p><strong>其实在云平台的这种网络环境里，网络包乱序+SACK之后，产生的数据包重传的量要远远高于网络丢包引起的重传。</strong></p>
+<p>比如说像下面这张图里展示的这样，Seq 2与Seq 3这两个包如果乱序的话，那么就会引起Seq 2的立刻重传。</p>
+<p><img alt="img" src="assets/a99709757a45279324600a45f7a44cd6.jpeg"/></p>
+<h3 id="veth接口的数据包的发送">Veth接口的数据包的发送</h3>
+<p>现在我们知道了网络包乱序会造成数据包的重传，接着我们再来看看容器的veth接口配置有没有可能会引起数据包的乱序。</p>
+<p>在上一讲里，我们讲过通过veth接口从容器向外发送数据包，会触发peer veth设备去接收数据包，这个接收的过程就是一个网络的softirq的处理过程。</p>
+<p>在触发softirq之前，veth接口会模拟硬件接收数据的过程，通过enqueue_to_backlog()函数把数据包放到某个CPU对应的数据包队列里（softnet_data）。</p>
+<pre><code class="language-shell">static int netif_rx_internal(struct sk_buff *skb)
+{
+        int ret;
+ 
+        net_timestamp_check(netdev_tstamp_prequeue, skb);
+ 
+        trace_netif_rx(skb);
+ 
+#ifdef CONFIG_RPS
+        if (static_branch_unlikely(&amp;rps_needed)) {
+                struct rps_dev_flow voidflow, *rflow = &amp;voidflow;
+                int cpu;
+ 
+                preempt_disable();
+                rcu_read_lock();
+ 
+                cpu = get_rps_cpu(skb-&gt;dev, skb, &amp;rflow);
+                if (cpu &lt; 0)
+                        cpu = smp_processor_id();
+ 
+                ret = enqueue_to_backlog(skb, cpu, &amp;rflow-&gt;last_qtail);
+ 
+                rcu_read_unlock();
+                preempt_enable();
+        } else
+#endif
+        {
+                unsigned int qtail;
+ 
+                ret = enqueue_to_backlog(skb, get_cpu(), &amp;qtail);
+                put_cpu();
+        }
+        return ret;
+}
+</code></pre>
+<p>从上面的代码，我们可以看到，在缺省的状况下（也就是没有RPS的情况下），enqueue_to_backlog()把数据包放到了“当前运行的CPU”（get_cpu()）对应的数据队列中。如果是从容器里通过veth对外发送数据包，那么这个“当前运行的CPU”就是容器中发送数据的进程所在的CPU。</p>
+<p>对于多核的系统，这个发送数据的进程可以在多个CPU上切换运行。进程在不同的CPU上把数据放入队列并且raise softirq之后，因为每个CPU上处理softirq是个异步操作，所以两个CPU network softirq handler处理这个进程的数据包时，处理的先后顺序并不能保证。</p>
+<p>所以，veth对的这种发送数据方式增加了容器向外发送数据出现乱序的几率。</p>
+<p><img alt="img" src="assets/c11581ec8f390b13ebc89fdb4cc2043b.jpeg"/></p>
+<h3 id="rss和rps">RSS和RPS</h3>
+<p>那么对于veth接口的这种发包方式，有办法减少一下乱序的几率吗？</p>
+<p>其实，我们在上面netif_rx_internal()那段代码中，有一段在”#ifdef CONFIG_RPS”中的代码。</p>
+<p>我们看到这段代码中在调用enqueue_to_backlog()的时候，传入的CPU并不是当前运行的CPU，而是通过get_rps_cpu()得到的CPU，那么这会有什么不同呢？这里的RPS又是什么意思呢？</p>
+<p>要解释RPS呢，需要先看一下RSS，这个RSS不是我们之前说的内存RSS，而是和网卡硬件相关的一个概念，它是Receive Side Scaling的缩写。</p>
+<p>现在的网卡性能越来越强劲了，从原来一条RX队列扩展到了N条RX队列，而网卡的硬件中断也从一个硬件中断，变成了每条RX队列都会有一个硬件中断。</p>
+<p>每个硬件中断可以由一个CPU来处理，那么对于多核的系统，多个CPU可以并行的接收网络包，这样就大大地提高了系统的网络数据的处理能力.</p>
+<p>同时，在网卡硬件中，可以根据数据包的4元组或者5元组信息来保证同一个数据流，比如一个TCP流的数据始终在一个RX队列中，这样也能保证同一流不会出现乱序的情况。</p>
+<p>下面这张图，大致描述了一下RSS是怎么工作的。</p>
+<p><img alt="img" src="assets/ea365c0d44625cf89c746d91799f9633.jpeg"/></p>
+<p>RSS的实现在网卡硬件和驱动里面，而RPS（Receive Packet Steering）其实就是在软件层面实现类似的功能。它主要实现的代码框架就在上面的netif_rx_internal()代码里，原理也不难。</p>
+<p>就像下面的这张示意图里描述的这样：在硬件中断后，CPU2收到了数据包，再一次对数据包计算一次四元组的hash值，得到这个数据包与CPU1的映射关系。接着会把这个数据包放到CPU1对应的softnet_data数据队列中，同时向CPU1发送一个IPI的中断信号。</p>
+<p>这样一来，后面CPU1就会继续按照Netowrk softirq的方式来处理这个数据包了。</p>
+<p><img alt="img" src="assets/e0413b74cbc1b5edcde5442fe94e11f9.jpeg"/></p>
+<p>RSS和RPS的目的都是把数据包分散到更多的CPU上进行处理，使得系统有更强的网络包处理能力。在把数据包分散到各个CPU时，保证了同一个数据流在一个CPU上，这样就可以减少包的乱序。</p>
+<p>明白了RPS的概念之后，我们再回头来看veth对外发送数据时候，在enqueue_to_backlog()的时候选择CPU的问题。显然，如果对应的veth接口上打开了RPS的配置以后，那么对于同一个数据流，就可以始终选择同一个CPU了。</p>
+<p>其实我们打开RPS的方法挺简单的，只要去/sys目录下，在网络接口设备接收队列中修改队列里的rps_cpus的值，这样就可以了。rps_cpus是一个16进制的数，每个bit代表一个CPU。</p>
+<p>比如说，我们在一个12CPU的节点上，想让host上的veth接口在所有的12个CPU上，都可以通过RPS重新分配数据包。那么就可以执行下面这段命令：</p>
+<pre><code class="language-shell"># cat /sys/devices/virtual/net/veth57703b6/queues/rx-0/rps_cpus
+000
+# echo fff &gt; /sys/devices/virtual/net/veth57703b6/queues/rx-0/rps_cpus
+# cat /sys/devices/virtual/net/veth57703b6/queues/rx-0/rps_cpus
+fff
+</code></pre>
+<h2 id="重点小结">重点小结</h2>
+<p>好了，今天的内容讲完了，我们做个总结。我们今天讨论的是容器中网络包乱序引起重传的问题。</p>
+<p>由于在容器平台中看到大部分的重传是快速重传（fast retransmits），我们先梳理了什么是快速重传。快速重传的基本定义是：<strong>如果发送端收到3个重复的ACK，那么发送端就可以立刻重新发送ACK对应的下一个数据包，而不用等待发送超时。</strong></p>
+<p>不过我们在Linux系统上还会看到发送端收到一个重复的ACK就快速重传的，这是因为Linux下对SACK做了一个特别的判断之后，就可以立刻重传数据包。</p>
+<p>我们再对容器云平台中的快速重传做分析，就会发现这些重传大部分是由包的乱序触发的。</p>
+<p>通过对容器veth网络接口进一步研究，我们知道它可能会增加数据包乱序的几率。同时在这个分析过程中，我们也看到了Linux网络RPS的特性。</p>
+<p><strong>RPS和RSS的作用类似，都是把数据包分散到更多的CPU上进行处理，使得系统有更强的网络包处理能力。它们的区别是RSS工作在网卡的硬件层，而RPS工作在Linux内核的软件层。</strong></p>
+<p>在把数据包分散到各个CPU时，RPS保证了同一个数据流是在一个CPU上的，这样就可以有效减少包的乱序。那么我们可以把RPS的这个特性配置到veth网络接口上，来减少数据包乱序的几率。</p>
+<p>不过，我这里还要说明的是，RPS的配置还是会带来额外的系统开销，在某些网络环境中会引起softirq CPU使用率的增大。那接口要不要打开RPS呢？这个问题你需要根据实际情况来做个权衡。</p>
+<p>同时你还要注意，TCP的乱序包，并不一定都会产生数据包的重传。想要减少网络数据包的重传，我们还可以考虑协议栈中其他参数的设置，比如/proc/sys/net/ipv4/tcp_reordering。</p>
+<h2 id="思考题">思考题</h2>
+<p>在这一讲中，我们提到了Linux内核中的tcp_force_fast_retransmit()函数。那么你可以想想看，这个函数中的tp-&gt;recording和内核参数 /proc/sys/net/ipv4/tcp_reordering是什么关系？它们对数据包的重传会带来什么影响？</p>
+<pre><code class="language-shell">static bool tcp_force_fast_retransmit(struct sock *sk)
+{
+        struct tcp_sock *tp = tcp_sk(sk);
+ 
+        return after(tcp_highest_sack_seq(tp),
+                     tp-&gt;snd_una + tp-&gt;reordering * tp-&gt;mss_cache);
+}
+</code></pre>
+<p>欢迎你在留言区分享你的思考或疑问。如果学完这一讲让你有所收获，也欢迎转发给你的同事、或者朋友，一起交流探讨。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#3d51515104090c0c0d0a7d5a505c5451135e5250" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93595871de80d6d8',t:'MTc0NTUzNjk3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

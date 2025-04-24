@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="12 容器文件Quota：容器为什么把宿主机的磁盘写满了？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>12 容器文件Quota：容器为什么把宿主机的磁盘写满了？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%80%e4%b8%aa%e6%80%81%e5%ba%a6%e4%b8%a4%e4%b8%aa%e6%ad%a5%e9%aa%a4%ef%bc%8c%e6%88%90%e4%b8%ba%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b.md.html" id="00 开篇词 一个态度两个步骤，成为容器实战高手.md.html">00 开篇词 一个态度两个步骤，成为容器实战高手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/01%20%e8%ae%a4%e8%af%86%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%e5%92%8c%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="01 认识容器：容器的基本操作和实现原理.md.html">01 认识容器：容器的基本操作和实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/02%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%881%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%83%bdkill%201%e5%8f%b7%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html">02 理解进程（1）：为什么我在容器中不能kill 1号进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/03%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%882%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e6%9c%89%e8%bf%99%e4%b9%88%e5%a4%9a%e5%83%b5%e5%b0%b8%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html">03 理解进程（2）：为什么我的容器里有这么多僵尸进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/04%20%e7%90%86%e8%a7%a3%e8%bf%9b%e7%a8%8b%ef%bc%883%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e8%bf%9b%e7%a8%8b%e8%a2%ab%e5%bc%ba%e5%88%b6%e6%9d%80%e6%ad%bb%e4%ba%86%ef%bc%9f.md.html" id="04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html">04 理解进程（3）：为什么我在容器中的进程被强制杀死了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/05%20%e5%ae%b9%e5%99%a8CPU%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e9%99%90%e5%88%b6%e5%ae%b9%e5%99%a8%e7%9a%84CPU%e4%bd%bf%e7%94%a8%ef%bc%9f.md.html" id="05 容器CPU（1）：怎么限制容器的CPU使用？.md.html">05 容器CPU（1）：怎么限制容器的CPU使用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/06%20%e5%ae%b9%e5%99%a8CPU%ef%bc%882%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%ad%a3%e7%a1%ae%e5%9c%b0%e6%8b%bf%e5%88%b0%e5%ae%b9%e5%99%a8CPU%e7%9a%84%e5%bc%80%e9%94%80%ef%bc%9f.md.html" id="06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html">06 容器CPU（2）：如何正确地拿到容器CPU的开销？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/07%20Load%20Average%ef%bc%9a%e5%8a%a0%e4%ba%86CPU%20Cgroup%e9%99%90%e5%88%b6%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e8%bf%98%e6%98%af%e5%be%88%e6%85%a2%ef%bc%9f.md.html" id="07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html">07 Load Average：加了CPU Cgroup限制，为什么我的容器还是很慢？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/08%20%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a2%ab%e6%9d%80%e4%ba%86%ef%bc%9f.md.html" id="08 容器内存：我的容器为什么被杀了？.md.html">08 容器内存：我的容器为什么被杀了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/09%20Page%20Cache%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e5%86%85%e5%ad%98%e4%bd%bf%e7%94%a8%e9%87%8f%e6%80%bb%e6%98%af%e5%9c%a8%e4%b8%b4%e7%95%8c%e7%82%b9.md.html" id="09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html">09 Page Cache：为什么我的容器内存使用量总是在临界点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/10%20Swap%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%8f%af%e4%bb%a5%e4%bd%bf%e7%94%a8Swap%e7%a9%ba%e9%97%b4%e5%90%97%ef%bc%9f.md.html" id="10 Swap：容器可以使用Swap空间吗？.md.html">10 Swap：容器可以使用Swap空间吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/11%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%88%91%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e8%af%bb%e5%86%99%e6%96%87%e4%bb%b6%e6%80%8e%e4%b9%88%e5%8f%98%e6%85%a2%e4%ba%86%ef%bc%9f.md.html" id="11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html">11 容器文件系统：我在容器中读写文件怎么变慢了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/12%20%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6Quota%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ba%e4%bb%80%e4%b9%88%e6%8a%8a%e5%ae%bf%e4%b8%bb%e6%9c%ba%e7%9a%84%e7%a3%81%e7%9b%98%e5%86%99%e6%bb%a1%e4%ba%86%ef%bc%9f.md.html" id="12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html">12 容器文件Quota：容器为什么把宿主机的磁盘写满了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/13%20%e5%ae%b9%e5%99%a8%e7%a3%81%e7%9b%98%e9%99%90%e9%80%9f%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e9%87%8c%e7%a3%81%e7%9b%98%e8%af%bb%e5%86%99%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%a8%b3%e5%ae%9a_.md.html" id="13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html">13 容器磁盘限速：我的容器里磁盘读写为什么不稳定_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/14%20%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e5%86%85%e5%ad%98%e4%b8%8eIO%ef%bc%9a%e5%ae%b9%e5%99%a8%e5%86%99%e6%96%87%e4%bb%b6%e7%9a%84%e5%bb%b6%e6%97%b6%e4%b8%ba%e4%bb%80%e4%b9%88%e6%b3%a2%e5%8a%a8%e5%be%88%e5%a4%a7%ef%bc%9f.md.html" id="14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html">14 容器中的内存与IO：容器写文件的延时为什么波动很大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/15%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%ef%bc%9a%e6%88%91%e4%bf%ae%e6%94%b9%e4%ba%86_proc_sys_net%e4%b8%8b%e7%9a%84%e5%8f%82%e6%95%b0%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%e4%b8%8d%e8%b5%b7%e6%95%88%ef%bc%9f.md.html" id="15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html">15 容器网络：我修改了_proc_sys_net下的参数，为什么在容器中不起效？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/16%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%881%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e4%b8%8d%e9%80%9a%e4%ba%86%e8%a6%81%e6%80%8e%e4%b9%88%e8%b0%83%e8%af%95.md.html" id="16 容器网络配置（1）：容器网络不通了要怎么调试.md.html">16 容器网络配置（1）：容器网络不通了要怎么调试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/17%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%882%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e8%a6%81%e6%af%94%e5%ae%bf%e4%b8%bb%e6%9c%ba%e4%b8%8a%e7%9a%84%e9%ab%98%e5%90%97.md.html" id="17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html">17 容器网络配置（2）：容器网络延时要比宿主机上的高吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/18%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae%ef%bc%883%ef%bc%89%ef%bc%9a%e5%ae%b9%e5%99%a8%e4%b8%ad%e7%9a%84%e7%bd%91%e7%bb%9c%e4%b9%b1%e5%ba%8f%e5%8c%85%e6%80%8e%e4%b9%88%e8%bf%99%e4%b9%88%e9%ab%98%ef%bc%9f.md.html" id="18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html">18 容器网络配置（3）：容器中的网络乱序包怎么这么高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/19%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%881%ef%bc%89%ef%bc%9a%e6%88%91%e7%9a%84%e5%ae%b9%e5%99%a8%e7%9c%9f%e7%9a%84%e9%9c%80%e8%a6%81privileged%e6%9d%83%e9%99%90%e5%90%97.md.html" id="19 容器安全（1）：我的容器真的需要privileged权限吗.md.html">19 容器安全（1）：我的容器真的需要privileged权限吗.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/20%20%e5%ae%b9%e5%99%a8%e5%ae%89%e5%85%a8%ef%bc%882%ef%bc%89%ef%bc%9a%e5%9c%a8%e5%ae%b9%e5%99%a8%e4%b8%ad%ef%bc%8c%e6%88%91%e4%b8%8d%e4%bb%a5root%e7%94%a8%e6%88%b7%e6%9d%a5%e8%bf%90%e8%a1%8c%e7%a8%8b%e5%ba%8f%e5%8f%af%e4%bb%a5%e5%90%97%ef%bc%9f.md.html" id="20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html">20 容器安全（2）：在容器中，我不以root用户来运行程序可以吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9001%20%e6%a1%88%e4%be%8b%e5%88%86%e6%9e%90%ef%bc%9a%e6%80%8e%e4%b9%88%e8%a7%a3%e5%86%b3%e6%b5%b7%e9%87%8fIPVS%e8%a7%84%e5%88%99%e5%b8%a6%e6%9d%a5%e7%9a%84%e7%bd%91%e7%bb%9c%e5%bb%b6%e6%97%b6%e6%8a%96%e5%8a%a8%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html">加餐01 案例分析：怎么解决海量IPVS规则带来的网络延时抖动问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9002%20%e7%90%86%e8%a7%a3perf%ef%bc%9a%e6%80%8e%e4%b9%88%e7%94%a8perf%e8%81%9a%e7%84%a6%e7%83%ad%e7%82%b9%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐02 理解perf：怎么用perf聚焦热点函数？.md.html">加餐02 理解perf：怎么用perf聚焦热点函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9003%20%e7%90%86%e8%a7%a3ftrace%ef%bc%881%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e5%ba%94%e7%94%a8ftrace%e6%9f%a5%e7%9c%8b%e9%95%bf%e5%bb%b6%e6%97%b6%e5%86%85%e6%a0%b8%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html">加餐03 理解ftrace（1）：怎么应用ftrace查看长延时内核函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9004%20%e7%90%86%e8%a7%a3ftrace%ef%bc%882%ef%bc%89%ef%bc%9a%e6%80%8e%e4%b9%88%e7%90%86%e8%a7%a3ftrace%e8%83%8c%e5%90%8e%e7%9a%84%e6%8a%80%e6%9c%aftracepoint%e5%92%8ckprobe%ef%bc%9f.md.html" id="加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html">加餐04 理解ftrace（2）：怎么理解ftrace背后的技术tracepoint和kprobe？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9005%20eBPF%ef%bc%9a%e6%80%8e%e4%b9%88%e6%9b%b4%e5%8a%a0%e6%b7%b1%e5%85%a5%e5%9c%b0%e6%9f%a5%e7%9c%8b%e5%86%85%e6%a0%b8%e4%b8%ad%e7%9a%84%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html">加餐05 eBPF：怎么更加深入地查看内核中的函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e5%8a%a0%e9%a4%9006%20BCC%ef%bc%9a%e5%85%a5%e9%97%a8eBPF%e7%9a%84%e5%89%8d%e7%ab%af%e5%b7%a5%e5%85%b7.md.html" id="加餐06 BCC：入门eBPF的前端工具.md.html">加餐06 BCC：入门eBPF的前端工具.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%ae%b9%e5%99%a8%e5%ae%9e%e6%88%98%e9%ab%98%e6%89%8b%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e8%b7%b3%e5%87%ba%e8%88%92%e9%80%82%e5%8c%ba%ef%bc%8c%e7%aa%81%e7%a0%b4%e6%80%9d%e8%80%83%e7%9a%84%e6%83%b0%e6%80%a7.md.html" id="结束语 跳出舒适区，突破思考的惰性.md.html">结束语 跳出舒适区，突破思考的惰性.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="12 容器文件Quota：容器为什么把宿主机的磁盘写满了？" id="title">12 容器文件Quota：容器为什么把宿主机的磁盘写满了？</h1>
+<div><p>你好，我是程远。今天我们聊一聊容器文件Quota。</p>
+<p>上一讲，我们学习了容器文件系统OverlayFS，这个OverlayFS有两层，分别是lowerdir和upperdir。lowerdir里是容器镜像中的文件，对于容器来说是只读的；upperdir存放的是容器对文件系统里的所有改动，它是可读写的。</p>
+<p>从宿主机的角度看，upperdir就是一个目录，如果容器不断往容器文件系统中写入数据，实际上就是往宿主机的磁盘上写数据，这些数据也就存在于宿主机的磁盘目录中。</p>
+<p>当然对于容器来说，如果有大量的写操作是不建议写入容器文件系统的，一般是需要给容器挂载一个volume，用来满足大量的文件读写。</p>
+<p>但是不能避免的是，用户在容器中运行的程序有错误，或者进行了错误的配置。</p>
+<p>比如说，我们把log写在了容器文件系统上，并且没有做log rotation，那么时间一久，就会导致宿主机上的磁盘被写满。这样影响的就不止是容器本身了，而是整个宿主机了。</p>
+<p>那对于这样的问题，我们该怎么解决呢？</p>
+<h2 id="问题再现">问题再现</h2>
+<p>我们可以自己先启动一个容器，一起试试不断地往容器文件系统中写入数据，看看是一个什么样的情况。</p>
+<p>用Docker启动一个容器后，我们看到容器的根目录(/)也就是容器文件系统OverlayFS，它的大小是160G，已经使用了100G。其实这个大小也是宿主机上的磁盘空间和使用情况。</p>
+<p><img alt="img" src="assets/d32c83e404a81b301fbf8bdfd7a9c23e.png"/></p>
+<p>这时候，我们可以回到宿主机上验证一下，就会发现宿主机的根目录(/)的大小也是160G，同样是使用了100G。</p>
+<p><img alt="img" src="assets/b54deb08e46ff1155303581e9d1c8f0b.png"/></p>
+<p>好，那现在我们再往容器的根目录里写入10GB的数据。</p>
+<p>这里我们可以看到容器的根目录使用的大小增加了，从刚才的100G变成现在的110G。而多写入的10G大小的数据，对应的是test.log这个文件。</p>
+<p><img alt="img" src="assets/c04dcff3aa4773302495113dd2a8d546.png"/></p>
+<p>接下来，我们再回到宿主机上，可以看到宿主机上的根目录(/)里使用的大小也是110G了。</p>
+<p><img alt="img" src="assets/155d30bc20b72c0678d1948f25cbe29d.png"/></p>
+<p>我们还是继续看宿主机，看看OverlayFS里upperdir目录中有什么文件？</p>
+<p>这里我们仍然可以通过/proc/mounts这个路径，找到容器OverlayFS对应的lowerdir和upperdir。因为写入的数据都在upperdir里，我们就只要看upperdir对应的那个目录就行了。果然，里面存放着容器写入的文件test.log，它的大小是10GB。</p>
+<p><img alt="img" src="assets/4d32334dc0f1ba69881c686037f6577d.png"/></p>
+<p>通过这个例子，我们已经验证了在容器中对于OverlayFS中写入数据，<strong>其实就是往宿主机的一个目录（upperdir）里写数据。</strong>我们现在已经写了10GB的数据，如果继续在容器中写入数据，结果估计你也知道了，就是会写满宿主机的磁盘。</p>
+<p>那遇到这种情况，我们该怎么办呢？</p>
+<h2 id="知识详解">知识详解</h2>
+<p>容器写自己的OverlayFS根目录，结果把宿主机的磁盘写满了。发生这个问题，我们首先就会想到需要对容器做限制，限制它写入自己OverlayFS的数据量，比如只允许一个容器写100MB的数据。</p>
+<p>不过我们实际查看OverlayFS文件系统的特性，就会发现没有直接限制文件写入量的特性。别担心，在没有现成工具的情况下，我们只要搞懂了原理，就能想出解决办法。</p>
+<p>所以我们再来分析一下OverlayFS，它是通过lowerdir和upperdir两层目录联合挂载来实现的，lowerdir是只读的，数据只会写在upperdir中。</p>
+<p>那我们是不是可以通过限制upperdir目录容量的方式，来限制一个容器OverlayFS根目录的写入数据量呢？</p>
+<p>沿着这个思路继续往下想，因为upperdir在宿主机上也是一个普通的目录，这样就要看<strong>宿主机上的文件系统是否可以支持对一个目录限制容量了。</strong></p>
+<p>对于Linux上最常用的两个文件系统XFS和ext4，它们有一个特性Quota，那我们就以XFS文件系统为例，学习一下这个Quota概念，然后看看这个特性能不能限制一个目录的使用量。</p>
+<h3 id="xfs-quota">XFS Quota</h3>
+<p>在Linux系统里的XFS文件系统缺省都有Quota的特性，这个特性可以为Linux系统里的一个用户（user），一个用户组（group）或者一个项目（project）来限制它们使用文件系统的额度（quota），也就是限制它们可以写入文件系统的文件总量。</p>
+<p>因为我们的目标是要限制一个目录中总体的写入文件数据量，那么显然给用户和用户组限制文件系统的写入数据量的模式，并不适合我们的这个需求。</p>
+<p>因为同一个用户或者用户组可以操作多个目录，多个用户或者用户组也可以操作同一个目录，这样对一个用户或者用户组的限制，就很难用来限制一个目录。</p>
+<p>那排除了限制用户或用户组的模式，我们再来看看Project模式。Project模式是怎么工作的呢？</p>
+<p>我举一个例子你会更好理解，对Linux熟悉的同学可以一边操作，一边体会一下它的工作方式。不熟悉的同学也没关系，可以重点关注我后面的讲解思路。</p>
+<p>首先我们要使用XFS Quota特性，必须在文件系统挂载的时候加上对应的Quota选项，比如我们目前需要配置Project Quota，那么这个挂载参数就是”pquota”。</p>
+<p>对于根目录来说，<strong>这个参数必须作为一个内核启动的参数”rootflags=pquota”，这样设置就可以保证根目录在启动挂载的时候，带上XFS Quota的特性并且支持Project模式。</strong></p>
+<p>我们可以从/proc/mounts信息里，看看根目录是不是带”prjquota”字段。如果里面有这个字段，就可以确保文件系统已经带上了支持project模式的XFS quota特性。</p>
+<p><img alt="img" src="assets/72d653f67717fe047c98fce37156da3d.png"/></p>
+<p>下一步，我们还需要给一个指定的目录打上一个Project ID。这个步骤我们可以使用XFS文件系统自带的工具 <a href="https://linux.die.net/man/8/xfs_quota" target="_blank">xfs_quota</a> 来完成，然后执行下面的这个命令就可以了。</p>
+<p>执行命令之前，我先对下面的命令和输出做两点解释，让你理解这个命令的含义。</p>
+<p>第一点，新建的目录/tmp/xfs_prjquota，我们想对它做Quota限制。所以在这里要对它打上一个Project ID。</p>
+<p>第二点，通过xfs_quota这条命令，我们给/tmp/xfs_prjquota打上Project ID值101，这个101是我随便选的一个数字，就是个ID标识，你先有个印象。在后面针对Project进行Quota限制的时候，我们还会用到这个ID。</p>
+<pre><code class="language-shell"># mkdir -p  /tmp/xfs_prjquota
+# xfs_quota -x -c 'project -s -p /tmp/xfs_prjquota 101' /
+Setting up project 101 (path /tmp/xfs_prjquota)...
+Processed 1 (/etc/projects and cmdline) paths for project 101 with recursion depth infinite (-1).
+</code></pre>
+<p>最后，我们还是使用xfs_quota命令，对101（我们刚才建立的这个Project ID）做Quota限制。</p>
+<p>你可以执行下面这条命令，里面的”-p bhard=10m 101”就代表限制101这个project ID，限制它的数据块写入量不能超过10MB。</p>
+<pre><code class="language-shell"># xfs_quota -x -c 'limit -p bhard=10m 101' /
+</code></pre>
+<p>做好限制之后，我们可以尝试往/tmp/xfs_prjquota写数据，看看是否可以超过10MB。比如说，我们尝试写入20MB的数据到/tmp/xfs_prjquota里。</p>
+<p>我们可以看到，执行dd写入命令，就会有个出错返回信息”No space left on device”。这表示已经不能再往这个目录下写入数据了，而最后写入数据的文件test.file大小也停留在了10MB。</p>
+<pre><code class="language-shell"># dd if=/dev/zero of=/tmp/xfs_prjquota/test.file bs=1024 count=20000
+dd: error writing '/tmp/xfs_prjquota/test.file': No space left on device
+10241+0 records in
+10240+0 records out
+10485760 bytes (10 MB, 10 MiB) copied, 0.0357122 s, 294 MB/s
+
+# ls -l /tmp/xfs_prjquota/test.file
+-rw-r--r-- 1 root root 10485760 Oct 31 10:00 /tmp/xfs_prjquota/test.file
+</code></pre>
+<p>好了，做到这里，我们发现使用XFS Quota的Project模式，确实可以限制一个目录里的写入数据量，它实现的方式其实也不难，就是下面这两步。</p>
+<p>第一步，给目标目录打上一个Project ID，这个ID最终是写到目录对应的inode上。</p>
+<p>这里我解释一下，inode是文件系统中用来描述一个文件或者一个目录的元数据，里面包含文件大小，数据块的位置，文件所属用户/组，文件读写属性以及其他一些属性。</p>
+<p>那么一旦目录打上这个ID之后，在这个目录下的新建的文件和目录也都会继承这个ID。</p>
+<p>第二步，在XFS文件系统中，我们需要给这个project ID设置一个写入数据块的限制。</p>
+<p>有了ID和限制值之后，文件系统就可以统计所有带这个ID文件的数据块大小总和，并且与限制值进行比较。一旦所有文件大小的总和达到限制值，文件系统就不再允许更多的数据写入了。</p>
+<p>用一句话概括，XFS Quota就是通过前面这两步限制了一个目录里写入的数据量。</p>
+<h2 id="解决问题">解决问题</h2>
+<p>我们理解了XFS Quota对目录限流的机制之后，再回到我们最开始的问题，如何确保容器不会写满宿主机上的磁盘。</p>
+<p>你应该已经想到了，方法就是<strong>对OverlayFS的upperdir目录做XFS Quota的限流</strong>，没错，就是这个解决办法！</p>
+<p>其实Docker也已经实现了限流功能，也就是用XFS Quota来限制容器的OverlayFS大小。</p>
+<p>我们在用 <code>docker run</code> 启动容器的时候，加上一个参数 <code>--storage-opt size= &lt;SIZE&gt;</code> ，就能限制住容器OverlayFS文件系统可写入的最大数据量了。</p>
+<p>我们可以一起试一下，这里我们限制的size是10MB。</p>
+<p>进入容器之后，先运行 <code>df -h</code> 命令，这时候你可以看到根目录(/)overlayfs文件系统的大小就10MB，而不是我们之前看到的160GB的大小了。这样容器在它的根目录下，最多只能写10MB数据，就不会把宿主机的磁盘给写满了。</p>
+<p><img alt="img" src="assets/a7906f56d9d107f0a290e610b8cd6f8a.png"/></p>
+<p>完成了上面这个小试验之后，我们可以再看一下Docker的代码，看看它的实现是不是和我们想的一样。</p>
+<p>Docker里<a href="https://github.com/moby/moby/blob/19.03/daemon/graphdriver/quota/projectquota.go#L155" target="_blank">SetQuota()</a>函数就是用来实现XFS Quota 限制的，我们可以看到它里面最重要的两步，分别是 <code>setProjectID</code> 和 <code>setProjectQuota</code> 。</p>
+<p>其实，这两步做的就是我们在基本概念中提到的那两步：</p>
+<p>第一步，给目标目录打上一个Project ID；第二步，为这个Project ID在XFS文件系统中，设置一个写入数据块的限制。</p>
+<pre><code class="language-shell">// SetQuota - assign a unique project id to directory and set the quota limits
+// for that project id
+
+func (q *Control) SetQuota(targetPath string, quota Quota) error {
+        q.RLock()
+        projectID, ok := q.quotas[targetPath]
+        q.RUnlock()
+
+        if !ok {
+                q.Lock()
+                projectID = q.nextProjectID
+
+                //
+                // assign project id to new container directory
+                //
+
+                err := setProjectID(targetPath, projectID)
+                if err != nil {
+                        q.Unlock()
+                        return err
+                }
+
+                q.quotas[targetPath] = projectID
+                q.nextProjectID++
+                q.Unlock()
+        }
+
+ 
+
+        //
+        // set the quota limit for the container's project id
+        //
+
+        logrus.Debugf("SetQuota(%s, %d): projectID=%d", targetPath, quota.Size, projectID)
+        return setProjectQuota(q.backingFsBlockDev, projectID, quota)
+}
+</code></pre>
+<p>那 <code>setProjectID</code> 和 <code>setProjectQuota</code> 是如何实现的呢？</p>
+<p>你可以进入到这两个函数里看一下，<strong>它们分别调用了ioctl()和quotactl()这两个系统调用来修改内核中XFS的数据结构，从而完成project ID的设置和Quota值的设置。</strong>具体的细节，我不在这里展开了，如果你有兴趣，可以继续去查看内核中对应的代码。</p>
+<p>好了，Docker里XFS Quota操作的步骤完全和我们先前设想的一样，那么还有最后一个问题要解决，XFS Quota限制的目录是哪一个？</p>
+<p>这个我们可以根据/proc/mounts中容器的OverlayFS Mount信息，再结合Docker的<a href="https://github.com/moby/moby/blob/19.03/daemon/graphdriver/overlay2/overlay.go#L335" target="_blank">代码</a>，就可以知道限制的目录是”/var/lib/docker/overlay2/<docker_id>“。那这个目录下有什么呢？果然upperdir目录中有对应的”diff”目录，就在里面！</docker_id></p>
+<p><img alt="img" src="assets/4d4d995f052c9a8e3ff3e413c0e1199f.png"/></p>
+<p>讲到这里，我想你已经清楚了对于使用OverlayFS的容器，我们应该如何去防止它把宿主机的磁盘给写满了吧？<strong>方法就是对OverlayFS的upperdir目录做XFS Quota的限流。</strong></p>
+<h2 id="重点总结">重点总结</h2>
+<p>我们这一讲的问题是，容器写了大量数据到OverlayFS文件系统的根目录，在这个情况下，就会把宿主机的磁盘写满。</p>
+<p>由于OverlayFS自己没有专门的特性，可以限制文件数据写入量。这时我们通过实际试验找到了解决思路：依靠底层文件系统的Quota特性来限制OverlayFS的upperdir目录的大小，这样就能实现限制容器写磁盘的目的。</p>
+<p>底层文件系统XFS Quota的Project模式，能够限制一个目录的文件写入量，这个功能具体是通过这两个步骤实现：</p>
+<p>第一步，给目标目录打上一个Project ID。</p>
+<p>第二步，给这个Project ID在XFS文件系统中设置一个写入数据块的限制。</p>
+<p>Docker正是使用了这个方法，也就是<strong>用XFS Quota来限制OverlayFS的upperdir目录</strong>，通过这个方式控制容器OverlayFS的根目录大小。</p>
+<p>当我们理解了这个方法后，对于不是用Docker启动的容器，比如直接由containerd启动起来的容器，也可以自己实现XFS Quota限制upperdir目录。这样就能有效控制容器对OverlayFS的写数据操作，避免宿主机的磁盘被写满。</p>
+<h2 id="思考题">思考题</h2>
+<p>在正文知识详解的部分，我们使用”xfs_quota”给目录打了project ID并且限制了文件写入的数据量。那在做完这样的限制之后，我们是否能用xfs_quota命令，查询到被限制目录的project ID和限制的数据量呢？</p>
+<p>欢迎你在留言区分享你的思考或疑问。如果这篇文章让你有所收获，也欢迎转发给你的同事、朋友，一起交流和学习。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#305c5c5c09040101000770575d51595c1e535f5d" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935957e1ff4af280',t:'MTc0NTUzNjk1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
