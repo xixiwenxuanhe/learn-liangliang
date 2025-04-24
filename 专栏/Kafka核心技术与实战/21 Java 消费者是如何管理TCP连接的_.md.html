@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="21 Java 消费者是如何管理TCP连接的_" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>21 Java 消费者是如何管理TCP连接的_ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%ad%a6%e4%b9%a0Kafka%ef%bc%9f.md.html" id="00 开篇词 为什么要学习Kafka？.md.html">00 开篇词 为什么要学习Kafka？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/01%20%20%e6%b6%88%e6%81%af%e5%bc%95%e6%93%8e%e7%b3%bb%e7%bb%9fABC.md.html" id="01  消息引擎系统ABC.md.html">01  消息引擎系统ABC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/02%20%e4%b8%80%e7%af%87%e6%96%87%e7%ab%a0%e5%b8%a6%e4%bd%a0%e5%bf%ab%e9%80%9f%e6%90%9e%e5%ae%9aKafka%e6%9c%af%e8%af%ad.md.html" id="02 一篇文章带你快速搞定Kafka术语.md.html">02 一篇文章带你快速搞定Kafka术语.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/03%20Kafka%e5%8f%aa%e6%98%af%e6%b6%88%e6%81%af%e5%bc%95%e6%93%8e%e7%b3%bb%e7%bb%9f%e5%90%97%ef%bc%9f.md.html" id="03 Kafka只是消息引擎系统吗？.md.html">03 Kafka只是消息引擎系统吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/04%20%e6%88%91%e5%ba%94%e8%af%a5%e9%80%89%e6%8b%a9%e5%93%aa%e7%a7%8dKafka%ef%bc%9f.md.html" id="04 我应该选择哪种Kafka？.md.html">04 我应该选择哪种Kafka？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/05%20%e8%81%8a%e8%81%8aKafka%e7%9a%84%e7%89%88%e6%9c%ac%e5%8f%b7.md.html" id="05 聊聊Kafka的版本号.md.html">05 聊聊Kafka的版本号.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/06%20Kafka%e7%ba%bf%e4%b8%8a%e9%9b%86%e7%be%a4%e9%83%a8%e7%bd%b2%e6%96%b9%e6%a1%88%e6%80%8e%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="06 Kafka线上集群部署方案怎么做？.md.html">06 Kafka线上集群部署方案怎么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/07%20%e6%9c%80%e6%9c%80%e6%9c%80%e9%87%8d%e8%a6%81%e7%9a%84%e9%9b%86%e7%be%a4%e5%8f%82%e6%95%b0%e9%85%8d%e7%bd%ae%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="07 最最最重要的集群参数配置（上）.md.html">07 最最最重要的集群参数配置（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/08%20%e6%9c%80%e6%9c%80%e6%9c%80%e9%87%8d%e8%a6%81%e7%9a%84%e9%9b%86%e7%be%a4%e5%8f%82%e6%95%b0%e9%85%8d%e7%bd%ae%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="08 最最最重要的集群参数配置（下）.md.html">08 最最最重要的集群参数配置（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/09%20%20%e7%94%9f%e4%ba%a7%e8%80%85%e6%b6%88%e6%81%af%e5%88%86%e5%8c%ba%e6%9c%ba%e5%88%b6%e5%8e%9f%e7%90%86%e5%89%96%e6%9e%90.md.html" id="09  生产者消息分区机制原理剖析.md.html">09  生产者消息分区机制原理剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/10%20%e7%94%9f%e4%ba%a7%e8%80%85%e5%8e%8b%e7%bc%a9%e7%ae%97%e6%b3%95%e9%9d%a2%e9%9d%a2%e8%a7%82.md.html" id="10 生产者压缩算法面面观.md.html">10 生产者压缩算法面面观.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/11%20%e6%97%a0%e6%b6%88%e6%81%af%e4%b8%a2%e5%a4%b1%e9%85%8d%e7%bd%ae%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="11 无消息丢失配置怎么实现？.md.html">11 无消息丢失配置怎么实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/12%20%e5%ae%a2%e6%88%b7%e7%ab%af%e9%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%e4%b8%8d%e5%b8%b8%e8%a7%81%e4%bd%86%e6%98%af%e5%be%88%e9%ab%98%e7%ba%a7%e7%9a%84%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="12 客户端都有哪些不常见但是很高级的功能？.md.html">12 客户端都有哪些不常见但是很高级的功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/13%20%20Java%e7%94%9f%e4%ba%a7%e8%80%85%e6%98%af%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86TCP%e8%bf%9e%e6%8e%a5%e7%9a%84%ef%bc%9f.md.html" id="13  Java生产者是如何管理TCP连接的？.md.html">13  Java生产者是如何管理TCP连接的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/14%20%e5%b9%82%e7%ad%89%e7%94%9f%e4%ba%a7%e8%80%85%e5%92%8c%e4%ba%8b%e5%8a%a1%e7%94%9f%e4%ba%a7%e8%80%85%e6%98%af%e4%b8%80%e5%9b%9e%e4%ba%8b%e5%90%97%ef%bc%9f.md.html" id="14 幂等生产者和事务生产者是一回事吗？.md.html">14 幂等生产者和事务生产者是一回事吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/15%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e5%88%b0%e5%ba%95%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="15 消费者组到底是什么？.md.html">15 消费者组到底是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/16%20%e6%8f%ad%e5%bc%80%e7%a5%9e%e7%a7%98%e7%9a%84%e2%80%9c%e4%bd%8d%e7%a7%bb%e4%b8%bb%e9%a2%98%e2%80%9d%e9%9d%a2%e7%ba%b1.md.html" id="16 揭开神秘的“位移主题”面纱.md.html">16 揭开神秘的“位移主题”面纱.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/17%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e9%87%8d%e5%b9%b3%e8%a1%a1%e8%83%bd%e9%81%bf%e5%85%8d%e5%90%97%ef%bc%9f.md.html" id="17 消费者组重平衡能避免吗？.md.html">17 消费者组重平衡能避免吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/18%20Kafka%e4%b8%ad%e4%bd%8d%e7%a7%bb%e6%8f%90%e4%ba%a4%e9%82%a3%e4%ba%9b%e4%ba%8b%e5%84%bf.md.html" id="18 Kafka中位移提交那些事儿.md.html">18 Kafka中位移提交那些事儿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/19%20CommitFailedException%e5%bc%82%e5%b8%b8%e6%80%8e%e4%b9%88%e5%a4%84%e7%90%86%ef%bc%9f.md.html" id="19 CommitFailedException异常怎么处理？.md.html">19 CommitFailedException异常怎么处理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/20%20%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%bc%80%e5%8f%91%e6%b6%88%e8%b4%b9%e8%80%85%e5%ae%9e%e4%be%8b.md.html" id="20 多线程开发消费者实例.md.html">20 多线程开发消费者实例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/21%20Java%20%e6%b6%88%e8%b4%b9%e8%80%85%e6%98%af%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86TCP%e8%bf%9e%e6%8e%a5%e7%9a%84_.md.html" id="21 Java 消费者是如何管理TCP连接的_.md.html">21 Java 消费者是如何管理TCP连接的_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/22%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e6%b6%88%e8%b4%b9%e8%bf%9b%e5%ba%a6%e7%9b%91%e6%8e%a7%e9%83%bd%e6%80%8e%e4%b9%88%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="22 消费者组消费进度监控都怎么实现？.md.html">22 消费者组消费进度监控都怎么实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/23%20Kafka%e5%89%af%e6%9c%ac%e6%9c%ba%e5%88%b6%e8%af%a6%e8%a7%a3.md.html" id="23 Kafka副本机制详解.md.html">23 Kafka副本机制详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/24%20%e8%af%b7%e6%b1%82%e6%98%af%e6%80%8e%e4%b9%88%e8%a2%ab%e5%a4%84%e7%90%86%e7%9a%84%ef%bc%9f.md.html" id="24 请求是怎么被处理的？.md.html">24 请求是怎么被处理的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/25%20%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e9%87%8d%e5%b9%b3%e8%a1%a1%e5%85%a8%e6%b5%81%e7%a8%8b%e8%a7%a3%e6%9e%90.md.html" id="25 消费者组重平衡全流程解析.md.html">25 消费者组重平衡全流程解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/26%20%e4%bd%a0%e4%b8%80%e5%ae%9a%e4%b8%8d%e8%83%bd%e9%94%99%e8%bf%87%e7%9a%84Kafka%e6%8e%a7%e5%88%b6%e5%99%a8.md.html" id="26 你一定不能错过的Kafka控制器.md.html">26 你一定不能错过的Kafka控制器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/27%20%e5%85%b3%e4%ba%8e%e9%ab%98%e6%b0%b4%e4%bd%8d%e5%92%8cLeader%20Epoch%e7%9a%84%e8%ae%a8%e8%ae%ba.md.html" id="27 关于高水位和Leader Epoch的讨论.md.html">27 关于高水位和Leader Epoch的讨论.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/28%20%e4%b8%bb%e9%a2%98%e7%ae%a1%e7%90%86%e7%9f%a5%e5%a4%9a%e5%b0%91_.md.html" id="28 主题管理知多少_.md.html">28 主题管理知多少_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/29%20Kafka%e5%8a%a8%e6%80%81%e9%85%8d%e7%bd%ae%e4%ba%86%e8%a7%a3%e4%b8%8b%ef%bc%9f.md.html" id="29 Kafka动态配置了解下？.md.html">29 Kafka动态配置了解下？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/30%20%e6%80%8e%e4%b9%88%e9%87%8d%e8%ae%be%e6%b6%88%e8%b4%b9%e8%80%85%e7%bb%84%e4%bd%8d%e7%a7%bb%ef%bc%9f.md.html" id="30 怎么重设消费者组位移？.md.html">30 怎么重设消费者组位移？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/31%20%e5%b8%b8%e8%a7%81%e5%b7%a5%e5%85%b7%e8%84%9a%e6%9c%ac%e5%a4%a7%e6%b1%87%e6%80%bb.md.html" id="31 常见工具脚本大汇总.md.html">31 常见工具脚本大汇总.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/32%20KafkaAdminClient%ef%bc%9aKafka%e7%9a%84%e8%bf%90%e7%bb%b4%e5%88%a9%e5%99%a8.md.html" id="32 KafkaAdminClient：Kafka的运维利器.md.html">32 KafkaAdminClient：Kafka的运维利器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/33%20Kafka%e8%ae%a4%e8%af%81%e6%9c%ba%e5%88%b6%e7%94%a8%e5%93%aa%e5%ae%b6%ef%bc%9f.md.html" id="33 Kafka认证机制用哪家？.md.html">33 Kafka认证机制用哪家？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/34%20%e4%ba%91%e7%8e%af%e5%a2%83%e4%b8%8b%e7%9a%84%e6%8e%88%e6%9d%83%e8%af%a5%e6%80%8e%e4%b9%88%e5%81%9a%ef%bc%9f.md.html" id="34 云环境下的授权该怎么做？.md.html">34 云环境下的授权该怎么做？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/35%20%e8%b7%a8%e9%9b%86%e7%be%a4%e5%a4%87%e4%bb%bd%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88MirrorMaker.md.html" id="35 跨集群备份解决方案MirrorMaker.md.html">35 跨集群备份解决方案MirrorMaker.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/36%20%e4%bd%a0%e5%ba%94%e8%af%a5%e6%80%8e%e4%b9%88%e7%9b%91%e6%8e%a7Kafka%ef%bc%9f.md.html" id="36 你应该怎么监控Kafka？.md.html">36 你应该怎么监控Kafka？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/37%20%e4%b8%bb%e6%b5%81%e7%9a%84Kafka%e7%9b%91%e6%8e%a7%e6%a1%86%e6%9e%b6.md.html" id="37 主流的Kafka监控框架.md.html">37 主流的Kafka监控框架.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/38%20%e8%b0%83%e4%bc%98Kafka%ef%bc%8c%e4%bd%a0%e5%81%9a%e5%88%b0%e4%ba%86%e5%90%97%ef%bc%9f.md.html" id="38 调优Kafka，你做到了吗？.md.html">38 调优Kafka，你做到了吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/39%20%e4%bb%8e0%e6%90%ad%e5%bb%ba%e5%9f%ba%e4%ba%8eKafka%e7%9a%84%e4%bc%81%e4%b8%9a%e7%ba%a7%e5%ae%9e%e6%97%b6%e6%97%a5%e5%bf%97%e6%b5%81%e5%a4%84%e7%90%86%e5%b9%b3%e5%8f%b0.md.html" id="39 从0搭建基于Kafka的企业级实时日志流处理平台.md.html">39 从0搭建基于Kafka的企业级实时日志流处理平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/40%20Kafka%20Streams%e4%b8%8e%e5%85%b6%e4%bb%96%e6%b5%81%e5%a4%84%e7%90%86%e5%b9%b3%e5%8f%b0%e7%9a%84%e5%b7%ae%e5%bc%82%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 Kafka Streams与其他流处理平台的差异在哪里？.md.html">40 Kafka Streams与其他流处理平台的差异在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/41%20Kafka%20Streams%20DSL%e5%bc%80%e5%8f%91%e5%ae%9e%e4%be%8b.md.html" id="41 Kafka Streams DSL开发实例.md.html">41 Kafka Streams DSL开发实例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/42%20Kafka%20Streams%e5%9c%a8%e9%87%91%e8%9e%8d%e9%a2%86%e5%9f%9f%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="42 Kafka Streams在金融领域的应用.md.html">42 Kafka Streams在金融领域的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/%e5%8a%a0%e9%a4%90%20%e6%90%ad%e5%bb%ba%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%e3%80%81%e9%98%85%e8%af%bb%e6%ba%90%e7%a0%81%e6%96%b9%e6%b3%95%e3%80%81%e7%bb%8f%e5%85%b8%e5%ad%a6%e4%b9%a0%e8%b5%84%e6%96%99%e5%a4%a7%e6%8f%ad%e7%a7%98.md.html" id="加餐 搭建开发环境、阅读源码方法、经典学习资料大揭秘.md.html">加餐 搭建开发环境、阅读源码方法、经典学习资料大揭秘.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e9%bb%84%e4%ba%91%ef%bc%9a%e8%a1%8c%e7%99%be%e9%87%8c%e8%80%85%e5%8d%8a%e4%b9%9d%e5%8d%81.md.html" id="用户故事 黄云：行百里者半九十.md.html">用户故事 黄云：行百里者半九十.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Kafka%e6%a0%b8%e5%bf%83%e6%8a%80%e6%9c%af%e4%b8%8e%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e4%bb%a5%e6%a2%a6%e4%b8%ba%e9%a9%ac%ef%bc%8c%e8%8e%ab%e8%b4%9f%e9%9f%b6%e5%8d%8e%ef%bc%81.md.html" id="结束语 以梦为马，莫负韶华！.md.html">结束语 以梦为马，莫负韶华！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="21 Java 消费者是如何管理TCP连接的_" id="title">21 Java 消费者是如何管理TCP连接的_</h1>
+<div><p>你好，我是胡夕。今天我要和你分享的主题是：Kafka的Java消费者是如何管理TCP连接的。</p>
+<p>在专栏<a href="https://time.geekbang.org/column/article/103844" target="_blank">第13讲</a>中，我们专门聊过“Java<strong>生产者</strong>是如何管理TCP连接资源的”这个话题，你应该还有印象吧？今天算是它的姊妹篇，我们一起来研究下Kafka的Java<strong>消费者</strong>管理TCP或Socket资源的机制。只有完成了今天的讨论，我们才算是对Kafka客户端的TCP连接管理机制有了全面的了解。</p>
+<p>和之前一样，我今天会无差别地混用TCP和Socket两个术语。毕竟，在Kafka的世界中，无论是ServerSocket，还是SocketChannel，它们实现的都是TCP协议。或者这么说，Kafka的网络传输是基于TCP协议的，而不是基于UDP协议，因此，当我今天说到TCP连接或Socket资源时，我指的是同一个东西。</p>
+<h2 id="何时创建tcp连接">何时创建TCP连接？</h2>
+<p>我们先从消费者创建TCP连接开始讨论。消费者端主要的程序入口是KafkaConsumer类。<strong>和生产者不同的是，构建KafkaConsumer实例时是不会创建任何TCP连接的</strong>，也就是说，当你执行完new KafkaConsumer(properties)语句后，你会发现，没有Socket连接被创建出来。这一点和Java生产者是有区别的，主要原因就是生产者入口类KafkaProducer在构建实例的时候，会在后台默默地启动一个Sender线程，这个Sender线程负责Socket连接的创建。</p>
+<p>从这一点上来看，我个人认为KafkaConsumer的设计比KafkaProducer要好。就像我在第13讲中所说的，在Java构造函数中启动线程，会造成this指针的逃逸，这始终是一个隐患。</p>
+<p>如果Socket不是在构造函数中创建的，那么是在KafkaConsumer.subscribe或KafkaConsumer.assign方法中创建的吗？严格来说也不是。我还是直接给出答案吧：<strong>TCP连接是在调用KafkaConsumer.poll方法时被创建的</strong>。再细粒度地说，在poll方法内部有3个时机可以创建TCP连接。</p>
+<p>1.<strong>发起FindCoordinator请求时</strong>。</p>
+<p>还记得消费者端有个组件叫协调者（Coordinator）吗？它驻留在Broker端的内存中，负责消费者组的组成员管理和各个消费者的位移提交管理。当消费者程序首次启动调用poll方法时，它需要向Kafka集群发送一个名为FindCoordinator的请求，希望Kafka集群告诉它哪个Broker是管理它的协调者。</p>
+<p>不过，消费者应该向哪个Broker发送这类请求呢？理论上任何一个Broker都能回答这个问题，也就是说消费者可以发送FindCoordinator请求给集群中的任意服务器。在这个问题上，社区做了一点点优化：消费者程序会向集群中当前负载最小的那台Broker发送请求。负载是如何评估的呢？其实很简单，就是看消费者连接的所有Broker中，谁的待发送请求最少。当然了，这种评估显然是消费者端的单向评估，并非是站在全局角度，因此有的时候也不一定是最优解。不过这不并影响我们的讨论。总之，在这一步，消费者会创建一个Socket连接。</p>
+<p>2.<strong>连接协调者时。</strong></p>
+<p>Broker处理完上一步发送的FindCoordinator请求之后，会返还对应的响应结果（Response），显式地告诉消费者哪个Broker是真正的协调者，因此在这一步，消费者知晓了真正的协调者后，会创建连向该Broker的Socket连接。只有成功连入协调者，协调者才能开启正常的组协调操作，比如加入组、等待组分配方案、心跳请求处理、位移获取、位移提交等。</p>
+<p>3.<strong>消费数据时。</strong></p>
+<p>消费者会为每个要消费的分区创建与该分区领导者副本所在Broker连接的TCP。举个例子，假设消费者要消费5个分区的数据，这5个分区各自的领导者副本分布在4台Broker上，那么该消费者在消费时会创建与这4台Broker的Socket连接。</p>
+<h2 id="创建多少个tcp连接">创建多少个TCP连接？</h2>
+<p>下面我们来说说消费者创建TCP连接的数量。你可以先思考一下大致需要的连接数量，然后我们结合具体的Kafka日志，来验证下结果是否和你想的一致。</p>
+<p>我们来看看这段日志。</p>
+<blockquote>
+<p><em>[2019-05-27 10:00:54,142] DEBUG [Consumer clientId=consumer-1, groupId=test] Initiating connection to node localhost:9092 (id: -1 rack: null) using address localhost/127.0.0.1 (org.apache.kafka.clients.NetworkClient:944)</em></p>
+<p><em>……</em></p>
+<p><em>[2019-05-27 10:00:54,188] DEBUG [Consumer clientId=consumer-1, groupId=test] Sending metadata request MetadataRequestData(topics=[MetadataRequestTopic(name=‘t4’)], allowAutoTopicCreation=true, includeClusterAuthorizedOperations=false, includeTopicAuthorizedOperations=false) to node localhost:9092 (id: -1 rack: null) (org.apache.kafka.clients.NetworkClient:1097)</em></p>
+<p><em>……</em></p>
+<p>_[2019-05-27 10:00:54,188] TRACE [Consumer clientId=consumer-1, groupId=test] Sending FIND_COORDINATOR {key=test,key<em>type=0} with correlation id 0 to node -1 (org.apache.kafka.clients.NetworkClient:496)</em></p>
+<p>_[2019-05-27 10:00:54,203] TRACE [Consumer clientId=consumer-1, groupId=test] Completed receive from node -1 for FIND_COORDINATOR with correlation id 0, received {throttle_time_ms=0,error_code=0,error_message=null, node<em>id=2,host=localhost,port=9094} (org.apache.kafka.clients.NetworkClient:837)</em></p>
+<p><em>……</em></p>
+<p><em>[2019-05-27 10:00:54,204] DEBUG [Consumer clientId=consumer-1, groupId=test] Initiating connection to node localhost:9094 (id: 2147483645 rack: null) using address localhost/127.0.0.1 (org.apache.kafka.clients.NetworkClient:944)</em></p>
+<p><em>……</em></p>
+<p><em>[2019-05-27 10:00:54,237] DEBUG [Consumer clientId=consumer-1, groupId=test] Initiating connection to node localhost:9094 (id: 2 rack: null) using address localhost/127.0.0.1 (org.apache.kafka.clients.NetworkClient:944)</em></p>
+<p><em>[2019-05-27 10:00:54,237] DEBUG [Consumer clientId=consumer-1, groupId=test] Initiating connection to node localhost:9092 (id: 0 rack: null) using address localhost/127.0.0.1 (org.apache.kafka.clients.NetworkClient:944)</em></p>
+<p><em>[2019-05-27 10:00:54,238] DEBUG [Consumer clientId=consumer-1, groupId=test] Initiating connection to node localhost:9093 (id: 1 rack: null) using address localhost/127.0.0.1 (org.apache.kafka.clients.NetworkClient:944)</em></p>
+</blockquote>
+<p>这里我稍微解释一下，日志的第一行是消费者程序创建的第一个TCP连接，就像我们前面说的，这个Socket用于发送FindCoordinator请求。由于这是消费者程序创建的第一个连接，此时消费者对于要连接的Kafka集群一无所知，因此它连接的Broker节点的ID是-1，表示消费者根本不知道要连接的Kafka Broker的任何信息。</p>
+<p>值得注意的是日志的第二行，消费者复用了刚才创建的那个Socket连接，向Kafka集群发送元数据请求以获取整个集群的信息。</p>
+<p>日志的第三行表明，消费者程序开始发送FindCoordinator请求给第一步中连接的Broker，即localhost:9092，也就是nodeId等于-1的那个。在十几毫秒之后，消费者程序成功地获悉协调者所在的Broker信息，也就是第四行标为橙色的“node_id = 2”。</p>
+<p>完成这些之后，消费者就已经知道协调者Broker的连接信息了，因此在日志的第五行发起了第二个Socket连接，创建了连向localhost:9094的TCP。只有连接了协调者，消费者进程才能正常地开启消费者组的各种功能以及后续的消息消费。</p>
+<p>在日志的最后三行中，消费者又分别创建了新的TCP连接，主要用于实际的消息获取。还记得我刚才说的吗？要消费的分区的领导者副本在哪台Broker上，消费者就要创建连向哪台Broker的TCP。在我举的这个例子中，localhost:9092，localhost:9093和localhost:9094这3台Broker上都有要消费的分区，因此消费者创建了3个TCP连接。</p>
+<p>看完这段日志，你应该会发现日志中的这些Broker节点的ID在不断变化。有时候是-1，有时候是2147483645，只有在最后的时候才回归正常值0、1和2。这又是怎么回事呢？</p>
+<p>前面我们说过了-1的来由，即消费者程序（其实也不光是消费者，生产者也是这样的机制）首次启动时，对Kafka集群一无所知，因此用-1来表示尚未获取到Broker数据。</p>
+<p>那么2147483645是怎么来的呢？它是<strong>由Integer.MAX_VALUE减去协调者所在Broker的真实ID计算得来的</strong>。看第四行标为橙色的内容，我们可以知道协调者ID是2，因此这个Socket连接的节点ID就是Integer.MAX_VALUE减去2，即2147483647减去2，也就是2147483645。这种节点ID的标记方式是Kafka社区特意为之的结果，目的就是要让组协调请求和真正的数据获取请求使用不同的Socket连接。</p>
+<p>至于后面的0、1、2，那就很好解释了。它们表征了真实的Broker ID，也就是我们在server.properties中配置的broker.id值。</p>
+<p>我们来简单总结一下上面的内容。通常来说，消费者程序会创建3类TCP连接：</p>
+<ol>
+<li>确定协调者和获取集群元数据。</li>
+<li>连接协调者，令其执行组成员管理操作。</li>
+<li>执行实际的消息获取。</li>
+</ol>
+<p>那么，这三类TCP请求的生命周期都是相同的吗？换句话说，这些TCP连接是何时被关闭的呢？</p>
+<h2 id="何时关闭tcp连接">何时关闭TCP连接？</h2>
+<p>和生产者类似，消费者关闭Socket也分为主动关闭和Kafka自动关闭。主动关闭是指你显式地调用消费者API的方法去关闭消费者，具体方式就是<strong>手动调用KafkaConsumer.close()方法，或者是执行Kill命令</strong>，不论是Kill -2还是Kill -9；而Kafka自动关闭是由<strong>消费者端参数connection.max.idle.ms</strong>控制的，该参数现在的默认值是9分钟，即如果某个Socket连接上连续9分钟都没有任何请求“过境”的话，那么消费者会强行“杀掉”这个Socket连接。</p>
+<p>不过，和生产者有些不同的是，如果在编写消费者程序时，你使用了循环的方式来调用poll方法消费消息，那么上面提到的所有请求都会被定期发送到Broker，因此这些Socket连接上总是能保证有请求在发送，从而也就实现了“长连接”的效果。</p>
+<p>针对上面提到的三类TCP连接，你需要注意的是，<strong>当第三类TCP连接成功创建后，消费者程序就会废弃第一类TCP连接</strong>，之后在定期请求元数据时，它会改为使用第三类TCP连接。也就是说，最终你会发现，第一类TCP连接会在后台被默默地关闭掉。对一个运行了一段时间的消费者程序来说，只会有后面两类TCP连接存在。</p>
+<h2 id="可能的问题">可能的问题</h2>
+<p>从理论上说，Kafka Java消费者管理TCP资源的机制我已经说清楚了，但如果仔细推敲这里面的设计原理，还是会发现一些问题。</p>
+<p>我们刚刚讲过，第一类TCP连接仅仅是为了首次获取元数据而创建的，后面就会被废弃掉。最根本的原因是，消费者在启动时还不知道Kafka集群的信息，只能使用一个“假”的ID去注册，即使消费者获取了真实的Broker ID，它依旧无法区分这个“假”ID对应的是哪台Broker，因此也就无法重用这个Socket连接，只能再重新创建一个新的连接。</p>
+<p>为什么会出现这种情况呢？主要是因为目前Kafka仅仅使用ID这一个维度的数据来表征Socket连接信息。这点信息明显不足以确定连接的是哪台Broker，也许在未来，社区应该考虑使用<strong>&lt;主机名、端口、ID&gt;</strong>三元组的方式来定位Socket资源，这样或许能够让消费者程序少创建一些TCP连接。</p>
+<p>也许你会问，反正Kafka有定时关闭机制，这算多大点事呢？其实，在实际场景中，我见过很多将connection.max.idle.ms设置成-1，即禁用定时关闭的案例，如果是这样的话，这些TCP连接将不会被定期清除，只会成为永久的“僵尸”连接。基于这个原因，社区应该考虑更好的解决方案。</p>
+<h2 id="小结">小结</h2>
+<p>好了，今天我们补齐了Kafka Java客户端管理TCP连接的“拼图”。我们不仅详细描述了Java消费者是怎么创建和关闭TCP连接的，还对目前的设计方案提出了一些自己的思考。希望今后你能将这些知识应用到自己的业务场景中，并对实际生产环境中的Socket管理做到心中有数。</p>
+<p><img alt="" src="assets/f13d7008d7b251df0e6e6a89077d7604.jpg"/></p>
+<h2 id="开放讨论">开放讨论</h2>
+<p>假设有个Kafka集群由2台Broker组成，有个主题有5个分区，当一个消费该主题的消费者程序启动时，你认为该程序会创建多少个Socket连接？为什么？</p>
+<p>欢迎写下你的思考和答案，我们一起讨论。如果你觉得有所收获，也欢迎把文章分享给你的朋友。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#214d4d4d18151010111661464c40484d0f424e4c" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358449a6e04440b',t:'MTc0NTUyNTY3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
