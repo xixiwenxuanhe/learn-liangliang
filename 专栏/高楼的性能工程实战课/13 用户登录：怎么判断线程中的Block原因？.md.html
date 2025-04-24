@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="13 用户登录：怎么判断线程中的Block原因？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>13 用户登录：怎么判断线程中的Block原因？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e6%89%93%e7%a0%b4%e5%9b%9b%e5%a4%a7%e8%ae%a4%e7%9f%a5%e5%b1%80%e9%99%90%ef%bc%8c%e8%bf%9b%e9%98%b6%e9%ab%98%e7%ba%a7%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%b8%88.md.html" id="00 开篇词 打破四大认知局限，进阶高级性能工程师.md.html">00 开篇词 打破四大认知局限，进阶高级性能工程师.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/01%20%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e5%be%88%e5%a4%9a%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e4%ba%ba%e5%91%98%e6%97%a0%e6%b3%95%e5%af%b9%e6%80%a7%e8%83%bd%e7%bb%93%e6%9e%9c%e8%b4%9f%e8%b4%a3%ef%bc%9f.md.html" id="01 性能工程：为什么很多性能测试人员无法对性能结果负责？.md.html">01 性能工程：为什么很多性能测试人员无法对性能结果负责？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/02%20%e5%85%b3%e9%94%ae%e6%a6%82%e5%bf%b5%ef%bc%9a%e6%80%a7%e8%83%bd%e6%8c%87%e6%a0%87%e5%92%8c%e5%9c%ba%e6%99%af%e7%9a%84%e7%a1%ae%e5%ae%9a.md.html" id="02 关键概念：性能指标和场景的确定.md.html">02 关键概念：性能指标和场景的确定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/03%20%e6%a0%b8%e5%bf%83%e5%88%86%e6%9e%90%e9%80%bb%e8%be%91%ef%bc%9a%e6%89%80%e6%9c%89%e7%9a%84%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%8c%e9%9d%a0%e8%bf%99%e4%b8%83%e6%ad%a5%e9%83%bd%e8%83%bd%e6%90%9e%e5%ae%9a.md.html" id="03 核心分析逻辑：所有的性能分析，靠这七步都能搞定.md.html">03 核心分析逻辑：所有的性能分析，靠这七步都能搞定.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/04%20%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%e5%86%b3%e7%ad%96%e6%a0%91%e5%92%8c%e6%9f%a5%e6%89%be%e7%93%b6%e9%a2%88%e8%af%81%e6%8d%ae%e9%93%be%ef%bc%9f.md.html" id="04 如何构建性能分析决策树和查找瓶颈证据链？.md.html">04 如何构建性能分析决策树和查找瓶颈证据链？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/05%20%e6%80%a7%e8%83%bd%e6%96%b9%e6%a1%88%ef%bc%9a%e4%bd%a0%e7%9a%84%e6%96%b9%e6%a1%88%e6%98%af%e5%90%a6%e8%bf%98%e5%81%9c%e7%95%99%e5%9c%a8%e5%bd%a2%e5%bc%8f%e4%b8%8a%ef%bc%9f.md.html" id="05 性能方案：你的方案是否还停留在形式上？.md.html">05 性能方案：你的方案是否还停留在形式上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/06%20%e5%a6%82%e4%bd%95%e6%8a%bd%e5%8f%96%e5%87%ba%e7%ac%a6%e5%90%88%e7%9c%9f%e5%ae%9e%e4%b8%9a%e5%8a%a1%e5%9c%ba%e6%99%af%e7%9a%84%e4%b8%9a%e5%8a%a1%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="06 如何抽取出符合真实业务场景的业务模型？.md.html">06 如何抽取出符合真实业务场景的业务模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/07%20%e6%80%a7%e8%83%bd%e5%9c%ba%e6%99%af%e7%9a%84%e6%95%b0%e6%8d%ae%e5%88%b0%e5%ba%95%e5%ba%94%e8%af%a5%e5%81%9a%e6%88%90%e4%bb%80%e4%b9%88%e6%a0%b7%e5%ad%90%ef%bc%9f.md.html" id="07 性能场景的数据到底应该做成什么样子？.md.html">07 性能场景的数据到底应该做成什么样子？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/08%20%e5%b9%b6%e5%8f%91%e3%80%81%e5%9c%a8%e7%ba%bf%e5%92%8cTPS%e5%88%b0%e5%ba%95%e6%98%af%e4%bb%80%e4%b9%88%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="08 并发、在线和TPS到底是什么关系？.md.html">08 并发、在线和TPS到底是什么关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/09%20%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%85%a8%e5%b1%80%e5%92%8c%e5%ae%9a%e5%90%91%e7%9b%91%e6%8e%a7%e7%ad%96%e7%95%a5%ef%bc%9f.md.html" id="09 如何设计全局和定向监控策略？.md.html">09 如何设计全局和定向监控策略？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/10%20%e8%ae%be%e8%ae%a1%e5%9f%ba%e5%87%86%e5%9c%ba%e6%99%af%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e5%93%aa%e4%ba%9b%e5%85%b3%e9%94%ae%e7%82%b9%ef%bc%9f.md.html" id="10 设计基准场景需要注意哪些关键点？.md.html">10 设计基准场景需要注意哪些关键点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/11%20%e6%89%93%e5%bc%80%e9%a6%96%e9%a1%b5%e4%b9%8b%e4%b8%80%ef%bc%9a%e4%b8%80%e4%b8%aa%e6%a1%88%e4%be%8b%ef%bc%8c%e5%b8%a6%e4%bd%a0%e6%90%9e%e6%87%82%e5%9f%ba%e7%a1%80%e7%a1%ac%e4%bb%b6%e8%ae%be%e6%96%bd%e7%9a%84%e6%80%a7%e8%83%bd%e9%97%ae%e9%a2%98.md.html" id="11 打开首页之一：一个案例，带你搞懂基础硬件设施的性能问题.md.html">11 打开首页之一：一个案例，带你搞懂基础硬件设施的性能问题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/12%20%e6%89%93%e5%bc%80%e9%a6%96%e9%a1%b5%e4%b9%8b%e4%ba%8c%ef%bc%9a%e5%a6%82%e4%bd%95%e5%b9%b3%e8%a1%a1%e5%88%a9%e7%94%a8%e7%a1%ac%e4%bb%b6%e8%b5%84%e6%ba%90%ef%bc%9f.md.html" id="12 打开首页之二：如何平衡利用硬件资源？.md.html">12 打开首页之二：如何平衡利用硬件资源？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/13%20%e7%94%a8%e6%88%b7%e7%99%bb%e5%bd%95%ef%bc%9a%e6%80%8e%e4%b9%88%e5%88%a4%e6%96%ad%e7%ba%bf%e7%a8%8b%e4%b8%ad%e7%9a%84Block%e5%8e%9f%e5%9b%a0%ef%bc%9f.md.html" id="13 用户登录：怎么判断线程中的Block原因？.md.html">13 用户登录：怎么判断线程中的Block原因？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/14%20%e7%94%a8%e6%88%b7%e4%bf%a1%e6%81%af%e6%9f%a5%e8%af%a2%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e7%bd%91%e7%bb%9c%e8%bd%af%e4%b8%ad%e6%96%ad%e7%93%b6%e9%a2%88%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="14 用户信息查询：如何解决网络软中断瓶颈问题？.md.html">14 用户信息查询：如何解决网络软中断瓶颈问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/15%20%e6%9f%a5%e8%af%a2%e5%95%86%e5%93%81%ef%bc%9a%e8%b5%84%e6%ba%90%e4%b8%8d%e8%b6%b3%e6%9c%89%e5%93%aa%e4%ba%9b%e6%80%a7%e8%83%bd%e8%a1%a8%e7%8e%b0%ef%bc%9f.md.html" id="15 查询商品：资源不足有哪些性能表现？.md.html">15 查询商品：资源不足有哪些性能表现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/16%20%e5%95%86%e5%93%81%e5%8a%a0%e5%85%a5%e8%b4%ad%e7%89%a9%e8%bd%a6%ef%bc%9aSQL%e4%bc%98%e5%8c%96%e5%92%8c%e5%8e%8b%e5%8a%9b%e5%b7%a5%e5%85%b7%e4%b8%ad%e7%9a%84%e5%8f%82%e6%95%b0%e5%88%86%e6%9e%90.md.html" id="16 商品加入购物车：SQL优化和压力工具中的参数分析.md.html">16 商品加入购物车：SQL优化和压力工具中的参数分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/17%20%e6%9f%a5%e8%af%a2%e8%b4%ad%e7%89%a9%e8%bd%a6%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e9%93%ba%e5%ba%95%e5%8f%82%e6%95%b0%e4%b8%80%e5%ae%9a%e8%a6%81%e7%ac%a6%e5%90%88%e7%9c%9f%e5%ae%9e%e4%b8%9a%e5%8a%a1%e7%89%b9%e6%80%a7%ef%bc%9f.md.html" id="17 查询购物车：为什么铺底参数一定要符合真实业务特性？.md.html">17 查询购物车：为什么铺底参数一定要符合真实业务特性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/18%20%e8%b4%ad%e7%89%a9%e8%bd%a6%e4%bf%a1%e6%81%af%e7%a1%ae%e5%ae%9a%e8%ae%a2%e5%8d%95%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8a%a8%e6%80%81%e5%8f%82%e6%95%b0%e5%8c%96%e9%80%bb%e8%be%91%e9%9d%9e%e5%b8%b8%e9%87%8d%e8%a6%81%ef%bc%9f.md.html" id="18 购物车信息确定订单：为什么动态参数化逻辑非常重要？.md.html">18 购物车信息确定订单：为什么动态参数化逻辑非常重要？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/19%20%e7%94%9f%e6%88%90%e8%ae%a2%e5%8d%95%e4%bf%a1%e6%81%af%e4%b9%8b%e4%b8%80%ef%bc%9a%e5%ba%94%e7%94%a8JDBC%e6%b1%a0%e4%bc%98%e5%8c%96%e5%92%8c%e5%86%85%e5%ad%98%e6%ba%a2%e5%87%ba%e5%88%86%e6%9e%90.md.html" id="19 生成订单信息之一：应用JDBC池优化和内存溢出分析.md.html">19 生成订单信息之一：应用JDBC池优化和内存溢出分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/20%20%e7%94%9f%e6%88%90%e8%ae%a2%e5%8d%95%e4%bf%a1%e6%81%af%e4%b9%8b%e4%ba%8c%ef%bc%9a%e4%b8%9a%e5%8a%a1%e9%80%bb%e8%be%91%e5%a4%8d%e6%9d%82%ef%bc%8c%e6%80%8e%e4%b9%88%e5%81%9a%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="20 生成订单信息之二：业务逻辑复杂，怎么做性能优化？.md.html">20 生成订单信息之二：业务逻辑复杂，怎么做性能优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/21%20%e6%94%af%e4%bb%98%e5%89%8d%e6%9f%a5%e8%af%a2%e8%ae%a2%e5%8d%95%e5%88%97%e8%a1%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e6%9e%90%e4%bc%98%e5%8c%96%e4%b8%80%e4%b8%aa%e5%9b%ba%e5%ae%9a%e7%9a%84%e6%8a%80%e6%9c%af%e7%bb%84%e4%bb%b6%ef%bc%9f.md.html" id="21 支付前查询订单列表：如何分析优化一个固定的技术组件？.md.html">21 支付前查询订单列表：如何分析优化一个固定的技术组件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/22%20%e6%94%af%e4%bb%98%e8%ae%a2%e5%8d%95%e4%bf%a1%e6%81%af%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e8%a7%a3%e5%86%b3for%e5%be%aa%e7%8e%af%e4%ba%a7%e7%94%9f%e7%9a%84%e5%86%85%e5%ad%98%e6%ba%a2%e5%87%ba%ef%bc%9f.md.html" id="22 支付订单信息：如何高效解决for循环产生的内存溢出？.md.html">22 支付订单信息：如何高效解决for循环产生的内存溢出？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/23%20%e5%86%b3%e5%ae%9a%e5%ae%b9%e9%87%8f%e5%9c%ba%e6%99%af%e6%88%90%e8%b4%a5%e7%9a%84%e5%85%b3%e9%94%ae%e5%9b%a0%e7%b4%a0%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%9f.md.html" id="23 决定容量场景成败的关键因素有哪些？.md.html">23 决定容量场景成败的关键因素有哪些？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/24%20%e5%ae%b9%e9%87%8f%e5%9c%ba%e6%99%af%e4%b9%8b%e4%b8%80%ef%bc%9a%e7%b4%a2%e5%bc%95%e4%bc%98%e5%8c%96%e5%92%8cKubernetes%e8%b5%84%e6%ba%90%e5%88%86%e9%85%8d%e4%b8%8d%e5%9d%87%e8%a1%a1%e6%80%8e%e4%b9%88%e5%8a%9e%ef%bc%9f.md.html" id="24 容量场景之一：索引优化和Kubernetes资源分配不均衡怎么办？.md.html">24 容量场景之一：索引优化和Kubernetes资源分配不均衡怎么办？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/25%20%e5%ae%b9%e9%87%8f%e5%9c%ba%e6%99%af%e4%b9%8b%e4%ba%8c%ef%bc%9a%e7%bc%93%e5%ad%98%e5%af%b9%e6%80%a7%e8%83%bd%e4%bc%9a%e6%9c%89%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e5%bd%b1%e5%93%8d%ef%bc%9f.md.html" id="25 容量场景之二：缓存对性能会有什么样的影响？.md.html">25 容量场景之二：缓存对性能会有什么样的影响？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/26%20%e7%a8%b3%e5%ae%9a%e6%80%a7%e5%9c%ba%e6%99%af%e4%b9%8b%e4%b8%80%ef%bc%9a%e6%80%8e%e6%a0%b7%e6%90%9e%e5%ae%9a%e4%b8%9a%e5%8a%a1%e7%a7%af%e7%b4%af%e9%87%8f%e4%ba%a7%e7%94%9f%e7%9a%84%e7%93%b6%e9%a2%88%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="26 稳定性场景之一：怎样搞定业务积累量产生的瓶颈问题？.md.html">26 稳定性场景之一：怎样搞定业务积累量产生的瓶颈问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/27%20%e7%a8%b3%e5%ae%9a%e6%80%a7%e5%9c%ba%e6%99%af%e4%b9%8b%e4%ba%8c%ef%bc%9a%e6%80%8e%e6%a0%b7%e6%90%9e%e5%ae%9a%e7%a3%81%e7%9b%98%e4%b8%8d%e8%b6%b3%e4%ba%a7%e7%94%9f%e7%9a%84%e7%93%b6%e9%a2%88%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="27 稳定性场景之二：怎样搞定磁盘不足产生的瓶颈问题？.md.html">27 稳定性场景之二：怎样搞定磁盘不足产生的瓶颈问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%a6%82%e4%bd%95%e7%a1%ae%e5%ae%9a%e5%bc%82%e5%b8%b8%e5%9c%ba%e6%99%af%e7%9a%84%e8%8c%83%e5%9b%b4%e5%92%8c%e8%ae%be%e8%ae%a1%e9%80%bb%e8%be%91%ef%bc%9f.md.html" id="28 如何确定异常场景的范围和设计逻辑？.md.html">28 如何确定异常场景的范围和设计逻辑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/29%20%e5%bc%82%e5%b8%b8%e5%9c%ba%e6%99%af%ef%bc%9a%e5%a6%82%e4%bd%95%e6%a8%a1%e6%8b%9f%e4%b8%8d%e5%90%8c%e7%bb%84%e4%bb%b6%e5%b1%82%e7%ba%a7%e7%9a%84%e5%bc%82%e5%b8%b8%ef%bc%9f.md.html" id="29 异常场景：如何模拟不同组件层级的异常？.md.html">29 异常场景：如何模拟不同组件层级的异常？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%a6%82%e4%bd%95%e7%a1%ae%e5%ae%9a%e7%94%9f%e4%ba%a7%e7%b3%bb%e7%bb%9f%e9%85%8d%e7%bd%ae%ef%bc%9f.md.html" id="30 如何确定生产系统配置？.md.html">30 如何确定生产系统配置？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/31%20%e6%80%8e%e4%b9%88%e5%86%99%e5%87%ba%e6%9c%89%e4%bb%b7%e5%80%bc%e7%9a%84%e6%80%a7%e8%83%bd%e6%8a%a5%e5%91%8a%ef%bc%9f.md.html" id="31 怎么写出有价值的性能报告？.md.html">31 怎么写出有价值的性能报告？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/%e6%88%91%e4%bb%ac%e8%bf%99%e4%b8%aa%e8%af%be%e7%a8%8b%e7%9a%84%e7%b3%bb%e7%bb%9f%e6%98%af%e6%80%8e%e4%b9%88%e6%90%ad%e5%bb%ba%e8%b5%b7%e6%9d%a5%e7%9a%84%ef%bc%9f.md.html" id="我们这个课程的系统是怎么搭建起来的？.md.html">我们这个课程的系统是怎么搭建起来的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%ab%98%e6%a5%bc%e7%9a%84%e6%80%a7%e8%83%bd%e5%b7%a5%e7%a8%8b%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%81%9a%e7%9c%9f%e6%ad%a3%e7%9a%84%e6%80%a7%e8%83%bd%e9%a1%b9%e7%9b%ae.md.html" id="结束语 做真正的性能项目.md.html">结束语 做真正的性能项目.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="13 用户登录：怎么判断线程中的Block原因？" id="title">13 用户登录：怎么判断线程中的Block原因？</h1>
+<div><p>你好，我是高楼。</p>
+<p>这节课我们接着来“玩”一下用户登录。在<a href="https://time.geekbang.org/column/article/362010" target="_blank">第10讲</a>的课程中，我们以登录功能为例做了一些分析，来说明基准场景中的一些要点。但是，我们还没有把它优化完，所以这节课还要接着来折腾它。</p>
+<p>用户登录说起来只是一个很普通的功能，不过它的逻辑一点也不简单。因为登录过程要对个人的信息进行对比验证，验证过程中又要调用相应的加密算法，而加密算法是对性能要求很高的一种功能。复杂的加密算法安全性高，但性能就差；不复杂的加密算法性能好，但安全性低，这是一个取舍的问题。</p>
+<p>另外，还有Session存储和同步。对于个大型的系统来说，不管你在哪个系统访问，在调用其他系统时如果需要验证身份就要同步Session信息，并且在做业务时，我们也要把相应的Session信息带上，不然就识别不了。</p>
+<p>你看，登录功能实际上会涉及到很多的业务，它其实一点也不简单。所以，这节课我会带着你好好分析用户登录功能，并带你了解在压力过程中业务逻辑链路和整体TPS之间的关系。同时，也希望你能学会判断线程中的BLOCKED原因。</p>
+<h2 id="修改加密算法">修改加密算法</h2>
+<p>还记得在<a href="https://time.geekbang.org/column/article/362010" target="_blank">第10讲</a>中，我们在基准场景中对登录业务的测试结果吗？在10个压力线程下，TPS达到了100左右。</p>
+<p><img alt="" src="assets/fd117105359e43fe9c97ec19b6c6efad.jpg"/></p>
+<p>同时，在<a href="https://time.geekbang.org/column/article/362010" target="_blank">第10</a><a href="https://time.geekbang.org/column/article/362010" target="_blank">讲</a>中，我们发现了加密算法BCrypt效率低之后，讨论了两种优化方式：一种是用更快的加密方式，另一种是去掉这个加密算法。当时，我选择把加密算法BCrypt直接去掉。在这节课中，我们来试试第一种方式，把它改为MD5，具体有两个动作：</p>
+<ul>
+<li>更改加密算法。之前的BCrypt加密算法虽然安全性高，但性能差，所以建议改成MD5。</li>
+<li>加载所有用户到Redis中。</li>
+</ul>
+<p>我们再跑一遍压力场景。注意，在跑这一遍之前，我们只是更改了加密算法，并没有执行加载缓存的动作。我希望一次只做一个动作来判断结果（但是上面两个动作我们都要做哦，请你接着看下去），结果如下：</p>
+<p><img alt="" src="assets/0d80eba19df4459f847bbe3bbb386321.jpg"/></p>
+<p>从上面的结果来看，性能有些上升了，但是还没达到我想要的样子。我希望性能有突飞猛进的增加，而不是现在这样不温不火的样子，看着就来气。所以，我们还是要继续“收拾收拾”这个接口，使用缓存，看下效果如何。</p>
+<h2 id="检验缓存的效果">检验缓存的效果</h2>
+<p>为了确定缓存对后续的性能优化产生了效果，我们可以用两个手段来检验效果：</p>
+<ul>
+<li>把参数化数据量降下来，只用少量的数据测试一下（请注意，我们只是尝试一下，并不是说用少量的数据来运行场景是对的）；</li>
+<li>直接加载全部缓存。</li>
+</ul>
+<p>我们得到这样的结果：</p>
+<p><img alt="" src="assets/e90eda9f156d496d9eb98e0f52eda04e.jpg"/></p>
+<p>从曲线上看，登录接口能达到300TPS左右了。但是，我还是觉得不够好，因为从硬件资源上来看，再根据我以往的经验，它应该还能达到更高才对。</p>
+<p>而在分析的过程中，再也没有<a href="https://time.geekbang.org/column/article/362940" target="_blank">第11</a><a href="https://time.geekbang.org/column/article/362940" target="_blank">讲</a>和<a href="https://time.geekbang.org/column/article/363736" target="_blank">第</a><a href="https://time.geekbang.org/column/article/363736" target="_blank">12讲</a>中提到的硬件资源的问题，但是在这里我们通过查看全局监控数据，看到的是us cpu高，说明确实都是业务逻辑在消耗CPU资源了。所以，我们就只有从登陆逻辑入手，来优化这个问题了。</p>
+<h2 id="修改登录的逻辑">修改登录的逻辑</h2>
+<p>通过阅读源代码，我整理了这个系统的原登录逻辑：</p>
+<p><img alt="" src="assets/8cb93464ff8e4d86bb24469ada25de7c.jpg"/></p>
+<p>这个逻辑看着比较啰嗦，其中Member服务调auth服务，倒还能理解。可是，Auth服务为什么还要到Member里取用户名呢？自己直接查缓存或DB不香吗？从架构设计的角度来看，为了避免共享数据库，这样的设计似乎也没啥。只是在我们的优化过程中，需要根据实际环境来做判断。</p>
+<p>在我们这个环境中，需要把DB共用，这样Auth服务就可以直接使用数据库，而不用再从Member绕一圈。所以，我们先改成下面这种新的登录逻辑，这样就可以减少一次调用。</p>
+<p><img alt="" src="assets/3e7d2736f836468388e987f4765e945e.jpg"/></p>
+<p>修改之后，登录TPS如下：</p>
+<p><img alt="" src="assets/784efadca815437ea17a808ecc57a64d.jpg"/></p>
+<p>从结果上来看，TPS确实有增加，已经到700以上了。很好。</p>
+<p>这时候是不是就可以结束分析了呢？不是，我们还需要知道当前的瓶颈点在哪，因为根据我的性能理念，每个业务都会有瓶颈点，不管优化到什么程度，除非一直把硬件资源耗光。所以，我们继续接着分析。</p>
+<h2 id="看架构图">看架构图</h2>
+<p>还是一样，在分析性能瓶颈之前，我们先来看架构图，了解用户登录接口会涉及到哪些服务和技术组件。</p>
+<p><img alt="" src="assets/fc09434704a54487a275fd48bef30e3b.jpg"/></p>
+<p>从这个架构图中可以看到，登录操作跨了Gateway/Member/Auth三个服务，连接了Redis/MySQL两个组件。图中的MongoDB虽然看上去有线，但实际上登录并没有用上。</p>
+<p>了解这些信息之后，我们按照分析逻辑，一步步来分析问题。</p>
+<h2 id="拆分时间">拆分时间</h2>
+<p>我们前面提到，修改登录逻辑后的TPS如下：</p>
+<p><img alt="" src="assets/7d5616df7b6b48bd9d0235e180418538.jpg"/></p>
+<p>可以看到，响应时间已经上升到了100ms左右，所以，我们现在要找出这个时间消耗在了哪里。你可能已经注意到，图中的用户增加到了150。这是为了把响应时间拉大，便于我们分析。下面我们把这个响应时间拆分一下，看看问题出在哪里。</p>
+<ul>
+<li><strong>Gateway服务上的时间</strong></li>
+</ul>
+<p><img alt="" src="assets/9381e762907d45318f1d0479e6696cf2.jpg"/></p>
+<ul>
+<li><strong>Member服务上的时间</strong></li>
+</ul>
+<p><img alt="" src="assets/c3eb0f7f8dec4343b82efe485e95a145.jpg"/></p>
+<ul>
+<li><strong>Auth服务上的时间</strong></li>
+</ul>
+<p><img alt="" src="assets/c3a43b44449e4c7a9fa1718678976080.jpg"/></p>
+<p>我们看到，Member服务上的时间消耗是150ms左右，Auth服务上的时间消耗有60ms左右。Member服务是我们要着重分析的，因为它的响应时间更长。而Auth上虽然时间不太长，但是也达到了60ms左右，从经验上来说，我觉得还是有点稍长了，最好平均能到50ms以下，所以我们也要稍微关心一下。</p>
+<h2 id="全局监控">全局监控</h2>
+<p>我们的分析逻辑雷打不动，依旧是<strong>先看全局监控，后看定向监控</strong>。从下面这张全局监控图的数据来看，worker-7和worker-8的CPU使用率比其他的要高。</p>
+<p><img alt="" src="assets/01cf9bd22634469f881890227716a8df.jpg"/></p>
+<p>既然worker-7/8的CPU使用率要高一点，那我们就要查一下这两个节点上跑着什么样的服务。所以我们来看一下POD的分布，大概看一下每个POD在哪个worker节点上，以便后面分析POD相互之间的影响：</p>
+<p><img alt="" src="assets/c2c57a50bc934635a87af3a14b520917.jpg"/></p>
+<p>原来，在worker-7和worker-8上，分别运行着响应时间稍高的Auth服务和Member服务。对于这两个服务，我们都要分析，只是得一个一个来，那我们就从auth服务开始。</p>
+<p>你可能会问：为什么要先从Auth服务下手呢？没啥原因，就是看它的CPU更红一点。你还可能奇怪：图中其他地方也红了，为什么不关注呢？我来逐一给你分析一下。</p>
+<ul>
+<li><p>图中的worker-1和worker-2，内存使用率相对较大，达到了70%以上。从经验上来说，我几乎没有怎么关心过Linux的内存使用率，除非出现大量的page faults。因为Linux内存在分配给应用程序使用之后，是会体现在Cache当中的。被应用程序Cache住的内存在操作系统上来看都是被使用的，但实际上可能并未真的被使用，这时操作系统会把这部分Cache内存计算到available内存当中，所以说，我们直接看操作系统级别的空闲内存是分析不出问题来的。</p></li>
+<li><p>在worker-2上，我们看到TCP的Time Wait达到近3万，不过这也不是我关心的点，因为Time Wait是正常的TCP状态，只有端口不够用、内存严重不足，我才会稍微看一眼。</p></li>
+<li><p>至于worker-1和worker-2的上下行带宽，看起来真是不大。在内网结构中，我们在测试的时候，内网带宽达到过好几Gbps，这点带宽还不足以引起我们的重视。</p></li>
+</ul>
+<p>所以，我们要“收拾”的还是worker-7和worker-8。</p>
+<p>既然Auth服务在worker-7上，member服务在worker-8上，就像前面说的，我们不如就从Auth服务开始。</p>
+<h2 id="auth服务定向分析">Auth服务定向分析</h2>
+<p>对于Auth服务，我们从哪里开始分析呢？其实，我们可以按部就班。既然是Auth服务导致worker-7的CPU使用率偏高，那我们就可以走下面这个证据链：</p>
+<p><img alt="" src="assets/ae44d93bf2ee4f778bdd5c5dbf9211fd.jpg"/></p>
+<p>按照这个证据链，我们应该先看进程。不过，仗着傻小子火气壮（俗称：艺高人胆大），我直接就去看线程状态了，想看看能不能凭经验蒙对一把。于是，我打开了Spring Boot Admin的线程页面：</p>
+<p><img alt="" src="assets/121e51a54def49fdb4e6c1f0cae4716e.jpg"/></p>
+<p>有没有满目疮痍的感觉？人生就是这样，到处都有惊吓。</p>
+<p>在我颤抖着手点开一些红色的地方之后，看到了类似这样的信息：</p>
+<p><img alt="" src="assets/b32f40d9f52c4d08b70a777df053c7a8.jpg"/></p>
+<p>可以看到，阻塞数非常大，达到了842。此外，锁拥有者ID是86676，锁拥有者名称是线程823。</p>
+<p>我们抓两段栈出来看一下，找一下锁之间的关系：</p>
+<pre><code>-- 第一处：
+"http-nio-8401-exec-884" #86813 daemon prio=5 os_prio=0 tid=0x00007f2868073000 nid=0x559e waiting for monitor entry [0x00007f2800c6d000]
+   java.lang.Thread.State: BLOCKED (on object monitor
+	at java.security.Provider.getService(Provider.java:1035)
+	- waiting to lock &lt;0x000000071ab1a5d8&gt; (a sun.security.provider.Sun)
+	at sun.security.jca.ProviderList.getService(ProviderList.java:332)
+.....................
+	at com.dunshan.mall.auth.util.MD5Util.toMD5(MD5Util.java:11)
+	at com.dunshan.mall.auth.config.MyPasswordEncoder.matches(MyPasswordEncoder.java:23)
+.....................
+  at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2(AuthController.java:46
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2$accessor$jl0WbQJB(AuthController.java)
+	at com.dunshan.mall.auth.controller.AuthController$auxiliary$z8kF9l34.call(Unknown Source)
+.....................
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken(AuthController.java)
+.....................
+
+
+-- 第二处：
+"http-nio-8401-exec-862" #86728 daemon prio=5 os_prio=0 tid=0x00007f28680d6000 nid=0x553a waiting for monitor entry [0x00007f2802b8c000]
+   java.lang.Thread.State: BLOCKED (on object monitor
+	at sun.security.rsa.RSACore$BlindingParameters.getBlindingRandomPair(RSACore.java:404)
+	- waiting to lock &lt;0x000000071ddad410&gt; (a sun.security.rsa.RSACore$BlindingParameters)
+	at sun.security.rsa.RSACore.getBlindingRandomPair(RSACore.java:443)
+	.....................
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2(AuthController.java:46)
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2$accessor$jl0WbQJB(AuthController.java)
+	at com.dunshan.mall.auth.controller.AuthController$auxiliary$z8kF9l34.call(Unknown Source)
+.....................
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken(AuthController.java)
+.....................
+</code></pre>
+<p>这两个栈的内容并不是同一时刻出现的，说明这个BLOCKED一直存在。但是不管怎么样，这个栈在做RSA加密，它和Token部分有关。</p>
+<p>其中，线程http-nio-8401-exec-884是BLOCKED状态，那就说明有其他线程持有这个锁，所以我们自然要看一下线程栈中的waiting to lock &lt;0x000000071ab1a5d8&gt;。其实，如果你有经验的话，一下子就能知道这里面是什么问题。不过，我们做性能分析的人要讲逻辑。</p>
+<p>我在这里啰嗦几句，<strong>当你碰到这种锁问题，又不知道具体原因的时候，要下意识地去打印一个完整的栈来看，而不是再到Spring Boot Admin里胡乱点</strong>。为什么不建议你这么做？原因有这么几个：</p>
+<ul>
+<li>由于线程太多，点着看逻辑关系比较累；</li>
+<li>不断在刷，眼晕；</li>
+<li>我不喜欢。</li>
+</ul>
+<p>所以，对于前面遇到的锁问题，我们首先要做的就是到容器中的jstack里打印一下栈，把它下载下来，然后祭出工具打开看一眼。</p>
+<p>你可能会问，为什么不用Arthas之类的工具直接在容器里看？主要是因为Arthas的Dashboard在Thread比较多的时候，看起来真心累。</p>
+<p>下面这张图就是jstack打印出来的栈，在下载之后用工具打开的效果。</p>
+<p><img alt="" src="assets/5db9fca2f9f144e390d11c1fd5adbf8b.jpg"/></p>
+<p>是不是有种买彩票的感觉？看起来有那么多的BLOCKED状态的线程（多达842个），居然一个都没蒙到！我本来想抓BLOCKED状态的线程，并且线程描述是“Waiting on monitor”，但是，从上面的线程描述统计来看，一个也没见。哼，真生气。</p>
+<p>这时候，身为一个做性能分析的人，我们一定要记得倒杯茶，静静心，默默地把jstack连续再执行几遍。我在这里就连续执行了10遍，然后再找每个栈的状态。</p>
+<p>终于，Waiting on monitor来了：</p>
+<p><img alt="" src="assets/214d568bf59f45b196c7090b86a68484.jpg"/><img alt="" src="assets/0ad29a8e2cc4410a911b0ef5a92c9987.jpg"/></p>
+<p>看起来有得玩了！接下来让我们看看究竟是谁阻塞住了上面的线程。</p>
+<p>我们先在相应的栈里，找到对应的持有锁的栈。下面是栈中的阻塞关系。</p>
+<ul>
+<li><strong>第一个栈</strong></li>
+</ul>
+<p><img alt="" src="assets/7867401f188c42338f6d89cbbbb63d61.jpg"/></p>
+<ul>
+<li><strong>第二个栈</strong></li>
+</ul>
+<p><img alt="" src="assets/e67b49ec5f4a4c27ab993b9aa30c6847.jpg"/></p>
+<p>你要注意，这是两个栈文件。所以，我们要分别从这两个栈文件里找到各自的对应等待关系。下面这段代码就对应了上面的Waiting线程。</p>
+<pre><code>-- 第一处
+"http-nio-8401-exec-890" #86930 daemon prio=5 os_prio=0 tid=0x00007f28680a5800 nid=0x561d waiting for monitor entry [0x00007f2800263000]
+   java.lang.Thread.State: BLOCKED (on object monitor
+	at java.security.Provider.getService(Provider.java:1035)
+	- locked &lt;0x000000071ab1a5d8&gt; (a sun.security.provider.Sun)
+	at sun.security.jca.ProviderList.getService(ProviderList.java:332)
+	.....................
+	at com.dunshan.mall.auth.util.MD5Util.toMD5(MD5Util.java:11)
+	at com.dunshan.mall.auth.config.MyPasswordEncoder.matches(MyPasswordEncoder.java:23)
+.....................
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2(AuthController.java:46)
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2$accessor$jl0WbQJB(AuthController.java)
+	at com.dunshan.mall.auth.controller.AuthController$auxiliary$z8kF9l34.call(Unknown Source)
+	at org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstMethodsInter.intercept(InstMethodsInter.java:86)
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken(AuthController.java)
+
+
+-- 第二处
+"http-nio-8401-exec-871" #86739 daemon prio=5 os_prio=0 tid=0x00007f28681d6800 nid=0x5545 waiting for monitor entry [0x00007f2801a7b000]
+   java.lang.Thread.State: BLOCKED (on object monitor
+	at sun.security.rsa.RSACore$BlindingParameters.getBlindingRandomPair(RSACore.java:404)
+	- locked &lt;0x000000071ddad410&gt; (a sun.security.rsa.RSACore$BlindingParameters)
+	at sun.security.rsa.RSACore.getBlindingRandomPair(RSACore.java:443)
+.....................	
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2(AuthController.java:46)
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken$original$sWMe48t2$accessor$jl0WbQJB(AuthController.java)
+	at com.dunshan.mall.auth.controller.AuthController$auxiliary$z8kF9l34.call(Unknown Source)
+	at org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstMethodsInter.intercept(InstMethodsInter.java:86)
+	at com.dunshan.mall.auth.controller.AuthController.postAccessToken(AuthController.java)
+</code></pre>
+<p>你看上面locked这一行的锁ID，既然找到了这两处持有锁的栈，那我们就通过上面的栈，到源码中找到这两处栈的代码：</p>
+<pre><code>-- 第一处同步代码块
+    public synchronized Service getService(String type, String algorithm) {
+        checkInitialized()
+        // avoid allocating a new key object if possible
+        ServiceKey key = previousKey
+        if (key.matches(type, algorithm) == false) {
+            key = new ServiceKey(type, algorithm, false);
+            previousKey = key
+
+        if (serviceMap != null) {
+            Service service = serviceMap.get(key)
+            if (service != null) {
+                return service;
+
+
+        ensureLegacyParsed()
+        return (legacyMap != null) ? legacyMap.get(key) : null;
+
+
+
+-- 第二处同步代码块
+        // return null if need to reset the parameters
+        BlindingRandomPair getBlindingRandomPair(
+                BigInteger e, BigInteger d, BigInteger n) {
+
+
+            if ((this.e != null &amp;&amp; this.e.equals(e)) ||
+                (this.d != null &amp;&amp; this.d.equals(d))) {
+
+
+                BlindingRandomPair brp = null;
+                synchronized (this) {
+                    if (!u.equals(BigInteger.ZERO) &amp;&amp;
+                        !v.equals(BigInteger.ZERO))
+
+
+                        brp = new BlindingRandomPair(u, v);
+                        if (u.compareTo(BigInteger.ONE) &lt;= 0 ||
+                            v.compareTo(BigInteger.ONE) &lt;= 0) {
+
+
+                            // need to reset the random pair next time
+                            u = BigInteger.ZERO
+                            v = BigInteger.ZERO
+                        } else {
+                            u = u.modPow(BIG_TWO, n)
+                            v = v.modPow(BIG_TWO, n)
+
+                    } // Otherwise, need to reset the random pair.
+
+                return brp;
+
+
+
+            return null;
+</code></pre>
+<p>你可以看到，第一处是JDK中提供的getService类采用了全局同步锁定，导致的分配key时产生争用，这个其实在JDK的Bug List中有过描述，详见<a href="https://bugs.openjdk.java.net/browse/JDK-7092821" target="_blank">JDK-7092821</a>。准确来说，它不算是Bug，如果你想改的话，可以换一个库。</p>
+<p>第二处是JDK中提供的RSA方法，是为了防范时序攻击特意设计成这样的。RSA中有大素数的计算，为了线程安全，RSA又加了锁。关于RSA的逻辑，你可以去看下源代码的/sun/security/rsa/RSACore.java中的逻辑。</p>
+<p>不过，RSA是一种低效的加密方法，当压力发起来的时候，这样的synchronized类必然会导致BLOCKED出现。对此，在源码中有下面这样一段注释，其中建议先计算u/v，可以提高加密效率。</p>
+<pre><code> * Computing inverses mod n and random number generation is slow, s
+ * it is often not practical to generate a new random (u, v) pair for
+ * each new exponentiation.  The calculation of parameters might even be
+ * subject to timing attacks.  However, (u, v) pairs should not be
+ * reused since they themselves might be compromised by timing attacks,
+ * leaving the private exponent vulnerable.  An efficient solution to
+ * this problem is update u and v before each modular exponentiation
+ * step by computing:
+ *
+ *     u = u ^ 2
+ *     v = v ^ 2
+
+ * The total performance cost is small
+</code></pre>
+<p>既然我们已经知道了这两个BLOCKED产生的原因，那下一步的操作就比较简单了。</p>
+<ul>
+<li>针对第一处锁：实现自己的方法，比如说实现一个自己的分布式锁。</li>
+<li>针对第二处锁：换一个高效的实现。</li>
+</ul>
+<p>至此，我们就找到了应用中BLOCKED的逻辑。因为我们这是一个性能专栏，所以我就不再接着整下去了。如果你是在一个项目中，分析到这里就可以把问题扔给开发，然后去喝茶了，让他们伤脑筋去，哈哈。</p>
+<p>不过，这只是一句玩笑而已，你可别当真。作为性能分析人员，我们要给出合情合理并且有证据链的分析过程，这样我们和其他团队成员沟通的时候，才会更加简单、高效。</p>
+<h2 id="member服务定向分析">Member服务定向分析</h2>
+<p>分析完Auth服务后，我们再来看看Member服务的性能怎么样。因为全局监控数据前面我们已经展示了，所以这里不再重复说明，我们直接来拆分一下对Member服务调用时的响应时间。</p>
+<ul>
+<li><strong>Gateway上的响应时间</strong></li>
+</ul>
+<p><img alt="" src="assets/52955a1603b14d65ab28b8c0391d914b.jpg"/></p>
+<ul>
+<li><strong>Member上的响应时间</strong></li>
+</ul>
+<p><img alt="" src="assets/752f18369c3243569a23b4804bb6d17c.jpg"/></p>
+<ul>
+<li><strong>Auth上的响应时间</strong></li>
+</ul>
+<p><img alt="" src="assets/02973533a7ae469685c1f3f92c9031d5.jpg"/></p>
+<p>从上面的信息来看，这几段都有不同的时间消耗：Member服务上有80毫秒左右，Auth服务上已经有60毫秒左右，明显是有点高了。</p>
+<p>我们登录到Member这个服务中，先看整体的资源使用情况。这里我用了最经典传统的top命令：</p>
+<pre><code>%Cpu0  : 63.8 us, 12.4 sy,  0.0 ni,  9.2 id,  0.0 wa,  0.0 hi, 14.2 si,  0.4 st
+%Cpu1  : 60.3 us, 11.7 sy,  0.0 ni, 11.0 id,  0.0 wa,  0.0 hi, 16.6 si,  0.3 st
+%Cpu2  : 59.4 us, 12.0 sy,  0.0 ni, 14.1 id,  0.0 wa,  0.0 hi, 13.8 si,  0.7 st
+%Cpu3  : 59.8 us, 12.1 sy,  0.0 ni, 11.7 id,  0.0 wa,  0.0 hi, 15.7 si,  0.7 st
+</code></pre>
+<p>从CPU使用分布上来看，其他计数器都还正常，只是si有点高。这是一个网络中断的问题，虽然有优化的空间，但是受基础架构所限，性能提升得不太多，这也是为什么现在很多企业都放弃了虚拟化，直接选择容器化的一个原因。</p>
+<p>针对这个网络中断的问题，我将在后面的课程中仔细给你扒一扒，这节课我们暂且不做过多的讲解。</p>
+<h2 id="总结">总结</h2>
+<p>这节课我用登录功能给你串了一个完整的性能分析场景。</p>
+<p>在前面代码修改的部分，性能分析过程是比较快的，我们就是看看哪里的代码逻辑会消耗更多的时间。这个思路就是前面提到的us cpu的证据链。</p>
+<p>而接下来我们在分析Auth服务的时候，是先从拆分时间开始一步步走到代码里的，其中最核心的部分是从CPU到栈，再到BLOCKED的判断。当我们看到栈上有BLOCKED的时候，要记得打印栈信息。但是因为有些锁会非常快速地获取和释放，所以就可能会出现打印栈时，看到等某个锁的栈信息，但是整个栈文件中却没有这把锁的情况。这个时候，你就要注意了，<strong>我们一定要去连续地多打几次栈，直到抓到对应的锁。</strong></p>
+<p>这是分析栈中锁的一个关键，因为我们经常会看到等锁的栈信息，看不到持有锁的栈信息。而连续多打几次栈，就是为了把持有锁和等待锁的栈同时打印出来，否则我们就找不出分析的逻辑了。</p>
+<p>接着，当我们看到了持有锁的栈之后，就根据自己业务代码的调用逻辑，一层层地去找是哪里加的锁。至于这个锁加的合理不合理，就和业务逻辑有关了。作为性能分析人员，这个时候我们就可以把开发、业务、架构等人拉到一起讨论。这个锁要不要改，不是做性能的人说了算，而是大家一起说了算。</p>
+<p>通过上述的分析，相信你可以看到，在我的性能分析逻辑中，从现象到原理，都需要搞清楚。</p>
+<h2 id="课后作业">课后作业</h2>
+<p>最后，我给你留几个思考题来巩固今日所学。</p>
+<ol>
+<li>为什么看到BLOCKED的栈时要连续多打几次栈信息？</li>
+<li>为什么从性能分析中要从现象到原理？</li>
+<li>低效的代码有什么优化思路？</li>
+</ol>
+<p>记得在留言区和我讨论、交流你的想法，每一次思考都会让你更进一步。</p>
+<p>如果你读完这篇文章有所收获，也欢迎你分享给你的朋友，共同学习进步。我们下一讲再见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#9ef2f2f2a7aaafafaea9def9f3fff7f2b0fdf1f3" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359875c4e3d082f',t:'MTc0NTUzODg5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
