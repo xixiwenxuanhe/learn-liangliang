@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="28 云中网络的隔离GRE、VXLAN：虽然住一个小区，也要保护隐私" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>28 云中网络的隔离GRE、VXLAN：虽然住一个小区，也要保护隐私 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e6%83%b3%e6%88%90%e4%b8%ba%e6%8a%80%e6%9c%af%e7%89%9b%e4%ba%ba%ef%bc%9f%e5%85%88%e6%90%9e%e5%ae%9a%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae%ef%bc%81.md.html" id="00 开篇词 想成为技术牛人？先搞定网络协议！.md.html">00 开篇词 想成为技术牛人？先搞定网络协议！.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/01%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%ad%a6%e4%b9%a0%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae%ef%bc%9f.md.html" id="01 为什么要学习网络协议？.md.html">01 为什么要学习网络协议？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/02%20%e7%bd%91%e7%bb%9c%e5%88%86%e5%b1%82%e7%9a%84%e7%9c%9f%e5%ae%9e%e5%90%ab%e4%b9%89%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="02 网络分层的真实含义是什么？.md.html">02 网络分层的真实含义是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/03%20ifconfig%ef%bc%9a%e6%9c%80%e7%86%9f%e6%82%89%e5%8f%88%e9%99%8c%e7%94%9f%e7%9a%84%e5%91%bd%e4%bb%a4%e8%a1%8c.md.html" id="03 ifconfig：最熟悉又陌生的命令行.md.html">03 ifconfig：最熟悉又陌生的命令行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/04%20DHCP%e4%b8%8ePXE%ef%bc%9aIP%e6%98%af%e6%80%8e%e4%b9%88%e6%9d%a5%e7%9a%84%ef%bc%8c%e5%8f%88%e6%98%af%e6%80%8e%e4%b9%88%e6%b2%a1%e7%9a%84%ef%bc%9f.md.html" id="04 DHCP与PXE：IP是怎么来的，又是怎么没的？.md.html">04 DHCP与PXE：IP是怎么来的，又是怎么没的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/05%20%e4%bb%8e%e7%89%a9%e7%90%86%e5%b1%82%e5%88%b0MAC%e5%b1%82%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%ae%bf%e8%88%8d%e9%87%8c%e8%87%aa%e5%b7%b1%e7%bb%84%e7%bd%91%e7%8e%a9%e8%81%94%e6%9c%ba%e6%b8%b8%e6%88%8f%ef%bc%9f.md.html" id="05 从物理层到MAC层：如何在宿舍里自己组网玩联机游戏？.md.html">05 从物理层到MAC层：如何在宿舍里自己组网玩联机游戏？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/06%20%e4%ba%a4%e6%8d%a2%e6%9c%ba%e4%b8%8eVLAN%ef%bc%9a%e5%8a%9e%e5%85%ac%e5%ae%a4%e5%a4%aa%e5%a4%8d%e6%9d%82%ef%bc%8c%e6%88%91%e8%a6%81%e5%9b%9e%e5%ad%a6%e6%a0%a1.md.html" id="06 交换机与VLAN：办公室太复杂，我要回学校.md.html">06 交换机与VLAN：办公室太复杂，我要回学校.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/07%20ICMP%e4%b8%8eping%ef%bc%9a%e6%8a%95%e7%9f%b3%e9%97%ae%e8%b7%af%e7%9a%84%e4%be%a6%e5%af%9f%e5%85%b5.md.html" id="07 ICMP与ping：投石问路的侦察兵.md.html">07 ICMP与ping：投石问路的侦察兵.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/08%20%e4%b8%96%e7%95%8c%e8%bf%99%e4%b9%88%e5%a4%a7%ef%bc%8c%e6%88%91%e6%83%b3%e5%87%ba%e7%bd%91%e5%85%b3%ef%bc%9a%e6%ac%a7%e6%b4%b2%e5%8d%81%e5%9b%bd%e6%b8%b8%e4%b8%8e%e7%8e%84%e5%a5%98%e8%a5%bf%e8%a1%8c.md.html" id="08 世界这么大，我想出网关：欧洲十国游与玄奘西行.md.html">08 世界这么大，我想出网关：欧洲十国游与玄奘西行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/09%20%e8%b7%af%e7%94%b1%e5%8d%8f%e8%ae%ae%ef%bc%9a%e8%a5%bf%e5%87%ba%e7%bd%91%e5%85%b3%e6%97%a0%e6%95%85%e4%ba%ba%ef%bc%8c%e6%95%a2%e9%97%ae%e8%b7%af%e5%9c%a8%e4%bd%95%e6%96%b9.md.html" id="09 路由协议：西出网关无故人，敢问路在何方.md.html">09 路由协议：西出网关无故人，敢问路在何方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/10%20UDP%e5%8d%8f%e8%ae%ae%ef%bc%9a%e5%9b%a0%e6%80%a7%e5%96%84%e8%80%8c%e7%ae%80%e5%8d%95%ef%bc%8c%e9%9a%be%e5%85%8d%e7%a2%b0%e5%88%b0%e2%80%9c%e5%9f%8e%e4%bc%9a%e7%8e%a9%e2%80%9d.md.html" id="10 UDP协议：因性善而简单，难免碰到“城会玩”.md.html">10 UDP协议：因性善而简单，难免碰到“城会玩”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/11%20TCP%e5%8d%8f%e8%ae%ae%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%9b%a0%e6%80%a7%e6%81%b6%e8%80%8c%e5%a4%8d%e6%9d%82%ef%bc%8c%e5%85%88%e6%81%b6%e5%90%8e%e5%96%84%e5%8f%8d%e8%bd%bb%e6%9d%be.md.html" id="11 TCP协议（上）：因性恶而复杂，先恶后善反轻松.md.html">11 TCP协议（上）：因性恶而复杂，先恶后善反轻松.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/12%20TCP%e5%8d%8f%e8%ae%ae%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%a5%bf%e8%a1%8c%e5%bf%85%e5%ae%9a%e5%a4%9a%e5%a6%96%e5%ad%bd%ef%bc%8c%e6%81%92%e5%bf%83%e6%99%ba%e6%85%a7%e6%b6%88%e7%a3%a8%e9%9a%be.md.html" id="12 TCP协议（下）：西行必定多妖孽，恒心智慧消磨难.md.html">12 TCP协议（下）：西行必定多妖孽，恒心智慧消磨难.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/13%20%e5%a5%97%e6%8e%a5%e5%ad%97Socket%ef%bc%9aTalk%20is%20cheap,%20show%20me%20the%20code.md.html" id="13 套接字Socket：Talk is cheap, show me the code.md.html">13 套接字Socket：Talk is cheap, show me the code.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/14%20HTTP%e5%8d%8f%e8%ae%ae%ef%bc%9a%e7%9c%8b%e4%b8%aa%e6%96%b0%e9%97%bb%e5%8e%9f%e6%9d%a5%e8%bf%99%e4%b9%88%e9%ba%bb%e7%83%a6.md.html" id="14 HTTP协议：看个新闻原来这么麻烦.md.html">14 HTTP协议：看个新闻原来这么麻烦.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/15%20HTTPS%e5%8d%8f%e8%ae%ae%ef%bc%9a%e7%82%b9%e5%a4%96%e5%8d%96%e7%9a%84%e8%bf%87%e7%a8%8b%e5%8e%9f%e6%9d%a5%e8%bf%99%e4%b9%88%e5%a4%8d%e6%9d%82.md.html" id="15 HTTPS协议：点外卖的过程原来这么复杂.md.html">15 HTTPS协议：点外卖的过程原来这么复杂.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/16%20%e6%b5%81%e5%aa%92%e4%bd%93%e5%8d%8f%e8%ae%ae%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e7%9b%b4%e6%92%ad%e9%87%8c%e7%9c%8b%e5%88%b0%e7%be%8e%e5%a5%b3%e5%b8%85%e5%93%a5%ef%bc%9f.md.html" id="16 流媒体协议：如何在直播里看到美女帅哥？.md.html">16 流媒体协议：如何在直播里看到美女帅哥？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/17%20P2P%e5%8d%8f%e8%ae%ae%ef%bc%9a%e6%88%91%e4%b8%8b%e5%b0%8f%e7%94%b5%e5%bd%b1%ef%bc%8c99%25%e6%80%a5%e6%ad%bb%e4%bd%a0.md.html" id="17 P2P协议：我下小电影，99%急死你.md.html">17 P2P协议：我下小电影，99%急死你.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/18%20DNS%e5%8d%8f%e8%ae%ae%ef%bc%9a%e7%bd%91%e7%bb%9c%e4%b8%96%e7%95%8c%e7%9a%84%e5%9c%b0%e5%9d%80%e7%b0%bf.md.html" id="18 DNS协议：网络世界的地址簿.md.html">18 DNS协议：网络世界的地址簿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/19%20HttpDNS%ef%bc%9a%e7%bd%91%e7%bb%9c%e4%b8%96%e7%95%8c%e7%9a%84%e5%9c%b0%e5%9d%80%e7%b0%bf%e4%b9%9f%e4%bc%9a%e6%8c%87%e9%94%99%e8%b7%af.md.html" id="19 HttpDNS：网络世界的地址簿也会指错路.md.html">19 HttpDNS：网络世界的地址簿也会指错路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/20%20CDN%ef%bc%9a%e4%bd%a0%e5%8e%bb%e5%b0%8f%e5%8d%96%e9%83%a8%e5%8f%96%e8%bf%87%e5%bf%ab%e9%80%92%e4%b9%88%ef%bc%9f.md.html" id="20 CDN：你去小卖部取过快递么？.md.html">20 CDN：你去小卖部取过快递么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/21%20%e6%95%b0%e6%8d%ae%e4%b8%ad%e5%bf%83%ef%bc%9a%e6%88%91%e6%98%af%e5%bc%80%e5%8f%91%e5%95%86%ef%bc%8c%e8%87%aa%e5%b7%b1%e6%8b%bf%e5%9c%b0%e7%9b%96%e5%88%ab%e5%a2%85.md.html" id="21 数据中心：我是开发商，自己拿地盖别墅.md.html">21 数据中心：我是开发商，自己拿地盖别墅.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/22%20VPN%ef%bc%9a%e6%9c%9d%e4%b8%ad%e6%9c%89%e4%ba%ba%e5%a5%bd%e5%81%9a%e5%ae%98.md.html" id="22 VPN：朝中有人好做官.md.html">22 VPN：朝中有人好做官.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/23%20%e7%a7%bb%e5%8a%a8%e7%bd%91%e7%bb%9c%ef%bc%9a%e5%8e%bb%e5%b7%b4%e5%a1%9e%e7%bd%97%e9%82%a3%ef%bc%8c%e6%89%8b%e6%9c%ba%e4%b9%9f%e4%b8%8a%e4%b8%8d%e4%ba%86%e8%84%b8%e4%b9%a6.md.html" id="23 移动网络：去巴塞罗那，手机也上不了脸书.md.html">23 移动网络：去巴塞罗那，手机也上不了脸书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/24%20%e4%ba%91%e4%b8%ad%e7%bd%91%e7%bb%9c%ef%bc%9a%e8%87%aa%e5%b7%b1%e6%8b%bf%e5%9c%b0%e6%88%90%e6%9c%ac%e9%ab%98%ef%bc%8c%e8%b4%ad%e4%b9%b0%e5%85%ac%e5%af%93%e6%9b%b4%e7%81%b5%e6%b4%bb.md.html" id="24 云中网络：自己拿地成本高，购买公寓更灵活.md.html">24 云中网络：自己拿地成本高，购买公寓更灵活.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/25%20%e8%bd%af%e4%bb%b6%e5%ae%9a%e4%b9%89%e7%bd%91%e7%bb%9c%ef%bc%9a%e5%85%b1%e4%ba%ab%e5%9f%ba%e7%a1%80%e8%ae%be%e6%96%bd%e7%9a%84%e5%b0%8f%e5%8c%ba%e7%89%a9%e4%b8%9a%e7%ae%a1%e7%90%86%e5%8a%9e%e6%b3%95.md.html" id="25 软件定义网络：共享基础设施的小区物业管理办法.md.html">25 软件定义网络：共享基础设施的小区物业管理办法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/26%20%e4%ba%91%e4%b8%ad%e7%9a%84%e7%bd%91%e7%bb%9c%e5%ae%89%e5%85%a8%ef%bc%9a%e8%99%bd%e7%84%b6%e4%b8%8d%e6%98%af%e5%9c%9f%e8%b1%aa%ef%bc%8c%e4%b9%9f%e9%9c%80%e8%a6%81%e5%9f%ba%e6%9c%ac%e5%ae%89%e5%85%a8%e5%92%8c%e4%bf%9d%e9%9a%9c.md.html" id="26 云中的网络安全：虽然不是土豪，也需要基本安全和保障.md.html">26 云中的网络安全：虽然不是土豪，也需要基本安全和保障.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/27%20%e4%ba%91%e4%b8%ad%e7%9a%84%e7%bd%91%e7%bb%9cQoS%ef%bc%9a%e9%82%bb%e5%b1%85%e7%96%af%e7%8b%82%e4%b8%8b%e7%94%b5%e5%bd%b1%ef%bc%8c%e6%88%91%e8%af%a5%e6%80%8e%e4%b9%88%e5%8a%9e%ef%bc%9f.md.html" id="27 云中的网络QoS：邻居疯狂下电影，我该怎么办？.md.html">27 云中的网络QoS：邻居疯狂下电影，我该怎么办？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/28%20%e4%ba%91%e4%b8%ad%e7%bd%91%e7%bb%9c%e7%9a%84%e9%9a%94%e7%a6%bbGRE%e3%80%81VXLAN%ef%bc%9a%e8%99%bd%e7%84%b6%e4%bd%8f%e4%b8%80%e4%b8%aa%e5%b0%8f%e5%8c%ba%ef%bc%8c%e4%b9%9f%e8%a6%81%e4%bf%9d%e6%8a%a4%e9%9a%90%e7%a7%81.md.html" id="28 云中网络的隔离GRE、VXLAN：虽然住一个小区，也要保护隐私.md.html">28 云中网络的隔离GRE、VXLAN：虽然住一个小区，也要保护隐私.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/29%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%ef%bc%9a%e6%9d%a5%e5%8e%bb%e8%87%aa%e7%94%b1%e7%9a%84%e6%97%a5%e5%ad%90%ef%bc%8c%e4%b8%8d%e4%b9%b0%e5%85%ac%e5%af%93%e5%8e%bb%e5%90%88%e7%a7%9f.md.html" id="29 容器网络：来去自由的日子，不买公寓去合租.md.html">29 容器网络：来去自由的日子，不买公寓去合租.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/30%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e4%b9%8bFlannel%ef%bc%9a%e6%af%8f%e4%ba%ba%e4%b8%80%e4%ba%a9%e4%b8%89%e5%88%86%e5%9c%b0.md.html" id="30 容器网络之Flannel：每人一亩三分地.md.html">30 容器网络之Flannel：每人一亩三分地.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/31%20%e5%ae%b9%e5%99%a8%e7%bd%91%e7%bb%9c%e4%b9%8bCalico%ef%bc%9a%e4%b8%ba%e9%ab%98%e6%95%88%e8%af%b4%e5%87%ba%e5%96%84%e6%84%8f%e7%9a%84%e8%b0%8e%e8%a8%80.md.html" id="31 容器网络之Calico：为高效说出善意的谎言.md.html">31 容器网络之Calico：为高效说出善意的谎言.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/32%20RPC%e5%8d%8f%e8%ae%ae%e7%bb%bc%e8%bf%b0%ef%bc%9a%e8%bf%9c%e5%9c%a8%e5%a4%a9%e8%be%b9%ef%bc%8c%e8%bf%91%e5%9c%a8%e7%9c%bc%e5%89%8d.md.html" id="32 RPC协议综述：远在天边，近在眼前.md.html">32 RPC协议综述：远在天边，近在眼前.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/33%20%e5%9f%ba%e4%ba%8eXML%e7%9a%84SOAP%e5%8d%8f%e8%ae%ae%ef%bc%9a%e4%b8%8d%e8%a6%81%e8%af%b4NBA%ef%bc%8c%e8%af%b7%e8%af%b4%e7%be%8e%e5%9b%bd%e8%81%8c%e4%b8%9a%e7%af%ae%e7%90%83%e8%81%94%e8%b5%9b.md.html" id="33 基于XML的SOAP协议：不要说NBA，请说美国职业篮球联赛.md.html">33 基于XML的SOAP协议：不要说NBA，请说美国职业篮球联赛.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/34%20%e5%9f%ba%e4%ba%8eJSON%e7%9a%84RESTful%e6%8e%a5%e5%8f%a3%e5%8d%8f%e8%ae%ae%ef%bc%9a%e6%88%91%e4%b8%8d%e5%85%b3%e5%bf%83%e8%bf%87%e7%a8%8b%ef%bc%8c%e8%af%b7%e7%bb%99%e6%88%91%e7%bb%93%e6%9e%9c.md.html" id="34 基于JSON的RESTful接口协议：我不关心过程，请给我结果.md.html">34 基于JSON的RESTful接口协议：我不关心过程，请给我结果.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/35%20%e4%ba%8c%e8%bf%9b%e5%88%b6%e7%b1%bbRPC%e5%8d%8f%e8%ae%ae%ef%bc%9a%e8%bf%98%e6%98%af%e5%8f%abNBA%e5%90%a7%ef%bc%8c%e6%80%bb%e8%af%b4%e5%85%a8%e7%a7%b0%e5%a4%9a%e8%b4%b9%e5%8a%b2.md.html" id="35 二进制类RPC协议：还是叫NBA吧，总说全称多费劲.md.html">35 二进制类RPC协议：还是叫NBA吧，总说全称多费劲.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/36%20%e8%b7%a8%e8%af%ad%e8%a8%80%e7%b1%bbRPC%e5%8d%8f%e8%ae%ae%ef%bc%9a%e4%ba%a4%e6%b5%81%e4%b9%8b%e5%89%8d%ef%bc%8c%e5%8f%8c%e6%96%b9%e5%85%88%e6%9d%a5%e4%b8%aa%e4%b8%93%e4%b8%9a%e6%9c%af%e8%af%ad%e8%a1%a8.md.html" id="36 跨语言类RPC协议：交流之前，双方先来个专业术语表.md.html">36 跨语言类RPC协议：交流之前，双方先来个专业术语表.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/37%20%e7%9f%a5%e8%af%86%e4%b8%b2%ef%bc%9a%e7%94%a8%e5%8f%8c%e5%8d%81%e4%b8%80%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%b2%e8%b5%b7%e7%a2%8e%e7%89%87%e7%9a%84%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="37 知识串：用双十一的故事串起碎片的网络协议（上）.md.html">37 知识串：用双十一的故事串起碎片的网络协议（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/38%20%e7%9f%a5%e8%af%86%e4%b8%b2%ef%bc%9a%e7%94%a8%e5%8f%8c%e5%8d%81%e4%b8%80%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%b2%e8%b5%b7%e7%a2%8e%e7%89%87%e7%9a%84%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="38 知识串：用双十一的故事串起碎片的网络协议（中）.md.html">38 知识串：用双十一的故事串起碎片的网络协议（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/39%20%e7%9f%a5%e8%af%86%e4%b8%b2%ef%bc%9a%e7%94%a8%e5%8f%8c%e5%8d%81%e4%b8%80%e7%9a%84%e6%95%85%e4%ba%8b%e4%b8%b2%e8%b5%b7%e7%a2%8e%e7%89%87%e7%9a%84%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="39 知识串：用双十一的故事串起碎片的网络协议（下）.md.html">39 知识串：用双十一的故事串起碎片的网络协议（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/40%20%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e7%bd%91%e7%bb%9c%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83%ef%bc%9a%e6%8e%88%e4%ba%ba%e4%bb%a5%e9%b1%bc%e4%b8%8d%e5%a6%82%e6%8e%88%e4%ba%ba%e4%bb%a5%e6%b8%94.md.html" id="40 搭建一个网络实验环境：授人以鱼不如授人以渔.md.html">40 搭建一个网络实验环境：授人以鱼不如授人以渔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/%e5%8a%a0%e9%a4%901%20%e5%88%9b%e4%bd%9c%e6%95%85%e4%ba%8b%ef%bc%9a%e6%88%91%e6%98%af%e5%a6%82%e4%bd%95%e5%88%9b%e4%bd%9c%e2%80%9c%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae%e2%80%9d%e4%b8%93%e6%a0%8f%e7%9a%84%ef%bc%9f.md.html" id="加餐1 创作故事：我是如何创作“趣谈网络协议”专栏的？.md.html">加餐1 创作故事：我是如何创作“趣谈网络协议”专栏的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/%e5%8d%8f%e8%ae%ae%e4%b8%93%e6%a0%8f%e7%89%b9%e5%88%ab%e7%a6%8f%e5%88%a9%20%e7%ad%94%e7%96%91%e8%a7%a3%e6%83%911%e6%9c%9f.md.html" id="协议专栏特别福利 答疑解惑1期.md.html">协议专栏特别福利 答疑解惑1期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/%e5%8d%8f%e8%ae%ae%e4%b8%93%e6%a0%8f%e7%89%b9%e5%88%ab%e7%a6%8f%e5%88%a9%20%e7%ad%94%e7%96%91%e8%a7%a3%e6%83%912%e6%9c%9f.md.html" id="协议专栏特别福利 答疑解惑2期.md.html">协议专栏特别福利 答疑解惑2期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/%e5%8d%8f%e8%ae%ae%e4%b8%93%e6%a0%8f%e7%89%b9%e5%88%ab%e7%a6%8f%e5%88%a9%20%e7%ad%94%e7%96%91%e8%a7%a3%e6%83%913%e6%9c%9f.md.html" id="协议专栏特别福利 答疑解惑3期.md.html">协议专栏特别福利 答疑解惑3期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/%e5%8d%8f%e8%ae%ae%e4%b8%93%e6%a0%8f%e7%89%b9%e5%88%ab%e7%a6%8f%e5%88%a9%20%e7%ad%94%e7%96%91%e8%a7%a3%e6%83%914%e6%9c%9f.md.html" id="协议专栏特别福利 答疑解惑4期.md.html">协议专栏特别福利 答疑解惑4期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/%e5%8d%8f%e8%ae%ae%e4%b8%93%e6%a0%8f%e7%89%b9%e5%88%ab%e7%a6%8f%e5%88%a9%20%e7%ad%94%e7%96%91%e8%a7%a3%e6%83%915%e6%9c%9f.md.html" id="协议专栏特别福利 答疑解惑5期.md.html">协议专栏特别福利 答疑解惑5期.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e8%b6%a3%e8%b0%88%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%94%be%e5%bc%83%e5%ae%8c%e7%be%8e%e4%b8%bb%e4%b9%89%ef%bc%8c%e6%89%a7%e8%a1%8c%e5%8a%9b%e5%b0%b1%e6%98%af%e9%99%90%e6%97%b6%e9%99%90%e9%87%8f%e8%ae%a4%e7%9c%9f%e5%ae%8c%e6%88%90.md.html" id="结束语 放弃完美主义，执行力就是限时限量认真完成.md.html">结束语 放弃完美主义，执行力就是限时限量认真完成.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="28 云中网络的隔离GRE、VXLAN：虽然住一个小区，也要保护隐私" id="title">28 云中网络的隔离GRE、VXLAN：虽然住一个小区，也要保护隐私</h1>
+<div><p>对于云平台中的隔离问题，前面咱们用的策略一直都是VLAN，但是我们也说过这种策略的问题，VLAN只有12位，共4096个。当时设计的时候，看起来是够了，但是现在绝对不够用，怎么办呢？</p>
+<p><strong>一种方式是修改这个协议</strong>。这种方法往往不可行，因为当这个协议形成一定标准后，千千万万设备上跑的程序都要按这个规则来。现在说改就放，谁去挨个儿告诉这些程序呢？很显然，这是一项不可能的工程。</p>
+<p><strong>另一种方式就是扩展</strong>，在原来包的格式的基础上扩展出一个头，里面包含足够用于区分租户的ID，外层的包的格式尽量和传统的一样，依然兼容原来的格式。一旦遇到需要区分用户的地方，我们就用这个特殊的程序，来处理这个特殊的包的格式。</p>
+<p>这个概念很像咱们[第22讲]讲过的<strong>隧道理论</strong>，还记得自驾游通过摆渡轮到海南岛的那个故事吗？在那一节，我们说过，扩展的包头主要是用于加密的，而我们现在需要的包头是要能够区分用户的。</p>
+<p>底层的物理网络设备组成的网络我们称为<strong>Underlay网络</strong>，而用于虚拟机和云中的这些技术组成的网络称为<strong>Overlay网络</strong>，<strong>这是一种基于物理网络的虚拟化网络实现</strong>。这一节我们重点讲两个Overlay的网络技术。</p>
+<h2 id="gre">GRE</h2>
+<p>第一个技术是<strong>GRE</strong>，全称Generic Routing Encapsulation，它是一种IP-over-IP的隧道技术。它将IP包封装在GRE包里，外面加上IP头，在隧道的一端封装数据包，并在通路上进行传输，到另外一端的时候解封装。你可以认为Tunnel是一个虚拟的、点对点的连接。</p>
+<p><img alt="" src="assets/d45e189d89b2273690yyc8yy131ffe7d.jpg"/></p>
+<p>从这个图中可以看到，在GRE头中，前32位是一定会有的，后面的都是可选的。在前4位标识位里面，有标识后面到底有没有可选项？这里面有个很重要的key字段，是一个32位的字段，里面存放的往往就是用于区分用户的Tunnel ID。32位，够任何云平台喝一壶的了！</p>
+<p>下面的格式类型专门用于网络虚拟化的GRE包头格式，称为<strong>NVGRE</strong>，也给网络ID号24位，也完全够用了。</p>
+<p>除此之外，GRE还需要有一个地方来封装和解封装GRE的包，这个地方往往是路由器或者有路由功能的Linux机器。</p>
+<p>使用GRE隧道，传输的过程就像下面这张图。这里面有两个网段、两个路由器，中间要通过GRE隧道进行通信。当隧道建立之后，会多出两个Tunnel端口，用于封包、解封包。</p>
+<p><img alt="" src="assets/76298ce51d349bc9805fbf317312e4ce.jpg"/></p>
+<ol>
+<li><p>主机A在左边的网络，IP地址为192.168.1.102，它想要访问主机B，主机B在右边的网络，IP地址为192.168.2.115。于是发送一个包，源地址为192.168.1.102，目标地址为192.168.2.115。因为要跨网段访问，于是根据默认的default路由表规则，要发给默认的网关192.168.1.1，也即左边的路由器。</p></li>
+<li><p>根据路由表，从左边的路由器，去192.168.2.0/24这个网段，应该走一条GRE的隧道，从隧道一端的网卡Tunnel0进入隧道。</p></li>
+<li><p>在Tunnel隧道的端点进行包的封装，在内部的IP头之外加上GRE头。对于NVGRE来讲，是在MAC头之外加上GRE头，然后加上外部的IP地址，也即路由器的外网IP地址。源IP地址为172.17.10.10，目标IP地址为172.16.11.10，然后从E1的物理网卡发送到公共网络里。</p></li>
+<li><p>在公共网络里面，沿着路由器一跳一跳地走，全部都按照外部的公网IP地址进行。</p></li>
+<li><p>当网络包到达对端路由器的时候，也要到达对端的Tunnel0，然后开始解封装，将外层的IP头取下来，然后根据里面的网络包，根据路由表，从E3口转发出去到达服务器B。</p></li>
+</ol>
+<p>从GRE的原理可以看出，GRE通过隧道的方式，很好地解决了VLAN ID不足的问题。但是，GRE技术本身还是存在一些不足之处。</p>
+<p>首先是<strong>Tunnel的数量问题</strong>。GRE是一种点对点隧道，如果有三个网络，就需要在每两个网络之间建立一个隧道。如果网络数目增多，这样隧道的数目会呈指数性增长。</p>
+<p><img alt="" src="assets/006cc8a4bf7a13fea0f456905c263afe.jpg"/></p>
+<p>其次，<strong>GRE不支持组播</strong>，因此一个网络中的一个虚机发出一个广播帧后，GRE会将其广播到所有与该节点有隧道连接的节点。</p>
+<p>另外一个问题是目前还是<strong>有很多防火墙和三层网络设备无法解析GRE</strong>，因此它们无法对GRE封装包做合适地过滤和负载均衡。</p>
+<h2 id="vxlan">VXLAN</h2>
+<p>第二种Overlay的技术称为VXLAN。和三层外面再套三层的GRE不同，VXLAN则是从二层外面就套了一个VXLAN的头，这里面包含的VXLAN ID为24位，也够用了。在VXLAN头外面还封装了UDP、IP，以及外层的MAC头。</p>
+<p><img alt="" src="assets/87b61f26a10972df1f56d461ef97009f.jpg"/></p>
+<p>VXLAN作为扩展性协议，也需要一个地方对VXLAN的包进行封装和解封装，实现这个功能的点称为<strong>VTEP</strong>（VXLAN Tunnel Endpoint）。</p>
+<p>VTEP相当于虚拟机网络的管家。每台物理机上都可以有一个VTEP。每个虚拟机启动的时候，都需要向这个VTEP管家注册，每个VTEP都知道自己上面注册了多少个虚拟机。当虚拟机要跨VTEP进行通信的时候，需要通过VTEP代理进行，由VTEP进行包的封装和解封装。</p>
+<p>和GRE端到端的隧道不同，VXLAN不是点对点的，而是支持通过组播的来定位目标机器的，而非一定是这一端发出，另一端接收。</p>
+<p>当一个VTEP启动的时候，它们都需要通过IGMP协议。加入一个组播组，就像加入一个邮件列表，或者加入一个微信群一样，所有发到这个邮件列表里面的邮件，或者发送到微信群里面的消息，大家都能收到。而当每个物理机上的虚拟机启动之后，VTEP就知道，有一个新的VM上线了，它归我管。</p>
+<p><img alt="" src="assets/88a0fa7f6a46e6a8980279c73c14604f.jpg"/></p>
+<p>如图，虚拟机1、2、3属于云中同一个用户的虚拟机，因而需要分配相同的VXLAN ID=101。在云的界面上，就可以知道它们的IP地址，于是可以在虚拟机1上ping虚拟机2。</p>
+<p>虚拟机1发现，它不知道虚拟机2的MAC地址，因而包没办法发出去，于是要发送ARP广播。</p>
+<p><img alt="" src="assets/8bea66c28395e3a9b77e845803bffbb7.jpg"/></p>
+<p>ARP请求到达VTEP1的时候，VTEP1知道，我这里有一台虚拟机，要访问一台不归我管的虚拟机，需要知道MAC地址，可是我不知道啊，这该咋办呢？</p>
+<p>VTEP1想，我不是加入了一个微信群么？可以在里面@all 一下，问问虚拟机2归谁管。于是VTEP1将ARP请求封装在VXLAN里面，组播出去。</p>
+<p>当然在群里面，VTEP2和VTEP3都收到了消息，因而都会解开VXLAN包看，里面是一个ARP。</p>
+<p>VTEP3在本地广播了半天，没人回，都说虚拟机2不归自己管。</p>
+<p>VTEP2在本地广播，虚拟机2回了，说虚拟机2归我管，MAC地址是这个。通过这次通信，VTEP2也学到了，虚拟机1归VTEP1管，以后要找虚拟机1，去找VTEP1就可以了。</p>
+<p><img alt="" src="assets/f5cb3442dd8705a7ac5e46c896b02210.jpg"/></p>
+<p>VTEP2将ARP的回复封装在VXLAN里面，这次不用组播了，直接发回给VTEP1。</p>
+<p>VTEP1解开VXLAN的包，发现是ARP的回复，于是发给虚拟机1。通过这次通信，VTEP1也学到了，虚拟机2归VTEP2管，以后找虚拟机2，去找VTEP2就可以了。</p>
+<p>虚拟机1的ARP得到了回复，知道了虚拟机2的MAC地址，于是就可以发送包了。</p>
+<p><img alt="" src="assets/42b4393b5c5772e1c35bcf1a95586eed.jpg"/></p>
+<p>虚拟机1发给虚拟机2的包到达VTEP1，它当然记得刚才学的东西，要找虚拟机2，就去VTEP2，于是将包封装在VXLAN里面，外层加上VTEP1和VTEP2的IP地址，发送出去。</p>
+<p>网络包到达VTEP2之后，VTEP2解开VXLAN封装，将包转发给虚拟机2。</p>
+<p>虚拟机2回复的包，到达VTEP2的时候，它当然也记得刚才学的东西，要找虚拟机1，就去VTEP1，于是将包封装在VXLAN里面，外层加上VTEP1和VTEP2的IP地址，也发送出去。</p>
+<p>网络包到达VTEP1之后，VTEP1解开VXLAN封装，将包转发给虚拟机1。</p>
+<p><img alt="" src="assets/8d72af40bbc0833f4b66fb1f7c040895.jpg"/></p>
+<p>有了GRE和VXLAN技术，我们就可以解决云计算中VLAN的限制了。那如何将这个技术融入云平台呢？</p>
+<p>还记得将你宿舍里面的情况，所有东西都搬到一台物理机上那个故事吗？</p>
+<p><img alt="" src="assets/96de854bf0480133ef6081a912f0c20e.jpg"/></p>
+<p>虚拟机是你的电脑，路由器和DHCP Server相当于家用路由器或者寝室长的电脑，外网网口访问互联网，所有的电脑都通过内网网口连接到一个交换机br0上，虚拟机要想访问互联网，需要通过br0连到路由器上，然后通过路由器将请求NAT后转发到公网。</p>
+<p>接下来的事情就惨了，你们宿舍闹矛盾了，你们要分成三个宿舍住，对应上面的图，你们寝室长，也即路由器单独在一台物理机上，其他的室友也即VM分别在两台物理机上。这下把一个完整的br0一刀三断，每个宿舍都是单独的一段。</p>
+<p><img alt="" src="assets/0a867f63aa4874b985beb292896308a8.jpg"/></p>
+<p>可是只有你的寝室长有公网口可以上网，于是你偷偷在三个宿舍中间打了一个隧道，用网线通过隧道将三个宿舍的两个br0连接起来，让其他室友的电脑和你寝室长的电脑，看起来还是连到同一个br0上，其实中间是通过你隧道中的网线做了转发。</p>
+<p>为什么要多一个br1这个虚拟交换机呢？主要通过br1这一层将虚拟机之间的互联和物理机机之间的互联分成两层来设计，中间隧道可以有各种挖法，GRE、VXLAN都可以。</p>
+<p>使用了OpenvSwitch之后，br0可以使用OpenvSwitch的Tunnel功能和Flow功能。</p>
+<p>OpenvSwitch支持三类隧道：GRE、VXLAN、IPsec_GRE。在使用OpenvSwitch的时候，虚拟交换机就相当于GRE和VXLAN封装的端点。</p>
+<p>我们模拟创建一个如下的网络拓扑结构，来看隧道应该如何工作。</p>
+<p><img alt="" src="assets/52770d81e0fcd97ec1ece04686c5c962.jpg"/></p>
+<p>三台物理机，每台上都有两台虚拟机，分别属于两个不同的用户，因而VLAN tag都得打地不一样，这样才不能相互通信。但是不同物理机上的相同用户，是可以通过隧道相互通信的，因而通过GRE隧道可以连接到一起。</p>
+<p>接下来，所有的Flow Table规则都设置在br1上，每个br1都有三个网卡，其中网卡1是对内的，网卡2和3是对外的。</p>
+<p>下面我们具体来看Flow Table的设计。</p>
+<p><img alt="" src="assets/55f5213ef580e3d081e467eb2e61d341.jpg"/></p>
+<p>1.Table 0是所有流量的入口，所有进入br1的流量，分为两种流量，一个是进入物理机的流量，一个是从物理机发出的流量。</p>
+<p>从port 1进来的，都是发出去的流量，全部由Table 1处理。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 in_port=1 actions=resubmit(,1)"
+</code></pre>
+<p>从port 2、3进来的，都是进入物理机的流量，全部由Table 3处理。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 in_port=2 actions=resubmit(,3)"
+ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 in_port=3 actions=resubmit(,3)"
+</code></pre>
+<p>如果都没匹配上，就默认丢弃。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=0 actions=drop"
+</code></pre>
+<p>2.Table 1用于处理所有出去的网络包，分为两种情况，一种是单播，一种是多播。</p>
+<p>对于单播，由Table 20处理。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 table=1 dl_dst=00:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,20)"
+</code></pre>
+<p>对于多播，由Table 21处理。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 table=1 dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,21)"
+</code></pre>
+<p>3.Table 2是紧接着Table1的，如果既不是单播，也不是多播，就默认丢弃。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=0 table=2 actions=drop"
+</code></pre>
+<p>4.Table 3用于处理所有进来的网络包，需要将隧道Tunnel ID转换为VLAN ID。</p>
+<p>如果匹配不上Tunnel ID，就默认丢弃。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=0 table=3 actions=drop"
+</code></pre>
+<p>如果匹配上了Tunnel ID，就转换为相应的VLAN ID，然后跳到Table 10。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 table=3 tun_id=0x1 actions=mod_vlan_vid:1,resubmit(,10)"
+ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 table=3 tun_id=0x2 actions=mod_vlan_vid:2,resubmit(,10)"
+</code></pre>
+<p>5.对于进来的包，Table 10会进行MAC地址学习。这是一个二层交换机应该做的事情，学习完了之后，再从port 1发出去。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1 table=10  actions=learn(table=20,priority=1,hard_timeout=300,NXM_OF_VLAN_TCI[0..11],NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[],load:0-&gt;NXM_OF_VLAN_TCI[],load:NXM_NX_TUN_ID[]-&gt;NXM_NX_TUN_ID[],output:NXM_OF_IN_PORT[]),output:1"
+</code></pre>
+<p>Table 10是用来学习MAC地址的，学习的结果放在Table 20里面。Table20被称为MAC learning table。</p>
+<p>NXM_OF_VLAN_TCI是VLAN tag。在MAC learning table中，每一个entry都仅仅是针对某一个VLAN来说的，不同VLAN的learning table是分开的。在学习结果的entry中，会标出这个entry是针对哪个VLAN的。</p>
+<p>NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]表示，当前包里面的MAC Source Address会被放在学习结果的entry里的dl_dst里。这是因为每个交换机都是通过进入的网络包来学习的。某个MAC从某个port进来，交换机就应该记住，以后发往这个MAC的包都要从这个port出去，因而源MAC地址就被放在了目标MAC地址里面，因为这是为了发送才这么做的。</p>
+<p>load:0-&gt;NXM_OF_VLAN_TCI[]是说，在Table20中，将包从物理机发送出去的时候，VLAN tag设为0，所以学习完了之后，Table 20中会有actions=strip_vlan。</p>
+<p>load:NXM_NX_TUN_ID[]-&gt;NXM_NX_TUN_ID[]的意思是，在Table 20中，将包从物理机发出去的时候，设置Tunnel ID，进来的时候是多少，发送的时候就是多少，所以学习完了之后，Table 20中会有set_tunnel。</p>
+<p>output:NXM_OF_IN_PORT[]是发送给哪个port。例如是从port 2进来的，那学习完了之后，Table 20中会有output:2。</p>
+<p><img alt="" src="assets/4dc0fe34819ee02a53a97c89811747dd.jpg"/></p>
+<p>所以如图所示，通过左边的MAC地址学习规则，学习到的结果就像右边的一样，这个结果会被放在Table 20里面。</p>
+<p>6.Table 20是MAC Address Learning Table。如果不为空，就按照规则处理；如果为空，就说明没有进行过MAC地址学习，只好进行广播了，因而要交给Table 21处理。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=0 table=20 actions=resubmit(,21)"
+</code></pre>
+<p>7.Table 21用于处理多播的包。</p>
+<p>如果匹配不上VLAN ID，就默认丢弃。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=0 table=21 actions=drop"
+</code></pre>
+<p>如果匹配上了VLAN ID，就将VLAN ID转换为Tunnel ID，从两个网卡port 2和port 3都发出去，进行多播。</p>
+<pre><code>ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1table=21dl_vlan=1 actions=strip_vlan,set_tunnel:0x1,output:2,output:3"
+ovs-ofctl add-flow br1 "hard_timeout=0 idle_timeout=0 priority=1table=21dl_vlan=2 actions=strip_vlan,set_tunnel:0x2,output:2,output:3"
+</code></pre>
+<h2 id="小结">小结</h2>
+<p>好了，这一节就到这里了，我们来总结一下。</p>
+<ul>
+<li><p>要对不同用户的网络进行隔离，解决VLAN数目有限的问题，需要通过Overlay的方式，常用的有GRE和VXLAN。</p></li>
+<li><p>GRE是一种点对点的隧道模式，VXLAN支持组播的隧道模式，它们都要在某个Tunnel Endpoint进行封装和解封装，来实现跨物理机的互通。</p></li>
+<li><p>OpenvSwitch可以作为Tunnel Endpoint，通过设置流表的规则，将虚拟机网络和物理机网络进行隔离、转换。</p></li>
+</ul>
+<p>最后，给你留两个思考题。</p>
+<ol>
+<li><p>虽然VXLAN可以支持组播，但是如果虚拟机数目比较多，在Overlay网络里面，广播风暴问题依然会很严重，你能想到什么办法解决这个问题吗？</p></li>
+<li><p>基于虚拟机的云比较复杂，而且虚拟机里面的网卡，到物理网络转换层次比较多，有一种比虚拟机更加轻量级的云的模式，你知道是什么吗？</p></li>
+</ol>
+<p>我们的专栏更新到第28讲，不知你掌握得如何？每节课后我留的思考题，你都有没有认真思考，并在留言区写下答案呢？我会从<strong>已发布的文章中选出一批认真留言的同学</strong>，赠送学习奖励礼券和我整理的独家网络协议知识图谱。</p>
+<p>欢迎你留言和我讨论。趣谈网络协议，我们下期见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#365a5a5a0f020707060176515b575f5a1855595b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9358c6251bb7d6d1',t:'MTc0NTUzMDk4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
