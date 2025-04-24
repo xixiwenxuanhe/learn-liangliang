@@ -19,7 +19,7 @@ for zhuanlan in "${unfinished[@]}"; do
     echo "开始 Git 操作..."
     git add "../专栏/$zhuanlan/"
     git commit -m "提交专栏/$zhuanlan"
-    git push origin main
+    git push -f origin main
     echo "Git 操作完成"
 done
 
