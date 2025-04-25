@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="39 性能分析（下）：API Server性能测试和调优实战" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>39 性能分析（下）：API Server性能测试和调优实战 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%81%e4%b8%9a%e7%ba%a7%20Go%20%e5%ba%94%e7%94%a8.md.html" id="00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html">00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/01%20IAM%e7%b3%bb%e7%bb%9f%e6%a6%82%e8%bf%b0%ef%bc%9a%e6%88%91%e4%bb%ac%e8%a6%81%e5%ae%9e%e7%8e%b0%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html">01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/02%20%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%89%e8%a3%85%e5%92%8c%e9%85%8d%e7%bd%ae%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84%20Go%20%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html">02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/03%20%e9%a1%b9%e7%9b%ae%e9%83%a8%e7%bd%b2%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e9%83%a8%e7%bd%b2%20IAM%20%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="03 项目部署：如何快速部署 IAM 系统？.md.html">03 项目部署：如何快速部署 IAM 系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/04%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e6%9d%82%e4%b9%b1%e6%97%a0%e7%ab%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html">04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/05%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9acommit%20%e4%bf%a1%e6%81%af%e9%a3%8e%e6%a0%bc%e8%bf%a5%e5%bc%82%e3%80%81%e9%9a%be%e4%bb%a5%e9%98%85%e8%af%bb%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html">05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/06%20%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e4%b8%80%e4%b8%aa%e5%8f%af%e7%bb%b4%e6%8a%a4%e3%80%81%e5%8f%af%e6%89%a9%e5%b1%95%e7%9a%84%e4%bb%a3%e7%a0%81%e7%9b%ae%e5%bd%95%ef%bc%9f.md.html" id="06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html">06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/07%20%e5%b7%a5%e4%bd%9c%e6%b5%81%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%90%88%e7%90%86%e7%9a%84%e5%a4%9a%e4%ba%ba%e5%bc%80%e5%8f%91%e6%a8%a1%e5%bc%8f%ef%bc%9f.md.html" id="07 工作流设计：如何设计合理的多人开发模式？.md.html">07 工作流设计：如何设计合理的多人开发模式？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/08%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%20Go%20%e9%a1%b9%e7%9b%ae%e7%9a%84%e5%bc%80%e5%8f%91%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html">08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/09%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%ba%94%e7%94%a8%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9f.md.html" id="09 研发流程设计（下）：如何管理应用的生命周期？.md.html">09 研发流程设计（下）：如何管理应用的生命周期？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/10%20%e8%ae%be%e8%ae%a1%e6%96%b9%e6%b3%95%ef%bc%9a%e6%80%8e%e4%b9%88%e5%86%99%e5%87%ba%e4%bc%98%e9%9b%85%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="10 设计方法：怎么写出优雅的 Go 项目？.md.html">10 设计方法：怎么写出优雅的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/11%20%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%ef%bc%9aGo%e5%b8%b8%e7%94%a8%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%e6%a6%82%e8%bf%b0.md.html" id="11 设计模式：Go常用设计模式概述.md.html">11 设计模式：Go常用设计模式概述.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/12%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1RESTful%20API%ef%bc%9f.md.html" id="12 API 风格（上）：如何设计RESTful API？.md.html">12 API 风格（上）：如何设计RESTful API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/13%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRPC%20API%e4%bb%8b%e7%bb%8d.md.html" id="13 API 风格（下）：RPC API介绍.md.html">13 API 风格（下）：RPC API介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/14%20%e9%a1%b9%e7%9b%ae%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e9%ab%98%e8%b4%a8%e9%87%8f%e7%9a%84Makefile%ef%bc%9f.md.html" id="14 项目管理：如何编写高质量的Makefile？.md.html">14 项目管理：如何编写高质量的Makefile？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/15%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e5%ae%9e%e6%88%98%ef%bc%9aIAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e7%ae%a1%e7%90%86%e7%9a%84%ef%bc%9f.md.html" id="15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html">15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/16%20%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9a%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e9%9d%99%e6%80%81%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9f.md.html" id="16 代码检查：如何进行静态代码检查？.md.html">16 代码检查：如何进行静态代码检查？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/17%20API%20%e6%96%87%e6%a1%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%20Swagger%20API%20%e6%96%87%e6%a1%a3%20%ef%bc%9f.md.html" id="17 API 文档：如何生成 Swagger API 文档 ？.md.html">17 API 文档：如何生成 Swagger API 文档 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e4%b8%80%e5%a5%97%e7%a7%91%e5%ad%a6%e7%9a%84%e9%94%99%e8%af%af%e7%a0%81%ef%bc%9f.md.html" id="18 错误处理（上）：如何设计一套科学的错误码？.md.html">18 错误处理（上）：如何设计一套科学的错误码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e9%94%99%e8%af%af%e5%8c%85%ef%bc%9f.md.html" id="19 错误处理（下）：如何设计错误包？.md.html">19 错误处理（下）：如何设计错误包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/20%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e6%97%a5%e5%bf%97%e5%8c%85%e5%b9%b6%e8%ae%b0%e5%bd%95%e6%97%a5%e5%bf%97%ef%bc%9f.md.html" id="20 日志处理（上）：如何设计日志包并记录日志？.md.html">20 日志处理（上）：如何设计日志包并记录日志？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/21%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e4%bb%8e%200%20%e7%bc%96%e5%86%99%e4%b8%80%e4%b8%aa%e6%97%a5%e5%bf%97%e5%8c%85.md.html" id="21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html">21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/22%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e4%b8%89%e5%89%91%e5%ae%a2%ef%bc%9aPflag%e3%80%81Viper%e3%80%81Cobra%20%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e4%bb%8b%e7%bb%8d.md.html" id="22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html">22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/23%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e5%ae%9e%e6%88%98%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%e4%bc%81%e4%b8%9a%e5%ba%94%e7%94%a8%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html">23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/24%20Web%20%e6%9c%8d%e5%8a%a1%ef%bc%9aWeb%20%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html">24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/25%20%e8%ae%a4%e8%af%81%e6%9c%ba%e5%88%b6%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%ef%bc%9f.md.html" id="25 认证机制：应用程序如何进行访问认证？.md.html">25 认证机制：应用程序如何进行访问认证？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/26%20IAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%e5%8a%9f%e8%83%bd%e7%9a%84%ef%bc%9f.md.html" id="26 IAM项目是如何设计和实现访问认证功能的？.md.html">26 IAM项目是如何设计和实现访问认证功能的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/27%20%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%ef%bc%9a5%e5%a4%a7%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%b5%84%e6%ba%90%e6%8e%88%e6%9d%83%e7%9a%84%ef%bc%9f.md.html" id="27 权限模型：5大权限模型是如何进行资源授权的？.md.html">27 权限模型：5大权限模型是如何进行资源授权的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/28%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%80%9a%e8%bf%87iam-apiserver%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8bWeb%e6%9c%8d%e5%8a%a1%e7%9a%84%e6%9e%84%e5%bb%ba.md.html" id="28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html">28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/29%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aiam-apiserver%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html">29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/30%20ORM%ef%bc%9aCURD%20%e7%a5%9e%e5%99%a8%20GORM%20%e5%8c%85%e4%bb%8b%e7%bb%8d%e5%8f%8a%e5%ae%9e%e6%88%98.md.html" id="30 ORM：CURD 神器 GORM 包介绍及实战.md.html">30 ORM：CURD 神器 GORM 包介绍及实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/31%20%e6%95%b0%e6%8d%ae%e6%b5%81%ef%bc%9a%e9%80%9a%e8%bf%87iam-authz-server%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8b%e6%95%b0%e6%8d%ae%e6%b5%81%e6%9c%8d%e5%8a%a1%e7%9a%84%e8%ae%be%e8%ae%a1.md.html" id="31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html">31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/32%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%a4%84%e7%90%86%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%ba%a7%e7%94%9f%e7%9a%84%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="32 数据处理：如何高效处理应用程序产生的数据？.md.html">32 数据处理：如何高效处理应用程序产生的数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/33%20%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%87%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%20Go%20SDK%ef%bc%9f.md.html" id="33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html">33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/34%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e9%a1%b9%e7%9b%aeGo%20SDK%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html">34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/35%20%e6%95%88%e7%8e%87%e7%a5%9e%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%ae%a2%e6%88%b7%e7%ab%af%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="35 效率神器：如何设计和实现一个命令行客户端工具？.md.html">35 效率神器：如何设计和实现一个命令行客户端工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/36%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%20Go%20%e8%af%ad%e8%a8%80%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%e5%92%8c%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%94%a8%e4%be%8b%ef%bc%9f.md.html" id="36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html">36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/37%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aGo%20%e8%af%ad%e8%a8%80%e5%85%b6%e4%bb%96%e6%b5%8b%e8%af%95%e7%b1%bb%e5%9e%8b%e5%8f%8a%20IAM%20%e6%b5%8b%e8%af%95%e4%bb%8b%e7%bb%8d.md.html" id="37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html">37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/38%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e6%9e%90%20Go%20%e8%af%ad%e8%a8%80%e4%bb%a3%e7%a0%81%e7%9a%84%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html">38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/39%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aAPI%20Server%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e5%92%8c%e8%b0%83%e4%bc%98%e5%ae%9e%e6%88%98.md.html" id="39 性能分析（下）：API Server性能测试和调优实战.md.html">39 性能分析（下）：API Server性能测试和调优实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/40%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%83%a8%e7%bd%b2%e6%96%b9%e6%a1%88%e5%8f%8a%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e3%80%81%e9%ab%98%e5%8f%af%e7%94%a8%e7%bb%84%e4%bb%b6%e4%bb%8b%e7%bb%8d.md.html" id="40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html">40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/41%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aIAM%20%e7%b3%bb%e7%bb%9f%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html">41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/42%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e7%b3%bb%e7%bb%9f%e5%ae%89%e5%85%a8%e5%8a%a0%e5%9b%ba%e3%80%81%e6%b0%b4%e5%b9%b3%e6%89%a9%e7%bc%a9%e5%ae%b9%e5%ae%9e%e6%88%98.md.html" id="42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html">42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/43%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%8c%96%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="43 技术演进（上）：虚拟化技术演进之路.md.html">43 技术演进（上）：虚拟化技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/44%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%e5%92%8c%e5%ba%94%e7%94%a8%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html">44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/45%20%e5%9f%ba%e4%ba%8eKubernetes%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1.md.html" id="45 基于Kubernetes的云原生架构设计.md.html">45 基于Kubernetes的云原生架构设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/46%20%e5%a6%82%e4%bd%95%e5%88%b6%e4%bd%9cDocker%e9%95%9c%e5%83%8f%ef%bc%9f.md.html" id="46 如何制作Docker镜像？.md.html">46 如何制作Docker镜像？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/47%20%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99Kubernetes%e8%b5%84%e6%ba%90%e5%ae%9a%e4%b9%89%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="47 如何编写Kubernetes资源定义文件？.md.html">47 如何编写Kubernetes资源定义文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/48%20IAM%20%e5%ae%b9%e5%99%a8%e5%8c%96%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="48 IAM 容器化部署实战.md.html">48 IAM 容器化部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/49%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aHelm%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86.md.html" id="49 服务编排（上）：Helm服务编排基础知识.md.html">49 服务编排（上）：Helm服务编排基础知识.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/50%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%9f%ba%e4%ba%8eHelm%e7%9a%84%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="50 服务编排（下）：基于Helm的服务编排部署实战.md.html">50 服务编排（下）：基于Helm的服务编排部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/51%20%e5%9f%ba%e4%ba%8e%20GitHub%20Actions%20%e7%9a%84%20CI%20%e5%ae%9e%e6%88%98.md.html" id="51 基于 GitHub Actions 的 CI 实战.md.html">51 基于 GitHub Actions 的 CI 实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e4%be%9d%e8%b5%96%e5%8c%85%e7%ae%a1%e7%90%86%e5%85%a8%e8%ae%b2.md.html" id="特别放送 Go Modules依赖包管理全讲.md.html">特别放送 Go Modules依赖包管理全讲.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e5%ae%9e%e6%88%98.md.html" id="特别放送 Go Modules实战.md.html">特别放送 Go Modules实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20IAM%e6%8e%92%e9%9a%9c%e6%8c%87%e5%8d%97.md.html" id="特别放送 IAM排障指南.md.html">特别放送 IAM排障指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%9c%e4%b8%9a%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="特别放送 分布式作业系统设计和实现.md.html">特别放送 分布式作业系统设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bdGo%e9%a1%b9%e7%9b%ae%e4%b8%ad%e6%9c%80%e5%b8%b8%e7%94%a8%e7%9a%84Makefile%e6%a0%b8%e5%bf%83%e8%af%ad%e6%b3%95.md.html" id="特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html">特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bd%e6%b8%85%e6%99%b0%e3%80%81%e5%8f%af%e7%9b%b4%e6%8e%a5%e5%a5%97%e7%94%a8%e7%9a%84Go%e7%bc%96%e7%a0%81%e8%a7%84%e8%8c%83.md.html" id="特别放送 给你一份清晰、可直接套用的Go编码规范.md.html">特别放送 给你一份清晰、可直接套用的Go编码规范.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%9b%b4%e6%92%ad%e5%8a%a0%e9%a4%90%20%e5%a6%82%e4%bd%95%e4%bb%8e%e5%b0%8f%e7%99%bd%e8%bf%9b%e9%98%b6%e6%88%90%20Go%20%e8%af%ad%e8%a8%80%e4%b8%93%e5%ae%b6%ef%bc%9f.md.html" id="直播加餐 如何从小白进阶成 Go 语言专家？.md.html">直播加餐 如何从小白进阶成 Go 语言专家？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%a6%82%e4%bd%95%e8%ae%a9%e8%87%aa%e5%b7%b1%e7%9a%84%20Go%20%e7%a0%94%e5%8f%91%e4%b9%8b%e8%b7%af%e8%b5%b0%e5%be%97%e6%9b%b4%e8%bf%9c%ef%bc%9f.md.html" id="结束语 如何让自己的 Go 研发之路走得更远？.md.html">结束语 如何让自己的 Go 研发之路走得更远？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="39 性能分析（下）：API Server性能测试和调优实战" id="title">39 性能分析（下）：API Server性能测试和调优实战</h1>
+<div><p>你好，我是孔令飞。</p>
+<p>上一讲，我们学习了如何分析Go代码的性能。掌握了性能分析的基本知识之后，这一讲，我们再来看下如何分析API接口的性能。</p>
+<p>在API上线之前，我们需要知道API的性能，以便知道API服务器所能承载的最大请求量、性能瓶颈，再根据业务对性能的要求，来对API进行性能调优或者扩缩容。通过这些，可以使API稳定地对外提供服务，并且让请求在合理的时间内返回。这一讲，我就介绍如何用wrk工具来测试API Server接口的性能，并给出分析方法和结果。</p>
+<h2 id="api性能测试指标">API性能测试指标</h2>
+<p>API性能测试，往大了说其实包括API框架的性能和指定API的性能。不过，因为指定API的性能跟该API具体的实现（比如有无数据库连接，有无复杂的逻辑处理等）有关，我认为脱离了具体实现来探讨单个API的性能是毫无意义的，所以这一讲只探讨API框架的性能。</p>
+<p>用来衡量API性能的指标主要有3个：</p>
+<ul>
+<li>并发数（Concurrent）：并发数是指某个时间范围内，同时在使用系统的用户个数。广义上的并发数是指同时使用系统的用户个数，这些用户可能调用不同的API；严格意义上的并发数是指同时请求同一个API的用户个数。这一讲我们讨论的并发数是严格意义上的并发数。</li>
+<li>每秒查询数（QPS）：每秒查询数QPS是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准。QPS = 并发数 / 平均请求响应时间。</li>
+<li>请求响应时间（TTLB）：请求响应时间指的是从客户端发出请求到得到响应的整个时间。这个过程从客户端发起的一个请求开始，到客户端收到服务器端的响应结束。在一些工具中，请求响应时间通常会被称为TTLB（Time to last byte，意思是从发送一个请求开始，到客户端收到最后一个字节的响应为止所消费的时间）。请求响应时间的单位一般为“秒”或“毫秒”。</li>
+</ul>
+<p>这三个指标中，衡量API性能的最主要指标是QPS，但是在说明QPS时，需要指明是多少并发数下的QPS，否则毫无意义，因为不同并发数下的QPS是不同的。举个例子，单用户100 QPS和100用户100 QPS是两个不同的概念，前者说明API可以在一秒内串行执行100个请求，而后者说明在并发数为100的情况下，API可以在一秒内处理100个请求。当QPS相同时，并发数越大，说明API性能越好，并发处理能力越强。</p>
+<p>在并发数设置过大时，API同时要处理很多请求，会频繁切换上下文，而真正用于处理请求的时间变少，反而使得QPS会降低。并发数设置过大时，请求响应时间也会变长。API会有一个合适的并发数，在该并发数下，API的QPS可以达到最大，但该并发数不一定是最佳并发数，还要参考该并发数下的平均请求响应时间。</p>
+<p>此外，在有些API接口中，也会测试API接口的TPS（Transactions Per Second，每秒事务数）。一个事务是指客户端向服务器发送请求，然后服务器做出反应的过程。客户端在发送请求时开始计时，收到服务器响应后结束计时，以此来计算使用的时间和完成的事务个数。</p>
+<p>那么，TPS和QPS有什么区别呢？如果是对一个查询接口（单场景）压测，且这个接口内部不会再去请求其他接口，那么TPS=QPS，否则，TPS≠QPS。如果是对多个接口（混合场景）压测，假设N个接口都是查询接口，且这个接口内部不会再去请求其他接口，QPS=N*TPS。</p>
+<h2 id="api性能测试方法">API性能测试方法</h2>
+<p>Linux下有很多Web性能测试工具，常用的有Jmeter、AB、Webbench和wrk。每个工具都有自己的特点，IAM项目使用wrk来对API进行性能测试。wrk非常简单，安装方便，测试结果也相对专业，并且可以支持Lua脚本来创建更复杂的测试场景。下面，我来介绍下wrk的安装方法和使用方法。</p>
+<h3 id="wrk安装方法">wrk安装方法</h3>
+<p>wrk的安装很简单，一共可分为两步。</p>
+<p>第一步，Clone wrk repo：</p>
+<pre><code class="language-bash">$ git clone https://github.com/wg/wrk
+</code></pre>
+<p>第二步，编译并安装：</p>
+<pre><code class="language-bash">$ cd wrk
+$ make
+$ sudo cp ./wrk /usr/bin
+</code></pre>
+<h3 id="wrk使用简介">wrk使用简介</h3>
+<p>这里我们来看下wrk的使用方法。wrk使用起来不复杂，执行<code>wrk --help</code>可以看到wrk的所有运行参数：</p>
+<pre><code class="language-bash">$ wrk --help
+Usage: wrk &lt;options&gt; &lt;url&gt;
+  Options:
+    -c, --connections &lt;N&gt;  Connections to keep open
+    -d, --duration    &lt;T&gt;  Duration of test
+    -t, --threads     &lt;N&gt;  Number of threads to use
+
+    -s, --script      &lt;S&gt;  Load Lua script file
+    -H, --header      &lt;H&gt;  Add header to request
+        --latency          Print latency statistics
+        --timeout     &lt;T&gt;  Socket/request timeout
+    -v, --version          Print version details
+
+  Numeric arguments may include a SI unit (1k, 1M, 1G)
+  Time arguments may include a time unit (2s, 2m, 2h)
+</code></pre>
+<p>常用的参数有下面这些：</p>
+<ul>
+<li>-t，线程数（线程数不要太多，是核数的2到4倍就行，多了反而会因为线程切换过多造成效率降低）。</li>
+<li>-c，并发数。</li>
+<li>-d，测试的持续时间，默认为10s。</li>
+<li>-T，请求超时时间。</li>
+<li>-H，指定请求的HTTP Header，有些API需要传入一些Header，可通过wrk的-H参数来传入。</li>
+<li>–latency，打印响应时间分布。</li>
+<li>-s，指定Lua脚本，Lua脚本可以实现更复杂的请求。</li>
+</ul>
+<p>然后，我们来看一个wrk的测试结果，并对结果进行解析。</p>
+<p>一个简单的测试如下（确保iam-apiserver已经启动，并且开启了健康检查）：</p>
+<pre><code class="language-bash">$ wrk -t144 -c30000 -d30s -T30s --latency http://10.0.4.57:8080/healthz
+Running 30s test @ http://10.0.4.57:8080/healthz
+  144 threads and 30000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   508.77ms  604.01ms   9.27s    81.59%
+    Req/Sec   772.48      0.94k   10.45k    86.82%
+  Latency Distribution
+     50%  413.35ms
+     75%  948.99ms
+     90%    1.33s
+     99%    2.44s
+  2276265 requests in 30.10s, 412.45MB read
+  Socket errors: connect 1754, read 40, write 0, timeout 0
+Requests/sec:  75613.16
+Transfer/sec:     13.70MB
+</code></pre>
+<p>下面是对测试结果的解析。</p>
+<ul>
+<li>144 threads and 30000 connections：用144个线程模拟20000个连接，分别对应-t和-c参数。</li>
+<li>Thread Stats是线程统计，包括Latency和Req/Sec。
+
+<ul>
+<li>Latency：响应时间，有平均值、标准偏差、最大值、正负一个标准差占比。</li>
+<li>Req/Sec：每个线程每秒完成的请求数, 同样有平均值、标准偏差、最大值、正负一个标准差占比。</li>
+</ul></li>
+<li>Latency Distribution是响应时间分布。
+
+<ul>
+<li>50%：50%的响应时间为413.35ms。</li>
+<li>75%：75%的响应时间为948.99ms。</li>
+<li>90%：90%的响应时间为1.33s。</li>
+<li>99%：99%的响应时间为2.44s。</li>
+</ul></li>
+<li>2276265 requests in 30.10s, 412.45MB read：30.10s完成的总请求数（2276265）和数据读取量（412.45MB）。</li>
+<li>Socket errors: connect 1754, read 40, write 0, timeout 0：错误统计，会统计connect连接失败请求个数（1754）、读失败请求个数、写失败请求个数、超时请求个数。</li>
+<li>Requests/sec：QPS。</li>
+<li>Transfer/sec：平均每秒读取13.70MB数据（吞吐量）。</li>
+</ul>
+<h2 id="api-server性能测试实践">API Server性能测试实践</h2>
+<p>接下来，我们就来测试下API Server的性能。影响API Server性能的因素有很多，除了iam-apiserver自身的原因之外，服务器的硬件和配置、测试方法、网络环境等都会影响。为了方便你对照性能测试结果，我给出了我的测试环境配置，你可以参考下。</p>
+<ul>
+<li>客户端硬件配置：1核4G。</li>
+<li>客户端软件配置：干净的<code>CentOS Linux release 8.2.2004 (Core)</code>。</li>
+<li>服务端硬件配置：2核8G。</li>
+<li>服务端软件配置：干净的<code>CentOS Linux release 8.2.2004 (Core)</code>。</li>
+<li>测试网络环境：腾讯云VPC内访问，除了性能测试程序外，没有其他资源消耗型业务程序。</li>
+</ul>
+<p>测试架构如下图所示：</p>
+<p><img alt="" src="assets/a50be49b75894fba97bc9e2d95d3e0a2.jpg"/></p>
+<h3 id="性能测试脚本介绍">性能测试脚本介绍</h3>
+<p>在做API Server的性能测试时，需要先执行wrk，生成性能测试数据。为了能够更直观地查看性能数据，我们还需要以图表的方式展示这些性能数据。这一讲，我使用 <code>gnuplot</code> 工具来自动化地绘制这些性能图，为此我们需要确保Linux服务器已经安装了 <code>gnuplot</code> 工具。你可以通过以下方式安装：</p>
+<pre><code class="language-bash">$ sudo yum -y install gnuplot
+</code></pre>
+<p>在这一讲的测试中，我会绘制下面这两张图，通过它们来观测和分析API Server的性能。</p>
+<ul>
+<li>QPS &amp; TTLB图：<code>X</code>轴为并发数（Concurrent），<code>Y</code>轴为每秒查询数（QPS）和请求响应时间（TTLB）。</li>
+<li>成功率图：<code>X</code>轴为并发数（Concurrent），<code>Y</code>轴为请求成功率。</li>
+</ul>
+<p>为了方便你测试API接口性能，我将性能测试和绘图逻辑封装在<a href="https://github.com/marmotedu/iam/blob/v1.0.8/scripts/wrktest.sh" target="_blank">scripts/wrktest.sh</a>脚本中，你可以在iam源码根目录下执行如下命令，生成性能测试数据和性能图表：</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh http://10.0.4.57:8080/healthz
+</code></pre>
+<p>上面的命令会执行性能测试，记录性能测试数据，并根据这些性能测试数据绘制出QPS和成功率图。</p>
+<p>接下来，我再来介绍下wrktest.sh性能测试脚本，并给出一个使用示例。</p>
+<p>wrktest.sh性能测试脚本，用来测试API Server的性能，记录测试的性能数据，并根据性能数据使用gnuplot绘制性能图。</p>
+<p>wrktest.sh也可以对比前后两次的性能测试结果，并将对比结果通过图表展示出来。wrktest.sh会根据CPU的核数自动计算出适合的wrk启动线程数（<code>-t</code>）：<code>CPU核数 * 3</code>。</p>
+<p>wrktest.sh默认会测试多个并发下的API性能，默认测试的并发数为<code>200 500 1000 3000 5000 10000 15000 20000 25000 50000</code>。你需要根据自己的服务器配置选择测试的最大并发数，我因为服务器配置不高（主要是<code>8G</code>内存在高并发下，很容易就耗尽），最大并发数选择了<code>50000</code>。如果你的服务器配置够高，可以再依次尝试下测试 <code>100000</code> 、<code>200000</code> 、<code>500000</code> 、<code>1000000</code> 并发下的API性能。</p>
+<p>wrktest.sh的使用方法如下：</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh -h
+
+Usage: scripts/wrktest.sh [OPTION] [diff] URL
+Performance automation test script.
+
+  URL                    HTTP request url, like: http://10.0.4.57:8080/healthz
+  diff                   Compare two performance test results
+
+OPTIONS:
+  -h                     Usage information
+  -n                     Performance test task name, default: apiserver
+  -d                     Directory used to store performance data and gnuplot graphic, default: _output/wrk
+
+Reprot bugs to &lt;<a class="__cf_email__" data-cfemail="4b28242722257f7b7f0b2d2433262a222765282426" href="/cdn-cgi/l/email-protection">[email protected]</a>&gt;.
+</code></pre>
+<p>wrktest.sh提供的命令行参数介绍如下。</p>
+<ul>
+<li>URL：需要测试的API接口。</li>
+<li>diff：如果比较两次测试的结果，需要执行wrktest.sh diff 。</li>
+<li>-n：本次测试的任务名，wrktest.sh会根据任务名命名生成的文件。</li>
+<li>-d：输出文件存放目录。</li>
+<li>-h：打印帮助信息。</li>
+</ul>
+<p>下面，我来展示一个wrktest.sh使用示例。</p>
+<p>wrktest.sh的主要功能有两个，分别是运行性能测试并获取结果和对比性能测试结果。下面我就分别介绍下它们的具体使用方法。</p>
+<ol>
+<li>运行性能测试并获取结果</li>
+</ol>
+<p>执行如下命令：</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 200 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 500 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 1000 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 3000 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 5000 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 10000 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 15000 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 20000 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 25000 http://10.0.4.57:8080/healthz
+Running wrk command: wrk -t3 -d300s -T30s --latency -c 50000 http://10.0.4.57:8080/healthz
+
+Now plot according to /home/colin/_output/wrk/apiserver.dat
+QPS graphic file is: /home/colin/_output/wrk/apiserver_qps_ttlb.png
+Success rate graphic file is: /home/colin/_output/wrk/apiserver_successrate.pngz
+</code></pre>
+<p>上面的命令默认会在<code>_output/wrk/</code>目录下生成3个文件：</p>
+<ul>
+<li>apiserver.dat，wrk性能测试结果，每列含义分别为并发数、QPS 平均响应时间、成功率。</li>
+<li>apiserver_qps_ttlb.png，QPS&amp;TTLB图。</li>
+<li>apiserver_successrate.png，成功率图。</li>
+</ul>
+<p>这里要注意，请求URL中的IP地址应该是腾讯云VPC内网地址，因为通过内网访问，不仅网络延时最低，而且还最安全，所以真实的业务通常都是内网访问的。</p>
+<ol>
+<li>对比性能测试结果</li>
+</ol>
+<p>假设我们还有另外一次API性能测试，测试数据保存在 <code>_output/wrk/http.dat</code> 文件中。</p>
+<p>执行如下命令，对比两次测试结果：</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh diff _output/wrk/apiserver.dat _output/wrk/http.dat
+</code></pre>
+<p><code>apiserver.dat</code>和<code>http.dat</code>是两个需要对比的Wrk性能数据文件。上述命令默认会在<code>_output/wrk</code>目录下生成下面这两个文件：</p>
+<ul>
+<li>apiserver_http.qps.ttlb.diff.png，QPS &amp; TTLB对比图。</li>
+<li>apiserver_http.success_rate.diff.png，成功率对比图。</li>
+</ul>
+<h3 id="关闭debug配置选项">关闭Debug配置选项</h3>
+<p>在测试之前，我们需要关闭一些Debug选项，以免影响性能测试。</p>
+<p>执行下面这两步操作，修改iam-apiserver的配置文件：</p>
+<ul>
+<li>将<code>server.mode</code>设置为release，<code>server.middlewares</code>去掉dump、logger中间件。</li>
+<li>将<code>log.level</code>设置为info，<code>log.output-paths</code>去掉stdout。</li>
+</ul>
+<p>因为我们要在执行压力测试时分析程序的性能，所以需要设置<code>feature.profiling</code>为true，以开启性能分析。修改完之后，重新启动iam-apiserver。</p>
+<h3 id="使用wrktest-sh测试iam-api接口性能">使用wrktest.sh测试IAM API接口性能</h3>
+<p>关闭Debug配置选项之后，就可以执行<code>wrktest.sh</code>命令测试API性能了（默认测试的并发数为<code>200 500 1000 3000 5000 10000 15000 20000 25000 50000</code>）:</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh http://10.0.4.57:8080/healthz
+</code></pre>
+<p>生成的QPS &amp; TTLB图和成功率图分别如下图所示：</p>
+<p><img alt="图片" src="assets/efae8b72d49b417dbc9717690511f719.jpg"/></p>
+<p>上图中，<code>X</code>轴为并发数（Concurrent），<code>Y</code>轴为每秒查询数（QPS）和请求响应时间（TTLB）。</p>
+<p><img alt="" src="assets/330c4c59447d48428e3979ad5b82b1a2.jpg"/></p>
+<p>上图中，<code>X</code>轴为并发数（Concurrent），<code>Y</code>轴为请求成功率。</p>
+<p>通过上面两张图，你可以看到，API Server在并发数为<code>200</code>时，QPS最大；并发数为<code>500</code>，平均响应时间为<code>56.33ms</code>，成功率为 <code>100.00%</code> 。在并发数达到<code>1000</code>时，成功率开始下降。一些详细数据从图里看不到，你可以直接查看<code>apiserver.dat</code>文件，里面记录了每个并发下具体的QPS、TTLB和成功率数据。</p>
+<p>现在我们有了API Server的性能数据，那么该API Server的QPS处于什么水平呢？一方面，你可以根据自己的业务需要来对比；另一方面，可以和性能更好的Web框架进行对比，总之需要有个参照。</p>
+<p>这里用net/http构建最简单的HTTP服务器，使用相同的测试工具和测试服务器，测试性能并作对比。HTTP服务源码为（位于文件<a href="https://github.com/marmotedu/iam/blob/v1.0.8/tools/httptest/main.go" target="_blank">tools/httptest/main.go</a>中）：</p>
+<pre><code class="language-go">package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+func main() {
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		message := `{"status":"ok"}`
+		fmt.Fprint(w, message)
+	})
+
+	addr := ":6667"
+	fmt.Printf("Serving http service on %s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, nil))
+}
+</code></pre>
+<p>我们将上述HTTP服务的请求路径设置为<code>/healthz</code>，并且返回<code>{"status":"ok"}</code>，跟API Server的接口返回数据完全一样。通过这种方式，你可以排除因为返回数据大小不同而造成的性能差异。</p>
+<p>可以看到，该HTTP服务器很简单，只是利用<code>net/http</code>包最原生的功能，在Go中几乎所有的Web框架都是基于<code>net/http</code>包封装的。既然是封装，肯定比不上原生的性能，所以我们要把它跟用<code>net/http</code>直接启动的HTTP服务接口的性能进行对比，来衡量我们的API Server性能。</p>
+<p>我们需要执行相同的wrk测试，并将结果跟API Server的测试结果进行对比，将对比结果绘制成对比图。具体对比过程可以分为3步。</p>
+<p>第一步，启动HTTP服务。</p>
+<p>在iam源码根目录下执行如下命令：</p>
+<pre><code class="language-bash">$ go run tools/httptest/main.go
+</code></pre>
+<p>第二步，执行<code>wrktest.sh</code>脚本，测试该HTTP服务的性能：</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh -n http http://10.0.4.57:6667/healthz
+</code></pre>
+<p>上述命令会生成 <code>_output/wrk/http.dat</code> 文件。</p>
+<p>第三步，对比两次性能测试数据：</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh diff _output/wrk/apiserver.dat _output/wrk/http.dat
+</code></pre>
+<p>生成的两张对比图表，如下所示：</p>
+<p><img alt="图片" src="assets/fbe3d2edb96a4e6b95a6187300d639b6.jpg"/></p>
+<p><img alt="图片" src="assets/5ec228632e4b426e9dbf0be14fe59d1c.jpg"/></p>
+<p>通过上面两张对比图，我们可以看出，API Server在QPS、响应时间和成功率上都不如原生的HTTP Server，特别是QPS，最大QPS只有原生HTTP Server 最大QPS的<code>13.68%</code>，性能需要调优。</p>
+<h2 id="api-server性能分析">API Server性能分析</h2>
+<p>上面，我们测试了API接口的性能，如果性能不合预期，我们还需要分析性能数据，并优化性能。</p>
+<p>在分析前我们需要对API Server加压，在加压的情况下，API接口的性能才更可能暴露出来，所以继续执行如下命令：</p>
+<pre><code class="language-bash">$ scripts/wrktest.sh http://10.0.4.57:8080/healthz
+</code></pre>
+<p>在上述命令执行压力测试期间，可以打开另外一个Linux终端，使用<code>go tool pprof</code>工具分析HTTP的profile文件：</p>
+<pre><code class="language-bash">$ go tool pprof http://10.0.4.57:8080/debug/pprof/profile
+</code></pre>
+<p>执行完<code>go tool pprof</code>后，因为需要采集性能数据，所以该命令会阻塞30s。</p>
+<p>在pprof交互shell中，执行<code>top -cum</code>查看累积采样时间，我们执行<code>top30 -cum</code>，多观察一些函数：</p>
+<pre><code class="language-bash">(pprof) top20 -cum
+Showing nodes accounting for 32.12s, 39.62% of 81.07s total
+Dropped 473 nodes (cum &lt;= 0.41s)
+Showing top 20 nodes out of 167
+(pprof) top30 -cum
+Showing nodes accounting for 11.82s, 20.32% of 58.16s total
+Dropped 632 nodes (cum &lt;= 0.29s)
+Showing top 30 nodes out of 239
+      flat  flat%   sum%        cum   cum%
+     0.10s  0.17%  0.17%     51.59s 88.70%  net/http.(*conn).serve
+     0.01s 0.017%  0.19%     42.86s 73.69%  net/http.serverHandler.ServeHTTP
+     0.04s 0.069%  0.26%     42.83s 73.64%  github.com/gin-gonic/gin.(*Engine).ServeHTTP
+     0.01s 0.017%  0.28%     42.67s 73.37%  github.com/gin-gonic/gin.(*Engine).handleHTTPRequest
+     0.08s  0.14%  0.41%     42.59s 73.23%  github.com/gin-gonic/gin.(*Context).Next (inline)
+     0.03s 0.052%  0.46%     42.58s 73.21%  .../internal/pkg/middleware.RequestID.func1
+         0     0%  0.46%     41.02s 70.53%  .../internal/pkg/middleware.Context.func1
+     0.01s 0.017%  0.48%     40.97s 70.44%  github.com/gin-gonic/gin.CustomRecoveryWithWriter.func1
+     0.03s 0.052%  0.53%     40.95s 70.41%  .../internal/pkg/middleware.LoggerWithConfig.func1
+     0.01s 0.017%  0.55%     33.46s 57.53%  .../internal/pkg/middleware.NoCache
+     0.08s  0.14%  0.69%     32.58s 56.02%  github.com/tpkeeper/gin-dump.DumpWithOptions.func1
+     0.03s 0.052%  0.74%     24.73s 42.52%  github.com/tpkeeper/gin-dump.FormatToBeautifulJson
+     0.02s 0.034%  0.77%     22.73s 39.08%  github.com/tpkeeper/gin-dump.BeautifyJsonBytes
+     0.08s  0.14%  0.91%     16.39s 28.18%  github.com/tpkeeper/gin-dump.format
+     0.21s  0.36%  1.27%     16.38s 28.16%  github.com/tpkeeper/gin-dump.formatMap
+     3.75s  6.45%  7.72%     13.71s 23.57%  runtime.mallocgc
+     ...
+</code></pre>
+<p>因为<code>top30</code>内容过多，这里只粘贴了耗时最多的一些关联函数。从上面的列表中，可以看到有ServeHTTP类的函数，这些函数是gin/http自带的函数，我们无需对此进行优化。</p>
+<p>还有这样一些函数：</p>
+<pre><code class="language-go">.../gin.(*Context).Next (inline)
+.../internal/pkg/middleware.RequestID.func1
+.../internal/pkg/middleware.Context.func1
+github.com/gin-gonic/gin.CustomRecoveryWithWriter.func1
+.../internal/pkg/middleware.LoggerWithConfig.func1
+.../internal/pkg/middleware.NoCache
+github.com/tpkeeper/gin-dump.DumpWithOptions.func1
+</code></pre>
+<p>可以看到，<code>middleware.RequestID.func1</code>、<code>middleware.Context.func1</code>、<code>gin.CustomRecoveryWithWriter.func1</code>、<code>middleware.LoggerWithConfig.func1</code>等，这些耗时较久的函数都是我们加载的Gin中间件。这些中间件消耗了大量的CPU时间，所以我们可以选择性加载这些中间件，删除一些不需要的中间件，来优化API Server的性能。-
+假如我们暂时不需要这些中间件，也可以通过配置iam-apiserver的配置文件，将<code>server.middlewares</code>设置为空或者注释掉，然后重启iam-apiserver。重启后，再次执行<code>wrktest.sh</code>测试性能，并跟原生的HTTP Server性能进行对比，对比结果如下面2张图所示：</p>
+<p><img alt="图片" src="assets/078487ba438d4a11a0dcbf285cb5ad09.jpg"/></p>
+<p><img alt="图片" src="assets/0c29147d13524da5a3dc0537b080f7c6.jpg"/></p>
+<p>可以看到，删除无用的Gin中间件后，API Server的性能有了很大的提升，并发数为<code>200</code>时性能最好，此时QPS为<code>47812</code>，响应时间为<code>4.33</code><code>ms</code>，成功率为<code>100.00</code><code>%</code>。在并发数为<code>50000</code>的时候，其QPS是原生HTTP Server的<code>75.02%</code>。</p>
+<h3 id="api接口性能参考">API接口性能参考</h3>
+<p>不同团队对API接口的性能要求不同，同一团队对每个API接口的性能要求也不同，所以并没有一个统一的数值标准来衡量API接口的性能，但可以肯定的是，性能越高越好。我根据自己的研发经验，在这里给出一个参考值（并发数可根据需要选择），如下表所示：</p>
+<p><img alt="" src="assets/6accb9f153194bee9bcde6d75493d7ba.jpg"/></p>
+<h2 id="api-server性能测试注意事项">API Server性能测试注意事项</h2>
+<p>在进行API Server性能测试时，要考虑到API Server的性能影响因素。影响API Server性能的因素很多，大致可以分为两类，分别是Web框架的性能和API接口的性能。另外，在做性能测试时，还需要确保测试环境是一致的，最好是一个干净的测试环境。</p>
+<h3 id="web框架性能">Web框架性能</h3>
+<p>Web框架的性能至关重要，因为它会影响我们的每一个API接口的性能。</p>
+<p>在设计阶段，我们会确定所使用的Web框架，这时候我们需要对Web框架有个初步的测试，确保我们选择的Web框架在性能和稳定性上都足够优秀。当整个Go后端服务开发完成之后，在上线之前，我们还需要对Web框架再次进行测试，确保按照我们最终的使用方式，Web框架仍然能够保持优秀的性能和稳定性。</p>
+<p>我们通常会通过API接口来测试Web框架的性能，例如健康检查接口<code>/healthz</code>。我们需要保证该API接口足够简单，API接口里面不应该掺杂任何逻辑，只需要象征性地返回一个很小的返回内容即可。比如，这一讲中我们通过<code>/healthz</code>接口来测试Web框架的性能：</p>
+<pre><code class="language-go">s.GET("/healthz", func(c *gin.Context) {
+    core.WriteResponse(c, nil, map[string]string{"status": "ok"})
+})
+</code></pre>
+<p>接口中只调用了<code>core.WriteResponse</code>函数，返回了<code>{"status":"ok"}</code>。这里使用<code>core.WriteResponse</code>函数返回请求数据，而不是直接返回<code>ok</code>字符串，这样做是为了保持API接口返回格式统一。</p>
+<h3 id="api接口性能">API接口性能</h3>
+<p>除了测试Web框架的性能，我们还可能需要测试某些重要的API接口，甚至所有API接口的性能。为了测试API接口在真实场景下的接口性能，我们会使用wrk这类HTTP压力测试工具，来模拟多个API请求，进而分析API的性能。</p>
+<p>因为会模拟大量的请求，这时候测试写类接口，例如<code>Create</code>、<code>Update</code>、<code>Delete</code>等会存在一些问题，比如可能在数据库中插入了很多数据，导致磁盘空间被写满或者数据库被压爆。所以，针对写类接口，我们可以借助单元测试，来测试其性能。根据我的开发经验，写类接口通常不会有性能问题，反而读类接口更可能遇到性能问题。针对读类接口，我们可以使用wrk这类HTTP压力测试工具来进行测试。</p>
+<h3 id="测试环境">测试环境</h3>
+<p>在做性能/压力测试时，为了不影响生产环境，要确保在测试环境进行压测，并且测试环境的网络不能影响到生产环境的网络。另外，为了更好地进行性能对比和分析，也要保证我们的测试方法和测试环境是一致的。这就要求我们最好将性能测试自动化，并且每次在同一个测试环境进行测试。</p>
+<h2 id="总结">总结</h2>
+<p>在项目上线前，我们需要对API接口进行性能测试。通常API接口的性能延时要小于 <code>500ms</code> ，如果大于这个值，需要考虑优化性能。在进行性能测试时，需要确保每次测试都有一个一致的测试环境，这样不同测试之间的数据才具有可对比性。这一讲中，我推荐了一个比较优秀的性能测试工具 <code>wrk</code> ，我们可以编写shell脚本，将wrk的性能测试数据自动绘制成图，方便我们查看、对比性能。</p>
+<p>如果发现API接口的性能不符合预期，我们可以借助 <code>go tool pprof</code> 工具来分析性能。在 <code>go tool pprof</code> 交互界面，执行 <code>top -cum</code> 命令查看累积采样时间，根据累积采样时间确定影响性能的代码，并优化代码。优化后，再进行测试，如果不满足，继续分析API接口的性能。如此往复，直到API接口的性能满足预期为止。</p>
+<h2 id="课后练习">课后练习</h2>
+<ol>
+<li>选择一个项目，并使用wrktest.sh脚本测试其API接口，分析并优化API接口的性能。</li>
+<li>思考下，在你的工作中，还有没有其他好的API接口性能分析方法，欢迎在留言区分享讨论。</li>
+</ol>
+<p>欢迎你在留言区与我交流讨论，我们下一讲见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#761a1a1a4f424747464136111b171f1a5815191b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935a1d66bad34944',t:'MTc0NTU0NTA0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%81%e4%b8%9a%e7%ba%a7%20Go%20%e5%ba%94%e7%94%a8.md.html" id="00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html">00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/01%20IAM%e7%b3%bb%e7%bb%9f%e6%a6%82%e8%bf%b0%ef%bc%9a%e6%88%91%e4%bb%ac%e8%a6%81%e5%ae%9e%e7%8e%b0%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html">01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/02%20%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%89%e8%a3%85%e5%92%8c%e9%85%8d%e7%bd%ae%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84%20Go%20%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html">02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/03%20%e9%a1%b9%e7%9b%ae%e9%83%a8%e7%bd%b2%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e9%83%a8%e7%bd%b2%20IAM%20%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="03 项目部署：如何快速部署 IAM 系统？.md.html">03 项目部署：如何快速部署 IAM 系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/04%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e6%9d%82%e4%b9%b1%e6%97%a0%e7%ab%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html">04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/05%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9acommit%20%e4%bf%a1%e6%81%af%e9%a3%8e%e6%a0%bc%e8%bf%a5%e5%bc%82%e3%80%81%e9%9a%be%e4%bb%a5%e9%98%85%e8%af%bb%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html">05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/06%20%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e4%b8%80%e4%b8%aa%e5%8f%af%e7%bb%b4%e6%8a%a4%e3%80%81%e5%8f%af%e6%89%a9%e5%b1%95%e7%9a%84%e4%bb%a3%e7%a0%81%e7%9b%ae%e5%bd%95%ef%bc%9f.md.html" id="06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html">06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/07%20%e5%b7%a5%e4%bd%9c%e6%b5%81%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%90%88%e7%90%86%e7%9a%84%e5%a4%9a%e4%ba%ba%e5%bc%80%e5%8f%91%e6%a8%a1%e5%bc%8f%ef%bc%9f.md.html" id="07 工作流设计：如何设计合理的多人开发模式？.md.html">07 工作流设计：如何设计合理的多人开发模式？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/08%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%20Go%20%e9%a1%b9%e7%9b%ae%e7%9a%84%e5%bc%80%e5%8f%91%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html">08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/09%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%ba%94%e7%94%a8%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9f.md.html" id="09 研发流程设计（下）：如何管理应用的生命周期？.md.html">09 研发流程设计（下）：如何管理应用的生命周期？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/10%20%e8%ae%be%e8%ae%a1%e6%96%b9%e6%b3%95%ef%bc%9a%e6%80%8e%e4%b9%88%e5%86%99%e5%87%ba%e4%bc%98%e9%9b%85%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="10 设计方法：怎么写出优雅的 Go 项目？.md.html">10 设计方法：怎么写出优雅的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/11%20%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%ef%bc%9aGo%e5%b8%b8%e7%94%a8%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%e6%a6%82%e8%bf%b0.md.html" id="11 设计模式：Go常用设计模式概述.md.html">11 设计模式：Go常用设计模式概述.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/12%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1RESTful%20API%ef%bc%9f.md.html" id="12 API 风格（上）：如何设计RESTful API？.md.html">12 API 风格（上）：如何设计RESTful API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/13%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRPC%20API%e4%bb%8b%e7%bb%8d.md.html" id="13 API 风格（下）：RPC API介绍.md.html">13 API 风格（下）：RPC API介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/14%20%e9%a1%b9%e7%9b%ae%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e9%ab%98%e8%b4%a8%e9%87%8f%e7%9a%84Makefile%ef%bc%9f.md.html" id="14 项目管理：如何编写高质量的Makefile？.md.html">14 项目管理：如何编写高质量的Makefile？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/15%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e5%ae%9e%e6%88%98%ef%bc%9aIAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e7%ae%a1%e7%90%86%e7%9a%84%ef%bc%9f.md.html" id="15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html">15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/16%20%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9a%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e9%9d%99%e6%80%81%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9f.md.html" id="16 代码检查：如何进行静态代码检查？.md.html">16 代码检查：如何进行静态代码检查？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/17%20API%20%e6%96%87%e6%a1%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%20Swagger%20API%20%e6%96%87%e6%a1%a3%20%ef%bc%9f.md.html" id="17 API 文档：如何生成 Swagger API 文档 ？.md.html">17 API 文档：如何生成 Swagger API 文档 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e4%b8%80%e5%a5%97%e7%a7%91%e5%ad%a6%e7%9a%84%e9%94%99%e8%af%af%e7%a0%81%ef%bc%9f.md.html" id="18 错误处理（上）：如何设计一套科学的错误码？.md.html">18 错误处理（上）：如何设计一套科学的错误码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e9%94%99%e8%af%af%e5%8c%85%ef%bc%9f.md.html" id="19 错误处理（下）：如何设计错误包？.md.html">19 错误处理（下）：如何设计错误包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/20%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e6%97%a5%e5%bf%97%e5%8c%85%e5%b9%b6%e8%ae%b0%e5%bd%95%e6%97%a5%e5%bf%97%ef%bc%9f.md.html" id="20 日志处理（上）：如何设计日志包并记录日志？.md.html">20 日志处理（上）：如何设计日志包并记录日志？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/21%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e4%bb%8e%200%20%e7%bc%96%e5%86%99%e4%b8%80%e4%b8%aa%e6%97%a5%e5%bf%97%e5%8c%85.md.html" id="21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html">21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/22%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e4%b8%89%e5%89%91%e5%ae%a2%ef%bc%9aPflag%e3%80%81Viper%e3%80%81Cobra%20%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e4%bb%8b%e7%bb%8d.md.html" id="22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html">22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/23%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e5%ae%9e%e6%88%98%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%e4%bc%81%e4%b8%9a%e5%ba%94%e7%94%a8%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html">23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/24%20Web%20%e6%9c%8d%e5%8a%a1%ef%bc%9aWeb%20%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html">24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/25%20%e8%ae%a4%e8%af%81%e6%9c%ba%e5%88%b6%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%ef%bc%9f.md.html" id="25 认证机制：应用程序如何进行访问认证？.md.html">25 认证机制：应用程序如何进行访问认证？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/26%20IAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%e5%8a%9f%e8%83%bd%e7%9a%84%ef%bc%9f.md.html" id="26 IAM项目是如何设计和实现访问认证功能的？.md.html">26 IAM项目是如何设计和实现访问认证功能的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/27%20%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%ef%bc%9a5%e5%a4%a7%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%b5%84%e6%ba%90%e6%8e%88%e6%9d%83%e7%9a%84%ef%bc%9f.md.html" id="27 权限模型：5大权限模型是如何进行资源授权的？.md.html">27 权限模型：5大权限模型是如何进行资源授权的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/28%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%80%9a%e8%bf%87iam-apiserver%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8bWeb%e6%9c%8d%e5%8a%a1%e7%9a%84%e6%9e%84%e5%bb%ba.md.html" id="28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html">28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/29%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aiam-apiserver%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html">29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/30%20ORM%ef%bc%9aCURD%20%e7%a5%9e%e5%99%a8%20GORM%20%e5%8c%85%e4%bb%8b%e7%bb%8d%e5%8f%8a%e5%ae%9e%e6%88%98.md.html" id="30 ORM：CURD 神器 GORM 包介绍及实战.md.html">30 ORM：CURD 神器 GORM 包介绍及实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/31%20%e6%95%b0%e6%8d%ae%e6%b5%81%ef%bc%9a%e9%80%9a%e8%bf%87iam-authz-server%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8b%e6%95%b0%e6%8d%ae%e6%b5%81%e6%9c%8d%e5%8a%a1%e7%9a%84%e8%ae%be%e8%ae%a1.md.html" id="31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html">31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/32%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%a4%84%e7%90%86%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%ba%a7%e7%94%9f%e7%9a%84%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="32 数据处理：如何高效处理应用程序产生的数据？.md.html">32 数据处理：如何高效处理应用程序产生的数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/33%20%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%87%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%20Go%20SDK%ef%bc%9f.md.html" id="33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html">33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/34%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e9%a1%b9%e7%9b%aeGo%20SDK%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html">34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/35%20%e6%95%88%e7%8e%87%e7%a5%9e%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%ae%a2%e6%88%b7%e7%ab%af%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="35 效率神器：如何设计和实现一个命令行客户端工具？.md.html">35 效率神器：如何设计和实现一个命令行客户端工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/36%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%20Go%20%e8%af%ad%e8%a8%80%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%e5%92%8c%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%94%a8%e4%be%8b%ef%bc%9f.md.html" id="36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html">36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/37%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aGo%20%e8%af%ad%e8%a8%80%e5%85%b6%e4%bb%96%e6%b5%8b%e8%af%95%e7%b1%bb%e5%9e%8b%e5%8f%8a%20IAM%20%e6%b5%8b%e8%af%95%e4%bb%8b%e7%bb%8d.md.html" id="37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html">37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/38%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e6%9e%90%20Go%20%e8%af%ad%e8%a8%80%e4%bb%a3%e7%a0%81%e7%9a%84%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html">38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/39%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aAPI%20Server%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e5%92%8c%e8%b0%83%e4%bc%98%e5%ae%9e%e6%88%98.md.html" id="39 性能分析（下）：API Server性能测试和调优实战.md.html">39 性能分析（下）：API Server性能测试和调优实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/40%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%83%a8%e7%bd%b2%e6%96%b9%e6%a1%88%e5%8f%8a%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e3%80%81%e9%ab%98%e5%8f%af%e7%94%a8%e7%bb%84%e4%bb%b6%e4%bb%8b%e7%bb%8d.md.html" id="40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html">40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/41%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aIAM%20%e7%b3%bb%e7%bb%9f%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html">41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/42%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e7%b3%bb%e7%bb%9f%e5%ae%89%e5%85%a8%e5%8a%a0%e5%9b%ba%e3%80%81%e6%b0%b4%e5%b9%b3%e6%89%a9%e7%bc%a9%e5%ae%b9%e5%ae%9e%e6%88%98.md.html" id="42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html">42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/43%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%8c%96%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="43 技术演进（上）：虚拟化技术演进之路.md.html">43 技术演进（上）：虚拟化技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/44%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%e5%92%8c%e5%ba%94%e7%94%a8%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html">44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/45%20%e5%9f%ba%e4%ba%8eKubernetes%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1.md.html" id="45 基于Kubernetes的云原生架构设计.md.html">45 基于Kubernetes的云原生架构设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/46%20%e5%a6%82%e4%bd%95%e5%88%b6%e4%bd%9cDocker%e9%95%9c%e5%83%8f%ef%bc%9f.md.html" id="46 如何制作Docker镜像？.md.html">46 如何制作Docker镜像？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/47%20%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99Kubernetes%e8%b5%84%e6%ba%90%e5%ae%9a%e4%b9%89%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="47 如何编写Kubernetes资源定义文件？.md.html">47 如何编写Kubernetes资源定义文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/48%20IAM%20%e5%ae%b9%e5%99%a8%e5%8c%96%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="48 IAM 容器化部署实战.md.html">48 IAM 容器化部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/49%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aHelm%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86.md.html" id="49 服务编排（上）：Helm服务编排基础知识.md.html">49 服务编排（上）：Helm服务编排基础知识.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/50%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%9f%ba%e4%ba%8eHelm%e7%9a%84%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="50 服务编排（下）：基于Helm的服务编排部署实战.md.html">50 服务编排（下）：基于Helm的服务编排部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/51%20%e5%9f%ba%e4%ba%8e%20GitHub%20Actions%20%e7%9a%84%20CI%20%e5%ae%9e%e6%88%98.md.html" id="51 基于 GitHub Actions 的 CI 实战.md.html">51 基于 GitHub Actions 的 CI 实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e4%be%9d%e8%b5%96%e5%8c%85%e7%ae%a1%e7%90%86%e5%85%a8%e8%ae%b2.md.html" id="特别放送 Go Modules依赖包管理全讲.md.html">特别放送 Go Modules依赖包管理全讲.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e5%ae%9e%e6%88%98.md.html" id="特别放送 Go Modules实战.md.html">特别放送 Go Modules实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20IAM%e6%8e%92%e9%9a%9c%e6%8c%87%e5%8d%97.md.html" id="特别放送 IAM排障指南.md.html">特别放送 IAM排障指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%9c%e4%b8%9a%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="特别放送 分布式作业系统设计和实现.md.html">特别放送 分布式作业系统设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bdGo%e9%a1%b9%e7%9b%ae%e4%b8%ad%e6%9c%80%e5%b8%b8%e7%94%a8%e7%9a%84Makefile%e6%a0%b8%e5%bf%83%e8%af%ad%e6%b3%95.md.html" id="特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html">特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bd%e6%b8%85%e6%99%b0%e3%80%81%e5%8f%af%e7%9b%b4%e6%8e%a5%e5%a5%97%e7%94%a8%e7%9a%84Go%e7%bc%96%e7%a0%81%e8%a7%84%e8%8c%83.md.html" id="特别放送 给你一份清晰、可直接套用的Go编码规范.md.html">特别放送 给你一份清晰、可直接套用的Go编码规范.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%9b%b4%e6%92%ad%e5%8a%a0%e9%a4%90%20%e5%a6%82%e4%bd%95%e4%bb%8e%e5%b0%8f%e7%99%bd%e8%bf%9b%e9%98%b6%e6%88%90%20Go%20%e8%af%ad%e8%a8%80%e4%b8%93%e5%ae%b6%ef%bc%9f.md.html" id="直播加餐 如何从小白进阶成 Go 语言专家？.md.html">直播加餐 如何从小白进阶成 Go 语言专家？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%a6%82%e4%bd%95%e8%ae%a9%e8%87%aa%e5%b7%b1%e7%9a%84%20Go%20%e7%a0%94%e5%8f%91%e4%b9%8b%e8%b7%af%e8%b5%b0%e5%be%97%e6%9b%b4%e8%bf%9c%ef%bc%9f.md.html" id="结束语 如何让自己的 Go 研发之路走得更远？.md.html">结束语 如何让自己的 Go 研发之路走得更远？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍" id="title">22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍</h1>
+<div><p>你好，我是孔令飞。这一讲我们来聊聊构建应用时常用的Go包。</p>
+<p>因为IAM项目使用了Pflag、Viper和Cobra包来构建IAM的应用框架，为了让你后面学习更加容易，这里简单介绍下这3个包的核心功能和使用方式。其实如果单独讲每个包的话，还是有很多功能可讲的，但我们这一讲的目的是减小你后面学习IAM源码的难度，所以我会主要介绍跟IAM相关的功能。</p>
+<p>在正式介绍这三个包之前，我们先来看下如何构建应用的框架。</p>
+<h2 id="如何构建应用框架">如何构建应用框架</h2>
+<p>想知道如何构建应用框架，首先你要明白，一个应用框架包含哪些部分。在我看来，一个应用框架需要包含以下3个部分：</p>
+<ul>
+<li>命令行参数解析：主要用来解析命令行参数，这些命令行参数可以影响命令的运行效果。</li>
+<li>配置文件解析：一个大型应用，通常具有很多参数，为了便于管理和配置这些参数，通常会将这些参数放在一个配置文件中，供程序读取并解析。</li>
+<li>应用的命令行框架：应用最终是通过命令来启动的。这里有3个需求点，一是命令需要具备Help功能，这样才能告诉使用者如何去使用；二是命令需要能够解析命令行参数和配置文件；三是命令需要能够初始化业务代码，并最终启动业务进程。也就是说，我们的命令需要具备框架的能力，来纳管这3个部分。</li>
+</ul>
+<p>这3个部分的功能，你可以自己开发，也可以借助业界已有的成熟实现。跟之前的想法一样，我不建议你自己开发，更建议你采用业界已有的成熟实现。命令行参数可以通过<a href="https://github.com/spf13/pflag" target="_blank">Pflag</a>来解析，配置文件可以通过<a href="https://github.com/spf13/viper" target="_blank">Viper</a>来解析，应用的命令行框架则可以通过<a href="https://github.com/spf13/cobra" target="_blank">Cobra</a>来实现。这3个包目前也是最受欢迎的包，并且这3个包不是割裂的，而是有联系的，我们可以有机地组合这3个包，从而实现一个非常强大、优秀的应用命令行框架。</p>
+<p>接下来，我们就来详细看下，这3个包在Go项目开发中是如何使用的。</p>
+<h2 id="命令行参数解析工具-pflag使用介绍">命令行参数解析工具：Pflag使用介绍</h2>
+<p>Go服务开发中，经常需要给开发的组件加上各种启动参数来配置服务进程，影响服务的行为。像kube-apiserver就有多达200多个启动参数，而且这些参数的类型各不相同（例如：string、int、ip类型等），使用方式也不相同（例如：需要支持<code>--</code>长选项，<code>-</code>短选项等），所以我们需要一个强大的命令行参数解析工具。</p>
+<p>虽然Go源码中提供了一个标准库Flag包，用来对命令行参数进行解析，但在大型项目中应用更广泛的是另外一个包：Pflag。Pflag提供了很多强大的特性，非常适合用来构建大型项目，一些耳熟能详的开源项目都是用Pflag来进行命令行参数解析的，例如：Kubernetes、Istio、Helm、Docker、Etcd等。</p>
+<p>接下来，我们就来介绍下如何使用Pflag。Pflag主要是通过创建Flag和FlagSet来使用的。我们先来看下Flag。</p>
+<h3 id="pflag包flag定义">Pflag包Flag定义</h3>
+<p>Pflag可以对命令行参数进行处理，一个命令行参数在Pflag包中会解析为一个Flag类型的变量。Flag是一个结构体，定义如下：</p>
+<pre><code>type Flag struct {
+    Name                string // flag长选项的名称
+    Shorthand           string // flag短选项的名称，一个缩写的字符
+    Usage               string // flag的使用文本
+    Value               Value  // flag的值
+    DefValue            string // flag的默认值
+    Changed             bool // 记录flag的值是否有被设置过
+    NoOptDefVal         string // 当flag出现在命令行，但是没有指定选项值时的默认值
+    Deprecated          string // 记录该flag是否被放弃
+    Hidden              bool // 如果值为true，则从help/usage输出信息中隐藏该flag
+    ShorthandDeprecated string // 如果flag的短选项被废弃，当使用flag的短选项时打印该信息
+    Annotations         map[string][]string // 给flag设置注解
+}
+</code></pre>
+<p>Flag的值是一个Value类型的接口，Value定义如下：</p>
+<pre><code>type Value interface {
+    String() string // 将flag类型的值转换为string类型的值，并返回string的内容
+    Set(string) error // 将string类型的值转换为flag类型的值，转换失败报错
+    Type() string // 返回flag的类型，例如：string、int、ip等
+}
+</code></pre>
+<p>通过将Flag的值抽象成一个interface接口，我们就可以自定义Flag的类型了。只要实现了Value接口的结构体，就是一个新类型。</p>
+<h3 id="pflag包flagset定义">Pflag包FlagSet定义</h3>
+<p>Pflag除了支持单个的Flag之外，还支持FlagSet。FlagSet是一些预先定义好的Flag的集合，几乎所有的Pflag操作，都需要借助FlagSet提供的方法来完成。在实际开发中，我们可以使用两种方法来获取并使用FlagSet：</p>
+<ul>
+<li>方法一，调用NewFlagSet创建一个FlagSet。</li>
+<li>方法二，使用Pflag包定义的全局FlagSet：CommandLine。实际上CommandLine也是由NewFlagSet函数创建的。</li>
+</ul>
+<p>先来看下第一种方法，自定义FlagSet。下面是一个自定义FlagSet的示例：</p>
+<pre><code>var version bool
+flagSet := pflag.NewFlagSet("test", pflag.ContinueOnError)
+flagSet.BoolVar(&amp;version, "version", true, "Print version information and quit.")
+</code></pre>
+<p>我们可以通过定义一个新的FlagSet来定义命令及其子命令的Flag。</p>
+<p>再来看下第二种方法，使用全局FlagSet。下面是一个使用全局FlagSet的示例：</p>
+<pre><code>import (
+    "github.com/spf13/pflag"
+)
+
+pflag.BoolVarP(&amp;version, "version", "v", true, "Print version information and quit.")
+</code></pre>
+<p>这其中，pflag.BoolVarP函数定义如下：</p>
+<pre><code>func BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
+    flag := CommandLine.VarPF(newBoolValue(value, p), name, shorthand, usage)
+    flag.NoOptDefVal = "true"
+}
+</code></pre>
+<p>可以看到pflag.BoolVarP最终调用了CommandLine，CommandLine是一个包级别的变量，定义为：</p>
+<pre><code>// CommandLine is the default set of command-line flags, parsed from os.Args.
+var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
+</code></pre>
+<p>在一些不需要定义子命令的命令行工具中，我们可以直接使用全局的FlagSet，更加简单方便。</p>
+<h3 id="pflag使用方法">Pflag使用方法</h3>
+<p>上面，我们介绍了使用Pflag包的两个核心结构体。接下来，我来详细介绍下Pflag的常见使用方法。Pflag有很多强大的功能，我这里介绍7个常见的使用方法。</p>
+<ol>
+<li>支持多种命令行参数定义方式。</li>
+</ol>
+<p>Pflag支持以下4种命令行参数定义方式：</p>
+<ul>
+<li>支持长选项、默认值和使用文本，并将标志的值存储在指针中。</li>
+</ul>
+<pre><code>var name = pflag.String("name", "colin", "Input Your Name")
+</code></pre>
+<ul>
+<li>支持长选项、短选项、默认值和使用文本，并将标志的值存储在指针中。</li>
+</ul>
+<pre><code>var name = pflag.StringP("name", "n", "colin", "Input Your Name")
+</code></pre>
+<ul>
+<li>支持长选项、默认值和使用文本，并将标志的值绑定到变量。</li>
+</ul>
+<pre><code>var name string
+pflag.StringVar(&amp;name, "name", "colin", "Input Your Name")
+</code></pre>
+<ul>
+<li>支持长选项、短选项、默认值和使用文本，并将标志的值绑定到变量。</li>
+</ul>
+<pre><code>var name string
+pflag.StringVarP(&amp;name, "name", "n","colin", "Input Your Name")
+</code></pre>
+<p>上面的函数命名是有规则的：</p>
+<ul>
+<li>函数名带<code>Var</code>说明是将标志的值绑定到变量，否则是将标志的值存储在指针中。</li>
+<li>函数名带<code>P</code>说明支持短选项，否则不支持短选项。</li>
+</ul>
+<ol>
+<li>使用<code>Get&lt;Type&gt;</code>获取参数的值。</li>
+</ol>
+<p>可以使用<code>Get&lt;Type&gt;</code>来获取标志的值，<code>&lt;Type&gt;</code>代表Pflag所支持的类型。例如：有一个pflag.FlagSet，带有一个名为flagname的int类型的标志，可以使用<code>GetInt()</code>来获取int值。需要注意flagname必须存在且必须是int，例如：</p>
+<pre><code>i, err := flagset.GetInt("flagname")
+</code></pre>
+<ol>
+<li>获取非选项参数。</li>
+</ol>
+<p>代码示例如下：</p>
+<pre><code>package main
+
+import (
+    "fmt"
+
+    "github.com/spf13/pflag"
+)
+
+var (
+    flagvar = pflag.Int("flagname", 1234, "help message for flagname")
+)
+
+func main() {
+    pflag.Parse()
+
+    fmt.Printf("argument number is: %v\n", pflag.NArg())
+    fmt.Printf("argument list is: %v\n", pflag.Args())
+    fmt.Printf("the first argument is: %v\n", pflag.Arg(0))
+}
+</code></pre>
+<p>执行上述代码，输出如下：</p>
+<pre><code>$ go run example1.go arg1 arg2
+argument number is: 2
+argument list is: [arg1 arg2]
+the first argument is: arg1
+</code></pre>
+<p>在定义完标志之后，可以调用<code>pflag.Parse()</code>来解析定义的标志。解析后，可通过<code>pflag.Args()</code>返回所有的非选项参数，通过<code>pflag.Arg(i)</code>返回第i个非选项参数。参数下标0到pflag.NArg() - 1。</p>
+<ol>
+<li>指定了选项但是没有指定选项值时的默认值。</li>
+</ol>
+<p>创建一个Flag后，可以为这个Flag设置<code>pflag.NoOptDefVal</code>。如果一个Flag具有NoOptDefVal，并且该Flag在命令行上没有设置这个Flag的值，则该标志将设置为NoOptDefVal指定的值。例如：</p>
+<pre><code>var ip = pflag.IntP("flagname", "f", 1234, "help message")
+pflag.Lookup("flagname").NoOptDefVal = "4321"
+</code></pre>
+<p>上面的代码会产生结果，具体你可以参照下表：</p>
+<p><img alt="图片" src="assets/fffc6269db014afd965bc49ae8780524.jpg"/></p>
+<ol>
+<li>弃用标志或者标志的简写。</li>
+</ol>
+<p>Pflag可以弃用标志或者标志的简写。弃用的标志或标志简写在帮助文本中会被隐藏，并在使用不推荐的标志或简写时打印正确的用法提示。例如，弃用名为logmode的标志，并告知用户应该使用哪个标志代替：</p>
+<pre><code>// deprecate a flag by specifying its name and a usage message
+pflag.CommandLine.MarkDeprecated("logmode", "please use --log-mode instead")
+</code></pre>
+<p>这样隐藏了帮助文本中的logmode，并且当使用logmode时，打印了<code>Flag --logmode has been deprecated, please use --log-mode instead</code>。</p>
+<ol>
+<li>保留名为port的标志，但是弃用它的简写形式。</li>
+</ol>
+<pre><code>pflag.IntVarP(&amp;port, "port", "P", 3306, "MySQL service host port.")
+
+// deprecate a flag shorthand by specifying its flag name and a usage message
+pflag.CommandLine.MarkShorthandDeprecated("port", "please use --port only")
+</code></pre>
+<p>这样隐藏了帮助文本中的简写P，并且当使用简写P时，打印了<code>Flag shorthand -P has been deprecated, please use --port only</code>。usage message在此处必不可少，并且不应为空。</p>
+<ol>
+<li>隐藏标志。</li>
+</ol>
+<p>可以将Flag标记为隐藏的，这意味着它仍将正常运行，但不会显示在usage/help文本中。例如：隐藏名为secretFlag的标志，只在内部使用，并且不希望它显示在帮助文本或者使用文本中。代码如下：</p>
+<pre><code>// hide a flag by specifying its name
+pflag.CommandLine.MarkHidden("secretFlag")
+</code></pre>
+<p>至此，我们介绍了Pflag包的重要用法。接下来，我们再来看下如何解析配置文件。</p>
+<h2 id="配置解析神器-viper使用介绍">配置解析神器：Viper使用介绍</h2>
+<p>几乎所有的后端服务，都需要一些配置项来配置我们的服务，一些小型的项目，配置不是很多，可以选择只通过命令行参数来传递配置。但是大型项目配置很多，通过命令行参数传递就变得很麻烦，不好维护。标准的解决方案是将这些配置信息保存在配置文件中，由程序启动时加载和解析。Go生态中有很多包可以加载并解析配置文件，目前最受欢迎的是Viper包。</p>
+<p>Viper是Go应用程序现代化的、完整的解决方案，能够处理不同格式的配置文件，让我们在构建现代应用程序时，不必担心配置文件格式。Viper也能够满足我们对应用配置的各种需求。</p>
+<p>Viper可以从不同的位置读取配置，不同位置的配置具有不同的优先级，高优先级的配置会覆盖低优先级相同的配置，按优先级从高到低排列如下：</p>
+<ol>
+<li>通过viper.Set函数显示设置的配置</li>
+<li>命令行参数</li>
+<li>环境变量</li>
+<li>配置文件</li>
+<li>Key/Value存储</li>
+<li>默认值</li>
+</ol>
+<p>这里需要注意，Viper配置键不区分大小写。</p>
+<p>Viper有很多功能，最重要的两类功能是读入配置和读取配置，Viper提供不同的方式来实现这两类功能。接下来，我们就来详细介绍下Viper如何读入配置和读取配置。</p>
+<h3 id="读入配置">读入配置</h3>
+<p>读入配置，就是将配置读入到Viper中，有如下读入方式：</p>
+<ul>
+<li>设置默认的配置文件名。</li>
+<li>读取配置文件。</li>
+<li>监听和重新读取配置文件。</li>
+<li>从io.Reader读取配置。</li>
+<li>从环境变量读取。</li>
+<li>从命令行标志读取。</li>
+<li>从远程Key/Value存储读取。</li>
+</ul>
+<p>这几个方法的具体读入方式，你可以看下面的展示。</p>
+<ol>
+<li>设置默认值。</li>
+</ol>
+<p>一个好的配置系统应该支持默认值。Viper支持对key设置默认值，当没有通过配置文件、环境变量、远程配置或命令行标志设置key时，设置默认值通常是很有用的，可以让程序在没有明确指定配置时也能够正常运行。例如：</p>
+<pre><code>viper.SetDefault("ContentDir", "content")
+viper.SetDefault("LayoutDir", "layouts")
+viper.SetDefault("Taxonomies", map[string]string{"tag": "tags", "category": "categories"})
+</code></pre>
+<ol>
+<li>读取配置文件。</li>
+</ol>
+<p>Viper可以读取配置文件来解析配置，支持JSON、TOML、YAML、YML、Properties、Props、Prop、HCL、Dotenv、Env格式的配置文件。Viper 支持搜索多个路径，并且默认不配置任何搜索路径，将默认决策留给应用程序。</p>
+<p>以下是如何使用 Viper 搜索和读取配置文件的示例：</p>
+<pre><code>package main
+
+import (
+	"fmt"
+
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+)
+
+var (
+	cfg  = pflag.StringP("config", "c", "", "Configuration file.")
+	help = pflag.BoolP("help", "h", false, "Show this help message.")
+)
+
+func main() {
+	pflag.Parse()
+	if *help {
+		pflag.Usage()
+		return
+	}
+
+  // 从配置文件中读取配置
+	if *cfg != "" {
+		viper.SetConfigFile(*cfg)   // 指定配置文件名
+		viper.SetConfigType("yaml") // 如果配置文件名中没有文件扩展名，则需要指定配置文件的格式，告诉viper以何种格式解析文件
+	} else {
+		viper.AddConfigPath(".")          // 把当前目录加入到配置文件的搜索路径中
+		viper.AddConfigPath("$HOME/.iam") // 配置文件搜索路径，可以设置多个配置文件搜索路径
+		viper.SetConfigName("config")     // 配置文件名称（没有文件扩展名）
+	}
+
+	if err := viper.ReadInConfig(); err != nil { // 读取配置文件。如果指定了配置文件名，则使用指定的配置文件，否则在注册的搜索路径中搜索
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+
+	fmt.Printf("Used configuration file is: %s\n", viper.ConfigFileUsed())
+}
+</code></pre>
+<p>Viper支持设置多个配置文件搜索路径，需要注意添加搜索路径的顺序，Viper会根据添加的路径顺序搜索配置文件，如果找到则停止搜索。如果调用SetConfigFile直接指定了配置文件名，并且配置文件名没有文件扩展名时，需要显式指定配置文件的格式，以使Viper能够正确解析配置文件。</p>
+<p>如果通过搜索的方式查找配置文件，则需要注意，SetConfigName设置的配置文件名是不带扩展名的，在搜索时Viper会在文件名之后追加文件扩展名，并尝试搜索所有支持的扩展类型。</p>
+<ol>
+<li>监听和重新读取配置文件。</li>
+</ol>
+<p>Viper支持在运行时让应用程序实时读取配置文件，也就是热加载配置。可以通过WatchConfig函数热加载配置。在调用WatchConfig函数之前，需要确保已经添加了配置文件的搜索路径。另外，还可以为Viper提供一个回调函数，以便在每次发生更改时运行。这里我也给你个示例：</p>
+<pre><code>viper.WatchConfig()
+viper.OnConfigChange(func(e fsnotify.Event) {
+   // 配置文件发生变更之后会调用的回调函数
+	fmt.Println("Config file changed:", e.Name)
+})
+</code></pre>
+<p>我不建议在实际开发中使用热加载功能，因为即使配置热加载了，程序中的代码也不一定会热加载。例如：修改了服务监听端口，但是服务没有重启，这时候服务还是监听在老的端口上，会造成不一致。-</p>
+<ol>
+<li>设置配置值。</li>
+</ol>
+<p>我们可以通过viper.Set()函数来显式设置配置：</p>
+<pre><code>viper.Set("user.username", "colin")
+</code></pre>
+<ol>
+<li>使用环境变量。</li>
+</ol>
+<p>Viper还支持环境变量，通过如下5个函数来支持环境变量：</p>
+<ul>
+<li>AutomaticEnv()</li>
+<li>BindEnv(input …string) error</li>
+<li>SetEnvPrefix(in string)</li>
+<li>SetEnvKeyReplacer(r *strings.Replacer)</li>
+<li>AllowEmptyEnv(allowEmptyEnv bool)</li>
+</ul>
+<p>这里要注意：Viper读取环境变量是区分大小写的。Viper提供了一种机制来确保Env变量是唯一的。通过使用SetEnvPrefix，可以告诉Viper在读取环境变量时使用前缀。BindEnv和AutomaticEnv都将使用此前缀。比如，我们设置了viper.SetEnvPrefix(“VIPER”)，当使用viper.Get(“apiversion”)时，实际读取的环境变量是<code>VIPER_APIVERSION</code>。</p>
+<p>BindEnv需要一个或两个参数。第一个参数是键名，第二个是环境变量的名称，环境变量的名称区分大小写。如果未提供Env变量名，则Viper将假定Env变量名为：<code>环境变量前缀_键名全大写</code>。例如：前缀为VIPER，key为username，则Env变量名为<code>VIPER_USERNAME</code>。当显示提供Env变量名（第二个参数）时，它不会自动添加前缀。例如，如果第二个参数是ID，Viper将查找环境变量ID。</p>
+<p>在使用Env变量时，需要注意的一件重要事情是：每次访问该值时都将读取它。Viper在调用BindEnv时不固定该值。</p>
+<p>还有一个魔法函数SetEnvKeyReplacer，SetEnvKeyReplacer允许你使用strings.Replacer对象来重写Env键。如果你想在Get()调用中使用<code>-</code>或者<code>.</code>，但希望你的环境变量使用<code>_</code>分隔符，可以通过SetEnvKeyReplacer来实现。比如，我们设置了环境变量<code>USER_SECRET_KEY=bVix2WBv0VPfrDrvlLWrhEdzjLpPCNYb</code>，但我们想用<code>viper.Get("user.secret-key")</code>，那我们就调用函数：</p>
+<pre><code>viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+</code></pre>
+<p>上面的代码，在调用viper.Get()函数时，会用_替换<code>.</code>和<code>-</code>。默认情况下，空环境变量被认为是未设置的，并将返回到下一个配置源。若要将空环境变量视为已设置，可以使用AllowEmptyEnv方法。使用环境变量示例如下：</p>
+<pre><code>// 使用环境变量
+os.Setenv("VIPER_USER_SECRET_ID", "QLdywI2MrmDVjSSv6e95weNRvmteRjfKAuNV")
+os.Setenv("VIPER_USER_SECRET_KEY", "bVix2WBv0VPfrDrvlLWrhEdzjLpPCNYb")
+
+viper.AutomaticEnv()                                             // 读取环境变量
+viper.SetEnvPrefix("VIPER")                                      // 设置环境变量前缀：VIPER_，如果是viper，将自动转变为大写。
+viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_")) // 将viper.Get(key) key字符串中'.'和'-'替换为'_'
+viper.BindEnv("user.secret-key")
+viper.BindEnv("user.secret-id", "USER_SECRET_ID") // 绑定环境变量名到key
+</code></pre>
+<ol>
+<li>使用标志。</li>
+</ol>
+<p>Viper支持Pflag包，能够绑定key到Flag。与BindEnv类似，在调用绑定方法时，不会设置该值，但在访问它时会设置。对于单个标志，可以调用BindPFlag()进行绑定：</p>
+<pre><code>viper.BindPFlag("token", pflag.Lookup("token")) // 绑定单个标志
+</code></pre>
+<p>还可以绑定一组现有的pflags（pflag.FlagSet）：</p>
+<pre><code>viper.BindPFlags(pflag.CommandLine)             //绑定标志集
+</code></pre>
+<h3 id="读取配置">读取配置</h3>
+<p>Viper提供了如下方法来读取配置：</p>
+<ul>
+<li>Get(key string) interface{}</li>
+<li>Get<code>&lt;Type&gt;</code>(key string) <code>&lt;Type&gt;</code></li>
+<li>AllSettings() map[string]interface{}</li>
+<li>IsSet(key string) : bool</li>
+</ul>
+<p>每一个Get方法在找不到值的时候都会返回零值。为了检查给定的键是否存在，可以使用IsSet()方法。<code>&lt;Type&gt;</code>可以是Viper支持的类型，首字母大写：Bool、Float64、Int、IntSlice、String、StringMap、StringMapString、StringSlice、Time、Duration。例如：GetInt()。</p>
+<p>常见的读取配置方法有以下几种。</p>
+<ol>
+<li>访问嵌套的键。</li>
+</ol>
+<p>例如，加载下面的JSON文件：</p>
+<pre><code>{
+    "host": {
+        "address": "localhost",
+        "port": 5799
+    },
+    "datastore": {
+        "metric": {
+            "host": "127.0.0.1",
+            "port": 3099
+        },
+        "warehouse": {
+            "host": "198.0.0.1",
+            "port": 2112
+        }
+    }
+}
+</code></pre>
+<p>Viper可以通过传入<code>.</code>分隔的路径来访问嵌套字段：</p>
+<pre><code>viper.GetString("datastore.metric.host") // (返回 "127.0.0.1")
+</code></pre>
+<p>如果<code>datastore.metric</code>被直接赋值覆盖（被Flag、环境变量、set()方法等等），那么<code>datastore.metric</code>的所有子键都将变为未定义状态，它们被高优先级配置级别覆盖了。</p>
+<p>如果存在与分隔的键路径匹配的键，则直接返回其值。例如：</p>
+<pre><code>{
+    "datastore.metric.host": "0.0.0.0",
+    "host": {
+        "address": "localhost",
+        "port": 5799
+    },
+    "datastore": {
+        "metric": {
+            "host": "127.0.0.1",
+            "port": 3099
+        },
+        "warehouse": {
+            "host": "198.0.0.1",
+            "port": 2112
+        }
+    }
+}
+</code></pre>
+<p>通过viper.GetString获取值：</p>
+<pre><code>viper.GetString("datastore.metric.host") // 返回 "0.0.0.0"
+</code></pre>
+<ol>
+<li>反序列化。</li>
+</ol>
+<p>Viper可以支持将所有或特定的值解析到结构体、map等。可以通过两个函数来实现：</p>
+<ul>
+<li>Unmarshal(rawVal interface{}) error</li>
+<li>UnmarshalKey(key string, rawVal interface{}) error</li>
+</ul>
+<p>一个示例：</p>
+<pre><code>type config struct {
+	Port int
+	Name string
+	PathMap string `mapstructure:"path_map"`
+}
+
+var C config
+
+err := viper.Unmarshal(&amp;C)
+if err != nil {
+	t.Fatalf("unable to decode into struct, %v", err)
+}
+</code></pre>
+<p>如果想要解析那些键本身就包含<code>.</code>(默认的键分隔符）的配置，则需要修改分隔符：</p>
+<pre><code>v := viper.NewWithOptions(viper.KeyDelimiter("::"))
+
+v.SetDefault("chart::values", map[string]interface{}{
+    "ingress": map[string]interface{}{
+        "annotations": map[string]interface{}{
+            "traefik.frontend.rule.type":                 "PathPrefix",
+            "traefik.ingress.kubernetes.io/ssl-redirect": "true",
+        },
+    },
+})
+
+type config struct {
+	Chart struct{
+        Values map[string]interface{}
+    }
+}
+
+var C config
+
+v.Unmarshal(&amp;C)
+</code></pre>
+<p>Viper在后台使用<code>github.com/mitchellh/mapstructure</code>来解析值，其默认情况下使用<code>mapstructure tags</code>。当我们需要将Viper读取的配置反序列到我们定义的结构体变量中时，一定要使用mapstructure tags。</p>
+<ol>
+<li>序列化成字符串。</li>
+</ol>
+<p>有时候我们需要将Viper中保存的所有设置序列化到一个字符串中，而不是将它们写入到一个文件中，示例如下：</p>
+<pre><code>import (
+    yaml "gopkg.in/yaml.v2"
+    // ...
+)
+
+func yamlStringSettings() string {
+    c := viper.AllSettings()
+    bs, err := yaml.Marshal(c)
+    if err != nil {
+        log.Fatalf("unable to marshal config to YAML: %v", err)
+    }
+    return string(bs)
+}
+</code></pre>
+<h2 id="现代化的命令行框架-cobra全解">现代化的命令行框架：Cobra全解</h2>
+<p>Cobra既是一个可以创建强大的现代CLI应用程序的库，也是一个可以生成应用和命令文件的程序。有许多大型项目都是用Cobra来构建应用程序的，例如 Kubernetes、Docker、etcd、Rkt、Hugo等。</p>
+<p>Cobra建立在commands、arguments和flags结构之上。commands代表命令，arguments代表非选项参数，flags代表选项参数（也叫标志）。一个好的应用程序应该是易懂的，用户可以清晰地知道如何去使用这个应用程序。应用程序通常遵循如下模式：<code>APPNAME VERB NOUN --ADJECTIVE或者APPNAME COMMAND ARG --FLAG</code>，例如：</p>
+<pre><code>git clone URL --bare # clone 是一个命令，URL是一个非选项参数，bare是一个选项参数
+</code></pre>
+<p>这里，VERB代表动词，NOUN代表名词，ADJECTIVE代表形容词。</p>
+<p>Cobra提供了两种方式来创建命令：Cobra命令和Cobra库。Cobra命令可以生成一个Cobra命令模板，而命令模板也是通过引用Cobra库来构建命令的。所以，这里我直接介绍如何使用Cobra库来创建命令。</p>
+<h3 id="使用cobra库创建命令">使用Cobra库创建命令</h3>
+<p>如果要用Cobra库编码实现一个应用程序，需要首先创建一个空的main.go文件和一个rootCmd文件，之后可以根据需要添加其他命令。具体步骤如下：</p>
+<ol>
+<li>创建rootCmd。</li>
+</ol>
+<pre><code>$ mkdir -p newApp2 &amp;&amp; cd newApp2
+</code></pre>
+<p>通常情况下，我们会将rootCmd放在文件cmd/root.go中。</p>
+<pre><code>var rootCmd = &amp;cobra.Command{
+  Use:   "hugo",
+  Short: "Hugo is a very fast static site generator",
+  Long: `A Fast and Flexible Static Site Generator built with
+                love by spf13 and friends in Go.
+                Complete documentation is available at http://hugo.spf13.com`,
+  Run: func(cmd *cobra.Command, args []string) {
+    // Do Stuff Here
+  },
+}
+
+func Execute() {
+  if err := rootCmd.Execute(); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+  }
+}
+</code></pre>
+<p>还可以在init()函数中定义标志和处理配置，例如cmd/root.go。</p>
+<pre><code>import (
+  "fmt"
+  "os"
+
+  homedir "github.com/mitchellh/go-homedir"
+  "github.com/spf13/cobra"
+  "github.com/spf13/viper"
+)
+
+var (
+    cfgFile     string
+	  projectBase string
+    userLicense string
+)
+
+func init() {
+  cobra.OnInitialize(initConfig)
+  rootCmd.PersistentFlags().StringVar(&amp;cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
+  rootCmd.PersistentFlags().StringVarP(&amp;projectBase, "projectbase", "b", "", "base project directory eg. github.com/spf13/")
+  rootCmd.PersistentFlags().StringP("author", "a", "YOUR NAME", "Author name for copyright attribution")
+  rootCmd.PersistentFlags().StringVarP(&amp;userLicense, "license", "l", "", "Name of license for the project (can provide `licensetext` in config)")
+  rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
+  viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
+  viper.BindPFlag("projectbase", rootCmd.PersistentFlags().Lookup("projectbase"))
+  viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
+  viper.SetDefault("author", "NAME HERE &lt;EMAIL ADDRESS&gt;")
+  viper.SetDefault("license", "apache")
+}
+
+func initConfig() {
+  // Don't forget to read config either from cfgFile or from home directory!
+  if cfgFile != "" {
+    // Use config file from the flag.
+    viper.SetConfigFile(cfgFile)
+  } else {
+    // Find home directory.
+    home, err := homedir.Dir()
+    if err != nil {
+      fmt.Println(err)
+      os.Exit(1)
+    }
+
+    // Search config in home directory with name ".cobra" (without extension).
+    viper.AddConfigPath(home)
+    viper.SetConfigName(".cobra")
+  }
+
+  if err := viper.ReadInConfig(); err != nil {
+    fmt.Println("Can't read config:", err)
+    os.Exit(1)
+  }
+}
+</code></pre>
+<ol>
+<li>创建main.go。</li>
+</ol>
+<p>我们还需要一个main函数来调用rootCmd，通常我们会创建一个main.go文件，在main.go中调用rootCmd.Execute()来执行命令：</p>
+<pre><code>package main
+
+import (
+  "{pathToYourApp}/cmd"
+)
+
+func main() {
+  cmd.Execute()
+}
+</code></pre>
+<p>需要注意，main.go中不建议放很多代码，通常只需要调用cmd.Execute()即可。</p>
+<ol>
+<li>添加命令。</li>
+</ol>
+<p>除了rootCmd，我们还可以调用AddCommand添加其他命令，通常情况下，我们会把其他命令的源码文件放在cmd/目录下，例如，我们添加一个version命令，可以创建cmd/version.go文件，内容为：</p>
+<pre><code>package cmd
+
+import (
+  "fmt"
+
+  "github.com/spf13/cobra"
+)
+
+func init() {
+  rootCmd.AddCommand(versionCmd)
+}
+
+var versionCmd = &amp;cobra.Command{
+  Use:   "version",
+  Short: "Print the version number of Hugo",
+  Long:  `All software has versions. This is Hugo's`,
+  Run: func(cmd *cobra.Command, args []string) {
+    fmt.Println("Hugo Static Site Generator v0.9 -- HEAD")
+  },
+}
+</code></pre>
+<p>本示例中，我们通过调用<code>rootCmd.AddCommand(versionCmd)</code>给rootCmd命令添加了一个versionCmd命令。</p>
+<ol>
+<li>编译并运行。</li>
+</ol>
+<p>将main.go中<code>{pathToYourApp}</code>替换为对应的路径，例如本示例中pathToYourApp为<code>github.com/marmotedu/gopractise-demo/cobra/newApp2</code>。</p>
+<pre><code>$ go mod init github.com/marmotedu/gopractise-demo/cobra/newApp2
+$ go build -v .
+$ ./newApp2 -h
+A Fast and Flexible Static Site Generator built with
+love by spf13 and friends in Go.
+Complete documentation is available at http://hugo.spf13.com
+ 
+Usage:
+hugo [flags]
+hugo [command]
+ 
+Available Commands:
+help Help about any command
+version Print the version number of Hugo
+ 
+Flags:
+-a, --author string Author name for copyright attribution (default "YOUR NAME")
+--config string config file (default is $HOME/.cobra.yaml)
+-h, --help help for hugo
+-l, --license licensetext Name of license for the project (can provide licensetext in config)
+-b, --projectbase string base project directory eg. github.com/spf13/
+--viper Use Viper for configuration (default true)
+ 
+Use "hugo [command] --help" for more information about a command.
+</code></pre>
+<p>通过步骤一、步骤二、步骤三，我们就成功创建和添加了Cobra应用程序及其命令。</p>
+<p>接下来，我再来详细介绍下Cobra的核心特性。</p>
+<h3 id="使用标志">使用标志</h3>
+<p>Cobra可以跟Pflag结合使用，实现强大的标志功能。使用步骤如下：</p>
+<ol>
+<li>使用持久化的标志。</li>
+</ol>
+<p>标志可以是“持久的”，这意味着该标志可用于它所分配的命令以及该命令下的每个子命令。可以在rootCmd上定义持久标志：</p>
+<pre><code>rootCmd.PersistentFlags().BoolVarP(&amp;Verbose, "verbose", "v", false, "verbose output")
+</code></pre>
+<ol>
+<li>使用本地标志。</li>
+</ol>
+<p>也可以分配一个本地标志，本地标志只能在它所绑定的命令上使用：</p>
+<pre><code>rootCmd.Flags().StringVarP(&amp;Source, "source", "s", "", "Source directory to read from")
+</code></pre>
+<p><code>--source</code>标志只能在rootCmd上引用，而不能在rootCmd的子命令上引用。</p>
+<ol>
+<li>将标志绑定到Viper。</li>
+</ol>
+<p>我们可以将标志绑定到Viper，这样就可以使用viper.Get()获取标志的值。</p>
+<pre><code>var author string
+
+func init() {
+  rootCmd.PersistentFlags().StringVar(&amp;author, "author", "YOUR NAME", "Author name for copyright attribution")
+  viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
+}
+</code></pre>
+<ol>
+<li>设置标志为必选。</li>
+</ol>
+<p>默认情况下，标志是可选的，我们也可以设置标志为必选，当设置标志为必选，但是没有提供标志时，Cobra会报错。</p>
+<pre><code>rootCmd.Flags().StringVarP(&amp;Region, "region", "r", "", "AWS region (required)")
+rootCmd.MarkFlagRequired("region")
+</code></pre>
+<h3 id="非选项参数验证">非选项参数验证</h3>
+<p>在命令的过程中，经常会传入非选项参数，并且需要对这些非选项参数进行验证，Cobra提供了机制来对非选项参数进行验证。可以使用Command的Args字段来验证非选项参数。Cobra也内置了一些验证函数：</p>
+<ul>
+<li>NoArgs：如果存在任何非选项参数，该命令将报错。</li>
+<li>ArbitraryArgs：该命令将接受任何非选项参数。</li>
+<li>OnlyValidArgs：如果有任何非选项参数不在Command的ValidArgs字段中，该命令将报错。</li>
+<li>MinimumNArgs(int)：如果没有至少N个非选项参数，该命令将报错。</li>
+<li>MaximumNArgs(int)：如果有多于N个非选项参数，该命令将报错。</li>
+<li>ExactArgs(int)：如果非选项参数个数不为N，该命令将报错。</li>
+<li>ExactValidArgs(int)：如果非选项参数的个数不为N，或者非选项参数不在Command的ValidArgs字段中，该命令将报错。</li>
+<li>RangeArgs(min, max)：如果非选项参数的个数不在min和max之间，该命令将报错。</li>
+</ul>
+<p>使用预定义验证函数，示例如下：</p>
+<pre><code>var cmd = &amp;cobra.Command{
+  Short: "hello",
+  Args: cobra.MinimumNArgs(1), // 使用内置的验证函数
+  Run: func(cmd *cobra.Command, args []string) {
+    fmt.Println("Hello, World!")
+  },
+}
+</code></pre>
+<p>当然你也可以自定义验证函数，示例如下：</p>
+<pre><code>var cmd = &amp;cobra.Command{
+  Short: "hello",
+  // Args: cobra.MinimumNArgs(10), // 使用内置的验证函数
+  Args: func(cmd *cobra.Command, args []string) error { // 自定义验证函数
+    if len(args) &lt; 1 {
+      return errors.New("requires at least one arg")
+    }
+    if myapp.IsValidColor(args[0]) {
+      return nil
+    }
+    return fmt.Errorf("invalid color specified: %s", args[0])
+  },
+  Run: func(cmd *cobra.Command, args []string) {
+    fmt.Println("Hello, World!")
+  },
+}
+</code></pre>
+<h3 id="prerun-and-postrun-hooks">PreRun and PostRun Hooks</h3>
+<p>在运行Run函数时，我们可以运行一些钩子函数，比如PersistentPreRun和PreRun函数在Run函数之前执行，PersistentPostRun和PostRun在Run函数之后执行。如果子命令没有指定<code>Persistent*Run</code>函数，则子命令将会继承父命令的<code>Persistent*Run</code>函数。这些函数的运行顺序如下：</p>
+<ol>
+<li>PersistentPreRun</li>
+<li>PreRun</li>
+<li>Run</li>
+<li>PostRun</li>
+<li>PersistentPostRun</li>
+</ol>
+<p>注意，父级的PreRun只会在父级命令运行时调用，子命令是不会调用的。</p>
+<p>Cobra还支持很多其他有用的特性，比如：自定义Help命令；可以自动添加<code>--version</code>标志，输出程序版本信息；当用户提供无效标志或无效命令时，Cobra可以打印出usage信息；当我们输入的命令有误时，Cobra会根据注册的命令，推算出可能的命令，等等。</p>
+<h2 id="总结">总结</h2>
+<p>在开发Go项目时，我们可以通过Pflag来解析命令行参数，通过Viper来解析配置文件，用Cobra来实现命令行框架。你可以通过pflag.String()、 pflag.StringP()、pflag.StringVar()、pflag.StringVarP()方法来设置命令行参数，并使用Get<code>&lt;Type&gt;</code>来获取参数的值。</p>
+<p>同时，你也可以使用Viper从命令行参数、环境变量、配置文件等位置读取配置项。最常用的是从配置文件中读取，可以通过viper.AddConfigPath来设置配置文件搜索路径，通过viper.SetConfigFile和viper.SetConfigType来设置配置文件名，通过viper.ReadInConfig来读取配置文件。读取完配置文件，然后在程序中使用Get/Get<code>&lt;Type&gt;</code>来读取配置项的值。</p>
+<p>最后，你可以使用Cobra来构建一个命令行框架，Cobra可以很好地集成Pflag和Viper。</p>
+<h2 id="课后练习">课后练习</h2>
+<ol>
+<li><p>研究下Cobra的代码，看下Cobra是如何跟Pflag和Viper进行集成的。</p></li>
+<li><p>思考下，除了Pflag、Viper、Cobra，你在开发过程中还遇到哪些优秀的包，来处理命令行参数、配置文件和启动命令行框架的呢？欢迎在留言区分享。</p></li>
+</ol>
+<p>欢迎你在留言区与我交流讨论，我们下一讲见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#721e1e1e4b464343424532151f131b1e5c111d1f" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935a1b30d8f8d637',t:'MTc0NTU0NDk1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

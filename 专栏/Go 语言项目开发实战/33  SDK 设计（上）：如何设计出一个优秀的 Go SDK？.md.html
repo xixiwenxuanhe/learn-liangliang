@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%81%e4%b8%9a%e7%ba%a7%20Go%20%e5%ba%94%e7%94%a8.md.html" id="00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html">00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/01%20IAM%e7%b3%bb%e7%bb%9f%e6%a6%82%e8%bf%b0%ef%bc%9a%e6%88%91%e4%bb%ac%e8%a6%81%e5%ae%9e%e7%8e%b0%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html">01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/02%20%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%89%e8%a3%85%e5%92%8c%e9%85%8d%e7%bd%ae%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84%20Go%20%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html">02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/03%20%e9%a1%b9%e7%9b%ae%e9%83%a8%e7%bd%b2%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e9%83%a8%e7%bd%b2%20IAM%20%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="03 项目部署：如何快速部署 IAM 系统？.md.html">03 项目部署：如何快速部署 IAM 系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/04%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e6%9d%82%e4%b9%b1%e6%97%a0%e7%ab%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html">04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/05%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9acommit%20%e4%bf%a1%e6%81%af%e9%a3%8e%e6%a0%bc%e8%bf%a5%e5%bc%82%e3%80%81%e9%9a%be%e4%bb%a5%e9%98%85%e8%af%bb%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html">05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/06%20%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e4%b8%80%e4%b8%aa%e5%8f%af%e7%bb%b4%e6%8a%a4%e3%80%81%e5%8f%af%e6%89%a9%e5%b1%95%e7%9a%84%e4%bb%a3%e7%a0%81%e7%9b%ae%e5%bd%95%ef%bc%9f.md.html" id="06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html">06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/07%20%e5%b7%a5%e4%bd%9c%e6%b5%81%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%90%88%e7%90%86%e7%9a%84%e5%a4%9a%e4%ba%ba%e5%bc%80%e5%8f%91%e6%a8%a1%e5%bc%8f%ef%bc%9f.md.html" id="07 工作流设计：如何设计合理的多人开发模式？.md.html">07 工作流设计：如何设计合理的多人开发模式？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/08%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%20Go%20%e9%a1%b9%e7%9b%ae%e7%9a%84%e5%bc%80%e5%8f%91%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html">08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/09%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%ba%94%e7%94%a8%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9f.md.html" id="09 研发流程设计（下）：如何管理应用的生命周期？.md.html">09 研发流程设计（下）：如何管理应用的生命周期？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/10%20%e8%ae%be%e8%ae%a1%e6%96%b9%e6%b3%95%ef%bc%9a%e6%80%8e%e4%b9%88%e5%86%99%e5%87%ba%e4%bc%98%e9%9b%85%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="10 设计方法：怎么写出优雅的 Go 项目？.md.html">10 设计方法：怎么写出优雅的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/11%20%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%ef%bc%9aGo%e5%b8%b8%e7%94%a8%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%e6%a6%82%e8%bf%b0.md.html" id="11 设计模式：Go常用设计模式概述.md.html">11 设计模式：Go常用设计模式概述.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/12%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1RESTful%20API%ef%bc%9f.md.html" id="12 API 风格（上）：如何设计RESTful API？.md.html">12 API 风格（上）：如何设计RESTful API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/13%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRPC%20API%e4%bb%8b%e7%bb%8d.md.html" id="13 API 风格（下）：RPC API介绍.md.html">13 API 风格（下）：RPC API介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/14%20%e9%a1%b9%e7%9b%ae%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e9%ab%98%e8%b4%a8%e9%87%8f%e7%9a%84Makefile%ef%bc%9f.md.html" id="14 项目管理：如何编写高质量的Makefile？.md.html">14 项目管理：如何编写高质量的Makefile？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/15%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e5%ae%9e%e6%88%98%ef%bc%9aIAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e7%ae%a1%e7%90%86%e7%9a%84%ef%bc%9f.md.html" id="15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html">15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/16%20%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9a%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e9%9d%99%e6%80%81%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9f.md.html" id="16 代码检查：如何进行静态代码检查？.md.html">16 代码检查：如何进行静态代码检查？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/17%20API%20%e6%96%87%e6%a1%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%20Swagger%20API%20%e6%96%87%e6%a1%a3%20%ef%bc%9f.md.html" id="17 API 文档：如何生成 Swagger API 文档 ？.md.html">17 API 文档：如何生成 Swagger API 文档 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e4%b8%80%e5%a5%97%e7%a7%91%e5%ad%a6%e7%9a%84%e9%94%99%e8%af%af%e7%a0%81%ef%bc%9f.md.html" id="18 错误处理（上）：如何设计一套科学的错误码？.md.html">18 错误处理（上）：如何设计一套科学的错误码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e9%94%99%e8%af%af%e5%8c%85%ef%bc%9f.md.html" id="19 错误处理（下）：如何设计错误包？.md.html">19 错误处理（下）：如何设计错误包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/20%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e6%97%a5%e5%bf%97%e5%8c%85%e5%b9%b6%e8%ae%b0%e5%bd%95%e6%97%a5%e5%bf%97%ef%bc%9f.md.html" id="20 日志处理（上）：如何设计日志包并记录日志？.md.html">20 日志处理（上）：如何设计日志包并记录日志？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/21%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e4%bb%8e%200%20%e7%bc%96%e5%86%99%e4%b8%80%e4%b8%aa%e6%97%a5%e5%bf%97%e5%8c%85.md.html" id="21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html">21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/22%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e4%b8%89%e5%89%91%e5%ae%a2%ef%bc%9aPflag%e3%80%81Viper%e3%80%81Cobra%20%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e4%bb%8b%e7%bb%8d.md.html" id="22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html">22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/23%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e5%ae%9e%e6%88%98%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%e4%bc%81%e4%b8%9a%e5%ba%94%e7%94%a8%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html">23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/24%20Web%20%e6%9c%8d%e5%8a%a1%ef%bc%9aWeb%20%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html">24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/25%20%e8%ae%a4%e8%af%81%e6%9c%ba%e5%88%b6%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%ef%bc%9f.md.html" id="25 认证机制：应用程序如何进行访问认证？.md.html">25 认证机制：应用程序如何进行访问认证？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/26%20IAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%e5%8a%9f%e8%83%bd%e7%9a%84%ef%bc%9f.md.html" id="26 IAM项目是如何设计和实现访问认证功能的？.md.html">26 IAM项目是如何设计和实现访问认证功能的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/27%20%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%ef%bc%9a5%e5%a4%a7%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%b5%84%e6%ba%90%e6%8e%88%e6%9d%83%e7%9a%84%ef%bc%9f.md.html" id="27 权限模型：5大权限模型是如何进行资源授权的？.md.html">27 权限模型：5大权限模型是如何进行资源授权的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/28%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%80%9a%e8%bf%87iam-apiserver%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8bWeb%e6%9c%8d%e5%8a%a1%e7%9a%84%e6%9e%84%e5%bb%ba.md.html" id="28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html">28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/29%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aiam-apiserver%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html">29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/30%20ORM%ef%bc%9aCURD%20%e7%a5%9e%e5%99%a8%20GORM%20%e5%8c%85%e4%bb%8b%e7%bb%8d%e5%8f%8a%e5%ae%9e%e6%88%98.md.html" id="30 ORM：CURD 神器 GORM 包介绍及实战.md.html">30 ORM：CURD 神器 GORM 包介绍及实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/31%20%e6%95%b0%e6%8d%ae%e6%b5%81%ef%bc%9a%e9%80%9a%e8%bf%87iam-authz-server%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8b%e6%95%b0%e6%8d%ae%e6%b5%81%e6%9c%8d%e5%8a%a1%e7%9a%84%e8%ae%be%e8%ae%a1.md.html" id="31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html">31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/32%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%a4%84%e7%90%86%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%ba%a7%e7%94%9f%e7%9a%84%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="32 数据处理：如何高效处理应用程序产生的数据？.md.html">32 数据处理：如何高效处理应用程序产生的数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/33%20%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%87%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%20Go%20SDK%ef%bc%9f.md.html" id="33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html">33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/34%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e9%a1%b9%e7%9b%aeGo%20SDK%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html">34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/35%20%e6%95%88%e7%8e%87%e7%a5%9e%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%ae%a2%e6%88%b7%e7%ab%af%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="35 效率神器：如何设计和实现一个命令行客户端工具？.md.html">35 效率神器：如何设计和实现一个命令行客户端工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/36%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%20Go%20%e8%af%ad%e8%a8%80%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%e5%92%8c%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%94%a8%e4%be%8b%ef%bc%9f.md.html" id="36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html">36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/37%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aGo%20%e8%af%ad%e8%a8%80%e5%85%b6%e4%bb%96%e6%b5%8b%e8%af%95%e7%b1%bb%e5%9e%8b%e5%8f%8a%20IAM%20%e6%b5%8b%e8%af%95%e4%bb%8b%e7%bb%8d.md.html" id="37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html">37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/38%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e6%9e%90%20Go%20%e8%af%ad%e8%a8%80%e4%bb%a3%e7%a0%81%e7%9a%84%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html">38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/39%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aAPI%20Server%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e5%92%8c%e8%b0%83%e4%bc%98%e5%ae%9e%e6%88%98.md.html" id="39 性能分析（下）：API Server性能测试和调优实战.md.html">39 性能分析（下）：API Server性能测试和调优实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/40%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%83%a8%e7%bd%b2%e6%96%b9%e6%a1%88%e5%8f%8a%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e3%80%81%e9%ab%98%e5%8f%af%e7%94%a8%e7%bb%84%e4%bb%b6%e4%bb%8b%e7%bb%8d.md.html" id="40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html">40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/41%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aIAM%20%e7%b3%bb%e7%bb%9f%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html">41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/42%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e7%b3%bb%e7%bb%9f%e5%ae%89%e5%85%a8%e5%8a%a0%e5%9b%ba%e3%80%81%e6%b0%b4%e5%b9%b3%e6%89%a9%e7%bc%a9%e5%ae%b9%e5%ae%9e%e6%88%98.md.html" id="42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html">42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/43%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%8c%96%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="43 技术演进（上）：虚拟化技术演进之路.md.html">43 技术演进（上）：虚拟化技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/44%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%e5%92%8c%e5%ba%94%e7%94%a8%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html">44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/45%20%e5%9f%ba%e4%ba%8eKubernetes%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1.md.html" id="45 基于Kubernetes的云原生架构设计.md.html">45 基于Kubernetes的云原生架构设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/46%20%e5%a6%82%e4%bd%95%e5%88%b6%e4%bd%9cDocker%e9%95%9c%e5%83%8f%ef%bc%9f.md.html" id="46 如何制作Docker镜像？.md.html">46 如何制作Docker镜像？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/47%20%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99Kubernetes%e8%b5%84%e6%ba%90%e5%ae%9a%e4%b9%89%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="47 如何编写Kubernetes资源定义文件？.md.html">47 如何编写Kubernetes资源定义文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/48%20IAM%20%e5%ae%b9%e5%99%a8%e5%8c%96%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="48 IAM 容器化部署实战.md.html">48 IAM 容器化部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/49%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aHelm%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86.md.html" id="49 服务编排（上）：Helm服务编排基础知识.md.html">49 服务编排（上）：Helm服务编排基础知识.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/50%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%9f%ba%e4%ba%8eHelm%e7%9a%84%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="50 服务编排（下）：基于Helm的服务编排部署实战.md.html">50 服务编排（下）：基于Helm的服务编排部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/51%20%e5%9f%ba%e4%ba%8e%20GitHub%20Actions%20%e7%9a%84%20CI%20%e5%ae%9e%e6%88%98.md.html" id="51 基于 GitHub Actions 的 CI 实战.md.html">51 基于 GitHub Actions 的 CI 实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e4%be%9d%e8%b5%96%e5%8c%85%e7%ae%a1%e7%90%86%e5%85%a8%e8%ae%b2.md.html" id="特别放送 Go Modules依赖包管理全讲.md.html">特别放送 Go Modules依赖包管理全讲.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e5%ae%9e%e6%88%98.md.html" id="特别放送 Go Modules实战.md.html">特别放送 Go Modules实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20IAM%e6%8e%92%e9%9a%9c%e6%8c%87%e5%8d%97.md.html" id="特别放送 IAM排障指南.md.html">特别放送 IAM排障指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%9c%e4%b8%9a%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="特别放送 分布式作业系统设计和实现.md.html">特别放送 分布式作业系统设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bdGo%e9%a1%b9%e7%9b%ae%e4%b8%ad%e6%9c%80%e5%b8%b8%e7%94%a8%e7%9a%84Makefile%e6%a0%b8%e5%bf%83%e8%af%ad%e6%b3%95.md.html" id="特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html">特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bd%e6%b8%85%e6%99%b0%e3%80%81%e5%8f%af%e7%9b%b4%e6%8e%a5%e5%a5%97%e7%94%a8%e7%9a%84Go%e7%bc%96%e7%a0%81%e8%a7%84%e8%8c%83.md.html" id="特别放送 给你一份清晰、可直接套用的Go编码规范.md.html">特别放送 给你一份清晰、可直接套用的Go编码规范.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%9b%b4%e6%92%ad%e5%8a%a0%e9%a4%90%20%e5%a6%82%e4%bd%95%e4%bb%8e%e5%b0%8f%e7%99%bd%e8%bf%9b%e9%98%b6%e6%88%90%20Go%20%e8%af%ad%e8%a8%80%e4%b8%93%e5%ae%b6%ef%bc%9f.md.html" id="直播加餐 如何从小白进阶成 Go 语言专家？.md.html">直播加餐 如何从小白进阶成 Go 语言专家？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%a6%82%e4%bd%95%e8%ae%a9%e8%87%aa%e5%b7%b1%e7%9a%84%20Go%20%e7%a0%94%e5%8f%91%e4%b9%8b%e8%b7%af%e8%b5%b0%e5%be%97%e6%9b%b4%e8%bf%9c%ef%bc%9f.md.html" id="结束语 如何让自己的 Go 研发之路走得更远？.md.html">结束语 如何让自己的 Go 研发之路走得更远？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？" id="title">33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？</h1>
+<div><p>33 SDK 设计（上）：如何设计出一个优秀的 Go SDK？</p>
+<p>你好，我是孔令飞。接下来的两讲，我们来看下如何设计和实现一个优秀的Go SDK。</p>
+<p>后端服务通过API接口对外提供应用的功能，但是用户直接调用API接口，需要编写API接口调用的逻辑，并且需要构造入参和解析返回的数据包，使用起来效率低，而且有一定的开发工作量。</p>
+<p>在实际的项目开发中，通常会提供对开发者更友好的SDK包，供客户端调用。很多大型服务在发布时都会伴随着SDK的发布，例如腾讯云很多产品都提供了SDK：</p>
+<p><img alt="图片" src="assets/ad7289f0ca84420e97c9f21cb075fed4.jpg"/></p>
+<p>既然SDK如此重要，那么如何设计一个优秀的Go SDK呢？这一讲我就来详细介绍一下。</p>
+<h2 id="什么是sdk">什么是SDK？</h2>
+<p>首先，我们来看下什么是SDK。</p>
+<p>对于SDK（Software Development Kit，软件开发工具包），不同场景下有不同的解释。但是对于一个Go后端服务来说，SDK通常是指<strong>封装了Go后端服务API接口的软件包</strong>，里面通常包含了跟软件相关的库、文档、使用示例、封装好的API接口和工具。</p>
+<p>调用SDK跟调用本地函数没有太大的区别，所以可以极大地提升开发者的开发效率和体验。SDK可以由服务提供者提供，也可以由其他组织或个人提供。为了鼓励开发者使用其系统或语言，SDK通常都是免费提供的。</p>
+<p>通常，服务提供者会提供不同语言的SDK，比如针对Python开发者会提供Python版的SDK，针对Go开发者会提供Go版的SDK。一些比较专业的团队还会有SDK自动生成工具，可以根据API接口定义，自动生成不同语言的SDK。例如，Protocol Buffers的编译工具protoc，就可以基于Protobuf文件生成C++、Python、Java、JavaScript、PHP等语言版本的SDK。阿里云、腾讯云这些一线大厂，也可以基于API定义，生成不同编程语言的SDK。</p>
+<h2 id="sdk设计方法">SDK设计方法</h2>
+<p>那么，我们如何才能设计一个好的SDK呢？对于SDK，不同团队会有不同的设计方式，我调研了一些优秀SDK的实现，发现这些SDK有一些共同点。根据我的调研结果，结合我在实际开发中的经验，我总结出了一套SDK设计方法，接下来就分享给你。</p>
+<h3 id="如何给sdk命名">如何给SDK命名？</h3>
+<p>在讲设计方法之前，我先来介绍两个重要的知识点：SDK的命名方式和SDK的目录结构。</p>
+<p>SDK的名字目前没有统一的规范，但比较常见的命名方式是 <code>xxx-sdk-go</code> / <code>xxx-sdk-python</code> / <code>xxx-sdk-java</code> 。其中， <code>xxx</code> 可以是项目名或者组织名，例如腾讯云在GitHub上的组织名为tencentcloud，那它的SDK命名如下图所示：</p>
+<p><img alt="图片" src="assets/ab301b8d01f9465a922943673e7bb5b1.jpg"/></p>
+<h3 id="sdk的目录结构">SDK的目录结构</h3>
+<p>不同项目SDK的目录结构也不相同，但一般需要包含下面这些文件或目录。目录名可能会有所不同，但目录功能是类似的。</p>
+<ul>
+<li><strong>README.md.html</strong>：SDK的帮助文档，里面包含了安装、配置和使用SDK的方法。</li>
+<li><strong>examples/sample/</strong>：SDK的使用示例。</li>
+<li><strong>sdk/</strong>：SDK共享的包，里面封装了最基础的通信功能。如果是HTTP服务，基本都是基于 <code>net/http</code> 包进行封装。</li>
+<li><strong>api</strong>：如果 <code>xxx-sdk-go</code> 只是为某一个服务提供SDK，就可以把该服务的所有API接口封装代码存放在api目录下。</li>
+<li><strong>services/{iam, tms}</strong> ：如果 <code>xxx-sdk-go</code> 中， <code>xxx</code> 是一个组织，那么这个SDK很可能会集成该组织中很多服务的API，就可以把某类服务的API接口封装代码存放在 <code>services/&lt;服务名&gt;</code>下，例如AWS的<a href="https://github.com/aws/aws-sdk-go/tree/main/service" target="_blank">Go SDK</a>。</li>
+</ul>
+<p>一个典型的目录结构如下：</p>
+<pre><code class="language-bash">├── examples            # 示例代码存放目录
+│   └── authz.go
+├── README.md.html           # SDK使用文档
+├── sdk                 # 公共包，封装了SDK配置、API请求、认证等代码
+│   ├── client.go
+│   ├── config.go
+│   ├── credential.go
+│   └── ...
+└── services            # API封装
+    ├── common
+    │   └── model
+    ├── iam             # iam服务的API接口
+    │   ├── authz.go
+    │   ├── client.go
+    │   └── ...
+    └── tms             # tms服务的API接口
+</code></pre>
+<h3 id="sdk设计方法-1">SDK设计方法</h3>
+<p>SDK的设计方法如下图所示：</p>
+<p><img alt="图片" src="assets/0ece7a9320d046cd8df9162cb29232f2.jpg"/></p>
+<p>我们可以通过Config配置创建客户端Client，例如 <code>func NewClient(config sdk.Config) (Client, error)</code>，配置中可以指定下面的信息。</p>
+<ul>
+<li>服务的后端地址：服务的后端地址可以通过配置文件来配置，也可以直接固化在SDK中，推荐后端服务地址可通过配置文件配置。</li>
+<li>认证信息：最常用的认证方式是通过密钥认证，也有一些是通过用户名和密码认证。</li>
+<li>其他配置：例如超时时间、重试次数、缓存时间等。</li>
+</ul>
+<p>创建的Client是一个结构体或者Go interface。这里我建议你使用interface类型，这样可以将定义和具体实现解耦。Client具有一些方法，例如 CreateUser、DeleteUser等，每一个方法对应一个API接口，下面是一个Client定义：</p>
+<pre><code class="language-go">type Client struct {
+    client *sdk.Request
+}
+
+func (c *Client) CreateUser(req *CreateUserRequest) (*CreateUserResponse, error) {
+    // normal code
+    resp := &amp;CreateUserResponse{}
+    err := c.client.Send(req, resp)
+    return resp, err
+}
+</code></pre>
+<p>调用 <code>client.CreateUser(req)</code> 会执行HTTP请求，在 <code>req</code> 中可以指定HTTP请求的方法Method、路径Path和请求Body。 <code>CreateUser</code> 函数中，会调用 <code>c.client.Send(req)</code> 执行具体的HTTP请求。</p>
+<p><code>c.client</code> 是 <code>*Request</code> 类型的变量， <code>*Request</code> 类型的变量具有一些方法，可以根据传入的请求参数 <code>req</code> 和 <code>config</code> 配置构造出请求路径、认证头和请求Body，并调用 <code>net/http</code> 包完成最终的HTTP请求，最后将返回结果Unmarshal到传入的 <code>resp</code> 结构体中。</p>
+<p>根据我的调研，目前有两种SDK设计方式可供参考，一种是各大公有云厂商采用的SDK设计方式，一种是Kubernetes client-go的设计方式。IAM项目分别实现了这两种SDK设计方式，但我还是更倾向于对外提供client-go方式的SDK，我会在下一讲详细介绍它。这两种设计方式的设计思路跟上面介绍的是一致的。</p>
+<h2 id="公有云厂商采用的sdk设计方式">公有云厂商采用的SDK设计方式</h2>
+<p>这里，我先来简单介绍下公有云厂商采用的SDK设计模式。SDK架构如下图所示：</p>
+<p><img alt="图片" src="assets/50a190d8f94543c9af4bc6c1e7f55a3e.jpg"/></p>
+<p>SDK框架分为两层，分别是API层和基础层。API层主要用来构建客户端实例，并调用客户端实例提供的方法来完成API请求，每一个方法对应一个API接口。API层最终会调用基础层提供的能力，来完成REST API请求。基础层通过依次执行构建请求参数（Builder）、签发并添加认证头（Signer）、执行HTTP请求（Request）三大步骤，来完成具体的REST API请求。</p>
+<p>为了让你更好地理解公有云SDK的设计方式，接下来我会结合一些真实的代码，给你讲解API层和基础层的具体设计，SDK代码见<a href="https://github.com/marmotedu/medu-sdk-go" target="_blank">medu-sdk-go</a>。</p>
+<h3 id="api层-创建客户端实例">API层：创建客户端实例</h3>
+<p>客户端在使用服务A的SDK时，首先需要根据Config配置创建一个服务A的客户端Client，Client实际上是一个struct，定义如下：</p>
+<pre><code class="language-go">type Client struct {
+    sdk.Client
+}
+</code></pre>
+<p>在创建客户端时，需要传入认证（例如密钥、用户名/密码）、后端服务地址等配置信息。例如，可以通过<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/services/iam/authz/client.go#L24-L29" target="_blank">NewClientWithSecret</a>方法来构建一个带密钥对的客户端：</p>
+<pre><code class="language-go">func NewClientWithSecret(secretID, secretKey string) (client *Client, err error) {
+    client = &amp;Client{}
+    config := sdk.NewConfig().WithEndpoint(defaultEndpoint)
+    client.Init(serviceName).WithSecret(secretID, secretKey).WithConfig(config)
+    return
+}
+</code></pre>
+<p>这里要注意，上面创建客户端时，传入的密钥对最终会在基础层中被使用，用来签发JWT Token。</p>
+<p>Client有多个方法（Sender），例如 Authz等，每个方法代表一个API接口。Sender方法会接收AuthzRequest等结构体类型的指针作为输入参数。我们可以调用 <code>client.Authz(req)</code> 来执行REST API调用。可以在 <code>client.Authz</code> 方法中添加一些业务逻辑处理。<code>client.Authz</code> 代码如下：</p>
+<pre><code class="language-go">type AuthzRequest struct {
+    *request.BaseRequest
+    Resource *string `json:"resource"`
+    Action *string `json:"action"`
+    Subject *string `json:"subject"`
+    Context *ladon.Context
+}
+
+func (c *Client) Authz(req *AuthzRequest) (resp *AuthzResponse, err error) {
+    if req == nil {
+        req = NewAuthzRequest()
+    }
+
+    resp = NewAuthzResponse()
+    err = c.Send(req, resp)
+    return
+}
+</code></pre>
+<p>请求结构体中的字段都是指针类型的，使用指针的好处是可以判断入参是否有被指定，如果<code>req.Subject == nil</code> 就说明传参中没有Subject参数，如果<code>req.Subject != nil</code>就说明参数中有传Subject参数。根据某个参数是否被传入，执行不同的业务逻辑，这在Go API接口开发中非常常见。</p>
+<p>另外，因为Client通过匿名的方式继承了基础层中的<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/client.go#L18-L24" target="_blank">Client</a>：</p>
+<pre><code class="language-go">type Client struct {
+	sdk.Client
+}
+</code></pre>
+<p>所以，API层创建的Client最终可以直接调用基础层中的Client提供的<code>Send(req, resp)</code> 方法，来执行RESTful API调用，并将结果保存在 <code>resp</code> 中。</p>
+<p>为了方便和API层的Client进行区分，我下面统一将基础层中的Client称为<strong>sdk.Client</strong>。</p>
+<p>最后，一个完整的客户端调用示例代码如下：</p>
+<pre><code class="language-go">package main
+
+import (
+	"fmt"
+
+	"github.com/ory/ladon"
+
+	"github.com/marmotedu/medu-sdk-go/sdk"
+	iam "github.com/marmotedu/medu-sdk-go/services/iam/authz"
+)
+
+func main() {
+	client, _ := iam.NewClientWithSecret("XhbY3aCrfjdYcP1OFJRu9xcno8JzSbUIvGE2", "bfJRvlFwsoW9L30DlG87BBW0arJamSeK")
+
+	req := iam.NewAuthzRequest()
+	req.Resource = sdk.String("resources:articles:ladon-introduction")
+	req.Action = sdk.String("delete")
+	req.Subject = sdk.String("users:peter")
+	ctx := ladon.Context(map[string]interface{}{"remoteIPAddress": "192.168.0.5"})
+	req.Context = &amp;ctx
+
+	resp, err := client.Authz(req)
+	if err != nil {
+		fmt.Println("err1", err)
+		return
+	}
+	fmt.Printf("get response body: `%s`\n", resp.String())
+	fmt.Printf("allowed: %v\n", resp.Allowed)
+}
+</code></pre>
+<h3 id="基础层-构建并执行http请求">基础层：构建并执行HTTP请求</h3>
+<p>上面我们创建了客户端实例，并调用了它的 <a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/client.go#L61-L93" target="_blank">Send</a> 方法来完成最终的HTTP请求。这里，我们来看下Send方法具体是如何构建HTTP请求的。</p>
+<p>sdk.Client通过Send方法，完成最终的API调用，代码如下：</p>
+<pre><code class="language-go">func (c *Client) Send(req request.Request, resp response.Response) error {
+	method := req.GetMethod()
+	builder := GetParameterBuilder(method, c.Logger)
+	jsonReq, _ := json.Marshal(req)
+	encodedUrl, err := builder.BuildURL(req.GetURL(), jsonReq)
+	if err != nil {
+		return err
+	}
+
+	endPoint := c.Config.Endpoint
+	if endPoint == "" {
+		endPoint = fmt.Sprintf("%s/%s", defaultEndpoint, c.ServiceName)
+	}
+	reqUrl := fmt.Sprintf("%s://%s/%s%s", c.Config.Scheme, endPoint, req.GetVersion(), encodedUrl)
+
+	body, err := builder.BuildBody(jsonReq)
+	if err != nil {
+		return err
+	}
+
+	sign := func(r *http.Request) error {
+		signer := NewSigner(c.signMethod, c.Credential, c.Logger)
+		_ = signer.Sign(c.ServiceName, r, strings.NewReader(body))
+		return err
+	}
+
+	rawResponse, err := c.doSend(method, reqUrl, body, req.GetHeaders(), sign)
+	if err != nil {
+		return err
+	}
+
+	return response.ParseFromHttpResponse(rawResponse, resp)
+}
+</code></pre>
+<p>上面的代码大体上可以分为四个步骤。</p>
+<p><strong>第一步，Builder：构建请求参数。</strong></p>
+<p>根据传入的AuthzRequest和客户端配置Config，构造HTTP请求参数，包括请求路径和请求Body。</p>
+<p>接下来，我们来看下如何构造HTTP请求参数。</p>
+<ol>
+<li>HTTP请求路径构建</li>
+</ol>
+<p>在创建客户端时，我们通过<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/services/iam/authz/authz.go#L32-L42" target="_blank">NewAuthzRequest</a>函数创建了 <code>/v1/authz</code> REST API接口请求结构体AuthzRequest，代码如下：</p>
+<pre><code class="language-go">func NewAuthzRequest() (req *AuthzRequest) {    
+    req = &amp;AuthzRequest{    
+        BaseRequest: &amp;request.BaseRequest{    
+            URL:     "/authz",    
+            Method:  "POST",    
+            Header:  nil,    
+            Version: "v1",    
+        },    
+    }    
+    return                                
+}
+</code></pre>
+<p>可以看到，我们创建的 <code>req</code> 中包含了API版本（Version）、API路径（URL）和请求方法（Method）。这样，我们就可以在Send方法中，构建出请求路径：</p>
+<pre><code class="language-go">endPoint := c.Config.Endpoint                                                 
+if endPoint == "" {                                                          
+    endPoint = fmt.Sprintf("%s/%s", defaultEndpoint, c.ServiceName)           
+}                                                                  
+reqUrl := fmt.Sprintf("%s://%s/%s%s", c.Config.Scheme, endPoint, req.GetVersion(), encodedUrl) 
+</code></pre>
+<p>上述代码中，c.Config.Scheme=http/https、endPoint=iam.api.marmotedu.com:8080、req.GetVersion()=v1和encodedUrl，我们可以认为它们等于/authz。所以，最终构建出的请求路径为<code>http://iam.api.marmotedu.com:8080/v1/authz</code> 。</p>
+<ol>
+<li>HTTP请求Body构建</li>
+</ol>
+<p>在<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/parameter_builder.go#L68-L86" target="_blank">BuildBody</a>方法中构建请求Body。BuildBody会将 <code>req</code> Marshal成JSON格式的string。HTTP请求会以该字符串作为Body参数。</p>
+<p><strong>第二步，Signer：签发并添加认证头。</strong></p>
+<p>访问IAM的API接口需要进行认证，所以在发送HTTP请求之前，还需要给HTTP请求添加认证Header。</p>
+<p>medu-sdk-go 代码提供了JWT和HMAC两种认证方式，最终采用了JWT认证方式。JWT认证签发方法为<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/signer.go#L108-L113" target="_blank">Sign</a>，代码如下：</p>
+<pre><code class="language-go">func (v1 SignatureV1) Sign(serviceName string, r *http.Request, body io.ReadSeeker) http.Header {
+	tokenString := auth.Sign(v1.Credentials.SecretID, v1.Credentials.SecretKey, "medu-sdk-go", serviceName+".marmotedu.com")
+	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenString))
+	return r.Header
+
+}
+</code></pre>
+<p><code>auth.Sign</code> 方法根据SecretID和SecretKey签发JWT Token。</p>
+<p>接下来，我们就可以调用<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/client.go#L95-L112" target="_blank">doSend</a>方法来执行HTTP请求了。调用代码如下：</p>
+<pre><code class="language-go">rawResponse, err := c.doSend(method, reqUrl, body, req.GetHeaders(), sign)
+if err != nil {                                                               
+    return err     
+} 
+</code></pre>
+<p>可以看到，我们传入了HTTP请求方法 <code>method</code> 、HTTP请求URL <code>reqUrl</code> 、HTTP请求Body <code>body</code>，以及用来签发JWT Token的 <code>sign</code> 方法。我们在调用 <code>NewAuthzRequest</code> 创建 <code>req</code> 时，指定了HTTP Method，所以这里的 <code>method := req.GetMethod()</code> 、reqUrl和请求Body都是通过Builder来构建的。</p>
+<p><strong>第三步，Request：执行H</strong><strong>T</strong><strong>T</strong><strong>P</strong><strong>请求。</strong></p>
+<p>调用<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/client.go#L95-L112" target="_blank">doSend</a>方法执行HTTP请求，doSend通过调用 <code>net/http</code> 包提供的 <code>http.NewRequest</code> 方法来发送HTTP请求，执行完HTTP请求后，会返回 <code>*http.Response</code> 类型的Response。代码如下：</p>
+<pre><code class="language-go">func (c *Client) doSend(method, url, data string, header map[string]string, sign SignFunc) (*http.Response, error) {
+    client := &amp;http.Client{Timeout: c.Config.Timeout}
+
+    req, err := http.NewRequest(method, url, strings.NewReader(data))
+    if err != nil {
+        c.Logger.Errorf("%s", err.Error())
+        return nil, err
+    }
+
+    c.setHeader(req, header)
+
+    err = sign(req)
+    if err != nil {
+        return nil, err
+    }
+
+    return client.Do(req)
+}
+</code></pre>
+<p><strong>第四步，处理H</strong><strong>TT</strong><strong>P</strong><strong>请求</strong><strong>返回结果。</strong></p>
+<p>调用doSend方法返回 <code>*http.Response</code> 类型的Response后，Send方法会调用<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/response/response.go#L37-L52" target="_blank">ParseFromHttpResponse</a>函数来处理HTTP Response，ParseFromHttpResponse函数代码如下：</p>
+<pre><code class="language-go">func ParseFromHttpResponse(rawResponse *http.Response, response Response) error {
+	defer rawResponse.Body.Close()
+	body, err := ioutil.ReadAll(rawResponse.Body)
+	if err != nil {
+		return err
+	}
+	if rawResponse.StatusCode != 200 {
+		return fmt.Errorf("request fail with status: %s, with body: %s", rawResponse.Status, body)
+	}
+
+	if err := response.ParseErrorFromHTTPResponse(body); err != nil {
+		return err
+	}
+
+	return json.Unmarshal(body, &amp;response)
+}
+</code></pre>
+<p>可以看到，在ParseFromHttpResponse函数中，会先判断HTTP Response中的StatusCode是否为200，如果不是200，则会报错。如果是200，会调用传入的resp变量提供的<a href="https://github.com/marmotedu/medu-sdk-go/blob/v1.0.0/sdk/response/response.go#L26-L35" target="_blank">ParseErrorFromHTTPResponse</a>方法，来将HTTP Response的Body Unmarshal到resp变量中。-
+通过以上四步，SDK调用方调用了API，并获得了API的返回结果 <code>resp</code> 。</p>
+<p>下面这些公有云厂商的SDK采用了此设计模式：</p>
+<ul>
+<li>腾讯云SDK：<a href="https://github.com/TencentCloud/tencentcloud-sdk-go" target="_blank">tencentcloud-sdk-go</a>。</li>
+<li>AWS SDK：<a href="https://github.com/aws/aws-sdk-go" target="_blank">aws-sdk-go</a>。</li>
+<li>阿里云SDK：<a href="https://github.com/aliyun/alibaba-cloud-sdk-go" target="_blank">alibaba-cloud-sdk-go</a>。</li>
+<li>京东云SDK：<a href="https://github.com/jdcloud-api/jdcloud-sdk-go" target="_blank">jdcloud-sdk-go</a>。</li>
+<li>Ucloud SDK：<a href="https://github.com/ucloud/ucloud-sdk-go" target="_blank">ucloud-sdk-go</a>。</li>
+</ul>
+<p>IAM公有云方式的SDK实现为 <a href="https://github.com/marmotedu/medu-sdk-go" target="_blank">medu-sdk-go</a>。</p>
+<p>此外，IAM还设计并实现了Kubernetes client-go方式的Go SDK：<a href="https://github.com/marmotedu/marmotedu-sdk-go" target="_blank">marmotedu-sdk-go</a>，marmotedu-sdk-go也是IAM Go SDK所采用的SDK。下一讲中，我会具体介绍marmotedu-sdk-go的设计和实现。</p>
+<h2 id="总结">总结</h2>
+<p>这一讲，我主要介绍了如何设计一个优秀的Go SDK。通过提供SDK，可以提高API调用效率，减少API调用难度，所以大型应用通常都会提供SDK。不同团队有不同的SDK设计方法，但目前比较好的实现是公有云厂商采用的SDK设计方式。</p>
+<p>公有云厂商的SDK设计方式中，SDK按调用顺序从上到下可以分为3个模块，如下图所示：</p>
+<p><img alt="图片" src="assets/3615ce1c77e34b80abd0dcde3afd6c25.jpg"/></p>
+<p>Client构造SDK客户端，在构造客户端时，会创建请求参数 <code>req</code> ， <code>req</code> 中会指定API版本、HTTP请求方法、API请求路径等信息。</p>
+<p>Client会请求Builder和Signer来构建HTTP请求的各项参数：HTTP请求方法、HTTP请求路径、HTTP认证头、HTTP请求Body。Builder和Signer是根据 <code>req</code> 配置来构造这些HTTP请求参数的。</p>
+<p>构造完成之后，会请求Request模块，Request模块通过调用 <code>net/http</code> 包，来执行HTTP请求，并返回请求结果。</p>
+<h2 id="课后练习">课后练习</h2>
+<ol>
+<li>思考下，如何实现可以支持多个API版本的SDK包，代码如何实现？</li>
+<li>这一讲介绍了一种SDK实现方式，在你的Go开发生涯中，还有没有一些更好的SDK实现方法？欢迎在留言区分享。</li>
+</ol>
+<p>期待你在留言区与我交流讨论，我们下一讲见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#99f5f5f5a0ada8a8a9aed9fef4f8f0f5b7faf6f4" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935a1c918dbd578c',t:'MTc0NTU0NTAwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

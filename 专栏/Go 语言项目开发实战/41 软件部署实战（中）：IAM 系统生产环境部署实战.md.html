@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="41 软件部署实战（中）：IAM 系统生产环境部署实战" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>41 软件部署实战（中）：IAM 系统生产环境部署实战 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%81%e4%b8%9a%e7%ba%a7%20Go%20%e5%ba%94%e7%94%a8.md.html" id="00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html">00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/01%20IAM%e7%b3%bb%e7%bb%9f%e6%a6%82%e8%bf%b0%ef%bc%9a%e6%88%91%e4%bb%ac%e8%a6%81%e5%ae%9e%e7%8e%b0%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html">01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/02%20%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%89%e8%a3%85%e5%92%8c%e9%85%8d%e7%bd%ae%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84%20Go%20%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html">02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/03%20%e9%a1%b9%e7%9b%ae%e9%83%a8%e7%bd%b2%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e9%83%a8%e7%bd%b2%20IAM%20%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="03 项目部署：如何快速部署 IAM 系统？.md.html">03 项目部署：如何快速部署 IAM 系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/04%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e6%9d%82%e4%b9%b1%e6%97%a0%e7%ab%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html">04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/05%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9acommit%20%e4%bf%a1%e6%81%af%e9%a3%8e%e6%a0%bc%e8%bf%a5%e5%bc%82%e3%80%81%e9%9a%be%e4%bb%a5%e9%98%85%e8%af%bb%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html">05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/06%20%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e4%b8%80%e4%b8%aa%e5%8f%af%e7%bb%b4%e6%8a%a4%e3%80%81%e5%8f%af%e6%89%a9%e5%b1%95%e7%9a%84%e4%bb%a3%e7%a0%81%e7%9b%ae%e5%bd%95%ef%bc%9f.md.html" id="06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html">06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/07%20%e5%b7%a5%e4%bd%9c%e6%b5%81%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%90%88%e7%90%86%e7%9a%84%e5%a4%9a%e4%ba%ba%e5%bc%80%e5%8f%91%e6%a8%a1%e5%bc%8f%ef%bc%9f.md.html" id="07 工作流设计：如何设计合理的多人开发模式？.md.html">07 工作流设计：如何设计合理的多人开发模式？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/08%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%20Go%20%e9%a1%b9%e7%9b%ae%e7%9a%84%e5%bc%80%e5%8f%91%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html">08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/09%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%ba%94%e7%94%a8%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9f.md.html" id="09 研发流程设计（下）：如何管理应用的生命周期？.md.html">09 研发流程设计（下）：如何管理应用的生命周期？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/10%20%e8%ae%be%e8%ae%a1%e6%96%b9%e6%b3%95%ef%bc%9a%e6%80%8e%e4%b9%88%e5%86%99%e5%87%ba%e4%bc%98%e9%9b%85%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="10 设计方法：怎么写出优雅的 Go 项目？.md.html">10 设计方法：怎么写出优雅的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/11%20%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%ef%bc%9aGo%e5%b8%b8%e7%94%a8%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%e6%a6%82%e8%bf%b0.md.html" id="11 设计模式：Go常用设计模式概述.md.html">11 设计模式：Go常用设计模式概述.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/12%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1RESTful%20API%ef%bc%9f.md.html" id="12 API 风格（上）：如何设计RESTful API？.md.html">12 API 风格（上）：如何设计RESTful API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/13%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRPC%20API%e4%bb%8b%e7%bb%8d.md.html" id="13 API 风格（下）：RPC API介绍.md.html">13 API 风格（下）：RPC API介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/14%20%e9%a1%b9%e7%9b%ae%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e9%ab%98%e8%b4%a8%e9%87%8f%e7%9a%84Makefile%ef%bc%9f.md.html" id="14 项目管理：如何编写高质量的Makefile？.md.html">14 项目管理：如何编写高质量的Makefile？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/15%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e5%ae%9e%e6%88%98%ef%bc%9aIAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e7%ae%a1%e7%90%86%e7%9a%84%ef%bc%9f.md.html" id="15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html">15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/16%20%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9a%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e9%9d%99%e6%80%81%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9f.md.html" id="16 代码检查：如何进行静态代码检查？.md.html">16 代码检查：如何进行静态代码检查？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/17%20API%20%e6%96%87%e6%a1%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%20Swagger%20API%20%e6%96%87%e6%a1%a3%20%ef%bc%9f.md.html" id="17 API 文档：如何生成 Swagger API 文档 ？.md.html">17 API 文档：如何生成 Swagger API 文档 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e4%b8%80%e5%a5%97%e7%a7%91%e5%ad%a6%e7%9a%84%e9%94%99%e8%af%af%e7%a0%81%ef%bc%9f.md.html" id="18 错误处理（上）：如何设计一套科学的错误码？.md.html">18 错误处理（上）：如何设计一套科学的错误码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e9%94%99%e8%af%af%e5%8c%85%ef%bc%9f.md.html" id="19 错误处理（下）：如何设计错误包？.md.html">19 错误处理（下）：如何设计错误包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/20%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e6%97%a5%e5%bf%97%e5%8c%85%e5%b9%b6%e8%ae%b0%e5%bd%95%e6%97%a5%e5%bf%97%ef%bc%9f.md.html" id="20 日志处理（上）：如何设计日志包并记录日志？.md.html">20 日志处理（上）：如何设计日志包并记录日志？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/21%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e4%bb%8e%200%20%e7%bc%96%e5%86%99%e4%b8%80%e4%b8%aa%e6%97%a5%e5%bf%97%e5%8c%85.md.html" id="21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html">21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/22%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e4%b8%89%e5%89%91%e5%ae%a2%ef%bc%9aPflag%e3%80%81Viper%e3%80%81Cobra%20%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e4%bb%8b%e7%bb%8d.md.html" id="22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html">22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/23%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e5%ae%9e%e6%88%98%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%e4%bc%81%e4%b8%9a%e5%ba%94%e7%94%a8%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html">23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/24%20Web%20%e6%9c%8d%e5%8a%a1%ef%bc%9aWeb%20%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html">24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/25%20%e8%ae%a4%e8%af%81%e6%9c%ba%e5%88%b6%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%ef%bc%9f.md.html" id="25 认证机制：应用程序如何进行访问认证？.md.html">25 认证机制：应用程序如何进行访问认证？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/26%20IAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%e5%8a%9f%e8%83%bd%e7%9a%84%ef%bc%9f.md.html" id="26 IAM项目是如何设计和实现访问认证功能的？.md.html">26 IAM项目是如何设计和实现访问认证功能的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/27%20%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%ef%bc%9a5%e5%a4%a7%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%b5%84%e6%ba%90%e6%8e%88%e6%9d%83%e7%9a%84%ef%bc%9f.md.html" id="27 权限模型：5大权限模型是如何进行资源授权的？.md.html">27 权限模型：5大权限模型是如何进行资源授权的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/28%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%80%9a%e8%bf%87iam-apiserver%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8bWeb%e6%9c%8d%e5%8a%a1%e7%9a%84%e6%9e%84%e5%bb%ba.md.html" id="28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html">28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/29%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aiam-apiserver%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html">29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/30%20ORM%ef%bc%9aCURD%20%e7%a5%9e%e5%99%a8%20GORM%20%e5%8c%85%e4%bb%8b%e7%bb%8d%e5%8f%8a%e5%ae%9e%e6%88%98.md.html" id="30 ORM：CURD 神器 GORM 包介绍及实战.md.html">30 ORM：CURD 神器 GORM 包介绍及实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/31%20%e6%95%b0%e6%8d%ae%e6%b5%81%ef%bc%9a%e9%80%9a%e8%bf%87iam-authz-server%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8b%e6%95%b0%e6%8d%ae%e6%b5%81%e6%9c%8d%e5%8a%a1%e7%9a%84%e8%ae%be%e8%ae%a1.md.html" id="31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html">31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/32%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%a4%84%e7%90%86%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%ba%a7%e7%94%9f%e7%9a%84%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="32 数据处理：如何高效处理应用程序产生的数据？.md.html">32 数据处理：如何高效处理应用程序产生的数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/33%20%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%87%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%20Go%20SDK%ef%bc%9f.md.html" id="33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html">33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/34%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e9%a1%b9%e7%9b%aeGo%20SDK%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html">34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/35%20%e6%95%88%e7%8e%87%e7%a5%9e%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%ae%a2%e6%88%b7%e7%ab%af%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="35 效率神器：如何设计和实现一个命令行客户端工具？.md.html">35 效率神器：如何设计和实现一个命令行客户端工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/36%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%20Go%20%e8%af%ad%e8%a8%80%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%e5%92%8c%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%94%a8%e4%be%8b%ef%bc%9f.md.html" id="36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html">36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/37%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aGo%20%e8%af%ad%e8%a8%80%e5%85%b6%e4%bb%96%e6%b5%8b%e8%af%95%e7%b1%bb%e5%9e%8b%e5%8f%8a%20IAM%20%e6%b5%8b%e8%af%95%e4%bb%8b%e7%bb%8d.md.html" id="37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html">37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/38%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e6%9e%90%20Go%20%e8%af%ad%e8%a8%80%e4%bb%a3%e7%a0%81%e7%9a%84%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html">38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/39%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aAPI%20Server%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e5%92%8c%e8%b0%83%e4%bc%98%e5%ae%9e%e6%88%98.md.html" id="39 性能分析（下）：API Server性能测试和调优实战.md.html">39 性能分析（下）：API Server性能测试和调优实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/40%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%83%a8%e7%bd%b2%e6%96%b9%e6%a1%88%e5%8f%8a%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e3%80%81%e9%ab%98%e5%8f%af%e7%94%a8%e7%bb%84%e4%bb%b6%e4%bb%8b%e7%bb%8d.md.html" id="40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html">40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/41%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aIAM%20%e7%b3%bb%e7%bb%9f%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html">41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/42%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e7%b3%bb%e7%bb%9f%e5%ae%89%e5%85%a8%e5%8a%a0%e5%9b%ba%e3%80%81%e6%b0%b4%e5%b9%b3%e6%89%a9%e7%bc%a9%e5%ae%b9%e5%ae%9e%e6%88%98.md.html" id="42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html">42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/43%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%8c%96%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="43 技术演进（上）：虚拟化技术演进之路.md.html">43 技术演进（上）：虚拟化技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/44%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%e5%92%8c%e5%ba%94%e7%94%a8%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html">44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/45%20%e5%9f%ba%e4%ba%8eKubernetes%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1.md.html" id="45 基于Kubernetes的云原生架构设计.md.html">45 基于Kubernetes的云原生架构设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/46%20%e5%a6%82%e4%bd%95%e5%88%b6%e4%bd%9cDocker%e9%95%9c%e5%83%8f%ef%bc%9f.md.html" id="46 如何制作Docker镜像？.md.html">46 如何制作Docker镜像？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/47%20%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99Kubernetes%e8%b5%84%e6%ba%90%e5%ae%9a%e4%b9%89%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="47 如何编写Kubernetes资源定义文件？.md.html">47 如何编写Kubernetes资源定义文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/48%20IAM%20%e5%ae%b9%e5%99%a8%e5%8c%96%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="48 IAM 容器化部署实战.md.html">48 IAM 容器化部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/49%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aHelm%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86.md.html" id="49 服务编排（上）：Helm服务编排基础知识.md.html">49 服务编排（上）：Helm服务编排基础知识.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/50%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%9f%ba%e4%ba%8eHelm%e7%9a%84%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="50 服务编排（下）：基于Helm的服务编排部署实战.md.html">50 服务编排（下）：基于Helm的服务编排部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/51%20%e5%9f%ba%e4%ba%8e%20GitHub%20Actions%20%e7%9a%84%20CI%20%e5%ae%9e%e6%88%98.md.html" id="51 基于 GitHub Actions 的 CI 实战.md.html">51 基于 GitHub Actions 的 CI 实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e4%be%9d%e8%b5%96%e5%8c%85%e7%ae%a1%e7%90%86%e5%85%a8%e8%ae%b2.md.html" id="特别放送 Go Modules依赖包管理全讲.md.html">特别放送 Go Modules依赖包管理全讲.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e5%ae%9e%e6%88%98.md.html" id="特别放送 Go Modules实战.md.html">特别放送 Go Modules实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20IAM%e6%8e%92%e9%9a%9c%e6%8c%87%e5%8d%97.md.html" id="特别放送 IAM排障指南.md.html">特别放送 IAM排障指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%9c%e4%b8%9a%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="特别放送 分布式作业系统设计和实现.md.html">特别放送 分布式作业系统设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bdGo%e9%a1%b9%e7%9b%ae%e4%b8%ad%e6%9c%80%e5%b8%b8%e7%94%a8%e7%9a%84Makefile%e6%a0%b8%e5%bf%83%e8%af%ad%e6%b3%95.md.html" id="特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html">特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bd%e6%b8%85%e6%99%b0%e3%80%81%e5%8f%af%e7%9b%b4%e6%8e%a5%e5%a5%97%e7%94%a8%e7%9a%84Go%e7%bc%96%e7%a0%81%e8%a7%84%e8%8c%83.md.html" id="特别放送 给你一份清晰、可直接套用的Go编码规范.md.html">特别放送 给你一份清晰、可直接套用的Go编码规范.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%9b%b4%e6%92%ad%e5%8a%a0%e9%a4%90%20%e5%a6%82%e4%bd%95%e4%bb%8e%e5%b0%8f%e7%99%bd%e8%bf%9b%e9%98%b6%e6%88%90%20Go%20%e8%af%ad%e8%a8%80%e4%b8%93%e5%ae%b6%ef%bc%9f.md.html" id="直播加餐 如何从小白进阶成 Go 语言专家？.md.html">直播加餐 如何从小白进阶成 Go 语言专家？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%a6%82%e4%bd%95%e8%ae%a9%e8%87%aa%e5%b7%b1%e7%9a%84%20Go%20%e7%a0%94%e5%8f%91%e4%b9%8b%e8%b7%af%e8%b5%b0%e5%be%97%e6%9b%b4%e8%bf%9c%ef%bc%9f.md.html" id="结束语 如何让自己的 Go 研发之路走得更远？.md.html">结束语 如何让自己的 Go 研发之路走得更远？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="41 软件部署实战（中）：IAM 系统生产环境部署实战" id="title">41 软件部署实战（中）：IAM 系统生产环境部署实战</h1>
+<div><p>你好，我是孔令飞。</p>
+<p>上一讲，我介绍了IAM部署用到的两个核心组件，Nginx和Keepalived。那么这一讲，我们就来看下，如何使用Nginx和Keepalived来部署一个高可用的IAM应用。下一讲，我再介绍下IAM应用安全和弹性伸缩能力的构建方式。</p>
+<p>这一讲，我们会通过下面四个步骤来部署IAM应用：</p>
+<ol>
+<li>在服务器上部署IAM应用中的服务。</li>
+<li>配置Nginx，实现反向代理功能。通过反向代理，我们可以通过Nginx来访问部署在内网的IAM服务。</li>
+<li>配置Nginx，实现负载均衡功能。通过负载均衡，我们可以实现服务的水平扩缩容，使IAM应用具备高可用能力。</li>
+<li>配置Keepalived，实现Nginx的高可用。通过Nginx + Keepalived的组合，可以实现整个应用架构的高可用。</li>
+</ol>
+<h2 id="部署iam应用">部署IAM应用</h2>
+<p>部署一个高可用的IAM应用，需要至少两个节点。所以，我们按照先后顺序，分别在<code>10.0.4.20</code>和<code>10.0.4.21</code>服务器上部署IAM应用。</p>
+<h3 id="在-10-0-4-20-服务器上部署iam应用">在<code>10.0.4.20</code>服务器上部署IAM应用</h3>
+<p>首先，我来介绍下如何在<code>10.0.4.20</code>服务器上部署IAM应用。</p>
+<p>我们要在这个服务器上部署如下组件：</p>
+<ul>
+<li>iam-apiserver</li>
+<li>iam-authz-server</li>
+<li>iam-pump</li>
+<li>MariaDB</li>
+<li>Redis</li>
+<li>MongoDB</li>
+</ul>
+<p>这些组件的部署方式，<a href="https://time.geekbang.org/column/article/378082" target="_blank">03讲</a> 有介绍，这里就不再说明。</p>
+<p>此外，我们还需要设置MariaDB，给来自于<code>10.0.4.21</code>服务器的数据库连接授权，授权命令如下：</p>
+<pre><code class="language-bash">$ mysql -hlocalhost -P3306 -uroot -proot # 先以root用户登陆数据库
+MariaDB [(none)]&gt; grant all on iam.* TO <a class="__cf_email__" data-cfemail="97fef6fad7a6a7b9a7b9a3b9a5a6" href="/cdn-cgi/l/email-protection">[email protected]</a> identified by 'iam1234';
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [(none)]&gt; flush privileges;
+Query OK, 0 rows affected (0.000 sec)
+</code></pre>
+<h3 id="在-10-0-4-21-服务器上部署iam应用">在<code>10.0.4.21</code>服务器上部署IAM应用</h3>
+<p>然后，在<code>10.0.4.21</code>服务器上安装好iam-apiserver、iam-authz-server 和 iam-pump。这些组件通过<code>10.0.4.20</code> IP地址，连接<code>10.0.4.20</code>服务器上的MariaDB、Redis和MongoDB。</p>
+<h2 id="配置nginx作为反向代理">配置Nginx作为反向代理</h2>
+<p>假定要访问的API Server和IAM Authorization Server的域名分别为<code>iam.api.marmotedu.com</code>和<code>iam.authz.marmotedu.com</code>，我们需要分别为iam-apiserver和iam-authz-server配置Nginx反向代理。整个配置过程可以分为5步（在<code>10.0.4.20</code>服务器上操作）。</p>
+<p><strong>第一步，配置iam-apiserver。</strong></p>
+<p>新建Nginx配置文件<code>/etc/nginx/conf.d/iam-apiserver.conf</code>，内容如下：</p>
+<pre><code class="language-plain">server {
+    listen       80;
+    server_name  iam.api.marmotedu.com;
+    root         /usr/share/nginx/html;
+    location / {
+    	proxy_set_header X-Forwarded-Host $http_host;
+    	proxy_set_header X-Real-IP $remote_addr;
+    	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    	proxy_pass  http://127.0.0.1:8080/;
+    	client_max_body_size 5m;
+    }
+
+    error_page 404 /404.html;
+        location = /40x.html {
+    }
+
+    error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+    }
+}
+</code></pre>
+<p>有几点你在配置时需要注意，这里说明下。</p>
+<ul>
+<li><code>server_name</code>需要为<code>iam.api.marmotedu.com</code>，我们通过<code>iam.api.marmotedu.com</code>访问iam-apiserver。</li>
+<li>iam-apiserver默认启动的端口为<code>8080</code>。</li>
+<li>由于Nginx默认允许客户端请求的最大单文件字节数为<code>1MB</code>，实际生产环境中可能太小，所以这里将此限制改为5MB（<code>client_max_body_size 5m</code>）。如果需要上传图片之类的，可能需要设置成更大的值，比如<code>50m</code>。</li>
+<li>server_name用来说明访问Nginx服务器的域名，例如<code>curl -H 'Host: iam.api.marmotedu.com' http://x.x.x.x:80/healthz</code>，<code>x.x.x.x</code>为Nginx服务器的IP地址。</li>
+<li>proxy_pass表示反向代理的路径。因为这里是本机的iam-apiserver服务，所以IP为<code>127.0.0.1</code>。端口要和API服务端口一致，为<code>8080</code>。</li>
+</ul>
+<p>最后还要提醒下，因为 Nginx 配置选项比较多，跟实际需求和环境有关，所以这里的配置是基础的、未经优化的配置，在实际生产环境中需要你再做调节。</p>
+<p><strong>第二步，配置iam-authz-server。</strong></p>
+<p>新建Nginx配置文件<code>/etc/nginx/conf.d/iam-authz-server.conf</code>，内容如下：</p>
+<pre><code class="language-plain">server {
+    listen       80;
+    server_name  iam.authz.marmotedu.com;
+    root         /usr/share/nginx/html;
+    location / {
+    	proxy_set_header X-Forwarded-Host $http_host;
+    	proxy_set_header X-Real-IP $remote_addr;
+    	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    	proxy_pass  http://127.0.0.1:9090/;
+    	client_max_body_size 5m;
+    }
+
+    error_page 404 /404.html;
+        location = /40x.html {
+    }
+
+    error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+    }
+}
+</code></pre>
+<p>下面是一些配置说明。</p>
+<ul>
+<li>server_name需要为<code>iam.authz.marmotedu.com</code>，我们通过<code>iam.authz.marmotedu.com</code>访问iam-authz-server。</li>
+<li>iam-authz-server默认启动的端口为<code>9090</code>。</li>
+<li>其他配置跟<code>/etc/nginx/conf.d/iam-apiserver.conf</code>一致。</li>
+</ul>
+<p><strong>第三步，配置完Nginx后，重启Nginx：</strong></p>
+<pre><code class="language-bash">$ sudo systemctl restart nginx
+</code></pre>
+<p><strong>第四步，在/etc/hosts中追加下面两行：</strong></p>
+<pre><code class="language-bash">127.0.0.1 iam.api.marmotedu.com
+127.0.0.1 iam.authz.marmotedu.com
+</code></pre>
+<p><strong>第五步，发送HTTP请求：</strong></p>
+<pre><code class="language-bash">$ curl http://iam.api.marmotedu.com/healthz
+{"status":"ok"}
+$ curl http://iam.authz.marmotedu.com/healthz
+{"status":"ok"}
+</code></pre>
+<p>我们分别请求iam-apiserver和iam-authz-server的健康检查接口，输出了<code>{"status":"ok"}</code>，说明我们可以成功通过代理访问后端的API服务。</p>
+<p>在用curl请求<code>http://iam.api.marmotedu.com/healthz</code>后，后端的请求流程实际上是这样的：</p>
+<ol>
+<li>因为在<code>/etc/hosts</code>中配置了<code>127.0.0.1 iam.api.marmotedu.com</code>，所以请求<code>http://iam.api.marmotedu.com/healthz</code>实际上是请求本机的Nginx端口（<code>127.0.0.1:80</code>）。</li>
+<li>Nginx在收到请求后，会解析请求，得到请求域名为<code>iam.api.marmotedu.com</code>。根据请求域名去匹配 Nginx的server配置，匹配到<code>server_name iam.api.marmotedu.com;</code>配置。</li>
+<li>匹配到server后，把请求转发到该server的<code>proxy_pass</code>路径。</li>
+<li>等待API服务器返回结果，并返回客户端。</li>
+</ol>
+<h2 id="配置nginx作为负载均衡">配置Nginx作为负载均衡</h2>
+<p>这门课采用Nginx轮询的负载均衡策略转发请求。负载均衡需要至少两台服务器，所以会分别在<code>10.0.4.20</code>和<code>10.0.4.21</code>服务器上执行相同的操作。下面我分别来介绍下如何配置这两台服务器，并验证配置是否成功。</p>
+<h3 id="10-0-4-20-服务器配置"><code>10.0.4.20</code>服务器配置</h3>
+<p>登陆<code>10.0.4.20</code>服务器，在<code>/etc/nginx/nginx.conf</code>中添加upstream配置，配置过程可以分为3步。</p>
+<p><strong>第一步，在</strong><code>/etc/nginx/nginx.conf</code><strong>中添加upstream：</strong></p>
+<pre><code class="language-plain">http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+    upstream iam.api.marmotedu.com {
+        server 127.0.0.1:8080
+        server 10.0.4.21:8080
+    }
+    upstream iam.authz.marmotedu.com {
+        server 127.0.0.1:9090
+        server 10.0.4.21:9090
+    }
+}
+</code></pre>
+<p>配置说明：</p>
+<ul>
+<li>upstream是配置在<code>/etc/nginx/nginx.conf</code>文件中的<code>http{ … }</code>部分的。</li>
+<li>因为我们要分别为iam-apiserver和iam-authz-server配置负载均衡，所以我们创建了两个upstream，分别是<code>iam.api.marmotedu.com</code>和<code>iam.authz.marmotedu.com</code>。为了便于识别，upstream名称和域名最好保持一致。</li>
+<li>在upstream中，我们需要分别添加所有的iam-apiserver和iam-authz-server的后端（<code>ip:port</code>），本机的后端为了访问更快，可以使用<code>127.0.0.1:&lt;port&gt;</code>，其他机器的后端，需要使用<code>&lt;内网&gt;:port</code>，例如<code>10.0.4.21:8080</code>、<code>10.0.4.21:9090</code>。</li>
+</ul>
+<p><strong>第二步，修改proxy_pass。</strong></p>
+<p>修改<code>/etc/nginx/conf.d/iam-apiserver.conf</code>文件，将<code>proxy_pass</code>修改为：</p>
+<pre><code class="language-plain">proxy_pass http://iam.api.marmotedu.com/;
+</code></pre>
+<p>修改<code>/etc/nginx/conf.d/iam-authz-server.conf</code>文件，将<code>proxy_pass</code>修改为：</p>
+<pre><code class="language-plain">proxy_pass http://iam.authz.marmotedu.com/;
+</code></pre>
+<p>当Nginx转发到<code>http://iam.api.marmotedu.com/</code>域名时，会从<code>iam.api.marmotedu.com</code> upstream配置的后端列表中，根据负载均衡策略选取一个后端，并将请求转发过去。转发<code>http://iam.authz.marmotedu.com/</code>域名的逻辑也一样。</p>
+<p><strong>第三步，配置完Nginx后，重启Nginx：</strong></p>
+<pre><code class="language-bash">$ sudo systemctl restart nginx
+</code></pre>
+<p>最终配置好的配置文件，你可以参考下面这些（保存在<a href="https://github.com/marmotedu/iam/tree/v1.0.8/configs/ha/10.0.4.20" target="_blank">configs/ha/10.0.4.20</a>目录下）：</p>
+<ul>
+<li>nginx.conf：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.20/nginx.conf" target="_blank">configs/ha/10.0.4.20/nginx.conf</a>。</li>
+<li>iam-apiserver.conf：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.20/iam-apiserver.conf" target="_blank">configs/ha/10.0.4.20/iam-apiserver.conf</a>。</li>
+<li>iam-authz-server.conf：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.20/iam-authz-server.conf" target="_blank">configs/ha/10.0.4.20/iam-authz-server.conf</a>。</li>
+</ul>
+<h3 id="10-0-4-21-服务器配置"><code>10.0.4.21</code>服务器配置</h3>
+<p>登陆<code>10.0.4.21</code>服务器，在<code>/etc/nginx/nginx.conf</code>中添加upstream配置。配置过程可以分为下面4步。</p>
+<p><strong>第一步，在</strong><code>/etc/nginx/nginx.conf</code><strong>中添加upstream：</strong></p>
+<pre><code class="language-plain">http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+    upstream iam.api.marmotedu.com {
+        server 127.0.0.1:8080
+        server 10.0.4.20:8080
+    }
+    upstream iam.authz.marmotedu.com {
+        server 127.0.0.1:9090
+        server 10.0.4.20:9090
+    }
+}
+</code></pre>
+<p>upstream中，需要配置<code>10.0.4.20</code>服务器上的iam-apiserver和iam-authz-server的后端，例如<code>10.0.4.20:8080</code>、<code>10.0.4.20:9090</code>。</p>
+<p><strong>第二步，创建</strong><code>/etc/nginx/conf.d/iam-apiserver.conf</code><strong>文件</strong>（iam-apiserver的反向代理+负载均衡配置），内容如下：</p>
+<pre><code class="language-plain">server {
+    listen       80;
+    server_name  iam.api.marmotedu.com;
+    root         /usr/share/nginx/html;
+    location / {
+    	proxy_set_header X-Forwarded-Host $http_host;
+    	proxy_set_header X-Real-IP $remote_addr;
+    	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    	proxy_pass  http://iam.api.marmotedu.com/;
+    	client_max_body_size 5m;
+    }
+
+    error_page 404 /404.html;
+        location = /40x.html {
+    }
+
+    error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+    }
+}
+</code></pre>
+<p><strong>第三步，创建</strong><code>/etc/nginx/conf.d/iam-authz-server</code><strong>文件</strong>（iam-authz-server的反向代理+负载均衡配置），内容如下：</p>
+<pre><code class="language-plain">server {
+    listen       80;
+    server_name  iam.authz.marmotedu.com;
+    root         /usr/share/nginx/html;
+    location / {
+    	proxy_set_header X-Forwarded-Host $http_host;
+    	proxy_set_header X-Real-IP $remote_addr;
+    	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    	proxy_pass  http://iam.authz.marmotedu.com/;
+    	client_max_body_size 5m;
+    }
+
+    error_page 404 /404.html;
+        location = /40x.html {
+    }
+
+    error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+    }
+}
+
+</code></pre>
+<p><strong>第四步，配置完Nginx后，重启Nginx：</strong></p>
+<pre><code class="language-bash">$ sudo systemctl restart nginx
+</code></pre>
+<p>最终配置好的配置文件，你可以参考下面这些（保存在<a href="https://github.com/marmotedu/iam/tree/v1.0.8/configs/ha/10.0.4.21" target="_blank">configs/ha/10.0.4.21</a>目录下）：</p>
+<ul>
+<li>nginx.conf：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.21/nginx.conf" target="_blank">configs/ha/10.0.4.21/nginx.conf</a>。</li>
+<li>iam-apiserver.conf：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.21/iam-apiserver.conf" target="_blank">configs/ha/10.0.4.21/iam-apiserver.conf</a>。</li>
+<li>iam-authz-server.conf：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.21/iam-authz-server.conf" target="_blank">configs/ha/10.0.4.21/iam-authz-server.conf</a>。</li>
+</ul>
+<h3 id="测试负载均衡">测试负载均衡</h3>
+<p>上面，我们配置了Nginx负载均衡器，这里我们还需要测试下是否配置成功。</p>
+<p><strong>第一步，执行测试脚本（</strong><a href="https://github.com/marmotedu/iam/blob/v1.0.8/test/nginx/loadbalance.sh" target="_blank">test/nginx/loadbalance.sh</a><strong>）：</strong></p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+
+for domain in iam.api.marmotedu.com iam.authz.marmotedu.com
+do
+  for n in $(seq 1 1 10)
+  do
+    echo $domain
+    nohup curl http://${domain}/healthz &amp;&gt;/dev/null &amp;
+  done
+done
+</code></pre>
+<p><strong>第二步，分别查看iam-apiserver和iam-authz-server的日志。</strong></p>
+<p>这里我展示下iam-apiserver的日志（iam-authz-server的日志你可自行查看）。</p>
+<p><code>10.0.4.20</code>服务器的iam-apiserver日志如下图所示：</p>
+<p><img alt="图片" src="assets/390d7db551034085a7fe1e8293b4bb19.jpg"/></p>
+<p><code>10.0.4.21</code>服务器的iam-apiserver日志如下图所示：</p>
+<p><img alt="图片" src="assets/1220a8a1ca394a4db8f114f7871cc2a0.jpg"/></p>
+<p>通过上面两张图，你可以看到<code>10.0.4.20</code>和<code>10.0.4.21</code>各收到<code>5</code>个<code>/healthz</code>请求，说明负载均衡配置成功。</p>
+<h2 id="配置keepalived">配置Keepalived</h2>
+<p>在 <a href="https://time.geekbang.org/column/article/411663" target="_blank">40讲</a>，我们分别在<code>10.0.4.20</code>和<code>10.0.4.21</code>服务器上安装了Keepalived。这里，我来介绍下如何配置Keepalived，实现Nginx的高可用。为了避免故障恢复时，VIP切换造成的服务延时，这一讲采用Keepalived的非抢占模式。</p>
+<p>配置Keepalived的流程比较复杂，分为创建腾讯云HAVIP、主服务器配置、备服务器配置、测试Keepalived、VIP绑定公网IP和测试公网访问六大步，每一步中都有很多小步骤，下面我们来一步步地看下。</p>
+<h3 id="第一步-创建腾讯云havip"><strong>第一步：创建腾讯云HAVIP</strong></h3>
+<p>公有云厂商的普通内网IP，出于安全考虑（如避免ARP欺骗等），不支持主机通过ARP宣告IP 。如果用户直接在<code>keepalived.conf</code>文件中指定一个普通内网IP为virtual IP，当Keepalived将virtual IP从MASTER机器切换到BACKUP机器时，将无法更新IP和MAC地址的映射，而需要调API来进行IP切换。所以，这里的VIP需要申请腾讯云的HAVIP。</p>
+<p>申请的流程可以分为下面4步：</p>
+<ol>
+<li>登录私有网络控制台<strong>。</strong></li>
+<li>在左侧导航栏中，选择【IP与网卡】&gt;【高可用虚拟IP】。</li>
+<li>在HAVIP管理页面，选择所在地域，单击【申请】。</li>
+<li>在弹出的【申请高可用虚拟IP】对话框中输入名称，选择HAVIP所在的私有网络和子网等信息，单击【确定】即可。</li>
+</ol>
+<p>这里选择的私有网络和子网，需要和<code>10.0.4.20</code>、<code>10.0.4.21</code>相同。HAVIP 的 IP 地址可以自动分配，也可以手动填写，这里我们手动填写为10.0.4.99。申请页面如下图所示：</p>
+<p><img alt="图片" src="assets/fd4e3280be6e4a9fa820cf051a46dddc.jpg"/></p>
+<h3 id="第二步-主服务器配置">第二步：主服务器配置</h3>
+<p>进行主服务器配置，可以分为两步。</p>
+<p><strong>首先，修改Keepalived配置文件。</strong></p>
+<p>登陆服务器<code>10.0.4.20</code>，编辑<code>/etc/keepalived/keepalived.conf</code>，修改配置，修改后配置内容如下（参考：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.20/keepalived.conf" target="_blank">configs/ha/10.0.4.20/keepalived.conf</a>）：</p>
+<pre><code class="language-bash"># 全局定义，定义全局的配置选项
+global_defs {
+# 指定keepalived在发生切换操作时发送email，发送给哪些email
+# 建议在keepalived_notify.sh中发送邮件
+  notification_email {
+    <a class="__cf_email__" data-cfemail="b7d6d4d6c4c4d2d9f7d1dec5d2c0d6dbdb99dbd8d4" href="/cdn-cgi/l/email-protection">[email protected]</a>
+  }
+  notification_email_from <a class="__cf_email__" data-cfemail="33725f564b525d5741561d70524040565d73555a415644525f5f1d5f5c50" href="/cdn-cgi/l/email-protection">[email protected]</a> # 发送email时邮件源地址
+    smtp_server 192.168.200.1 # 发送email时smtp服务器地址
+    smtp_connect_timeout 30 # 连接smtp的超时时间
+    router_id VM-4-20-centos # 机器标识，通常可以设置为hostname
+    vrrp_skip_check_adv_addr # 如果接收到的报文和上一个报文来自同一个路由器，则不执行检查。默认是跳过检查
+    vrrp_garp_interval 0 # 单位秒，在一个网卡上每组gratuitous arp消息之间的延迟时间，默认为0
+    vrrp_gna_interval 0 # 单位秒，在一个网卡上每组na消息之间的延迟时间，默认为0
+}
+# 检测脚本配置
+vrrp_script checkhaproxy
+{
+  script "/etc/keepalived/check_nginx.sh" # 检测脚本路径
+    interval 5 # 检测时间间隔（秒）
+    weight 0 # 根据该权重改变priority，当值为0时，不改变实例的优先级
+}
+# VRRP实例配置
+vrrp_instance VI_1 {
+  state BACKUP  # 设置初始状态为'备份'
+    interface eth0 # 设置绑定VIP的网卡，例如eth0
+    virtual_router_id 51  # 配置集群VRID，互为主备的VRID需要是相同的值
+    nopreempt               # 设置非抢占模式，只能设置在state为backup的节点上
+    priority 100 # 设置优先级，值范围0～254，值越大优先级越高，最高的为master
+    advert_int 1 # 组播信息发送时间间隔，两个节点必须设置一样，默认为1秒
+# 验证信息，两个节点必须一致
+    authentication {
+      auth_type PASS # 认证方式，可以是PASS或AH两种认证方式
+        auth_pass 1111 # 认证密码
+    }
+  unicast_src_ip 10.0.4.20  # 设置本机内网IP地址
+    unicast_peer {
+      10.0.4.21             # 对端设备的IP地址
+    }
+# VIP，当state为master时添加，当state为backup时删除
+  virtual_ipaddress {
+    10.0.4.99 # 设置高可用虚拟VIP，如果是腾讯云的CVM，需要填写控制台申请到的HAVIP地址。
+  }
+  notify_master "/etc/keepalived/keepalived_notify.sh MASTER" # 当切换到master状态时执行脚本
+    notify_backup "/etc/keepalived/keepalived_notify.sh BACKUP" # 当切换到backup状态时执行脚本
+    notify_fault "/etc/keepalived/keepalived_notify.sh FAULT" # 当切换到fault状态时执行脚本
+    notify_stop "/etc/keepalived/keepalived_notify.sh STOP" # 当切换到stop状态时执行脚本
+    garp_master_delay 1    # 设置当切为主状态后多久更新ARP缓存
+    garp_master_refresh 5   # 设置主节点发送ARP报文的时间间隔
+    # 跟踪接口，里面任意一块网卡出现问题，都会进入故障(FAULT)状态
+    track_interface {
+      eth0
+    }
+  # 要执行的检查脚本
+  track_script {
+    checkhaproxy
+  }
+}
+</code></pre>
+<p>这里有几个注意事项：</p>
+<ul>
+<li>确保已经配置了garp相关参数。因为Keepalived依赖ARP报文更新IP信息，如果缺少这些参数，会导致某些场景下主设备不发送ARP，进而导致通信异常。garp相关参数配置如下：</li>
+</ul>
+<pre><code class="language-plain">garp_master_delay 1
+garp_master_refresh 5
+</code></pre>
+<ul>
+<li>确定没有采用 strict 模式，即需要删除vrrp_strict配置。</li>
+<li>配置中的<code>/etc/keepalived/check_nginx.sh</code>和<code>/etc/keepalived/keepalived_notify.sh</code>脚本文件，可分别拷贝自<a href="https://github.com/marmotedu/iam/blob/v1.0.8/scripts/check_nginx.sh" target="_blank">scripts/check_nginx.sh</a>和<a href="https://github.com/marmotedu/iam/blob/v1.0.8/scripts/keepalived_notify.sh" target="_blank">scripts/keepalived_notify.sh</a>。</li>
+</ul>
+<p><strong>然后，重启Keepalived：</strong></p>
+<pre><code class="language-bash">$ sudo systemctl restart keepalived
+</code></pre>
+<h3 id="第三步-备服务器配置">第三步：备服务器配置</h3>
+<p>进行备服务器配置也分为两步。</p>
+<p><strong>首先，修改Keepalived配置文件。</strong></p>
+<p>登陆服务器<code>10.0.4.21</code>，编辑<code>/etc/keepalived/keepalived.conf</code>，修改配置，修改后配置内容如下（参考：<a href="https://github.com/marmotedu/iam/blob/v1.0.8/configs/ha/10.0.4.21/keepalived.conf" target="_blank">configs/ha/10.0.4.21/keepalived.conf</a>）：</p>
+<pre><code class="language-plain"># 全局定义，定义全局的配置选项
+global_defs {
+# 指定keepalived在发生切换操作时发送email，发送给哪些email
+# 建议在keepalived_notify.sh中发送邮件
+  notification_email {
+    <a class="__cf_email__" data-cfemail="630200021010060d23050a110614020f0f4d0f0c00" href="/cdn-cgi/l/email-protection">[email protected]</a>
+  }
+  notification_email_from <a class="__cf_email__" data-cfemail="b1f0ddd4c9d0dfd5c3d49ff2d0c2c2d4dff1d7d8c3d4c6d0dddd9fddded2" href="/cdn-cgi/l/email-protection">[email protected]</a> # 发送email时邮件源地址
+    smtp_server 192.168.200.1 # 发送email时smtp服务器地址
+    smtp_connect_timeout 30 # 连接smtp的超时时间
+    router_id VM-4-21-centos # 机器标识，通常可以设置为hostname
+    vrrp_skip_check_adv_addr # 如果接收到的报文和上一个报文来自同一个路由器，则不执行检查。默认是跳过检查
+    vrrp_garp_interval 0 # 单位秒，在一个网卡上每组gratuitous arp消息之间的延迟时间，默认为0
+    vrrp_gna_interval 0 # 单位秒，在一个网卡上每组na消息之间的延迟时间，默认为0
+}
+# 检测脚本配置
+vrrp_script checkhaproxy
+{
+  script "/etc/keepalived/check_nginx.sh" # 检测脚本路径
+    interval 5 # 检测时间间隔（秒）
+    weight 0 # 根据该权重改变priority，当值为0时，不改变实例的优先级
+}
+# VRRP实例配置
+vrrp_instance VI_1 {
+  state BACKUP  # 设置初始状态为'备份'
+    interface eth0 # 设置绑定VIP的网卡，例如eth0
+    virtual_router_id 51  # 配置集群VRID，互为主备的VRID需要是相同的值
+    nopreempt               # 设置非抢占模式，只能设置在state为backup的节点上
+    priority 50 # 设置优先级，值范围0～254，值越大优先级越高，最高的为master
+    advert_int 1 # 组播信息发送时间间隔，两个节点必须设置一样，默认为1秒
+# 验证信息，两个节点必须一致
+    authentication {
+      auth_type PASS # 认证方式，可以是PASS或AH两种认证方式
+        auth_pass 1111 # 认证密码
+    }
+  unicast_src_ip 10.0.4.21  # 设置本机内网IP地址
+    unicast_peer {
+      10.0.4.20             # 对端设备的IP地址
+    }
+# VIP，当state为master时添加，当state为backup时删除
+  virtual_ipaddress {
+    10.0.4.99 # 设置高可用虚拟VIP，如果是腾讯云的CVM，需要填写控制台申请到的HAVIP地址。
+  }
+  notify_master "/etc/keepalived/keepalived_notify.sh MASTER" # 当切换到master状态时执行脚本
+    notify_backup "/etc/keepalived/keepalived_notify.sh BACKUP" # 当切换到backup状态时执行脚本
+    notify_fault "/etc/keepalived/keepalived_notify.sh FAULT" # 当切换到fault状态时执行脚本
+    notify_stop "/etc/keepalived/keepalived_notify.sh STOP" # 当切换到stop状态时执行脚本
+    garp_master_delay 1    # 设置当切为主状态后多久更新ARP缓存
+    garp_master_refresh 5   # 设置主节点发送ARP报文的时间间隔
+    # 跟踪接口，里面任意一块网卡出现问题，都会进入故障(FAULT)状态
+    track_interface {
+      eth0
+    }
+  # 要执行的检查脚本
+  track_script {
+    checkhaproxy
+  }
+}
+</code></pre>
+<p><strong>然后，重启Keepalived：</strong></p>
+<pre><code class="language-bash">$ sudo systemctl restart keepalived
+</code></pre>
+<h3 id="第四步-测试keepalived">第四步：测试Keepalived</h3>
+<p>上面的配置中，<code>10.0.4.20</code>的优先级更高，所以正常情况下<code>10.0.4.20</code>将被选择为主节点，如下图所示：</p>
+<p><img alt="图片" src="assets/f75823d5c4d64efebce43ea42768eedc.jpg"/></p>
+<p>接下来，我们分别模拟一些故障场景，来看下配置是否生效。</p>
+<p><strong>场景1：Keepalived故障</strong></p>
+<p>在<code>10.0.4.20</code>服务器上执行<code>sudo systemctl stop keepalived</code>模拟Keepalived故障，查看VIP，如下图所示：</p>
+<p><img alt="图片" src="assets/1d3dc4367f2f485aa7538756e1935c97.jpg"/></p>
+<p>可以看到，VIP从<code>10.0.4.20</code>服务器上，漂移到了<code>10.0.4.21</code>服务器上。查看<code>/var/log/keepalived.log</code>，可以看到<code>10.0.4.20</code>服务器新增如下一行日志：</p>
+<pre><code class="language-plain">[2020-10-14 14:01:51] notify_stop
+</code></pre>
+<p><code>10.0.4.21</code>服务器新增如下日志：</p>
+<pre><code class="language-plain">[2020-10-14 14:01:52] notify_master
+</code></pre>
+<p><strong>场景2：Nginx故障</strong></p>
+<p>在<code>10.0.4.20</code>和<code>10.0.4.21</code>服务器上分别执行<code>sudo systemctl restart keepalived</code>，让VIP漂移到<code>10.0.4.20</code>服务器上。</p>
+<p>在<code>10.0.4.20</code>服务器上，执行 <code>sudo systemctl stop nginx</code> 模拟Nginx故障，查看VIP，如下图所示：</p>
+<p><img alt="图片" src="assets/f94bf29f62b94f1d806c8b2dbf426b19.jpg"/></p>
+<p>可以看到，VIP从<code>10.0.4.20</code>服务器上，漂移到了<code>10.0.4.21</code>服务器上。查看<code>/var/log/keepalived.log</code>，可以看到<code>10.0.4.20</code>服务器新增如下一行日志：</p>
+<pre><code class="language-plain">[2020-10-14 14:02:34] notify_fault
+</code></pre>
+<p><code>10.0.4.21</code> 服务器新增如下日志：</p>
+<pre><code class="language-plain">[2020-10-14 14:02:35] notify_master
+</code></pre>
+<p><strong>场景3：Nginx恢复</strong></p>
+<p>基于<strong>场景2</strong>，在<code>10.0.4.20</code>服务器上执行<code>sudo systemctl start nginx</code>恢复Nginx，查看VIP，如下图所示：</p>
+<p><img alt="图片" src="assets/888e27a1c4cf49ab8d7360b93da99bbf.jpg"/></p>
+<p>可以看到，VIP仍然在<code>10.0.4.21</code>服务器上，没有被<code>10.0.4.20</code>抢占。查看<code>/var/log/keepalived.log</code>，可以看到<code>10.0.4.20</code>服务器新增如下一行日志：</p>
+<pre><code class="language-plain">[2020-10-14 14:03:44] notify_backup
+</code></pre>
+<p><code>10.0.4.21</code>服务器没有新增日志。</p>
+<h3 id="第五步-vip绑定公网ip">第五步：VIP绑定公网IP</h3>
+<p>到这里，我们已经成功配置了Keepalived + Nginx的高可用方案。但是，我们的VIP是内网，还不能通过外网访问。这时候，我们需要将VIP绑定一个外网IP，供外网访问。在腾讯云上，可通过绑定弹性公网IP来实现外网访问，需要先申请公网IP，然后将VIP绑定弹性公网IP。下面我来讲讲具体步骤。</p>
+<p>申请公网IP：</p>
+<ol>
+<li>登录<strong>私有网络控制台。</strong></li>
+<li>在左侧导航栏中，选择【IP与网卡】&gt;【弹性公网IP】。</li>
+<li>在弹性公网IP管理页面，选择所在地域，单击【申请】。</li>
+</ol>
+<p>将VIP绑定弹性公网IP：</p>
+<ol>
+<li>登录<strong>私有网络控制台</strong>。</li>
+<li>在左侧导航栏中，选择【IP与网卡】&gt;【高可用虚拟】。</li>
+<li>单击需要绑定的HAVIP所在行的【绑定】。</li>
+<li>在弹出界面中，选择需要绑定的公网IP即可，如下图所示：</li>
+</ol>
+<p><img alt="图片" src="assets/8641138df45248aa8962c34d461cf476.jpg"/></p>
+<p>绑定的弹性公网IP是<code>106.52.252.139</code>。</p>
+<p>这里提示下，腾讯云平台中，如果HAVIP没有绑定实例，绑定HAVIP的EIP会处于闲置状态，按<code>¥0.2/小时</code> 收取闲置费用。所以，你需要正确配置高可用应用，确保绑定成功。</p>
+<h3 id="第六步-测试公网访问">第六步：测试公网访问</h3>
+<p>最后，你可以通过执行如下命令来测试：</p>
+<pre><code class="language-bash">$ curl -H"Host: iam.api.marmotedu.com" http://106.52.252.139/healthz -H"iam.api.marmotedu.com"
+{"status":"ok"}
+</code></pre>
+<p>可以看到，我们可以成功通过公网访问后端的高可用服务。到这里，我们成功部署了一个可用性很高的IAM应用。</p>
+<h2 id="总结">总结</h2>
+<p>今天，我主要讲了如何使用Nginx和Keepalived，来部署一个高可用的IAM应用。</p>
+<p>为了部署一个高可用的IAM应用，我们至少需要两台服务器，并且部署相同的服务iam-apiserver、iam-authz-server、iam-pump。而且，选择其中一台服务器部署数据库服务：MariaDB、Redis、MongoDB。</p>
+<p>为了安全和性能，iam-apiserver、iam-authz-server、iam-pump服务都是通过内网来访问数据库服务的。这一讲，我还介绍了如何配置Nginx来实现负载均衡，如何配置Keepalived来实现Nginx的高可用。</p>
+<h2 id="课后练习">课后练习</h2>
+<ol>
+<li>思考下，当前部署架构下如果iam-apiserver需要扩容，可以怎么扩容？</li>
+<li>思考下，当VIP切换时，如何实现告警功能，给系统运维人员告警？</li>
+</ol>
+<p>欢迎你在留言区与我交流讨论，我们下一讲见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#fa969696c3cecbcbcacdba9d979b9396d4999597" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935a1d9b0ca8399e',t:'MTc0NTU0NTA1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

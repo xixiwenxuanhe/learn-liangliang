@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="19 错误处理（下）：如何设计错误包？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>19 错误处理（下）：如何设计错误包？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%bb%8e%200%20%e5%bc%80%e5%a7%8b%e6%90%ad%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%81%e4%b8%9a%e7%ba%a7%20Go%20%e5%ba%94%e7%94%a8.md.html" id="00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html">00 开篇词 从 0 开始搭建一个企业级 Go 应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/01%20IAM%e7%b3%bb%e7%bb%9f%e6%a6%82%e8%bf%b0%ef%bc%9a%e6%88%91%e4%bb%ac%e8%a6%81%e5%ae%9e%e7%8e%b0%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html">01 IAM系统概述：我们要实现什么样的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/02%20%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%89%e8%a3%85%e5%92%8c%e9%85%8d%e7%bd%ae%e4%b8%80%e4%b8%aa%e5%9f%ba%e6%9c%ac%e7%9a%84%20Go%20%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%ef%bc%9f.md.html" id="02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html">02 环境准备：如何安装和配置一个基本的 Go 开发环境？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/03%20%e9%a1%b9%e7%9b%ae%e9%83%a8%e7%bd%b2%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e9%83%a8%e7%bd%b2%20IAM%20%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="03 项目部署：如何快速部署 IAM 系统？.md.html">03 项目部署：如何快速部署 IAM 系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/04%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e6%9d%82%e4%b9%b1%e6%97%a0%e7%ab%a0%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html">04 规范设计（上）：项目开发杂乱无章，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/05%20%e8%a7%84%e8%8c%83%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9acommit%20%e4%bf%a1%e6%81%af%e9%a3%8e%e6%a0%bc%e8%bf%a5%e5%bc%82%e3%80%81%e9%9a%be%e4%bb%a5%e9%98%85%e8%af%bb%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html">05 规范设计（下）：commit 信息风格迥异、难以阅读，如何规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/06%20%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e4%b8%80%e4%b8%aa%e5%8f%af%e7%bb%b4%e6%8a%a4%e3%80%81%e5%8f%af%e6%89%a9%e5%b1%95%e7%9a%84%e4%bb%a3%e7%a0%81%e7%9b%ae%e5%bd%95%ef%bc%9f.md.html" id="06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html">06 目录结构设计：如何组织一个可维护、可扩展的代码目录？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/07%20%e5%b7%a5%e4%bd%9c%e6%b5%81%e8%ae%be%e8%ae%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%90%88%e7%90%86%e7%9a%84%e5%a4%9a%e4%ba%ba%e5%bc%80%e5%8f%91%e6%a8%a1%e5%bc%8f%ef%bc%9f.md.html" id="07 工作流设计：如何设计合理的多人开发模式？.md.html">07 工作流设计：如何设计合理的多人开发模式？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/08%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%20Go%20%e9%a1%b9%e7%9b%ae%e7%9a%84%e5%bc%80%e5%8f%91%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html">08 研发流程设计（上）：如何设计 Go 项目的开发流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/09%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%ba%94%e7%94%a8%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%ef%bc%9f.md.html" id="09 研发流程设计（下）：如何管理应用的生命周期？.md.html">09 研发流程设计（下）：如何管理应用的生命周期？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/10%20%e8%ae%be%e8%ae%a1%e6%96%b9%e6%b3%95%ef%bc%9a%e6%80%8e%e4%b9%88%e5%86%99%e5%87%ba%e4%bc%98%e9%9b%85%e7%9a%84%20Go%20%e9%a1%b9%e7%9b%ae%ef%bc%9f.md.html" id="10 设计方法：怎么写出优雅的 Go 项目？.md.html">10 设计方法：怎么写出优雅的 Go 项目？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/11%20%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%ef%bc%9aGo%e5%b8%b8%e7%94%a8%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f%e6%a6%82%e8%bf%b0.md.html" id="11 设计模式：Go常用设计模式概述.md.html">11 设计模式：Go常用设计模式概述.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/12%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1RESTful%20API%ef%bc%9f.md.html" id="12 API 风格（上）：如何设计RESTful API？.md.html">12 API 风格（上）：如何设计RESTful API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/13%20API%20%e9%a3%8e%e6%a0%bc%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aRPC%20API%e4%bb%8b%e7%bb%8d.md.html" id="13 API 风格（下）：RPC API介绍.md.html">13 API 风格（下）：RPC API介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/14%20%e9%a1%b9%e7%9b%ae%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%e9%ab%98%e8%b4%a8%e9%87%8f%e7%9a%84Makefile%ef%bc%9f.md.html" id="14 项目管理：如何编写高质量的Makefile？.md.html">14 项目管理：如何编写高质量的Makefile？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/15%20%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e5%ae%9e%e6%88%98%ef%bc%9aIAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e7%a0%94%e5%8f%91%e6%b5%81%e7%a8%8b%e7%ae%a1%e7%90%86%e7%9a%84%ef%bc%9f.md.html" id="15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html">15 研发流程实战：IAM项目是如何进行研发流程管理的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/16%20%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9a%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e9%9d%99%e6%80%81%e4%bb%a3%e7%a0%81%e6%a3%80%e6%9f%a5%ef%bc%9f.md.html" id="16 代码检查：如何进行静态代码检查？.md.html">16 代码检查：如何进行静态代码检查？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/17%20API%20%e6%96%87%e6%a1%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90%20Swagger%20API%20%e6%96%87%e6%a1%a3%20%ef%bc%9f.md.html" id="17 API 文档：如何生成 Swagger API 文档 ？.md.html">17 API 文档：如何生成 Swagger API 文档 ？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/18%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e4%b8%80%e5%a5%97%e7%a7%91%e5%ad%a6%e7%9a%84%e9%94%99%e8%af%af%e7%a0%81%ef%bc%9f.md.html" id="18 错误处理（上）：如何设计一套科学的错误码？.md.html">18 错误处理（上）：如何设计一套科学的错误码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/19%20%e9%94%99%e8%af%af%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e9%94%99%e8%af%af%e5%8c%85%ef%bc%9f.md.html" id="19 错误处理（下）：如何设计错误包？.md.html">19 错误处理（下）：如何设计错误包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/20%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e6%97%a5%e5%bf%97%e5%8c%85%e5%b9%b6%e8%ae%b0%e5%bd%95%e6%97%a5%e5%bf%97%ef%bc%9f.md.html" id="20 日志处理（上）：如何设计日志包并记录日志？.md.html">20 日志处理（上）：如何设计日志包并记录日志？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/21%20%e6%97%a5%e5%bf%97%e5%a4%84%e7%90%86%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e4%bb%8e%200%20%e7%bc%96%e5%86%99%e4%b8%80%e4%b8%aa%e6%97%a5%e5%bf%97%e5%8c%85.md.html" id="21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html">21 日志处理（下）：手把手教你从 0 编写一个日志包.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/22%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e4%b8%89%e5%89%91%e5%ae%a2%ef%bc%9aPflag%e3%80%81Viper%e3%80%81Cobra%20%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e4%bb%8b%e7%bb%8d.md.html" id="22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html">22 应用构建三剑客：Pflag、Viper、Cobra 核心功能介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/23%20%e5%ba%94%e7%94%a8%e6%9e%84%e5%bb%ba%e5%ae%9e%e6%88%98%ef%bc%9a%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%e4%bc%81%e4%b8%9a%e5%ba%94%e7%94%a8%e6%a1%86%e6%9e%b6%ef%bc%9f.md.html" id="23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html">23 应用构建实战：如何构建一个优秀的企业应用框架？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/24%20Web%20%e6%9c%8d%e5%8a%a1%ef%bc%9aWeb%20%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html">24 Web 服务：Web 服务核心功能有哪些，如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/25%20%e8%ae%a4%e8%af%81%e6%9c%ba%e5%88%b6%ef%bc%9a%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%ef%bc%9f.md.html" id="25 认证机制：应用程序如何进行访问认证？.md.html">25 认证机制：应用程序如何进行访问认证？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/26%20IAM%e9%a1%b9%e7%9b%ae%e6%98%af%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e8%ae%bf%e9%97%ae%e8%ae%a4%e8%af%81%e5%8a%9f%e8%83%bd%e7%9a%84%ef%bc%9f.md.html" id="26 IAM项目是如何设计和实现访问认证功能的？.md.html">26 IAM项目是如何设计和实现访问认证功能的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/27%20%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%ef%bc%9a5%e5%a4%a7%e6%9d%83%e9%99%90%e6%a8%a1%e5%9e%8b%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%b5%84%e6%ba%90%e6%8e%88%e6%9d%83%e7%9a%84%ef%bc%9f.md.html" id="27 权限模型：5大权限模型是如何进行资源授权的？.md.html">27 权限模型：5大权限模型是如何进行资源授权的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/28%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%80%9a%e8%bf%87iam-apiserver%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8bWeb%e6%9c%8d%e5%8a%a1%e7%9a%84%e6%9e%84%e5%bb%ba.md.html" id="28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html">28 控制流（上）：通过iam-apiserver设计，看Web服务的构建.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/29%20%e6%8e%a7%e5%88%b6%e6%b5%81%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aiam-apiserver%e6%9c%8d%e5%8a%a1%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e5%ae%9e%e7%8e%b0%e8%ae%b2%e8%a7%a3.md.html" id="29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html">29 控制流（下）：iam-apiserver服务核心功能实现讲解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/30%20ORM%ef%bc%9aCURD%20%e7%a5%9e%e5%99%a8%20GORM%20%e5%8c%85%e4%bb%8b%e7%bb%8d%e5%8f%8a%e5%ae%9e%e6%88%98.md.html" id="30 ORM：CURD 神器 GORM 包介绍及实战.md.html">30 ORM：CURD 神器 GORM 包介绍及实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/31%20%e6%95%b0%e6%8d%ae%e6%b5%81%ef%bc%9a%e9%80%9a%e8%bf%87iam-authz-server%e8%ae%be%e8%ae%a1%ef%bc%8c%e7%9c%8b%e6%95%b0%e6%8d%ae%e6%b5%81%e6%9c%8d%e5%8a%a1%e7%9a%84%e8%ae%be%e8%ae%a1.md.html" id="31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html">31 数据流：通过iam-authz-server设计，看数据流服务的设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/32%20%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%a4%84%e7%90%86%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%ba%a7%e7%94%9f%e7%9a%84%e6%95%b0%e6%8d%ae%ef%bc%9f.md.html" id="32 数据处理：如何高效处理应用程序产生的数据？.md.html">32 数据处理：如何高效处理应用程序产生的数据？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/33%20%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%87%ba%e4%b8%80%e4%b8%aa%e4%bc%98%e7%a7%80%e7%9a%84%20Go%20SDK%ef%bc%9f.md.html" id="33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html">33  SDK 设计（上）：如何设计出一个优秀的 Go SDK？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/34%20SDK%20%e8%ae%be%e8%ae%a1%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e9%a1%b9%e7%9b%aeGo%20SDK%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html">34 SDK 设计（下）：IAM项目Go SDK设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/35%20%e6%95%88%e7%8e%87%e7%a5%9e%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%ae%a2%e6%88%b7%e7%ab%af%e5%b7%a5%e5%85%b7%ef%bc%9f.md.html" id="35 效率神器：如何设计和实现一个命令行客户端工具？.md.html">35 效率神器：如何设计和实现一个命令行客户端工具？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/36%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99%20Go%20%e8%af%ad%e8%a8%80%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95%e5%92%8c%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%94%a8%e4%be%8b%ef%bc%9f.md.html" id="36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html">36 代码测试（上）：如何编写 Go 语言单元测试和性能测试用例？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/37%20%e4%bb%a3%e7%a0%81%e6%b5%8b%e8%af%95%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aGo%20%e8%af%ad%e8%a8%80%e5%85%b6%e4%bb%96%e6%b5%8b%e8%af%95%e7%b1%bb%e5%9e%8b%e5%8f%8a%20IAM%20%e6%b5%8b%e8%af%95%e4%bb%8b%e7%bb%8d.md.html" id="37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html">37 代码测试（下）：Go 语言其他测试类型及 IAM 测试介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/38%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e6%9e%90%20Go%20%e8%af%ad%e8%a8%80%e4%bb%a3%e7%a0%81%e7%9a%84%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html">38 性能分析（上）：如何分析 Go 语言代码的性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/39%20%e6%80%a7%e8%83%bd%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aAPI%20Server%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e5%92%8c%e8%b0%83%e4%bc%98%e5%ae%9e%e6%88%98.md.html" id="39 性能分析（下）：API Server性能测试和调优实战.md.html">39 性能分析（下）：API Server性能测试和调优实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/40%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e9%83%a8%e7%bd%b2%e6%96%b9%e6%a1%88%e5%8f%8a%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e3%80%81%e9%ab%98%e5%8f%af%e7%94%a8%e7%bb%84%e4%bb%b6%e4%bb%8b%e7%bb%8d.md.html" id="40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html">40 软件部署实战（上）：部署方案及负载均衡、高可用组件介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/41%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9aIAM%20%e7%b3%bb%e7%bb%9f%e7%94%9f%e4%ba%a7%e7%8e%af%e5%a2%83%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html">41 软件部署实战（中）：IAM 系统生产环境部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/42%20%e8%bd%af%e4%bb%b6%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aIAM%e7%b3%bb%e7%bb%9f%e5%ae%89%e5%85%a8%e5%8a%a0%e5%9b%ba%e3%80%81%e6%b0%b4%e5%b9%b3%e6%89%a9%e7%bc%a9%e5%ae%b9%e5%ae%9e%e6%88%98.md.html" id="42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html">42 软件部署实战（下）：IAM系统安全加固、水平扩缩容实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/43%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e8%99%9a%e6%8b%9f%e5%8c%96%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="43 技术演进（上）：虚拟化技术演进之路.md.html">43 技术演进（上）：虚拟化技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/44%20%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%bd%af%e4%bb%b6%e6%9e%b6%e6%9e%84%e5%92%8c%e5%ba%94%e7%94%a8%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e6%8a%80%e6%9c%af%e6%bc%94%e8%bf%9b%e4%b9%8b%e8%b7%af.md.html" id="44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html">44 技术演进（下）：软件架构和应用生命周期技术演进之路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/45%20%e5%9f%ba%e4%ba%8eKubernetes%e7%9a%84%e4%ba%91%e5%8e%9f%e7%94%9f%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1.md.html" id="45 基于Kubernetes的云原生架构设计.md.html">45 基于Kubernetes的云原生架构设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/46%20%e5%a6%82%e4%bd%95%e5%88%b6%e4%bd%9cDocker%e9%95%9c%e5%83%8f%ef%bc%9f.md.html" id="46 如何制作Docker镜像？.md.html">46 如何制作Docker镜像？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/47%20%e5%a6%82%e4%bd%95%e7%bc%96%e5%86%99Kubernetes%e8%b5%84%e6%ba%90%e5%ae%9a%e4%b9%89%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="47 如何编写Kubernetes资源定义文件？.md.html">47 如何编写Kubernetes资源定义文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/48%20IAM%20%e5%ae%b9%e5%99%a8%e5%8c%96%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="48 IAM 容器化部署实战.md.html">48 IAM 容器化部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/49%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aHelm%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86.md.html" id="49 服务编排（上）：Helm服务编排基础知识.md.html">49 服务编排（上）：Helm服务编排基础知识.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/50%20%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%9f%ba%e4%ba%8eHelm%e7%9a%84%e6%9c%8d%e5%8a%a1%e7%bc%96%e6%8e%92%e9%83%a8%e7%bd%b2%e5%ae%9e%e6%88%98.md.html" id="50 服务编排（下）：基于Helm的服务编排部署实战.md.html">50 服务编排（下）：基于Helm的服务编排部署实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/51%20%e5%9f%ba%e4%ba%8e%20GitHub%20Actions%20%e7%9a%84%20CI%20%e5%ae%9e%e6%88%98.md.html" id="51 基于 GitHub Actions 的 CI 实战.md.html">51 基于 GitHub Actions 的 CI 实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e4%be%9d%e8%b5%96%e5%8c%85%e7%ae%a1%e7%90%86%e5%85%a8%e8%ae%b2.md.html" id="特别放送 Go Modules依赖包管理全讲.md.html">特别放送 Go Modules依赖包管理全讲.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20Go%20Modules%e5%ae%9e%e6%88%98.md.html" id="特别放送 Go Modules实战.md.html">特别放送 Go Modules实战.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20IAM%e6%8e%92%e9%9a%9c%e6%8c%87%e5%8d%97.md.html" id="特别放送 IAM排障指南.md.html">特别放送 IAM排障指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%bd%9c%e4%b8%9a%e7%b3%bb%e7%bb%9f%e8%ae%be%e8%ae%a1%e5%92%8c%e5%ae%9e%e7%8e%b0.md.html" id="特别放送 分布式作业系统设计和实现.md.html">特别放送 分布式作业系统设计和实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bdGo%e9%a1%b9%e7%9b%ae%e4%b8%ad%e6%9c%80%e5%b8%b8%e7%94%a8%e7%9a%84Makefile%e6%a0%b8%e5%bf%83%e8%af%ad%e6%b3%95.md.html" id="特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html">特别放送 给你一份Go项目中最常用的Makefile核心语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%89%b9%e5%88%ab%e6%94%be%e9%80%81%20%e7%bb%99%e4%bd%a0%e4%b8%80%e4%bb%bd%e6%b8%85%e6%99%b0%e3%80%81%e5%8f%af%e7%9b%b4%e6%8e%a5%e5%a5%97%e7%94%a8%e7%9a%84Go%e7%bc%96%e7%a0%81%e8%a7%84%e8%8c%83.md.html" id="特别放送 给你一份清晰、可直接套用的Go编码规范.md.html">特别放送 给你一份清晰、可直接套用的Go编码规范.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%9b%b4%e6%92%ad%e5%8a%a0%e9%a4%90%20%e5%a6%82%e4%bd%95%e4%bb%8e%e5%b0%8f%e7%99%bd%e8%bf%9b%e9%98%b6%e6%88%90%20Go%20%e8%af%ad%e8%a8%80%e4%b8%93%e5%ae%b6%ef%bc%9f.md.html" id="直播加餐 如何从小白进阶成 Go 语言专家？.md.html">直播加餐 如何从小白进阶成 Go 语言专家？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Go%20%e8%af%ad%e8%a8%80%e9%a1%b9%e7%9b%ae%e5%bc%80%e5%8f%91%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%a6%82%e4%bd%95%e8%ae%a9%e8%87%aa%e5%b7%b1%e7%9a%84%20Go%20%e7%a0%94%e5%8f%91%e4%b9%8b%e8%b7%af%e8%b5%b0%e5%be%97%e6%9b%b4%e8%bf%9c%ef%bc%9f.md.html" id="结束语 如何让自己的 Go 研发之路走得更远？.md.html">结束语 如何让自己的 Go 研发之路走得更远？.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="19 错误处理（下）：如何设计错误包？" id="title">19 错误处理（下）：如何设计错误包？</h1>
+<div><p>你好，我是孔令飞。</p>
+<p>在Go项目开发中，错误是我们必须要处理的一个事项。除了我们上一讲学习过的错误码，处理错误也离不开错误包。</p>
+<p>业界有很多优秀的、开源的错误包可供选择，例如Go标准库自带的<code>errors</code>包、<code>github.com/pkg/errors</code>包。但是这些包目前还不支持业务错误码，很难满足生产级应用的需求。所以，在实际开发中，我们有必要开发出适合自己错误码设计的错误包。当然，我们也没必要自己从0开发，可以基于一些优秀的包来进行二次封装。</p>
+<p>这一讲里，我们就来一起看看，如何设计一个错误包来适配上一讲我们设计的错误码，以及一个错误码的具体实现。</p>
+<h2 id="错误包需要具有哪些功能">错误包需要具有哪些功能？</h2>
+<p>要想设计一个优秀的错误包，我们首先得知道一个优秀的错误包需要具备哪些功能。在我看来，至少需要有下面这六个功能：</p>
+<p><strong>首先，应该能支持错误堆栈。</strong>我们来看下面一段代码，假设保存在<a href="https://github.com/marmotedu/gopractise-demo/blob/master/errors/bad.go" target="_blank">bad.go</a>文件中：</p>
+<pre><code>package main
+
+import (
+	"fmt"
+	"log"
+)
+
+func main() {
+	if err := funcA(); err != nil {
+		log.Fatalf("call func got failed: %v", err)
+		return
+	}
+
+	log.Println("call func success")
+}
+
+func funcA() error {
+	if err := funcB(); err != nil {
+		return err
+	}
+
+	return fmt.Errorf("func called error")
+}
+
+func funcB() error {
+	return fmt.Errorf("func called error")
+}
+</code></pre>
+<p>执行上面的代码：</p>
+<pre><code>$ go run bad.go
+2021/07/02 08:06:55 call func got failed: func called error
+exit status 1
+</code></pre>
+<p>这时我们想定位问题，但不知道具体是哪行代码报的错误，只能靠猜，还不一定能猜到。为了解决这个问题，我们可以加一些Debug信息，来协助我们定位问题。这样做在测试环境是没问题的，但是在线上环境，一方面修改、发布都比较麻烦，另一方面问题可能比较难重现。这时候我们会想，要是能打印错误的堆栈就好了。例如：</p>
+<pre><code>2021/07/02 14:17:03 call func got failed: func called error
+main.funcB
+	/home/colin/workspace/golang/src/github.com/marmotedu/gopractise-demo/errors/good.go:27
+main.funcA
+	/home/colin/workspace/golang/src/github.com/marmotedu/gopractise-demo/errors/good.go:19
+main.main
+	/home/colin/workspace/golang/src/github.com/marmotedu/gopractise-demo/errors/good.go:10
+runtime.main
+	/home/colin/go/go1.16.2/src/runtime/proc.go:225
+runtime.goexit
+	/home/colin/go/go1.16.2/src/runtime/asm_amd64.s:1371
+exit status 1
+</code></pre>
+<p>通过上面的错误输出，我们可以很容易地知道是哪行代码报的错，从而极大提高问题定位的效率，降低定位的难度。所以，在我看来，一个优秀的errors包，首先需要支持错误堆栈。</p>
+<p><strong>其次，能够支持不同的打印格式。</strong>例如<code>%+v</code>、<code>%v</code>、<code>%s</code>等格式，可以根据需要打印不同丰富度的错误信息。</p>
+<p><strong>再次，能支持Wrap/Unwrap功能，也就是在已有的错误上，追加一些新的信息。</strong>例如<code>errors.Wrap(err, "open file failed")</code> 。Wrap通常用在调用函数中，调用函数可以基于被调函数报错时的错误Wrap一些自己的信息，丰富报错信息，方便后期的错误定位，例如：</p>
+<pre><code>func funcA() error {
+    if err := funcB(); err != nil {
+        return errors.Wrap(err, "call funcB failed")
+    }
+
+    return errors.New("func called error")
+}
+
+func funcB() error {
+    return errors.New("func called error")
+}
+</code></pre>
+<p>这里要注意，不同的错误类型，Wrap函数的逻辑也可以不同。另外，在调用Wrap时，也会生成一个错误堆栈节点。我们既然能够嵌套error，那有时候还可能需要获取被嵌套的error，这时就需要错误包提供<code>Unwrap</code>函数。</p>
+<p><strong>还有，错误包应该有<code>Is</code>方法</strong>。在实际开发中，我们经常需要判断某个error是否是指定的error。在Go 1.13之前，也就是没有wrapping error的时候，我们要判断error是不是同一个，可以使用如下方法：</p>
+<pre><code>if err == os.ErrNotExist {
+	// normal code
+}
+</code></pre>
+<p>但是现在，因为有了wrapping error，这样判断就会有问题。因为你根本不知道返回的err是不是一个嵌套的error，嵌套了几层。这种情况下，我们的错误包就需要提供<code>Is</code>函数：</p>
+<pre><code>func Is(err, target error) bool
+</code></pre>
+<p>当err和target是同一个，或者err是一个wrapping error的时候，如果target也包含在这个嵌套error链中，返回true，否则返回fasle。</p>
+<p><strong>另外，错误包应该支持</strong> <code>As</code> <strong>函数。</strong></p>
+<p>在Go 1.13之前，没有wrapping error的时候，我们要把error转为另外一个error，一般都是使用type assertion或者type switch，也就是类型断言。例如：</p>
+<pre><code>if perr, ok := err.(*os.PathError); ok {
+	fmt.Println(perr.Path)
+}
+</code></pre>
+<p>但是现在，返回的err可能是嵌套的error，甚至好几层嵌套，这种方式就不能用了。所以，我们可以通过实现 <code>As</code> 函数来完成这种功能。现在我们把上面的例子，用 <code>As</code> 函数实现一下：</p>
+<pre><code>var perr *os.PathError
+if errors.As(err, &amp;perr) {
+	fmt.Println(perr.Path)
+}
+</code></pre>
+<p>这样就可以完全实现类型断言的功能，而且还更强大，因为它可以处理wrapping error。</p>
+<p><strong>最后，能够支持两种错误创建方式：非格式化创建和格式化创建。</strong>例如：</p>
+<pre><code>errors.New("file not found")
+errors.Errorf("file %s not found", "iam-apiserver")
+</code></pre>
+<p>上面，我们介绍了一个优秀的错误包应该具备的功能。一个好消息是，Github上有不少实现了这些功能的错误包，其中<code>github.com/pkg/errors</code>包最受欢迎。所以，我基于<code>github.com/pkg/errors</code>包进行了二次封装，用来支持上一讲所介绍的错误码。</p>
+<h2 id="错误包实现">错误包实现</h2>
+<p>明确优秀的错误包应该具备的功能后，我们来看下错误包的实现。实现的源码存放在<a href="https://github.com/marmotedu/errors" target="_blank">github.com/marmotedu/errors</a>。</p>
+<p>我通过在文件<a href="https://github.com/marmotedu/errors/blob/master/errors.go#L299" target="_blank">github.com/pkg/errors/errors.go</a>中增加新的<code>withCode</code>结构体，来引入一种新的错误类型，该错误类型可以记录错误码、stack、cause和具体的错误信息。</p>
+<pre><code>type withCode struct {
+    err   error // error 错误
+    code  int // 业务错误码
+    cause error // cause error
+    *stack // 错误堆栈
+}
+</code></pre>
+<p>下面，我们通过一个示例，来了解下<code>github.com/marmotedu/errors</code>所提供的功能。假设下述代码保存在<code>errors.go</code>文件中：</p>
+<pre><code>package main
+
+import (
+	"fmt"
+
+	"github.com/marmotedu/errors"
+	code "github.com/marmotedu/sample-code"
+)
+
+func main() {
+	if err := bindUser(); err != nil {
+		// %s: Returns the user-safe error string mapped to the error code or the error message if none is specified.
+		fmt.Println("====================&gt; %s &lt;====================")
+		fmt.Printf("%s\n\n", err)
+
+		// %v: Alias for %s.
+		fmt.Println("====================&gt; %v &lt;====================")
+		fmt.Printf("%v\n\n", err)
+
+		// %-v: Output caller details, useful for troubleshooting.
+		fmt.Println("====================&gt; %-v &lt;====================")
+		fmt.Printf("%-v\n\n", err)
+
+		// %+v: Output full error stack details, useful for debugging.
+		fmt.Println("====================&gt; %+v &lt;====================")
+		fmt.Printf("%+v\n\n", err)
+
+		// %#-v: Output caller details, useful for troubleshooting with JSON formatted output.
+		fmt.Println("====================&gt; %#-v &lt;====================")
+		fmt.Printf("%#-v\n\n", err)
+
+		// %#+v: Output full error stack details, useful for debugging with JSON formatted output.
+		fmt.Println("====================&gt; %#+v &lt;====================")
+		fmt.Printf("%#+v\n\n", err)
+
+		// do some business process based on the error type
+		if errors.IsCode(err, code.ErrEncodingFailed) {
+			fmt.Println("this is a ErrEncodingFailed error")
+		}
+
+		if errors.IsCode(err, code.ErrDatabase) {
+			fmt.Println("this is a ErrDatabase error")
+		}
+
+		// we can also find the cause error
+		fmt.Println(errors.Cause(err))
+	}
+}
+
+func bindUser() error {
+	if err := getUser(); err != nil {
+		// Step3: Wrap the error with a new error message and a new error code if needed.
+		return errors.WrapC(err, code.ErrEncodingFailed, "encoding user 'Lingfei Kong' failed.")
+	}
+
+	return nil
+}
+
+func getUser() error {
+	if err := queryDatabase(); err != nil {
+		// Step2: Wrap the error with a new error message.
+		return errors.Wrap(err, "get user failed.")
+	}
+
+	return nil
+}
+
+func queryDatabase() error {
+	// Step1. Create error with specified error code.
+	return errors.WithCode(code.ErrDatabase, "user 'Lingfei Kong' not found.")
+}
+</code></pre>
+<p>上述代码中，通过<a href="https://github.com/marmotedu/errors/blob/v1.0.2/errors.go#L306" target="_blank">WithCode</a>函数来创建新的withCode类型的错误；通过<a href="https://github.com/marmotedu/errors/blob/v1.0.2/errors.go#L314" target="_blank">WrapC</a>来将一个error封装成一个withCode类型的错误；通过<a href="https://github.com/marmotedu/errors/blob/v1.0.2/code.go#L121" target="_blank">IsCode</a>来判断一个error链中是否包含指定的code。</p>
+<p>withCode错误实现了一个<code>func (w *withCode) Format(state fmt.State, verb rune)</code>方法，该方法用来打印不同格式的错误信息，见下表：</p>
+<p><img alt="" src="assets/b144844f0a0a463f88fc2528e29abeae.jpg"/></p>
+<p>例如，<code>%+v</code>会打印以下错误信息：</p>
+<pre><code>get user failed. - #1 [/home/colin/workspace/golang/src/github.com/marmotedu/gopractise-demo/errors/errortrack_errors.go:19 (main.getUser)] (100101) Database error; user 'Lingfei Kong' not found. - #0 [/home/colin/workspace/golang/src/github.com/marmotedu/gopractise-demo/errors/errortrack_errors.go:26 (main.queryDatabase)] (100101) Database error
+</code></pre>
+<p>那么你可能会问，这些错误信息中的<code>100101</code>错误码，还有<code>Database error</code>这种对外展示的报错信息等等，是从哪里获取的？这里我简单解释一下。</p>
+<p>首先， <code>withCode</code> 中包含了int类型的错误码，例如<code>100101</code>。</p>
+<p>其次，当使用<code>github.com/marmotedu/errors</code>包的时候，需要调用<code>Register</code>或者<code>MustRegister</code>，将一个Coder注册到<code>github.com/marmotedu/errors</code>开辟的内存中，数据结构为：</p>
+<pre><code>var codes = map[int]Coder{}
+</code></pre>
+<p>Coder是一个接口，定义为：</p>
+<pre><code>type Coder interface {
+    // HTTP status that should be used for the associated error code.
+    HTTPStatus() int
+
+    // External (user) facing error text.
+    String() string
+
+    // Reference returns the detail documents for user.
+    Reference() string
+
+    // Code returns the code of the coder
+    Code() int
+}
+</code></pre>
+<p>这样 <code>withCode</code> 的<code>Format</code>方法，就能够通过 <code>withCode</code> 中的code字段获取到对应的Coder，并通过Coder提供的HTTPStatus、String、Reference、Code函数，来获取 <code>withCode</code> 中code的详细信息，最后格式化打印。</p>
+<p>这里要注意，我们实现了两个注册函数：<code>Register</code>和<code>MustRegister</code>，二者唯一区别是：当重复定义同一个错误Code时，<code>MustRegister</code>会panic，这样可以防止后面注册的错误覆盖掉之前注册的错误。在实际开发中，建议使用<code>MustRegister</code>。</p>
+<p><code>XXX()</code>和<code>MustXXX()</code>的函数命名方式，是一种Go代码设计技巧，在Go代码中经常使用，例如Go标准库中<code>regexp</code>包提供的<code>Compile</code>和<code>MustCompile</code>函数。和<code>XXX</code>相比，<code>MustXXX</code> 会在某种情况不满足时panic。因此使用<code>MustXXX</code>的开发者看到函数名就会有一个心理预期：使用不当，会造成程序panic。</p>
+<p>最后，我还有一个建议：在实际的生产环境中，我们可以使用JSON格式打印日志，JSON格式的日志可以非常方便的供日志系统解析。我们可以根据需要，选择<code>%#-v</code>或<code>%#+v</code>两种格式。</p>
+<p>错误包在代码中，经常被调用，所以我们要保证错误包一定要是高性能的，否则很可能会影响接口的性能。这里，我们再来看下<code>github.com/marmotedu/errors</code>包的性能。</p>
+<p>在这里，我们把这个错误包跟go标准库的 <code>errors</code> 包，以及 <code>github.com/pkg/errors</code> 包进行对比，来看看它们的性能：</p>
+<pre><code>$  go test -test.bench=BenchmarkErrors -benchtime="3s"
+goos: linux
+goarch: amd64
+pkg: github.com/marmotedu/errors
+BenchmarkErrors/errors-stack-10-8         	57658672	        61.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkErrors/pkg/errors-stack-10-8     	 2265558	      1547 ns/op	     320 B/op	       3 allocs/op
+BenchmarkErrors/marmot/errors-stack-10-8  	 1903532	      1772 ns/op	     360 B/op	       5 allocs/op
+BenchmarkErrors/errors-stack-100-8        	 4883659	       734 ns/op	      16 B/op	       1 allocs/op
+BenchmarkErrors/pkg/errors-stack-100-8    	 1202797	      2881 ns/op	     320 B/op	       3 allocs/op
+BenchmarkErrors/marmot/errors-stack-100-8 	 1000000	      3116 ns/op	     360 B/op	       5 allocs/op
+BenchmarkErrors/errors-stack-1000-8       	  505636	      7159 ns/op	      16 B/op	       1 allocs/op
+BenchmarkErrors/pkg/errors-stack-1000-8   	  327681	     10646 ns/op	     320 B/op	       3 allocs/op
+BenchmarkErrors/marmot/errors-stack-1000-8         	  304160	     11896 ns/op	     360 B/op	       5 allocs/op
+PASS
+ok  	github.com/marmotedu/errors	39.200s
+</code></pre>
+<p>可以看到<code>github.com/marmotedu/errors</code>和<code>github.com/pkg/errors</code>包的性能基本持平。在对比性能时，重点关注<strong>ns/op</strong>，也即每次error操作耗费的纳秒数。另外，我们还需要测试不同error嵌套深度下的error操作性能，嵌套越深，性能越差。例如：在嵌套深度为10的时候， <code>github.com/pkg/errors</code> 包ns/op值为1547， <code>github.com/marmotedu/errors</code> 包ns/op值为1772。可以看到，二者性能基本保持一致。</p>
+<p>具体性能数据对比见下表：</p>
+<p><img alt="" src="assets/1593f0704dd34c6491b4dd5cc6f41ac4.jpg"/></p>
+<p>我们是通过<a href="https://github.com/marmotedu/errors/blob/v1.0.2/bench_test.go#L39" target="_blank">BenchmarkErrors</a>测试函数来测试error包性能的，你感兴趣可以打开链接看看。</p>
+<h2 id="如何记录错误">如何记录错误？</h2>
+<p>上面，我们一起看了怎么设计一个优秀的错误包，那如何用我们设计的错误包来记录错误呢？</p>
+<p>根据我的开发经验，我推荐两种记录错误的方式，可以帮你快速定位问题。</p>
+<p>方式一：通过<code>github.com/marmotedu/errors</code>包提供的错误堆栈能力，来跟踪错误。</p>
+<p>具体你可以看看下面的代码示例。以下代码保存在<a href="https://github.com/marmotedu/gopractise-demo/blob/master/errors/errortrack_errors.go" target="_blank">errortrack_errors.go</a>中。</p>
+<pre><code>package main
+
+import (
+	"fmt"
+
+	"github.com/marmotedu/errors"
+
+	code "github.com/marmotedu/sample-code"
+)
+
+func main() {
+	if err := getUser(); err != nil {
+		fmt.Printf("%+v\n", err)
+	}
+}
+
+func getUser() error {
+	if err := queryDatabase(); err != nil {
+		return errors.Wrap(err, "get user failed.")
+	}
+
+	return nil
+}
+
+func queryDatabase() error {
+	return errors.WithCode(code.ErrDatabase, "user 'Lingfei Kong' not found.")
+}
+</code></pre>
+<p>执行上述的代码：</p>
+<pre><code>$ go run errortrack_errors.go
+get user failed. - #1 [/home/colin/workspace/golang/src/github.com/marmotedu/gopractise-demo/errors/errortrack_errors.go:19 (main.getUser)] (100101) Database error; user 'Lingfei Kong' not found. - #0 [/home/colin/workspace/golang/src/github.com/marmotedu/gopractise-demo/errors/errortrack_errors.go:26 (main.queryDatabase)] (100101) Database error
+</code></pre>
+<p>可以看到，打印的日志中打印出了详细的错误堆栈，包括错误发生的函数、文件名、行号和错误信息，通过这些错误堆栈，我们可以很方便地定位问题。</p>
+<p>你使用这种方法时，我推荐的用法是，在错误最开始处使用 <code>errors.WithCode()</code> 创建一个 withCode类型的错误。上层在处理底层返回的错误时，可以根据需要，使用Wrap函数基于该错误封装新的错误信息。如果要包装的error不是用<code>github.com/marmotedu/errors</code>包创建的，建议用 <code>errors.WithCode()</code> 新建一个error。</p>
+<p>方式二：在错误产生的最原始位置调用日志包记录函数，打印错误信息，其他位置直接返回（当然，也可以选择性的追加一些错误信息，方便故障定位）。示例代码（保存在<a href="https://github.com/marmotedu/gopractise-demo/blob/master/errors/errortrack_log.go" target="_blank">errortrack_log.go</a>）如下：</p>
+<pre><code>package main
+
+import (
+	"fmt"
+
+	"github.com/marmotedu/errors"
+	"github.com/marmotedu/log"
+
+	code "github.com/marmotedu/sample-code"
+)
+
+func main() {
+	if err := getUser(); err != nil {
+		fmt.Printf("%v\n", err)
+	}
+}
+
+func getUser() error {
+	if err := queryDatabase(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func queryDatabase() error {
+	opts := &amp;log.Options{
+		Level:            "info",
+		Format:           "console",
+		EnableColor:      true,
+		EnableCaller:     true,
+		OutputPaths:      []string{"test.log", "stdout"},
+		ErrorOutputPaths: []string{},
+	}
+
+	log.Init(opts)
+	defer log.Flush()
+
+	err := errors.WithCode(code.ErrDatabase, "user 'Lingfei Kong' not found.")
+	if err != nil {
+		log.Errorf("%v", err)
+	}
+	return err
+}
+</code></pre>
+<p>执行以上代码：</p>
+<pre><code>$ go run errortrack_log.go
+2021-07-03 14:37:31.597	ERROR	errors/errortrack_log.go:41	Database error
+Database error
+</code></pre>
+<p>当错误发生时，调用log包打印错误。通过log包的caller功能，可以定位到log语句的位置，也就是定位到错误发生的位置。你使用这种方式来打印日志时，我有两个建议。</p>
+<ul>
+<li>只在错误产生的最初位置打印日志，其他地方直接返回错误，一般不需要再对错误进行封装。</li>
+<li>当代码调用第三方包的函数时，第三方包函数出错时打印错误信息。比如：</li>
+</ul>
+<pre><code>if err := os.Chdir("/root"); err != nil {
+    log.Errorf("change dir failed: %v", err)
+}
+</code></pre>
+<h2 id="一个错误码的具体实现">一个错误码的具体实现</h2>
+<p>接下来，我们看一个依据上一讲介绍的错误码规范的具体错误码实现<code>github.com/marmotedu/sample-code</code>。</p>
+<p><code>sample-code</code>实现了两类错误码，分别是通用错误码（<a href="https://github.com/marmotedu/sample-code/blob/master/base.go" target="_blank">sample-code/base.go</a>）和业务模块相关的错误码（<a href="https://github.com/marmotedu/sample-code/blob/master/apiserver.go" target="_blank">sample-code/apiserver.go</a>）。</p>
+<p>首先，我们来看通用错误码的定义：</p>
+<pre><code>// 通用: 基本错误
+// Code must start with 1xxxxx
+const (
+    // ErrSuccess - 200: OK.
+    ErrSuccess int = iota + 100001
+
+    // ErrUnknown - 500: Internal server error.
+    ErrUnknown
+
+    // ErrBind - 400: Error occurred while binding the request body to the struct.
+    ErrBind
+
+    // ErrValidation - 400: Validation failed.
+    ErrValidation
+
+    // ErrTokenInvalid - 401: Token invalid.
+    ErrTokenInvalid
+)
+</code></pre>
+<p>在代码中，我们通常使用整型常量（ErrSuccess）来代替整型错误码（100001），因为使用ErrSuccess时，一看就知道它代表的错误类型，可以方便开发者使用。</p>
+<p>错误码用来指代一个错误类型，该错误类型需要包含一些有用的信息，例如对应的HTTP Status Code、对外展示的Message，以及跟该错误匹配的帮助文档。所以，我们还需要实现一个Coder来承载这些信息。这里，我们定义了一个实现了<code>github.com/marmotedu/errors.Coder</code>接口的<code>ErrCode</code>结构体：</p>
+<pre><code>// ErrCode implements `github.com/marmotedu/errors`.Coder interface.
+type ErrCode struct {
+    // C refers to the code of the ErrCode.
+    C int
+
+    // HTTP status that should be used for the associated error code.
+    HTTP int
+
+    // External (user) facing error text.
+    Ext string
+
+    // Ref specify the reference document.
+    Ref string
+}
+</code></pre>
+<p>可以看到<code>ErrCode</code>结构体包含了以下信息：</p>
+<ul>
+<li>int类型的业务码。</li>
+<li>对应的HTTP Status Code。</li>
+<li>暴露给外部用户的消息。</li>
+<li>错误的参考文档。</li>
+</ul>
+<p>下面是一个具体的Coder示例：</p>
+<pre><code>coder := &amp;ErrCode{
+    C:    100001,
+    HTTP: 200,
+    Ext:  "OK",
+    Ref:  "https://github.com/marmotedu/sample-code/blob/master/README.md.html",
+}
+</code></pre>
+<p>接下来，我们就可以调用<code>github.com/marmotedu/errors</code>包提供的<code>Register</code>或者<code>MustRegister</code>函数，将Coder注册到<code>github.com/marmotedu/errors</code>包维护的内存中。</p>
+<p>一个项目有很多个错误码，如果每个错误码都手动调用<code>MustRegister</code>函数会很麻烦，这里我们通过代码自动生成的方法，来生成register函数调用：</p>
+<pre><code>//go:generate codegen -type=int
+//go:generate codegen -type=int -doc -output ./error_code_generated.md.html
+</code></pre>
+<p><code>//go:generate codegen -type=int</code> 会调用<a href="https://github.com/marmotedu/iam/tree/master/tools/codegen" target="_blank">codegen</a>工具，生成<a href="https://github.com/marmotedu/sample-code/blob/master/sample_code_generated.go" target="_blank">sample_code_generated.go</a>源码文件：</p>
+<pre><code>func init() {
+	register(ErrSuccess, 200, "OK")
+	register(ErrUnknown, 500, "Internal server error")
+	register(ErrBind, 400, "Error occurred while binding the request body to the struct")
+	register(ErrValidation, 400, "Validation failed")
+    // other register function call
+}
+</code></pre>
+<p>这些<a href="https://github.com/marmotedu/iam/blob/v1.0.0/internal/pkg/code/code.go#L58" target="_blank">register</a>调用放在init函数中，在加载程序的时候被初始化。</p>
+<p>这里要注意，在注册的时候，我们会检查HTTP Status Code，只允许定义200、400、401、403、404、500这6个HTTP错误码。这里通过程序保证了错误码是符合HTTP Status Code使用要求的。</p>
+<p><code>//go:generate codegen -type=int -doc -output ./error_code_generated.md.html</code>会生成错误码描述文档 <a href="https://github.com/marmotedu/sample-code/blob/master/error_code_generated.md.html" target="_blank">error_code_generated.md.html</a>。当我们提供API文档时，也需要记着提供一份错误码描述文档，这样客户端才可以根据错误码，知道请求是否成功，以及具体发生哪类错误，好针对性地做一些逻辑处理。</p>
+<p><code>codegen</code>工具会根据错误码注释生成<code>sample_code_generated.go</code>和<code>error_code_generated.md.html</code>文件：</p>
+<pre><code>// ErrSuccess - 200: OK.
+ ErrSuccess int = iota + 100001
+</code></pre>
+<p>codegen工具之所以能够生成<code>sample_code_generated.go</code>和<code>error_code_generated.md.html</code>，是因为我们的错误码注释是有规定格式的：<code>// &lt;错误码整型常量&gt; - &lt;对应的HTTP Status Code&gt;: &lt;External Message&gt;.</code>。</p>
+<p>codegen工具可以在IAM项目根目录下，执行以下命令来安装：</p>
+<pre><code>$ make tools.install.codegen
+</code></pre>
+<p>安装完 <code>codegen</code> 工具后，可以在 <code>github.com/marmotedu/sample-code</code> 包根目录下执行 <code>go generate</code> 命令，来生成<code>sample_code_generated.go</code>和<code>error_code_generated.md.html</code>。这里有个技巧需要你注意：生成的文件建议统一用 <code>xxxx_generated.xx</code> 来命名，这样通过 <code>generated</code> ，我们就知道这个文件是代码自动生成的，有助于我们理解和使用。</p>
+<p>在实际的开发中，我们可以将错误码独立成一个包，放在 <code>internal/pkg/code/</code>目录下，这样可以方便整个应用调用。例如IAM的错误码就放在IAM项目根目录下的<a href="https://github.com/marmotedu/iam/tree/master/internal/pkg/code" target="_blank">internal/pkg/code/</a>目录下。</p>
+<p>我们的错误码是分服务和模块的，所以这里建议你把相同的服务放在同一个Go源文件中，例如IAM的错误码存放文件：</p>
+<pre><code>$ ls base.go apiserver.go authzserver.go 
+apiserver.go  authzserver.go  base.go
+</code></pre>
+<p>一个应用中会有多个服务，例如IAM应用中，就包含了iam-apiserver、iam-authz-server、iam-pump三个服务。这些服务有一些通用的错误码，为了便于维护，可以将这些通用的错误码统一放在base.go源码文件中。其他的错误码，我们可以按服务分别放在不同的文件中：iam-apiserver服务的错误码统一放在apiserver.go文件中；iam-authz-server的错误码统一存放在authzserver.go文件中。其他服务以此类推。</p>
+<p>另外，同一个服务中不同模块的错误码，可以按以下格式来组织：相同模块的错误码放在同一个const代码块中，不同模块的错误码放在不同的const代码块中。每个const代码块的开头注释就是该模块的错误码定义。例如：</p>
+<pre><code>// iam-apiserver: user errors.
+const (
+    // ErrUserNotFound - 404: User not found.
+    ErrUserNotFound int = iota + 110001
+
+    // ErrUserAlreadyExist - 400: User already exist.
+    ErrUserAlreadyExist
+)
+
+// iam-apiserver: secret errors.
+const (
+    // ErrEncrypt - 400: Secret reach the max count.
+    ErrReachMaxCount int = iota + 110101
+
+    //  ErrSecretNotFound - 404: Secret not found.
+    ErrSecretNotFound
+)
+</code></pre>
+<p>最后，我们还需要将错误码定义记录在项目的文件中，供开发者查阅、遵守和使用，例如IAM项目的错误码定义记录文档为<a href="https://github.com/marmotedu/iam/blob/master/docs/guide/zh-CN/api/code_specification.md.html" target="_blank">code_specification.md.html</a>。这个文档中记录了错误码说明、错误描述规范和错误记录规范等。</p>
+<h2 id="错误码实际使用方法示例">错误码实际使用方法示例</h2>
+<p>上面，我讲解了错误包和错误码的实现方式，那你一定想知道在实际开发中我们是如何使用的。这里，我就举一个在gin web框架中使用该错误码的例子：</p>
+<pre><code>// Response defines project response format which in marmotedu organization.
+type Response struct {
+    Code      errors.Code `json:"code,omitempty"`
+    Message   string      `json:"message,omitempty"`
+    Reference string      `json:"reference,omitempty"`
+    Data      interface{} `json:"data,omitempty"`
+}
+
+// WriteResponse used to write an error and JSON data into response.
+func WriteResponse(c *gin.Context, err error, data interface{}) {
+    if err != nil {
+        coder := errors.ParseCoder(err)
+
+        c.JSON(coder.HTTPStatus(), Response{
+            Code:      coder.Code(),
+            Message:   coder.String(),
+            Reference: coder.Reference(),
+            Data:      data,
+        })
+    }
+
+    c.JSON(http.StatusOK, Response{Data: data})
+}
+
+func GetUser(c *gin.Context) {
+    log.Info("get user function called.", "X-Request-Id", requestid.Get(c))
+    // Get the user by the `username` from the database.
+    user, err := store.Client().Users().Get(c.Param("username"), metav1.GetOptions{})
+    if err != nil {
+        core.WriteResponse(c, errors.WithCode(code.ErrUserNotFound, err.Error()), nil)
+        return
+    }
+
+    core.WriteResponse(c, nil, user)
+}
+</code></pre>
+<p>上述代码中，通过<code>WriteResponse</code>统一处理错误。在 <code>WriteResponse</code> 函数中，如果<code>err != nil</code>，则从error中解析出Coder，并调用Coder提供的方法，获取错误相关的Http Status Code、int类型的业务码、暴露给用户的信息、错误的参考文档链接，并返回JSON格式的信息。如果 <code>err == nil</code> 则返回200和数据。</p>
+<h2 id="总结">总结</h2>
+<p>记录错误是应用程序必须要做的一件事情，在实际开发中，我们通常会封装自己的错误包。一个优秀的错误包，应该能够支持错误堆栈、不同的打印格式、Wrap/Unwrap/Is/As等函数，并能够支持格式化创建error。</p>
+<p>根据这些错误包设计要点，我基于 <code>github.com/pkg/errors</code> 包设计了IAM项目的错误包 <code>github.com/marmotedu/errors</code> ，该包符合我们上一讲设计的错误码规范。</p>
+<p>另外，本讲也给出了一个具体的错误码实现 sample-code ， sample-code 支持业务Code码、HTTP Status Code、错误参考文档、可以对内对外展示不同的错误信息。</p>
+<p>最后，因为错误码注释是有固定格式的，所以我们可以通过codegen工具解析错误码的注释，生成register函数调用和错误码文档。这种做法也体现了我一直强调的low code思想，可以提高开发效率，减少人为失误。</p>
+<h2 id="课后练习">课后练习</h2>
+<ol>
+<li>在这门课里，我们定义了base、iam-apiserver服务的错误码，请试着定义iam-authz-server服务的错误码，并生成错误码文档。</li>
+<li>思考下，这门课的错误包和错误码设计能否满足你当前的项目需求，如果觉得不能满足，可以在留言区分享你的看法。</li>
+</ol>
+<p>欢迎你在留言区与我交流讨论，我们下一讲见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#8ee2e2e2b7babfbfbeb9cee9e3efe7e2a0ede1e3" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935a1aef2b8ac957',t:'MTc0NTU0NDk0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
