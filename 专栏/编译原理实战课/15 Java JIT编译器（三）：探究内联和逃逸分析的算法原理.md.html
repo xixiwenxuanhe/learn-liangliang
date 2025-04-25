@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97%20%e5%a6%82%e4%bd%95%e5%ad%a6%e4%b9%a0%e8%bf%99%e9%97%a8%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be%ef%bc%9f.md.html" id="00 学习指南 如何学习这门编译原理实战课？.md.html">00 学习指南 如何学习这门编译原理实战课？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9c%a8%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e4%b8%ad%e6%b8%b8%e5%8e%86.md.html" id="00 开篇词 在真实世界的编译器中游历.md.html">00 开篇词 在真实世界的编译器中游历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bc%96%e8%af%91%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b%e9%83%bd%e6%82%84%e6%82%84%e5%81%9a%e4%ba%86%e5%93%aa%e4%ba%9b%e4%ba%8b%e6%83%85%ef%bc%9f.md.html" id="01 编译的全过程都悄悄做了哪些事情？.md.html">01 编译的全过程都悄悄做了哪些事情？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e7%94%a8%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e6%9e%84%e9%80%a0%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba.md.html" id="02 词法分析：用两种方式构造有限自动机.md.html">02 词法分析：用两种方式构造有限自动机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e4%b8%a4%e4%b8%aa%e5%9f%ba%e6%9c%ac%e5%8a%9f%e5%92%8c%e4%b8%a4%e7%a7%8d%e7%ae%97%e6%b3%95%e6%80%9d%e8%b7%af.md.html" id="03 语法分析：两个基本功和两种算法思路.md.html">03 语法分析：两个基本功和两种算法思路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/04%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%9a%e8%ae%a9%e7%a8%8b%e5%ba%8f%e7%ac%a6%e5%90%88%e8%af%ad%e4%b9%89%e8%a7%84%e5%88%99.md.html" id="04 语义分析：让程序符合语义规则.md.html">04 语义分析：让程序符合语义规则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/05%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%ef%bc%8c%e4%bd%a0%e6%9c%89%e5%8f%91%e8%a8%80%e6%9d%83.md.html" id="05 运行时机制：程序如何运行，你有发言权.md.html">05 运行时机制：程序如何运行，你有发言权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/06%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e4%b8%80%e5%89%af%e9%9d%a2%e5%ad%94.md.html" id="06 中间代码：不是只有一副面孔.md.html">06 中间代码：不是只有一副面孔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/07%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e8%b7%9f%e7%bc%96%e8%af%91%e5%99%a8%e5%81%9a%e6%9c%8b%e5%8f%8b%ef%bc%8c%e8%ae%a9%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%a3%9e%e8%b5%b7%e6%9d%a5.md.html" id="07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html">07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/08%20%e4%bb%a3%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%99%a8%e7%9b%b8%e5%85%b3%e7%9a%84%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="08 代码生成：如何实现机器相关的优化？.md.html">08 代码生成：如何实现机器相关的优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/09%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%89%8b%e5%86%99%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="09 Java编译器（一）：手写的编译器有什么优势？.md.html">09 Java编译器（一）：手写的编译器有什么优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/10%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%bf%98%e8%a6%81%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Java编译器（二）：语法分析之后，还要做些什么？.md.html">10 Java编译器（二）：语法分析之后，还要做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/11%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%b1%9e%e6%80%a7%e5%88%86%e6%9e%90%e5%92%8c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90.md.html" id="11 Java编译器（三）：属性分析和数据流分析.md.html">11 Java编译器（三）：属性分析和数据流分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/12%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%8e%bb%e9%99%a4%e8%af%ad%e6%b3%95%e7%b3%96%e5%92%8c%e7%94%9f%e6%88%90%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="12 Java编译器（四）：去除语法糖和生成字节码.md.html">12 Java编译器（四）：去除语法糖和生成字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/13%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%8a%a8%e6%89%8b%e4%bf%ae%e6%94%b9Graal%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="13 Java JIT编译器（一）：动手修改Graal编译器.md.html">13 Java JIT编译器（一）：动手修改Graal编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/14%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSea%20of%20Nodes%e4%b8%ba%e4%bd%95%e5%a6%82%e6%ad%a4%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html">14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/15%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%8e%a2%e7%a9%b6%e5%86%85%e8%81%94%e5%92%8c%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90%e7%9a%84%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/16%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9aGraal%e7%9a%84%e5%90%8e%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html">16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/17%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%b7%a5%e5%85%b7%e7%94%9f%e6%88%90%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="17 Python编译器（一）：如何用工具生成编译器？.md.html">17 Python编译器（一）：如何用工具生成编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/18%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bb%8eAST%e5%88%b0%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="18 Python编译器（二）：从AST到字节码.md.html">18 Python编译器（二）：从AST到字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/19%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6.md.html" id="19 Python编译器（三）：运行时机制.md.html">19 Python编译器（三）：运行时机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/20%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e6%9e%90%e5%92%8c%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b.md.html" id="20 JavaScript编译器（一）：V8的解析和编译过程.md.html">20 JavaScript编译器（一）：V8的解析和编译过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/21%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e9%87%8a%e5%99%a8%e5%92%8c%e4%bc%98%e5%8c%96%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html">21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/22%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e5%8a%a8%e6%80%81%e8%af%ad%e8%a8%80%e6%80%a7%e8%83%bd%e5%be%88%e9%ab%98%ef%bc%9f.md.html" id="22 Julia编译器（一）：如何让动态语言性能很高？.md.html">22 Julia编译器（一）：如何让动态语言性能很高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/23%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8LLVM%e7%9a%84%e4%bc%98%e5%8c%96%e5%92%8c%e5%90%8e%e7%ab%af%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html">23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/24%20Go%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9a%e6%8a%8a%e5%ae%83%e5%bd%93%e4%bd%9c%e6%95%99%e7%a7%91%e4%b9%a6%e5%90%a7.md.html" id="24 Go语言编译器：把它当作教科书吧.md.html">24 Go语言编译器：把它当作教科书吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/25%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%a7%a3%e6%9e%90%e4%b8%80%e6%9d%a1SQL%e8%af%ad%e5%8f%a5%e7%9a%84%e6%89%a7%e8%a1%8c%e8%bf%87%e7%a8%8b.md.html" id="25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html">25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/26%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e5%a6%82%e4%bd%95%e5%b8%ae%e4%bd%a0%e6%8f%90%e5%8d%87%e6%95%b0%e6%8d%ae%e5%ba%93%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html">26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/27%20%e8%af%be%e5%89%8d%e5%af%bc%e8%af%bb%ef%bc%9a%e5%ad%a6%e4%b9%a0%e7%8e%b0%e4%bb%a3%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="27 课前导读：学习现代语言设计的正确姿势.md.html">27 课前导读：学习现代语言设计的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%89%8d%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e4%b9%9f%e6%9c%89%e4%ba%ba%e6%9c%ba%e5%b7%a5%e7%a8%8b%e5%ad%a6.md.html" id="28 前端总结：语言设计也有人机工程学.md.html">28 前端总结：语言设计也有人机工程学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/29%20%e4%b8%ad%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%8d%e9%81%97%e4%bd%99%e5%8a%9b%e5%9c%b0%e8%bf%9b%e8%a1%8c%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96.md.html" id="29 中端总结：不遗余力地进行代码优化.md.html">29 中端总结：不遗余力地进行代码优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%90%8e%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e5%85%85%e5%88%86%e5%8f%91%e6%8c%a5%e7%a1%ac%e4%bb%b6%e7%9a%84%e8%83%bd%e5%8a%9b.md.html" id="30 后端总结：充分发挥硬件的能力.md.html">30 后端总结：充分发挥硬件的能力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/31%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e0%e5%88%b0%e8%af%ad%e8%a8%80%e7%ba%a7%e7%9a%84%e8%99%9a%e6%8b%9f%e5%8c%96.md.html" id="31 运行时（一）：从0到语言级的虚拟化.md.html">31 运行时（一）：从0到语言级的虚拟化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/32%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e4%b8%8e%e8%af%ad%e8%a8%80%e7%9a%84%e7%89%b9%e6%80%a7%e6%9c%89%e5%85%b3%e5%90%97%ef%bc%9f.md.html" id="32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html">32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html">33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e5%8d%8f%e7%a8%8b%ef%bc%9f.md.html" id="34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html">34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/35%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9aErlang%e8%af%ad%e8%a8%80%e5%8e%89%e5%ae%b3%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html">35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/36%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%85%83%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="36 高级特性（一）：揭秘元编程的实现机制.md.html">36 高级特性（一）：揭秘元编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/37%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="37 高级特性（二）：揭秘泛型编程的实现机制.md.html">37 高级特性（二）：揭秘泛型编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="38 综合实现（一）：如何实现面向对象编程？.md.html">38 综合实现（一）：如何实现面向对象编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/39%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="39 综合实现（二）：如何实现函数式编程？.md.html">39 综合实现（二）：如何实现函数式编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/40%20%e6%88%90%e6%9e%9c%e6%a3%80%e9%aa%8c%ef%bc%9a%e6%96%b9%e8%88%9f%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%bc%98%e5%8a%bf%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 成果检验：方舟编译器的优势在哪里？.md.html">40 成果检验：方舟编译器的优势在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%901%20%e8%bf%9c%e7%a8%8b%e5%8a%9e%e5%85%ac%ef%bc%8c%e9%9c%80%e8%a6%81%e4%bd%a0%e6%88%91%e5%85%b7%e5%a4%87%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e7%b4%a0%e8%b4%a8%ef%bc%9f.md.html" id="不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html">不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%902%20%e5%ad%a6%e4%b9%a0%e6%8a%80%e6%9c%af%e7%9a%84%e8%bf%87%e7%a8%8b%ef%bc%8c%e5%85%b6%e5%ae%9e%e6%98%af%e8%ae%ad%e7%bb%83%e5%bf%83%e7%90%86%e7%b4%a0%e8%b4%a8%e7%9a%84%e8%bf%87%e7%a8%8b.md.html" id="不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html">不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%903%20%e8%bf%99%e5%87%a0%e5%b9%b4%ef%bc%8c%e6%89%93%e5%8a%a8%e6%88%91%e7%9a%84%e4%b8%a4%e6%9c%ac%e5%a5%bd%e4%b9%a6.md.html" id="不定期加餐3 这几年，打动我的两本好书.md.html">不定期加餐3 这几年，打动我的两本好书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%904%20%e4%bb%8e%e8%ba%ab%e8%be%b9%e7%9a%84%e7%89%9b%e4%ba%ba%e8%ba%ab%e4%b8%8a%ef%bc%8c%e6%88%91%e5%ad%a6%e5%88%b0%e7%9a%84%e4%b8%80%e4%ba%9b%e4%bc%98%e7%a7%80%e5%93%81%e8%b4%a8.md.html" id="不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html">不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%905%20%e5%80%9f%e5%8a%a9%e5%ae%9e%e4%be%8b%ef%bc%8c%e6%8e%a2%e7%a9%b6C++%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%86%85%e9%83%a8%e6%9c%ba%e5%88%b6.md.html" id="不定期加餐5 借助实例，探究C++编译器的内部机制.md.html">不定期加餐5 借助实例，探究C++编译器的内部机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e5%88%92%e9%87%8d%e7%82%b9%207%e7%a7%8d%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="划重点 7种编译器的核心概念与算法.md.html">划重点 7种编译器的核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e6%9c%9f%e6%9c%ab%e7%ad%94%e7%96%91%e4%b8%8e%e6%80%bb%e7%bb%93%20%e5%86%8d%e6%ac%a1%e5%ae%a1%e8%a7%86%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e7%9a%84%e4%bd%9c%e7%94%a8.md.html" id="期末答疑与总结 再次审视学习编译原理的作用.md.html">期末答疑与总结 再次审视学习编译原理的作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%20%e5%a6%82%e4%bd%95%e5%90%83%e9%80%8f7%e7%a7%8d%e7%9c%9f%e5%ae%9e%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="热点问题答疑 如何吃透7种真实的编译器？.md.html">热点问题答疑 如何吃透7种真实的编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%98%93%e6%98%8a%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b8%8d%e6%ad%a2%e6%9c%89Bug%e5%92%8c%e5%8a%a0%e7%8f%ad%ef%bc%8c%e8%bf%98%e6%9c%89%e8%af%97%e5%92%8c%e8%bf%9c%e6%96%b9.md.html" id="用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html">用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%9f%a5%e8%af%86%e5%9c%b0%e5%9b%be%20%e4%b8%80%e8%b5%b7%e6%9d%a5%e5%a4%8d%e4%b9%a0%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="知识地图 一起来复习编译技术核心概念与算法.md.html">知识地图 一起来复习编译技术核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ae%9e%e6%88%98%e6%98%af%e5%94%af%e4%b8%80%e6%a0%87%e5%87%86%ef%bc%81.md.html" id="结束语 实战是唯一标准！.md.html">结束语 实战是唯一标准！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理" id="title">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理</h1>
+<div><p>你好，我是宫文学。</p>
+<p>基于Graal IR进行的优化处理有很多。但有些优化，针对Java语言的特点，会显得更为重要。</p>
+<p>今天这一讲，我就带你来认识两个对Java来说很重要的优化算法。如果没有这两个优化算法，你的程序执行效率会大大下降。而如果你了解了这两个算法的机理，则有可能写出更方便编译器做优化的程序，从而让你在实际工作中受益。这两个算法，分别是<strong>内联和逃逸分析</strong>。</p>
+<p>另外，我还会给你介绍一种JIT编译所特有的优化模式：<strong>基于推理的优化</strong>。这种优化模式会让某些程序比AOT编译的性能更高。这个知识点，可能会改变你对JIT和AOT的认知，因为通常来说，你可能会认为AOT生成的机器码速度更快，所以通过这一讲的学习，你也会对“全生命周期优化”的概念有所体会。</p>
+<p>好，首先，我们来看看内联优化。</p>
+<h2 id="内联-inlining">内联（Inlining）</h2>
+<p>内联优化是Java JIT编译器非常重要的一种优化策略。简单地说，内联就是把被调用的方法的方法体，在调用的地方展开。这样做最大的好处，就是省去了函数调用的开销。对于频繁调用的函数，内联优化能大大提高程序的性能。</p>
+<p><strong>执行内联优化是有一定条件的。</strong>第一，被内联的方法要是热点方法；第二，被内联的方法不能太大，否则编译后的目标代码量就会膨胀得比较厉害。</p>
+<p>在Java程序里，你经常会发现很多短方法，特别是访问类成员变量的getter和setter方法。你可以看看自己写的程序，是否也充斥着很多对这种短方法的调用？这些调用如果不做优化的话，性能损失是很厉害的。你可以做一个性能对比测试，通过“<code>-XX:-Inlining</code>”参数来阻止JVM做内联优化，看看性能降低得会有多大。</p>
+<p><strong>但是这些方法有一个好处：它们往往都特别短，内联之后，实际上并不会显著增加目标代码长度。</strong></p>
+<p>比如，针对add2示例方法，我们采用内联选项优化后，方法调用被替换成了LoadField（加载成员变量）。</p>
+<pre><code>public int add2(){
+    return getX() + getY();
+}
+</code></pre>
+<p><img alt="" src="assets/4bec3bc6516a4ad7915d9aa87d705a2c.jpg"/></p>
+<p>图1：将getter方法内联</p>
+<p>在做了Lower处理以后，LoadField会被展开成更底层的操作：根据x和y的地址相对于对象地址的偏移量，获取x和y的值。</p>
+<p><img alt="" src="assets/fbb1906d492a437389f91b131c30d092.jpg"/></p>
+<p>图2：计算字段x和y的地址</p>
+<p>而要想正确地计算字段的偏移量，我们还需要了解Java对象的<strong>内存布局</strong>。</p>
+<p>在64位平台下，每个Java对象头部都有8字节的标记字，里面有对象ID的哈希值、与内存收集有关的标记位、与锁有关的标记位；标记字后面是一个指向类定义的指针，在64位平台下也是8位，不过如果堆不是很大，我们可以采用压缩指针，只占4个字节；在这后面才是x和y字段。因此，x和y的偏移量分别是12和16。</p>
+<p><img alt="" src="assets/b695c0ef2a814f90be2ad867671eb404.jpg"/></p>
+<p>图3：内存中，Java对象头占据的空间</p>
+<p>在Low Tier编译完毕以后，图2还会进一步被Lower，形成AMD64架构下的地址。这样的话，编译器再进一步翻译成汇编代码就很容易了。</p>
+<p><img alt="" src="assets/3ffcc9b6eefd43e68ec4df3e77bd05af.jpg"/></p>
+<p>图4：生成AMD64架构的地址计算节点</p>
+<p>内联优化除了会优化getter、setter这样的短方法，它实际上还起到了另一个重要的作用，即<strong>跨过程的优化</strong>。一般的优化算法，只会局限在一个方法内部。而启动内联优化后，多个方法会合并成一个方法，所以就带来了更多的优化的可能性。</p>
+<p>我们来看看下面这个inlining示例方法。它调用了一个atLeastTen方法，这个方法对于&lt;10的参数，会返回10；对于≥10的参数，会返回该参数本身。所以你用肉眼就可以看出来，inlining方法的返回值应该是10。</p>
+<pre><code>public int inliningTest(int a){
+    return atLeastTen(3);    //应该返回10
+}
+
+//至少返回10
+public int atLeastTen(int a){
+    if (a &lt; 10)
+        return 10;
+    else
+        return a;    
+}
+</code></pre>
+<p>如果不启用编译器的内联选项，那么inliningTest方法对应的IR图，就是常规的方法调用而已：</p>
+<p><img alt="" src="assets/4778baaa2e274e3e841d45ee6dfd8fb2.jpg"/></p>
+<p>图5：不启用内联时调用atLeastTen()方法</p>
+<p>而一旦启用了内联选项，就可以触发一系列的优化。在把字节码解析生成IR的时候，编译器就启动了内联分析过程，从而会发现this参数和常量3对于inliningTest方法根本是无用的，在图里表现成了一些孤岛。在Mid Tier处理完毕之后，inliningTest方法就直接返回常量10了。</p>
+<p><img alt="" src="assets/8907aaabfeb24638ac39c441b267b0fb.jpg"/></p>
+<p>图6：启用内联后，调用atLeastTen()方法</p>
+<p>另外，方法的类型也会影响inlining。如果方法是final的，或者是private的，那么它就不会被子类重载，所以可以大胆地内联。</p>
+<p>但如果存在着多重继承的类体系，方法就有可能被重载，这就会导致<strong>多态</strong>。在运行时，JVM会根据对象的类型来确定到底采用哪个子类的具体实现。这种运行时确定具体方法的过程，叫做<strong>虚分派</strong>（Virtual Dispatch）。</p>
+<p>在存在多态的情况下，JIT编译器做内联就会遇到困难了。因为它不知道把哪个版本的实现内联进来。不过编译器仍然没有放弃。这时候所采用的技术，就叫做“<strong>多态内联</strong>（Polymorphic inlining）”。</p>
+<p>它的具体做法是，在运行时，编译器会统计在调用多态方法的时候，到底用了哪几个实现。然后针对这几个实现，同时实现几个分支的内联，并在一开头根据对象类型判断应该走哪个分支。<strong>这个方法的缺陷是生成的代码量会比较大，但它毕竟可以获得内联的好处。</strong>最后，如果实际运行中遇到的对象，与提前生成的几个分支都不匹配，那么编译器还可以继续用缺省的虚分派模式来做函数调用，保证程序不出错。</p>
+<p>这个案例也表明了，JIT编译器是如何充分利用运行时收集的信息来做优化的。对于AOT模式的编译来说，由于无法收集到这些信息，因此反倒无法做这种优化。</p>
+<p>如果你想对多态内联做更深入的研究，还可以参考这一篇经典论文《<a href="http://extras.springer.com/2000/978-3-540-67660-7/papers/1628/16280258.pdf" target="_blank">Inlining of Virtual Methods</a>》。</p>
+<p>总结起来，内联优化不仅能降低由于函数调用带来的开销，还能制造出新的优化机会，因此带来的优化效果非常显著。接下来，我们看看另一个能带来显著优化效果的算法：逃逸分析。</p>
+<h2 id="逃逸分析-escape-analysis-ea">逃逸分析（Escape Analysis, EA）</h2>
+<p>逃逸分析是JVM的另一个重要的优化算法，它同样可以起到巨大的性能提升作用。</p>
+<p><strong>逃逸分析能够让编译器判断出，一个对象是否能够在创建它的方法或线程之外访问。</strong>如果只能在创建它的方法内部访问，我们就说这个对象不是方法逃逸的；如果仅仅逃逸出了方法，但对这个对象的访问肯定都是在同一个线程中，那么我们就说这个对象不是线程逃逸的。</p>
+<p><strong>判断是否逃逸有什么用呢？</strong>用处很大。只要我们判断出了该对象没有逃逸出方法或线程，就可以采用更加优化的方法来管理该对象。</p>
+<p>以下面的示例代码为例。我们有一个escapeTest()方法，这个方法可以根据输入的年龄，返回年龄段：小于20岁的返回1，否则返回2。</p>
+<p>在示例程序里，我们创建了一个Person对象，并调用它的ageSegment方法，来返回年龄段。</p>
+<pre><code>public int escapeTest(int age){
+    Person p = new Person(age);
+    return p.ageSegment();
+}
+
+public class Person{
+    private int age;
+    private float weight;
+
+    public Person(int age){
+       this.age = age;     
+    }
+
+    //返回年龄段
+    final public int ageSegment(){
+        if (age &lt; 20)
+            return 1;
+        else
+            return 2;        
+    } 
+
+    public void setWeight(float weight){
+        this.weight = weight;
+    }
+
+    public float getWeidht(){
+        return weight;
+    }
+}
+</code></pre>
+<p>你可以分析一下，针对这段程序，我们可以做哪些优化工作？</p>
+<p>首先是<strong>栈上分配内存</strong>。</p>
+<p>在Java语言里，对象的内存通常都是在堆中申请的。对象不再被访问以后，会由垃圾收集器回收。但对于这个例子来说，Person对象的生命周期跟escapeTest()方法的生命周期是一样的。在退出方法后，就不再会有别的程序来访问该对象。</p>
+<p>换句话说，这个对象跟一个int类型的本地变量没啥区别。那么也就意味着，我们其实可以在栈里给这个对象申请内存就行了。</p>
+<p>你已经知道，在栈里申请内存会有很多好处：可以自动回收，不需要浪费GC的计算量去回收内存；可以避免由于大量生成小对象而造成的内存碎片；数据的局部性也更好，因为在堆上申请内存，它们的物理地址有可能是不相邻的，从而降低高速缓存的命中率；再有，在并发计算的场景下，在栈上分配内存的效率更高，因为栈是线程独享的，而在堆中申请内存可能需要多线程之间同步。所以，我们做这个优化是非常有价值的。</p>
+<p>再进一步，还可以做<strong>标量替换</strong>（Scalar Replacement）。</p>
+<p>这是什么意思呢？你会发现，示例程序仅仅用到了Person对象的age成员变量，而weight根本没有涉及。所以，我们在栈上申请内存的时候，根本没有必要为weight保留内存。同时，在一个Java对象的标准内存布局中，还要有一块固定的对象头的内存开销。在64位平台，对象头可能占据了16字节。这下倒好，示例程序本来只需要4个字节的一个整型，最后却要申请24个字节，是原需求的6倍，这也太浪费了。</p>
+<p>通过标量替换的技术，我们可以根本不生成对象实例，而是把要用到的对象的成员变量，作为普通的本地变量（也就是标量）来管理。</p>
+<p>这么做还有一个好处，就是编译器可以尽量把标量放到寄存器里去，连栈都不用，这样就避免了内存访问所带来的性能消耗。</p>
+<p>Graal编译器也确实是这么做的。在Mid Tier层处理完毕以后，你查看IR图，会发现它变成了下面的这个样子：</p>
+<p><img alt="" src="assets/dd48b78c407542a8ad49d25fb4f65ee8.jpg"/></p>
+<p>图7：对Person对象做标量替换</p>
+<p>你会看到，编译器连Person的ageSegement方法也内联进来了。最后优化后的函数相当于：</p>
+<pre><code>public int escapeTest(int age){
+  return age&lt;20 ? 1 : 2;
+}
+</code></pre>
+<p>图7中的Conditional是一个条件计算的三元表达式。你看到这个优化结果的时候，有没有感到震惊？是的。善用编译器的优化算法，就是会达到如此程度的优化。优化前后的代码的功能是一样的，但优化后的代码变得如此简洁、直奔最终计算目标，忽略中间我们自己编程所带来的冗余动作。</p>
+<p>上面讲的都是没有逃逸出方法的情况。这种情况被叫做<strong>NoEscape</strong>。还有一种情况，是虽然逃逸出了方法，但没有逃逸出当前线程，也就是说不可能被其他线程所访问，这种逃逸叫做<strong>ArgEscape</strong>，也就是它仅仅是通过方法的参数逃逸的。最后一种情况就是<strong>GlobalEscape</strong>，也就是能够被其他线程所访问，因此没有办法优化。</p>
+<p>对于ArgEscape的情况，虽然编译器不能做内存的栈上分配，但也可以做一定的优化，这就是<strong>锁消除或者同步消除</strong>。</p>
+<p>我们知道，在并发场景下，锁对性能的影响非常之大。而很多线程安全的对象，比如一些集合对象，它们的内部都采用了锁来做线程的同步。如果我们可以确定这些对象没有逃逸出线程，那么就可以把这些同步逻辑优化掉，从而提高代码的性能。</p>
+<p>好了，现在你已经理解了逃逸分析的用途。那么逃逸分析的算法是怎么实现的呢？这方面你可以去参考这篇经典论文《<a href="https://www.cc.gatech.edu/~harrold/6340/cs6340_fall2009/Readings/choi99escape.pdf" target="_blank">Escape Analysis for Java</a>》。论文里的算法利用了一种数据结构，叫做<strong>连接图</strong>（Connection Graph）。简单地说，就是分析出了程序中对象之间的引用关系。</p>
+<p>整个分析算法是建立在这样一种直觉认知上的：<strong>基于一个连接图，也就是对象之间的引用关系图，如果A引用了B，而A能够被线程外的程序所访问（线程逃逸），那么也就意味着B也是线程逃逸的。</strong>也就是说，<strong>逃逸性是有传染能力的</strong>。通过这样的分析，那些完全没被传染的对象，就是NoEscape的；只被ArgEscape对象传染的，那就也是ArgEscape的。原理说起来就是这么简单。</p>
+<p>另外，我们前面所做的分析都是静态分析，也就是基于对代码所做的分析。对于一个对象来说，只要存在任何一个控制流，使得它逃逸了，那么编译器就会无情地把它标注为是逃逸对象，也就不能做优化了。但是，还会出现一种情况，就是有可能这个分支的执行频率特别少，大部分情况下该对象都是不逃逸的。</p>
+<p>所以，Java的JIT编译器实际上又向前迈进了一步，实现了<strong>部分逃逸分析</strong>（Partial Escape Analysis）。它会根据运行时的统计信息，对不同的控制流分支做不同的处理。对于没有逃逸的分支，仍然去做优化。在这里，你能体会到，编译器为了一点点的性能提升，简直无所不用其极呀。</p>
+<p>如果你还想对部分逃逸分析做进一步的研究，那你可以参考这篇论文：《<a href="http://www.ssw.uni-linz.ac.at/Research/Papers/Stadler14/Stadler2014-CGO-PEA.pdf" target="_blank">Partial Escape Analysis and Scalar Replacement for Java</a>》。</p>
+<p>总结起来，逃逸分析能够让对象在栈上申请内存，做标量替换，从而大大减少对象处理的开销。这个算法对于对象生命周期比较短的场景，优化效果是非常明显的。</p>
+<p>在讲内联和逃逸算法的时候，我们都发现，编译器会根据运行时的统计信息，通过推断来做一些优化，比如多态内联、部分逃逸分析。而这种优化模式，就叫做基于推理的优化。</p>
+<h2 id="基于推理的优化-speculative-optimization">基于推理的优化（Speculative Optimization）</h2>
+<p>我刚刚说过，一般情况下，编译器的优化工作是基于对代码所做的分析，也就是静态分析。而JIT编译还有一个优势，就是会根据运行时收集的统计信息来做优化。</p>
+<p>我还是以Foo.atLeastTen()方法举例。在正常情况下，它生成的HIR是下面的样子，根据条件表达式的值（a&lt;10），分别返回10和a。</p>
+<p><img alt="" src="assets/242eb78ae3f24baf882475fb721db7b4.jpg"/></p>
+<p>图8：基于静态分析编译atLeastTen()方法</p>
+<p>而如果我们在主程序里调用atLeastTen方法是采用下面示例代码中的逻辑，在启动JIT编译器时，已经循环了上万次。而在这上万次当中，只有9次i的值是小于10的，那么编译器就会根据运行时的统计信息判断，i的值大概率是大于10的。所以，它会仅针对大于10的分支做编译。</p>
+<p>而如果遇到小于10的情况，则会导致逆优化。你会看到，IR中有一个绿色的FrameState节点，这个节点保存了栈帧的状态，在逆优化时会被用到。</p>
+<pre><code>int i = 0;
+while(true){
+    i++;
+    foo.atLeastTen(i);
+    ...
+}
+</code></pre>
+<p><img alt="" src="assets/2c995dc4288344a881d6883f2af94812.jpg"/></p>
+<p>图9：基于推理优化，只编译if语句的第1个分支，返回10</p>
+<p>我们把主程序修改一下，再做一次实验。这次，我们传给Foo.atLeastTen方法的参数是i%10，也就是参数a的取值范围永远是在0到9之间。这一次，JIT编译器会反过来，仅针对a小于10的分支做编译，而对a大于10的情况做逆优化处理。</p>
+<pre><code>int i = 0;
+while(true){
+    i++;
+    foo.atLeastTen(i%10);
+    ...
+}
+</code></pre>
+<p><img alt="" src="assets/040b3a9de257492d90275c093b4fa597.jpg"/></p>
+<p>图10：基于推理优化，只编译if语句的第2个分支，返回a</p>
+<p>通过这个简单的例子，你对JIT编译器基于推理的优化情况就有了一个直观的了解。对于atLeastTen这个简单的方法，这样的优化似乎并不会带来太多的好处。但对于比较复杂的程序，那既可以节省编译时间，也能减少编译后的代码大小，收益是很高的。比如对于程序中仅用于输出Debug信息的分支，就根本不需要生成代码。</p>
+<p>另外，这种基于推理的优化，还会带来其他额外的优化机会。比如对于逃逸分析而言，去掉了一些导致逃逸的分支以后，在剩下的分支中，对象并没有逃逸，所以也就可以做优化了！</p>
+<p>总结起来，基于运行时的统计信息进行推理的优化，有时会比基于静态分析的AOT产生出性能更高的目标代码。所以，现代编译技术的实践，会强调“全生命周期”优化的概念。甚至即使是AOT产生的目标代码，仍然可以在运行期通过JIT做进一步优化。LLVM项目的发起人之一，Chris Lattner就曾写了一篇<a href="https://llvm.org/pubs/2003-09-30-LifelongOptimizationTR.pdf" target="_blank">论文</a>来提倡这个理念，这也是LLVM的设计目标之一。</p>
+<h2 id="课程小结">课程小结</h2>
+<p>今天我带你了解了Java JIT编译器中两个重要的优化算法，这两个优化算法都会大大提升程序的执行效率。另外，你还了解了在JIT编译中，基于运行时的信息做推理优化的技术。</p>
+<p>在课程中，我不可能带你去分析所有的优化算法，但你可以根据课程的内容去举一反三，研究一下里面的其他算法。如果你对这些算法掌握得比较清晰，那你就可以胜任编译器的开发工作了。因为编译器开发的真正的工作量，都在中后端。</p>
+<p>另外，熟悉这些重要的优化算法的原理，还有助于你写出性能更高的程序。比如说，你要让高频使用的代码易于内联；在使用对象的时候，让它的作用范围清晰一些，不要做无用的关联，尽量不要逃逸出方法和线程之外，等等。</p>
+<p>本讲的思维导图我也放在下面了，供你参考。</p>
+<p><img alt="" src="assets/661aa2020ac34e6bb92e5d2313fc022a.jpg"/></p>
+<h2 id="一课一思">一课一思</h2>
+<p>今天的思考题，还是想请你设计一个场景，测试内联 vs 无内联，或者做逃逸优化 vs 无逃逸优化的性能差异。借此，你也可以熟悉一下如何控制JVM的优化选项。欢迎在留言区分享你在测试中的发现。</p>
+<blockquote>
+<p>关闭内联优化: -XX:-Inlining。JDK8缺省是打开的。-
+显示内联优化详情：-XX:+PrintInlining。-
+关闭逃逸分析：-XX:-DoEscapeAnalysis。JDK8缺省是打开的。-
+显示逃逸分析详情：-XX:+PrintEscapeAnalysis。-
+关闭标量替换：-XX:-EliminateAllocations。JDK8缺省是打开的。-
+显示标量替换详情：-XX:+PrintEliminateAllocations。</p>
+</blockquote>
+<h2 id="参考资料">参考资料</h2>
+<ol>
+<li>多态内联：<a href="http://extras.springer.com/2000/978-3-540-67660-7/papers/1628/16280258.pdf" target="_blank">Inlining of Virtual Methods</a>。</li>
+<li>逃逸分析：<a href="https://www.cc.gatech.edu/~harrold/6340/cs6340_fall2009/Readings/choi99escape.pdf" target="_blank">Escape Analysis for Java</a>。</li>
+<li>部分逃逸分析：<a href="http://www.ssw.uni-linz.ac.at/Research/Papers/Stadler14/Stadler2014-CGO-PEA.pdf" target="_blank">Partial Escape Analysis and Scalar Replacement for Java</a>。</li>
+</ol>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#ea868686d3dedbdbdaddaa8d878b8386c4898587" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359f31b59028003',t:'MTc0NTU0MzMxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

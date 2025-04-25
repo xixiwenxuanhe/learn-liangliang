@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="02 词法分析：用两种方式构造有限自动机" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>02 词法分析：用两种方式构造有限自动机 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97%20%e5%a6%82%e4%bd%95%e5%ad%a6%e4%b9%a0%e8%bf%99%e9%97%a8%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be%ef%bc%9f.md.html" id="00 学习指南 如何学习这门编译原理实战课？.md.html">00 学习指南 如何学习这门编译原理实战课？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9c%a8%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e4%b8%ad%e6%b8%b8%e5%8e%86.md.html" id="00 开篇词 在真实世界的编译器中游历.md.html">00 开篇词 在真实世界的编译器中游历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bc%96%e8%af%91%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b%e9%83%bd%e6%82%84%e6%82%84%e5%81%9a%e4%ba%86%e5%93%aa%e4%ba%9b%e4%ba%8b%e6%83%85%ef%bc%9f.md.html" id="01 编译的全过程都悄悄做了哪些事情？.md.html">01 编译的全过程都悄悄做了哪些事情？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e7%94%a8%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e6%9e%84%e9%80%a0%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba.md.html" id="02 词法分析：用两种方式构造有限自动机.md.html">02 词法分析：用两种方式构造有限自动机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e4%b8%a4%e4%b8%aa%e5%9f%ba%e6%9c%ac%e5%8a%9f%e5%92%8c%e4%b8%a4%e7%a7%8d%e7%ae%97%e6%b3%95%e6%80%9d%e8%b7%af.md.html" id="03 语法分析：两个基本功和两种算法思路.md.html">03 语法分析：两个基本功和两种算法思路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/04%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%9a%e8%ae%a9%e7%a8%8b%e5%ba%8f%e7%ac%a6%e5%90%88%e8%af%ad%e4%b9%89%e8%a7%84%e5%88%99.md.html" id="04 语义分析：让程序符合语义规则.md.html">04 语义分析：让程序符合语义规则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/05%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%ef%bc%8c%e4%bd%a0%e6%9c%89%e5%8f%91%e8%a8%80%e6%9d%83.md.html" id="05 运行时机制：程序如何运行，你有发言权.md.html">05 运行时机制：程序如何运行，你有发言权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/06%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e4%b8%80%e5%89%af%e9%9d%a2%e5%ad%94.md.html" id="06 中间代码：不是只有一副面孔.md.html">06 中间代码：不是只有一副面孔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/07%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e8%b7%9f%e7%bc%96%e8%af%91%e5%99%a8%e5%81%9a%e6%9c%8b%e5%8f%8b%ef%bc%8c%e8%ae%a9%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%a3%9e%e8%b5%b7%e6%9d%a5.md.html" id="07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html">07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/08%20%e4%bb%a3%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%99%a8%e7%9b%b8%e5%85%b3%e7%9a%84%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="08 代码生成：如何实现机器相关的优化？.md.html">08 代码生成：如何实现机器相关的优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/09%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%89%8b%e5%86%99%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="09 Java编译器（一）：手写的编译器有什么优势？.md.html">09 Java编译器（一）：手写的编译器有什么优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/10%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%bf%98%e8%a6%81%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Java编译器（二）：语法分析之后，还要做些什么？.md.html">10 Java编译器（二）：语法分析之后，还要做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/11%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%b1%9e%e6%80%a7%e5%88%86%e6%9e%90%e5%92%8c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90.md.html" id="11 Java编译器（三）：属性分析和数据流分析.md.html">11 Java编译器（三）：属性分析和数据流分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/12%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%8e%bb%e9%99%a4%e8%af%ad%e6%b3%95%e7%b3%96%e5%92%8c%e7%94%9f%e6%88%90%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="12 Java编译器（四）：去除语法糖和生成字节码.md.html">12 Java编译器（四）：去除语法糖和生成字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/13%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%8a%a8%e6%89%8b%e4%bf%ae%e6%94%b9Graal%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="13 Java JIT编译器（一）：动手修改Graal编译器.md.html">13 Java JIT编译器（一）：动手修改Graal编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/14%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSea%20of%20Nodes%e4%b8%ba%e4%bd%95%e5%a6%82%e6%ad%a4%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html">14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/15%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%8e%a2%e7%a9%b6%e5%86%85%e8%81%94%e5%92%8c%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90%e7%9a%84%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/16%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9aGraal%e7%9a%84%e5%90%8e%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html">16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/17%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%b7%a5%e5%85%b7%e7%94%9f%e6%88%90%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="17 Python编译器（一）：如何用工具生成编译器？.md.html">17 Python编译器（一）：如何用工具生成编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/18%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bb%8eAST%e5%88%b0%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="18 Python编译器（二）：从AST到字节码.md.html">18 Python编译器（二）：从AST到字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/19%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6.md.html" id="19 Python编译器（三）：运行时机制.md.html">19 Python编译器（三）：运行时机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/20%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e6%9e%90%e5%92%8c%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b.md.html" id="20 JavaScript编译器（一）：V8的解析和编译过程.md.html">20 JavaScript编译器（一）：V8的解析和编译过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/21%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e9%87%8a%e5%99%a8%e5%92%8c%e4%bc%98%e5%8c%96%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html">21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/22%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e5%8a%a8%e6%80%81%e8%af%ad%e8%a8%80%e6%80%a7%e8%83%bd%e5%be%88%e9%ab%98%ef%bc%9f.md.html" id="22 Julia编译器（一）：如何让动态语言性能很高？.md.html">22 Julia编译器（一）：如何让动态语言性能很高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/23%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8LLVM%e7%9a%84%e4%bc%98%e5%8c%96%e5%92%8c%e5%90%8e%e7%ab%af%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html">23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/24%20Go%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9a%e6%8a%8a%e5%ae%83%e5%bd%93%e4%bd%9c%e6%95%99%e7%a7%91%e4%b9%a6%e5%90%a7.md.html" id="24 Go语言编译器：把它当作教科书吧.md.html">24 Go语言编译器：把它当作教科书吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/25%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%a7%a3%e6%9e%90%e4%b8%80%e6%9d%a1SQL%e8%af%ad%e5%8f%a5%e7%9a%84%e6%89%a7%e8%a1%8c%e8%bf%87%e7%a8%8b.md.html" id="25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html">25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/26%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e5%a6%82%e4%bd%95%e5%b8%ae%e4%bd%a0%e6%8f%90%e5%8d%87%e6%95%b0%e6%8d%ae%e5%ba%93%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html">26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/27%20%e8%af%be%e5%89%8d%e5%af%bc%e8%af%bb%ef%bc%9a%e5%ad%a6%e4%b9%a0%e7%8e%b0%e4%bb%a3%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="27 课前导读：学习现代语言设计的正确姿势.md.html">27 课前导读：学习现代语言设计的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%89%8d%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e4%b9%9f%e6%9c%89%e4%ba%ba%e6%9c%ba%e5%b7%a5%e7%a8%8b%e5%ad%a6.md.html" id="28 前端总结：语言设计也有人机工程学.md.html">28 前端总结：语言设计也有人机工程学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/29%20%e4%b8%ad%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%8d%e9%81%97%e4%bd%99%e5%8a%9b%e5%9c%b0%e8%bf%9b%e8%a1%8c%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96.md.html" id="29 中端总结：不遗余力地进行代码优化.md.html">29 中端总结：不遗余力地进行代码优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%90%8e%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e5%85%85%e5%88%86%e5%8f%91%e6%8c%a5%e7%a1%ac%e4%bb%b6%e7%9a%84%e8%83%bd%e5%8a%9b.md.html" id="30 后端总结：充分发挥硬件的能力.md.html">30 后端总结：充分发挥硬件的能力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/31%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e0%e5%88%b0%e8%af%ad%e8%a8%80%e7%ba%a7%e7%9a%84%e8%99%9a%e6%8b%9f%e5%8c%96.md.html" id="31 运行时（一）：从0到语言级的虚拟化.md.html">31 运行时（一）：从0到语言级的虚拟化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/32%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e4%b8%8e%e8%af%ad%e8%a8%80%e7%9a%84%e7%89%b9%e6%80%a7%e6%9c%89%e5%85%b3%e5%90%97%ef%bc%9f.md.html" id="32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html">32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html">33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e5%8d%8f%e7%a8%8b%ef%bc%9f.md.html" id="34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html">34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/35%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9aErlang%e8%af%ad%e8%a8%80%e5%8e%89%e5%ae%b3%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html">35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/36%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%85%83%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="36 高级特性（一）：揭秘元编程的实现机制.md.html">36 高级特性（一）：揭秘元编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/37%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="37 高级特性（二）：揭秘泛型编程的实现机制.md.html">37 高级特性（二）：揭秘泛型编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="38 综合实现（一）：如何实现面向对象编程？.md.html">38 综合实现（一）：如何实现面向对象编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/39%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="39 综合实现（二）：如何实现函数式编程？.md.html">39 综合实现（二）：如何实现函数式编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/40%20%e6%88%90%e6%9e%9c%e6%a3%80%e9%aa%8c%ef%bc%9a%e6%96%b9%e8%88%9f%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%bc%98%e5%8a%bf%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 成果检验：方舟编译器的优势在哪里？.md.html">40 成果检验：方舟编译器的优势在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%901%20%e8%bf%9c%e7%a8%8b%e5%8a%9e%e5%85%ac%ef%bc%8c%e9%9c%80%e8%a6%81%e4%bd%a0%e6%88%91%e5%85%b7%e5%a4%87%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e7%b4%a0%e8%b4%a8%ef%bc%9f.md.html" id="不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html">不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%902%20%e5%ad%a6%e4%b9%a0%e6%8a%80%e6%9c%af%e7%9a%84%e8%bf%87%e7%a8%8b%ef%bc%8c%e5%85%b6%e5%ae%9e%e6%98%af%e8%ae%ad%e7%bb%83%e5%bf%83%e7%90%86%e7%b4%a0%e8%b4%a8%e7%9a%84%e8%bf%87%e7%a8%8b.md.html" id="不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html">不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%903%20%e8%bf%99%e5%87%a0%e5%b9%b4%ef%bc%8c%e6%89%93%e5%8a%a8%e6%88%91%e7%9a%84%e4%b8%a4%e6%9c%ac%e5%a5%bd%e4%b9%a6.md.html" id="不定期加餐3 这几年，打动我的两本好书.md.html">不定期加餐3 这几年，打动我的两本好书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%904%20%e4%bb%8e%e8%ba%ab%e8%be%b9%e7%9a%84%e7%89%9b%e4%ba%ba%e8%ba%ab%e4%b8%8a%ef%bc%8c%e6%88%91%e5%ad%a6%e5%88%b0%e7%9a%84%e4%b8%80%e4%ba%9b%e4%bc%98%e7%a7%80%e5%93%81%e8%b4%a8.md.html" id="不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html">不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%905%20%e5%80%9f%e5%8a%a9%e5%ae%9e%e4%be%8b%ef%bc%8c%e6%8e%a2%e7%a9%b6C++%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%86%85%e9%83%a8%e6%9c%ba%e5%88%b6.md.html" id="不定期加餐5 借助实例，探究C++编译器的内部机制.md.html">不定期加餐5 借助实例，探究C++编译器的内部机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e5%88%92%e9%87%8d%e7%82%b9%207%e7%a7%8d%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="划重点 7种编译器的核心概念与算法.md.html">划重点 7种编译器的核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e6%9c%9f%e6%9c%ab%e7%ad%94%e7%96%91%e4%b8%8e%e6%80%bb%e7%bb%93%20%e5%86%8d%e6%ac%a1%e5%ae%a1%e8%a7%86%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e7%9a%84%e4%bd%9c%e7%94%a8.md.html" id="期末答疑与总结 再次审视学习编译原理的作用.md.html">期末答疑与总结 再次审视学习编译原理的作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%20%e5%a6%82%e4%bd%95%e5%90%83%e9%80%8f7%e7%a7%8d%e7%9c%9f%e5%ae%9e%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="热点问题答疑 如何吃透7种真实的编译器？.md.html">热点问题答疑 如何吃透7种真实的编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%98%93%e6%98%8a%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b8%8d%e6%ad%a2%e6%9c%89Bug%e5%92%8c%e5%8a%a0%e7%8f%ad%ef%bc%8c%e8%bf%98%e6%9c%89%e8%af%97%e5%92%8c%e8%bf%9c%e6%96%b9.md.html" id="用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html">用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%9f%a5%e8%af%86%e5%9c%b0%e5%9b%be%20%e4%b8%80%e8%b5%b7%e6%9d%a5%e5%a4%8d%e4%b9%a0%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="知识地图 一起来复习编译技术核心概念与算法.md.html">知识地图 一起来复习编译技术核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ae%9e%e6%88%98%e6%98%af%e5%94%af%e4%b8%80%e6%a0%87%e5%87%86%ef%bc%81.md.html" id="结束语 实战是唯一标准！.md.html">结束语 实战是唯一标准！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="02 词法分析：用两种方式构造有限自动机" id="title">02 词法分析：用两种方式构造有限自动机</h1>
+<div><p>你好，我是宫文学。</p>
+<p>上一讲，我带你把整个编译过程走了一遍。这样，你就知道了编译过程的整体步骤，每一步是做什么的，以及为什么要这么做。</p>
+<p>进一步地，你就可以研究一下每个环节具体是如何实现的、有哪些难点、有哪些理论和算法。通过这个过程，你不仅可以了解每个环节的原理，还能熟悉一些专有词汇。这样一来，你在读编译原理领域的相关资料时，就会更加顺畅了。</p>
+<p>不过，编译过程中涉及的算法和原理有些枯燥，所以我会用尽量通俗、直观的方式来给你解读，让你更容易接受。</p>
+<p>本讲，我主要跟你讨论一下词法分析（Lexical Analysis）这个环节。通过这节课，你可以掌握词法分析这个阶段是如何把字符串识别成一个个Token的。进而，你还会学到如何实现一个正则表达式工具，从而实现任意的词法解析。</p>
+<h2 id="词法分析的原理">词法分析的原理</h2>
+<p>首先，我们来了解一下词法分析的原理。</p>
+<p>通过上一讲，你已经很熟悉词法分析的任务了：输入的是字符串，输出的是Token串。所以，词法分析器在英文中一般叫做Tokenizer。</p>
+<p><img alt="" src="assets/2a638f566d984d3db35578aafa2325a1.jpg"/></p>
+<p>图1：把字符串转换为Token（注意：其中的空白字符，代表空格、tab、回车和换行符，EOF是文件结束符）</p>
+<p>但具体如何实现呢？这里要有一个计算模型，叫做<strong>有限自动机</strong>（Finite-state Automaton，FSA），或者叫做有限状态自动机（Finite-state Machine，FSM）。</p>
+<p>有限自动机这个名字，听上去可能比较陌生。但大多数程序员，肯定都接触过另一个词：<strong>状态机</strong>。假设你要做一个电商系统，那么订单状态的迁移，就是一个状态机。</p>
+<p><img alt="" src="assets/813a9b3cc7654f40a93368cacabee383.jpg"/></p>
+<p>图2：状态机的例子（订单的状态和迁移过程）</p>
+<p>有限自动机就是这样的状态机，它的状态数量是有限的。当它收到一个新字符的时候，会导致状态的迁移。比如说，下面的这个状态机能够区分标识符和数字字面量。</p>
+<p><img alt="" src="assets/a7f99d4d4d1841f0b9f7bd35a0a0e3c7.jpg"/></p>
+<p>图3：一个能够识别标识符和数字字面量的有限自动机</p>
+<p>在这样一个状态机里，我用单线圆圈表示临时状态，双线圆圈表示接受状态。接受状态就是一个合格的Token，比如图3中的状态1（数字字面量）和状态2（标识符）。当这两个状态遇到空白字符的时候，就可以记下一个Token，并回到初始态（状态0），开始识别其他Token。</p>
+<p>可以看出，<strong>词法分析的过程，其实就是对一个字符串进行模式匹配的过程。</strong>说起字符串的模式匹配，你能想到什么工具吗？对的，<strong>正则表达式工具</strong>。</p>
+<p>大多数语言，以及一些操作系统的命令，都带有正则表达式工具，来帮助你匹配合适的字符串。比如下面的这个Linux命令，可以用来匹配所有包含“sa”“sb” … “sh”字符串的进程。</p>
+<pre><code>ps -ef | grep 's[a-h]'
+</code></pre>
+<p>在这个命令里，“<strong>s[a-h]</strong>”是用来描述匹配规则的，我们把它叫做一个<strong>正则表达式</strong>。</p>
+<p>同样地，正则表达式也可以用来描述词法规则。这种描述方法，我们叫做<strong>正则文法</strong>（Regular Grammar）。比如，数字字面量和标识符的正则文法描述是这样的：</p>
+<pre><code>IntLiteral : [0-9]+;          //至少有一个数字
+Id : [A-Za-z][A-Za-z0-9]*;    //以字母开头，后面可以是字符或数字
+</code></pre>
+<p>与普通的正则表达式工具不同的是，词法分析器要用到很多个词法规则，每个词法规则都采用<strong>“Token类型: 正则表达式”</strong>这样一种格式，用于匹配一种Token。</p>
+<p>然而，当我们采用了多条词法规则的时候，有可能会出现词法规则冲突的情况。比如说，int关键字其实也是符合标识符的词法规则的。</p>
+<pre><code>Int : int;   //int关键字
+For : for;   //for关键字
+Id : [A-Za-z][A-Za-z0-9]*; //以字母开头，后面可以是字符或数字
+</code></pre>
+<p>所以，词法规则里面要有优先级，比如排在前面的词法规则优先级更高。这样的话，我们就能够设计出区分int关键字和标识符的有限自动机了，可以画成下面的样子。其中，状态1、2和3都是标识符，而状态4则是int关键字。</p>
+<p><img alt="" src="assets/00ec50d14a784f558d7fd112bad32c0e.jpg"/></p>
+<p>图4：一个能够识别int关键字和标识符的有限自动机</p>
+<h2 id="从正则表达式生成有限自动机">从正则表达式生成有限自动机</h2>
+<p>现在，你已经了解了如何构造有限自动机，以及如何处理词法规则的冲突。基本上，你就可以按照上面的思路来手写词法分析器了。但你可能觉得，这样手写词法分析器的步骤太繁琐了，<strong>我们能否只写出词法规则，就自动生成相对应的有限自动机呢？</strong></p>
+<p>当然是可以的，实际上，正则表达式工具就是这么做的。此外，词法分析器生成工具lex（及GNU版本的flex）也能够基于规则自动生成词法分析器。</p>
+<p>它的具体实现思路是这样的：<strong>把一个正则表达式翻译成NFA，然后把NFA转换成DFA。</strong>对不起，我这里又引入了两个新的术语：NFA和DFA。</p>
+<p>先说说<strong>DFA</strong>，它是“Deterministic Finite Automaton”的缩写，即<strong>确定的有限自动机</strong>。它的特点是：该状态机在任何一个状态，基于输入的字符，都能做一个确定的状态转换。前面例子中的有限自动机，都属于DFA。</p>
+<p>再说说<strong>NFA</strong>，它是“Nondeterministic Finite Automaton”的缩写，即<strong>不确定的有限自动机</strong>。它的特点是：该状态机中存在某些状态，针对某些输入，不能做一个确定的转换。</p>
+<p>这又细分成两种情况：</p>
+<ol>
+<li>对于一个输入，它有两个状态可以转换。</li>
+<li>存在ε转换的情况，也就是没有任何字符输入的情况下，NFA也可以从一个状态迁移到另一个状态。</li>
+</ol>
+<p>比如，“a[a-zA-Z0-9]*bc”这个正则表达式，对字符串的要求是以a开头，以bc结尾，a和bc之间可以有任意多个字母或数字。可以看到，在图5中，状态1的节点输入b时，这个状态是有两条路径可以选择的：一条是迁移到状态2，另一条是仍然保持在状态1。所以，这个有限自动机是一个NFA。</p>
+<p><img alt="" src="assets/a9220d1f54d34ac1804fddc0b8ffec63.jpg"/></p>
+<p>图5：一个NFA的例子，识别“a[a-zA-Z0-9]*bc”的自动机</p>
+<p>这个NFA还有引入ε转换的画法，如图6所示，它跟图5的画法是等价的。实际上，图6表示的NFA可以用我们下面马上要讲到的算法，通过正则表达式自动生成出来。</p>
+<p><img alt="" src="assets/a28c0b65f259400c830c6bc312874f7b.jpg"/></p>
+<p>图6：另一个NFA的例子，同样能识别“a[a-zA-Z0-9]*bc”，其中有ε转换</p>
+<p>需要注意的是，无论是NFA还是DFA，都等价于正则表达式。也就是说，<strong>所有的正则表达式都能转换成NFA或DFA；而所有的NFA或DFA，也都能转换成正则表达式。</strong></p>
+<p>理解了NFA和DFA以后，接下来我再大致说一下算法。</p>
+<p>首先，一个正则表达式可以机械地翻译成一个NFA。它的翻译方法如下：</p>
+<ul>
+<li><strong>识别字符i的NFA。</strong></li>
+</ul>
+<p>当接受字符i的时候，引发一个转换，状态图的边上标注i。其中，第一个状态（i，initial）是初始状态，第二个状态(f，final)是接受状态。</p>
+<p><img alt="" src="assets/0d5c3aa0cb604d57a251011a1e81bb47.jpg"/></p>
+<p>图7：识别i的NFA</p>
+<ul>
+<li><strong>转换“s|t”这样的正则表达式。</strong></li>
+</ul>
+<p>它的意思是，或者s，或者t，二者选一。s和t本身是两个子表达式，我们可以增加两个新的状态：开始状态和接受状态。然后，用ε转换分别连接代表s和t的子图。它的含义也比较直观，要么走上面这条路径，那就是s，要么走下面这条路径，那就是t：</p>
+<p><img alt="" src="assets/44578e989c7f44cf982d01affc4e8c2f.jpg"/></p>
+<p>图8：识别s|t的NFA</p>
+<ul>
+<li><strong>转换“st”这样的正则表达式。</strong></li>
+</ul>
+<p>s之后接着出现t，转换规则是把s的开始状态变成st整体的开始状态，把t的结束状态变成st整体的结束状态，并且把s的结束状态和t的开始状态合二为一。这样就把两个子图衔接了起来，走完s接着走t。</p>
+<p><img alt="" src="assets/7ec66b7d62684255a742066ff200d6c0.jpg"/></p>
+<p>图9：识别st的NFA</p>
+<ul>
+<li><strong>对于“?”“*”和“+”这样的符号，它们的意思是可以重复0次、0到多次、1到多次，转换时要增加额外的状态和边</strong>。以“s*”为例，我们可以做下面的转换：</li>
+</ul>
+<p><img alt="" src="assets/3a6f3c7690d947748a9f53404119db7b.jpg"/></p>
+<p>图10：识别s*的NFA</p>
+<p>你能看出，它可以从i直接到f，也就是对s匹配0次，也可以在s的起止节点上循环多次。</p>
+<p>如果是“s+”，那就没有办法跳过s，s至少要经过一次：</p>
+<p><img alt="" src="assets/9ed9452940bd4e5aa4f13f9cea6126f7.jpg"/></p>
+<p>图11：识别s+的NFA</p>
+<p>通过这样的转换，所有的正则表达式，都可以转换为一个NFA。</p>
+<p>基于NFA，你仍然可以实现一个词法分析器，只不过算法会跟基于DFA的不同：当某个状态存在一条以上的转换路径的时候，你要先尝试其中的一条；如果匹配不上，再退回来，尝试其他路径。这种试探不成功再退回来的过程，叫做<strong>回溯（Backtracking）</strong>。</p>
+<p>小提示：下一讲的<strong>递归下降算法</strong>里，也会出现回溯现象，你可以对照着理解。</p>
+<p>基于NFA，你也可以写一个正则表达式工具。实际上，我在示例程序中已经写了一个简单的正则表达式工具，使用了<a href="https://github.com/RichardGong/PlayWithCompiler/blob/master/lab/16-18/src/main/java/play/parser/Regex.java" target="_blank">Regex.java</a>中的<strong>regexToNFA方法</strong>。如下所示，我用了一个测试用的正则表达式，它能识别int关键字、标识符和数字字面量。在示例程序中，这个正则表达式首先被表示为一个内部的树状数据结构，然后可以转换成NFA。</p>
+<pre><code>int | [a-zA-Z][a-zA-Z0-9]* | [0-9]*
+</code></pre>
+<p>示例程序也会将生成的NFA打印输出，下面的输出结果中列出了所有的状态，以及每个状态到其他状态的转换，比如“0 ε -&gt; 2”的意思是从状态0通过 ε 转换，到达状态2 ：</p>
+<pre><code>NFA states:
+0	ε -&gt; 2
+	ε -&gt; 8
+	ε -&gt; 14
+2	i -&gt; 3
+3	n -&gt; 5
+5	t -&gt; 7
+7	ε -&gt; 1
+1	(end)
+	acceptable
+8	[a-z]|[A-Z] -&gt; 9
+9	ε -&gt; 10
+	ε -&gt; 13
+10	[0-9]|[a-z]|[A-Z] -&gt; 11
+11	ε -&gt; 10
+	ε -&gt; 13
+13	ε -&gt; 1
+14	[0-9] -&gt; 15
+15	ε -&gt; 14
+	ε -&gt; 1
+</code></pre>
+<p>我用图片来直观展示一下输出结果，分为上、中、下三条路径，你能清晰地看出解析int关键字、标识符和数字字面量的过程：</p>
+<p><img alt="" src="assets/8c5f26bc633e463d80699c2df32fdaac.jpg"/></p>
+<p>图12：由算法自动生成的NFA</p>
+<p><strong>那么生成NFA之后，我们要如何利用它，来识别某个字符串是否符合这个NFA代表的正则表达式呢？</strong></p>
+<p>还是以图12为例，当我们解析“intA”这个字符串时，首先选择最上面的路径进行匹配，匹配完int这三个字符以后，来到状态7，若后面没有其他字符，就可以到达接受状态1，返回匹配成功的信息。</p>
+<p><strong>可实际上，int后面是有A的，所以第一条路径匹配失败。</strong>失败之后不能直接返回“匹配失败”的结果，因为还有其他路径，所以我们要回溯到状态0，去尝试第二条路径，在第二条路径中，我们尝试成功了。</p>
+<p>运行Regex.java中的<strong>matchWithNFA()方法</strong>，你可以用NFA来做正则表达式的匹配。其中，在匹配“intA”时，你会看到它的回溯过程：</p>
+<pre><code>NFA matching: 'intA'
+trying state : 0, index =0
+trying state : 2, index =0    //先走第一条路径，即int关键字这个路径
+trying state : 3, index =1
+trying state : 5, index =2
+trying state : 7, index =3
+trying state : 1, index =3    //到了末尾，发现还有字符'A'没有匹配上
+trying state : 8, index =0    //回溯，尝试第二条路径，即标识符
+trying state : 9, index =1
+trying state : 10, index =1   //在10和11这里循环多次
+trying state : 11, index =2
+trying state : 10, index =2
+trying state : 11, index =3
+trying state : 10, index =3
+true
+</code></pre>
+<p><strong>从中你可以看到用NFA算法的特点</strong>：因为存在多条可能的路径，所以需要试探和回溯，在比较极端的情况下，回溯次数会非常多，性能会变得非常差。特别是当处理类似“s*”这样的语句时，因为s可以重复0到无穷次，所以在匹配字符串时，可能需要尝试很多次。</p>
+<p>NFA的运行可能导致大量的回溯，<strong>那么能否将NFA转换成DFA，让字符串的匹配过程更简单呢？</strong>如果能的话，那整个过程都可以自动化，从正则表达式到NFA，再从NFA到DFA。</p>
+<p>方法是有的，这个算法就是<strong>子集构造法</strong>。不过我这里就不展开介绍了，如果你想继续深入学习的话，可以去看看本讲最后给出的参考资料。</p>
+<p>总之，只要有了准确的正则表达式，是可以根据算法自动生成对字符串进行匹配的程序的，这就是正则表达式工具的基本原理，也是有些工具（比如ANTLR和flex）能够自动给你生成一个词法分析器的原理。</p>
+<h2 id="课程小结">课程小结</h2>
+<p>本讲涵盖了词法分析所涉及的主要知识点。词法分析跟你日常使用的正则表达式关系很密切，你可以用正则表达式来表示词法规则。</p>
+<p>在实际的编译器中，词法分析器一般都是手写的，依据的基本原理就是构造有限自动机。不过有一些地方也会用手工编码的方式做一些优化（如javac编译器），有些编译器会做用一些特别的技巧来提升解析速度（如JavaScript的V8编译器），你在后面的课程中会看到。</p>
+<p>基于正则表达式构造NFA，再去进行模式匹配，是一个很好的算法思路，它不仅仅可以用于做词法分析，其实还可以用于解决其他问题（比如做语法分析），值得你去做举一反三的思考。</p>
+<p><img alt="" src="assets/5a16825a0c3e46e296b09b6cb762bb3d.jpg"/></p>
+<h2 id="一课一思">一课一思</h2>
+<p>你可以试着写出识别整型字面量和浮点型字面量的词法规则，手工构造一个有限自动机。</p>
+<p>欢迎在留言区谈谈你的实践体会，也欢迎你把今天的内容分享给更多的朋友。</p>
+<h2 id="参考资料">参考资料</h2>
+<p>关于从NFA转DFA的算法，你可以参考_Compilers - Principles, Techniques &amp; Tools_（龙书，第2版）第3.7.1节，或者《编译原理之美》的<a href="https://time.geekbang.org/column/article/137286" target="_blank">第16讲</a>。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#660a0a0a5f525757565126010b070f0a4805090b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359f033af7e277b',t:'MTc0NTU0MzE5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

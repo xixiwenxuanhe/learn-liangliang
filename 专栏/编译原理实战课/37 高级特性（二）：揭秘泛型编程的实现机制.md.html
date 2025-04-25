@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="37 高级特性（二）：揭秘泛型编程的实现机制" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>37 高级特性（二）：揭秘泛型编程的实现机制 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97%20%e5%a6%82%e4%bd%95%e5%ad%a6%e4%b9%a0%e8%bf%99%e9%97%a8%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be%ef%bc%9f.md.html" id="00 学习指南 如何学习这门编译原理实战课？.md.html">00 学习指南 如何学习这门编译原理实战课？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9c%a8%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e4%b8%ad%e6%b8%b8%e5%8e%86.md.html" id="00 开篇词 在真实世界的编译器中游历.md.html">00 开篇词 在真实世界的编译器中游历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bc%96%e8%af%91%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b%e9%83%bd%e6%82%84%e6%82%84%e5%81%9a%e4%ba%86%e5%93%aa%e4%ba%9b%e4%ba%8b%e6%83%85%ef%bc%9f.md.html" id="01 编译的全过程都悄悄做了哪些事情？.md.html">01 编译的全过程都悄悄做了哪些事情？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e7%94%a8%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e6%9e%84%e9%80%a0%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba.md.html" id="02 词法分析：用两种方式构造有限自动机.md.html">02 词法分析：用两种方式构造有限自动机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e4%b8%a4%e4%b8%aa%e5%9f%ba%e6%9c%ac%e5%8a%9f%e5%92%8c%e4%b8%a4%e7%a7%8d%e7%ae%97%e6%b3%95%e6%80%9d%e8%b7%af.md.html" id="03 语法分析：两个基本功和两种算法思路.md.html">03 语法分析：两个基本功和两种算法思路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/04%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%9a%e8%ae%a9%e7%a8%8b%e5%ba%8f%e7%ac%a6%e5%90%88%e8%af%ad%e4%b9%89%e8%a7%84%e5%88%99.md.html" id="04 语义分析：让程序符合语义规则.md.html">04 语义分析：让程序符合语义规则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/05%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%ef%bc%8c%e4%bd%a0%e6%9c%89%e5%8f%91%e8%a8%80%e6%9d%83.md.html" id="05 运行时机制：程序如何运行，你有发言权.md.html">05 运行时机制：程序如何运行，你有发言权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/06%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e4%b8%80%e5%89%af%e9%9d%a2%e5%ad%94.md.html" id="06 中间代码：不是只有一副面孔.md.html">06 中间代码：不是只有一副面孔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/07%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e8%b7%9f%e7%bc%96%e8%af%91%e5%99%a8%e5%81%9a%e6%9c%8b%e5%8f%8b%ef%bc%8c%e8%ae%a9%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%a3%9e%e8%b5%b7%e6%9d%a5.md.html" id="07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html">07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/08%20%e4%bb%a3%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%99%a8%e7%9b%b8%e5%85%b3%e7%9a%84%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="08 代码生成：如何实现机器相关的优化？.md.html">08 代码生成：如何实现机器相关的优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/09%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%89%8b%e5%86%99%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="09 Java编译器（一）：手写的编译器有什么优势？.md.html">09 Java编译器（一）：手写的编译器有什么优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/10%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%bf%98%e8%a6%81%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Java编译器（二）：语法分析之后，还要做些什么？.md.html">10 Java编译器（二）：语法分析之后，还要做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/11%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%b1%9e%e6%80%a7%e5%88%86%e6%9e%90%e5%92%8c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90.md.html" id="11 Java编译器（三）：属性分析和数据流分析.md.html">11 Java编译器（三）：属性分析和数据流分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/12%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%8e%bb%e9%99%a4%e8%af%ad%e6%b3%95%e7%b3%96%e5%92%8c%e7%94%9f%e6%88%90%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="12 Java编译器（四）：去除语法糖和生成字节码.md.html">12 Java编译器（四）：去除语法糖和生成字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/13%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%8a%a8%e6%89%8b%e4%bf%ae%e6%94%b9Graal%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="13 Java JIT编译器（一）：动手修改Graal编译器.md.html">13 Java JIT编译器（一）：动手修改Graal编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/14%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSea%20of%20Nodes%e4%b8%ba%e4%bd%95%e5%a6%82%e6%ad%a4%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html">14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/15%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%8e%a2%e7%a9%b6%e5%86%85%e8%81%94%e5%92%8c%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90%e7%9a%84%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/16%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9aGraal%e7%9a%84%e5%90%8e%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html">16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/17%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%b7%a5%e5%85%b7%e7%94%9f%e6%88%90%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="17 Python编译器（一）：如何用工具生成编译器？.md.html">17 Python编译器（一）：如何用工具生成编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/18%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bb%8eAST%e5%88%b0%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="18 Python编译器（二）：从AST到字节码.md.html">18 Python编译器（二）：从AST到字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/19%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6.md.html" id="19 Python编译器（三）：运行时机制.md.html">19 Python编译器（三）：运行时机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/20%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e6%9e%90%e5%92%8c%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b.md.html" id="20 JavaScript编译器（一）：V8的解析和编译过程.md.html">20 JavaScript编译器（一）：V8的解析和编译过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/21%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e9%87%8a%e5%99%a8%e5%92%8c%e4%bc%98%e5%8c%96%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html">21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/22%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e5%8a%a8%e6%80%81%e8%af%ad%e8%a8%80%e6%80%a7%e8%83%bd%e5%be%88%e9%ab%98%ef%bc%9f.md.html" id="22 Julia编译器（一）：如何让动态语言性能很高？.md.html">22 Julia编译器（一）：如何让动态语言性能很高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/23%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8LLVM%e7%9a%84%e4%bc%98%e5%8c%96%e5%92%8c%e5%90%8e%e7%ab%af%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html">23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/24%20Go%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9a%e6%8a%8a%e5%ae%83%e5%bd%93%e4%bd%9c%e6%95%99%e7%a7%91%e4%b9%a6%e5%90%a7.md.html" id="24 Go语言编译器：把它当作教科书吧.md.html">24 Go语言编译器：把它当作教科书吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/25%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%a7%a3%e6%9e%90%e4%b8%80%e6%9d%a1SQL%e8%af%ad%e5%8f%a5%e7%9a%84%e6%89%a7%e8%a1%8c%e8%bf%87%e7%a8%8b.md.html" id="25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html">25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/26%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e5%a6%82%e4%bd%95%e5%b8%ae%e4%bd%a0%e6%8f%90%e5%8d%87%e6%95%b0%e6%8d%ae%e5%ba%93%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html">26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/27%20%e8%af%be%e5%89%8d%e5%af%bc%e8%af%bb%ef%bc%9a%e5%ad%a6%e4%b9%a0%e7%8e%b0%e4%bb%a3%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="27 课前导读：学习现代语言设计的正确姿势.md.html">27 课前导读：学习现代语言设计的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%89%8d%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e4%b9%9f%e6%9c%89%e4%ba%ba%e6%9c%ba%e5%b7%a5%e7%a8%8b%e5%ad%a6.md.html" id="28 前端总结：语言设计也有人机工程学.md.html">28 前端总结：语言设计也有人机工程学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/29%20%e4%b8%ad%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%8d%e9%81%97%e4%bd%99%e5%8a%9b%e5%9c%b0%e8%bf%9b%e8%a1%8c%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96.md.html" id="29 中端总结：不遗余力地进行代码优化.md.html">29 中端总结：不遗余力地进行代码优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%90%8e%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e5%85%85%e5%88%86%e5%8f%91%e6%8c%a5%e7%a1%ac%e4%bb%b6%e7%9a%84%e8%83%bd%e5%8a%9b.md.html" id="30 后端总结：充分发挥硬件的能力.md.html">30 后端总结：充分发挥硬件的能力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/31%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e0%e5%88%b0%e8%af%ad%e8%a8%80%e7%ba%a7%e7%9a%84%e8%99%9a%e6%8b%9f%e5%8c%96.md.html" id="31 运行时（一）：从0到语言级的虚拟化.md.html">31 运行时（一）：从0到语言级的虚拟化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/32%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e4%b8%8e%e8%af%ad%e8%a8%80%e7%9a%84%e7%89%b9%e6%80%a7%e6%9c%89%e5%85%b3%e5%90%97%ef%bc%9f.md.html" id="32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html">32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html">33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e5%8d%8f%e7%a8%8b%ef%bc%9f.md.html" id="34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html">34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/35%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9aErlang%e8%af%ad%e8%a8%80%e5%8e%89%e5%ae%b3%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html">35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/36%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%85%83%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="36 高级特性（一）：揭秘元编程的实现机制.md.html">36 高级特性（一）：揭秘元编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/37%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="37 高级特性（二）：揭秘泛型编程的实现机制.md.html">37 高级特性（二）：揭秘泛型编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="38 综合实现（一）：如何实现面向对象编程？.md.html">38 综合实现（一）：如何实现面向对象编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/39%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="39 综合实现（二）：如何实现函数式编程？.md.html">39 综合实现（二）：如何实现函数式编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/40%20%e6%88%90%e6%9e%9c%e6%a3%80%e9%aa%8c%ef%bc%9a%e6%96%b9%e8%88%9f%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%bc%98%e5%8a%bf%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 成果检验：方舟编译器的优势在哪里？.md.html">40 成果检验：方舟编译器的优势在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%901%20%e8%bf%9c%e7%a8%8b%e5%8a%9e%e5%85%ac%ef%bc%8c%e9%9c%80%e8%a6%81%e4%bd%a0%e6%88%91%e5%85%b7%e5%a4%87%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e7%b4%a0%e8%b4%a8%ef%bc%9f.md.html" id="不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html">不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%902%20%e5%ad%a6%e4%b9%a0%e6%8a%80%e6%9c%af%e7%9a%84%e8%bf%87%e7%a8%8b%ef%bc%8c%e5%85%b6%e5%ae%9e%e6%98%af%e8%ae%ad%e7%bb%83%e5%bf%83%e7%90%86%e7%b4%a0%e8%b4%a8%e7%9a%84%e8%bf%87%e7%a8%8b.md.html" id="不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html">不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%903%20%e8%bf%99%e5%87%a0%e5%b9%b4%ef%bc%8c%e6%89%93%e5%8a%a8%e6%88%91%e7%9a%84%e4%b8%a4%e6%9c%ac%e5%a5%bd%e4%b9%a6.md.html" id="不定期加餐3 这几年，打动我的两本好书.md.html">不定期加餐3 这几年，打动我的两本好书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%904%20%e4%bb%8e%e8%ba%ab%e8%be%b9%e7%9a%84%e7%89%9b%e4%ba%ba%e8%ba%ab%e4%b8%8a%ef%bc%8c%e6%88%91%e5%ad%a6%e5%88%b0%e7%9a%84%e4%b8%80%e4%ba%9b%e4%bc%98%e7%a7%80%e5%93%81%e8%b4%a8.md.html" id="不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html">不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%905%20%e5%80%9f%e5%8a%a9%e5%ae%9e%e4%be%8b%ef%bc%8c%e6%8e%a2%e7%a9%b6C++%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%86%85%e9%83%a8%e6%9c%ba%e5%88%b6.md.html" id="不定期加餐5 借助实例，探究C++编译器的内部机制.md.html">不定期加餐5 借助实例，探究C++编译器的内部机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e5%88%92%e9%87%8d%e7%82%b9%207%e7%a7%8d%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="划重点 7种编译器的核心概念与算法.md.html">划重点 7种编译器的核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e6%9c%9f%e6%9c%ab%e7%ad%94%e7%96%91%e4%b8%8e%e6%80%bb%e7%bb%93%20%e5%86%8d%e6%ac%a1%e5%ae%a1%e8%a7%86%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e7%9a%84%e4%bd%9c%e7%94%a8.md.html" id="期末答疑与总结 再次审视学习编译原理的作用.md.html">期末答疑与总结 再次审视学习编译原理的作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%20%e5%a6%82%e4%bd%95%e5%90%83%e9%80%8f7%e7%a7%8d%e7%9c%9f%e5%ae%9e%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="热点问题答疑 如何吃透7种真实的编译器？.md.html">热点问题答疑 如何吃透7种真实的编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%98%93%e6%98%8a%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b8%8d%e6%ad%a2%e6%9c%89Bug%e5%92%8c%e5%8a%a0%e7%8f%ad%ef%bc%8c%e8%bf%98%e6%9c%89%e8%af%97%e5%92%8c%e8%bf%9c%e6%96%b9.md.html" id="用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html">用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%9f%a5%e8%af%86%e5%9c%b0%e5%9b%be%20%e4%b8%80%e8%b5%b7%e6%9d%a5%e5%a4%8d%e4%b9%a0%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="知识地图 一起来复习编译技术核心概念与算法.md.html">知识地图 一起来复习编译技术核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ae%9e%e6%88%98%e6%98%af%e5%94%af%e4%b8%80%e6%a0%87%e5%87%86%ef%bc%81.md.html" id="结束语 实战是唯一标准！.md.html">结束语 实战是唯一标准！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="37 高级特性（二）：揭秘泛型编程的实现机制" id="title">37 高级特性（二）：揭秘泛型编程的实现机制</h1>
+<div><p>你好，我是宫文学。</p>
+<p>对泛型的支持，是现代语言中的一个重要特性。它能有效地降低程序员编程的工作量，避免重复造轮子，写很多雷同的代码。像C++、Java、Scala、Kotlin、Swift和Julia这些语言都支持泛型。至于Go语言，它的开发团队也对泛型技术方案讨论了很久，并可能会在2021年的版本中正式支持泛型。可见，泛型真的是成为各种强类型语言的必备特性了。</p>
+<p>那么，<strong>泛型有哪些特点？在设计和实现上有哪些不同的方案？编译器应该进行什么样的配合呢？</strong>今天这一讲，我就带你一起探讨泛型的实现原理，借此加深你对编译原理相关知识点的认知，让你能够在自己的编程中更好地使用泛型技术。</p>
+<p>首先，我们来了解一下什么是泛型。</p>
+<h2 id="什么是泛型">什么是泛型？</h2>
+<p>在日常编程中，我们经常会遇到一些代码逻辑，它们除了类型不同，其他逻辑是完全一样的。你可以看一下这段示例代码，里面有两个类，其中一个类是保存Integer的列表，另一个类是保存Student对象的列表。</p>
+<pre><code>public class IntegerList{
+    List data = new ArrayList();
+    public void add(Integer elem){
+        data.add(elem);
+    }
+    public Integer get(int index){
+        return (Integer) data.get(index);
+    }
+}
+
+public class StudentList{
+    List data = new ArrayList();
+    public void add(Student elem){
+        data.add(elem);
+    }
+    public Student get(int index){
+        return (Student) data.get(index);
+    }
+}
+</code></pre>
+<p>我们都知道，程序员是很不喜欢重复的代码的。像上面这样的代码，如果要为每种类型都重新写一遍，简直会把人逼疯！</p>
+<p>泛型的典型用途是针对集合类型，能够更简单地保存各种类型的数据，比如List、Map这些。在Java语言里，如果用通用的集合类来保存特定类型的对象，就要做很多强制转换工作。而且，我们还要小心地做类型检查。比如：</p>
+<pre><code>List strList = new ArrayList();       //字符串列表
+strList.add("Richard");
+String name = (String)strList.get(i); //类型转换
+for (Object obj in strList){
+  String str = (String)obj;           //类型转换
+  ...
+}
+
+strList.add(Integer.valueOf(1));      //类型错误
+</code></pre>
+<p>而Java里的泛型功能，就能完全消除这些麻烦工作，让程序更整洁，并且也可以减少出错机会。</p>
+<pre><code>List&lt;String&gt; strList = new ArrayList&lt;String&gt;(); //字符串列表
+strList.add("Richard");
+String name = strList.get(i);                   //类型转换
+for (String str in strList){                    //无需类型转换
+  ...
+}
+
+strList.add(Integer.valueOf(1));                //编译器报错
+</code></pre>
+<p>像示例程序里用到的<code>List&lt;String&gt;</code>，是在常规的类型后面加了一个参数，使得这个列表变成了专门存储字符串的列表。如果你再查看一下List和ArrayList的源代码，会发现它们比普通的接口和类的声明多了一个类型参数<code>&lt;E&gt;</code>，而这个参数可以用在接口和方法的内部所有需要类型的地方：变量的声明、方法的参数和返回值、类所实现的接口，等等。</p>
+<pre><code>public interface List&lt;E&gt; extends Collection&lt;E&gt;{
+  E get(int index);
+  boolean add(E e);
+  ... 
+}
+</code></pre>
+<p>所以说，泛型就是把类型作为参数，出现在类/接口/结构体、方法/函数和变量的声明中。<strong>由于类型是作为参数出现的，因此泛型也被称作参数化类型。</strong></p>
+<p>参数化类型还可以用于更复杂的情况。比如，你可以使用1个以上的类型参数，像Map就可以使用两个类型参数，一个是key的类型（K），一个是value的类型（V）。</p>
+<pre><code>public interface Map&lt;K,V&gt; {
+  ...
+}
+</code></pre>
+<p>另外，你还可以对类型参数添加约束条件。比如，你可以要求类型参数必须是某个类型的子类，这是指定了上界（Upper Bound）；你还可以要求类型参数必须是某个类型的一个父类，这是指定了下界（Lower Bound）。实际上，从语言设计的角度来看，你可以对参数施加很多可能的约束条件，比如必须是几个类型之一，等等。</p>
+<p><strong>基于泛型的程序，由于传入的参数不同，程序会实现不同的功能。这也被叫做一种多态现象，叫做参数化多态（Parametric Polymorphism）。</strong>它跟面向对象中的多态一样，都能让我们编写更加通用的程序。</p>
+<p>好了，现在我们已经了解了泛型的含义了。那么，它们是如何在语言中实现的呢？需要用到什么编译技术？</p>
+<h2 id="泛型的实现">泛型的实现</h2>
+<p>接下来，我们一起来看一看几种有代表性的语言实现泛型的技术，包括Java、C#、C++等。</p>
+<h3 id="类型擦除技术">类型擦除技术</h3>
+<p><strong>在Java里，泛型是通过类型擦除（Type Erasure）技术来实现的。</strong>前面在分析<a href="https://time.geekbang.org/column/article/255034" target="_blank">Java编译器</a>时，你就能发现，其实类型参数只存在于编译过程中，用于做类型检查和类型推断。在此之后，这些类型信息就可以被擦除。ArrayList和<code>ArrayList&lt;String&gt;</code>对应的字节码是一样的，在运行时没有任何区别。</p>
+<p>所以，我们可以说，在Java语言里，泛型其实是一种语法糖，有助于减少程序员的编程负担，并能提供额外的类型检查功能。</p>
+<p>除了Java以外，其他基于JVM的语言，比如Scala和Kotlin，其泛型机制基本上都是类型擦除技术。</p>
+<p><strong>类型擦除技术的优点是实现起来特别简单。</strong>运用我们学过的属性计算、类型检查和推断等相关技术基本就够用了。</p>
+<p>不过类型擦除技术也有一定的<strong>局限性</strong>。</p>
+<p>问题之一，是<strong>它只能适用于引用类型</strong>，也就是对象，而不适用于值类型，也就是Java中的基础数据类型（Primitive Type）。比如，你不能声明一个<code>List&lt;int&gt;</code>，来保存单纯的整型数据，你在列表里只能保存对象化的Integer。而我们学习过Java对象的内存模型，知道一个Integer对象所占的内存，是一个int型基础数据的好几倍，因为对象头要有十几个字节的固定开销。再加上由此引起的对象创建和垃圾收集的性能开销，导致用Java的集合对象来保存大量的整型、浮点型等基础数据是非常不划算的。我们在这种情况下，还是要退回到使用数组才行。</p>
+<p>问题之二，就是因为类型信息在编译期被擦除了，所以<strong>程序无法在运行时使用这些类型信息</strong>。比如，在下面的示例代码中，如果你想要根据传入的类型T创建一个新实例，就会导致编译错误。</p>
+<pre><code>public static &lt;T&gt; void append(ArrayList&lt;T&gt; a) {
+  T b= new T(); // 编译错误
+  a.add(b); 
+}
+</code></pre>
+<p>同样，由于在运行期没有类型信息，所以如果要用反射机制来调用程序的时候，我们也没有办法像在编译期那样进行类型检查。所以，你完全可以往一个旨在保存String的列表里添加一个Interger对象。而缺少类型检查，可能会导致程序在执行过程中出错。</p>
+<p>另外，还有一些由于类型擦除而引起的问题。比如，在使用参数化类型的情况下，方法的重载（Overload）会失败。再比如，下面的示例代码中，两个foo方法看似参数不同。但如果进行了类型擦除以后，它们就没什么区别，所以是不能共存的。</p>
+<pre><code>public void foo(List&lt;Integer&gt; p) { ... }
+public void foo(List&lt;Double&gt; p)  { ... }
+</code></pre>
+<p>你要注意，不仅仅是Java语言的泛型技术有这样的缺点，其他基于JVM实现的语言也有类似的缺点（比如没有办法在运行时使用参数化类型的信息）。这其实是由于JVM的限制导致的。为了理解这个问题，我们可以看一下基于.NET平台的语言 ，比如C#所采用的泛型技术。C#使用的不是类型擦除技术，而是一种叫做<strong>具体化（reification）</strong>的技术。</p>
+<h3 id="具体化技术-reification">具体化技术（Reification）</h3>
+<p>说起来，C#语言的设计者，安德斯 · 海尔斯伯格（Anders Hejlsberg），是一位令人尊敬的传奇人物。像我这一代的程序员，差不多都使用过他在DOS操作系统上设计的Pascal编译器。后来他在此基础上，设计出了Delphi，也是深受很多人喜爱的一款开发工具。</p>
+<p>出于对语言设计者的敬佩，虽然我自己从没用C#写过程序，但我从来没有低估过C#的技术。在泛型方面，C#的技术方案成功地避免了Java泛型的那些缺点。</p>
+<p>C#语言编译也会形成IR，然后在.NET平台上运行。在C#语言中，对应于Java字节码的IR被叫做<strong>IL</strong>，是中间语言（Intermediate Language）的缩写。</p>
+<p>我们知道了，在Java的泛型实现中，编译完毕以后类型信息就会被擦除。<strong>而在C#生成的IL中，则保留了类型参数的类型信息</strong>。所以，<code>List&lt;Student&gt;</code>和<code>List&lt;Teacher&gt;</code>是两个完全不同的类型。也因为IL保存了类型信息，因此我们可以在运行时使用这些类型信息，比如根据类型参数创建对象；而且如果通过反射机制来运行C#程序的话，也会进行类型检查。</p>
+<p>还有很重要的一点，就是<strong>C#的泛型能够支持值类型</strong>，比如基础的整型、浮点型数据；再比如，针对<code>List&lt;int&gt;</code>和<code>List&lt;long&gt;</code>，C#的泛型能够真的生成一份完全不同的可运行的代码。它也不需要把值类型转换成对象，从而导致额外的内存开销和性能开销。</p>
+<p><strong>把参数化类型变成实际的类型的过程，是在运行时通过JIT技术实现的。这就是具体化（Reification）的含义。</strong>把一个参数化的类型，变成一个运行时真实存在的类型，它可以跟非参数化的类型起到完全相同的作用。</p>
+<p>不过，为了支持泛型，其实.NET扩展了C#生成的IL，以便在IL里能够记录参数化类型信息。而JVM则没有改变它的字节码，从而完全是靠编译器来处理泛型。</p>
+<p>好了，现在我们已经见识到了两种不同的泛型实现机制。还有一种泛型实现机制，也是经常被拿来比较的，这就是C++的泛型机制，它的泛型机制依托的是<strong>模板元编程技术</strong>。</p>
+<h3 id="基于元编程技术来支持泛型">基于元编程技术来支持泛型</h3>
+<p>在上一讲，我们介绍过C++的模板元编程技术。模板元编程很强大，程序里的很多要素都可以模板化，那么类型其实也可以被模板化。</p>
+<p>你已经知道，元编程技术是把程序本身作为处理对象的。采用C++的模板元编程技术，我们实际上是为每一种类型参数都生成了新的程序，编译后生成的目标代码也是不同的。</p>
+<p>所以，<strong>C++的模板技术也能做到Java的类型擦除技术所做不到的事情</strong>，比如提供对基础数据类型的支持。在C++的标准模板库（STL）中，提供了很多容器类型。它们能像保存对象一样保存像整型、浮点型这样的基础数据类型。</p>
+<p>不过使用模板技术来实现泛型也有一些<strong>缺点</strong>。因为本质上，模板技术有点像宏，它是把程序中某些部分进行替换，来生成新的程序。在这个过程中，<strong>它并不会检查针对参数类型执行的某些操作是否是合法的</strong>。编译器只会针对生成后的程序做检查，并报错。这个时候，错误信息往往是比较模糊的，不太容易定位。这也是模板元编程技术固有的短板。</p>
+<p>究其原因，是模板技术不是单单为了泛型的目的而实现的。不过，如果了解了泛型机制的原理，你会发现，其实可以通过增强C++编译器，来提升它的类型检查能力。甚至，对类型参数指定上界和下界等约束条件，也是可以的。不过这要看C++标准委员会的决定了。</p>
+<p>总的来说，<strong>C++的泛型技术像Java的一样，都是在运行期之前就完成了所有的工作，而不像.NET那样，在运行期针对某个参数化的类型产生具体的本地代码。</strong></p>
+<p>好了，了解了泛型的几种实现策略以后，接下来，我们接着讨论一个更深入的话题：<strong>把类型参数化以后，对于计算机语言的类型系统有什么挑战？</strong>这个问题很重要，因为在语义分析阶段，我们已经知道如何做普通类型的分析和处理。而要处理参数化的类型，我们还必须更加清楚支持参数化以后，类型体系会有什么变化。</p>
+<h2 id="泛型对类型系统的增强">泛型对类型系统的增强</h2>
+<p>在现代语言中，通常会建立一个层次化的类型系统，其中一些类型是另一些类型的子类型。什么是子类型呢？就是在任何一个用到父类型的地方，都可以用其子类型进行替换。比如，Cat是Animal的子类型，在任何用到Animal的地方，都可以用Cat来代替。</p>
+<p>不过，当类型可以带有参数之后，类型之间的关系就变得复杂了。比如说：</p>
+<ul>
+<li><code>Collection&lt;Cat&gt;</code>和<code>List&lt;Cat&gt;</code>是什么关系呢？</li>
+<li><code>List&lt;Animal&gt;</code>和<code>List&lt;Cat&gt;</code>之间又是什么关系呢？</li>
+</ul>
+<p>对于第一种情况，其实它们的类型参数是一样的，都是Cat。而List本来是Collection的子类型，那么<code>List&lt;Cat&gt;</code>也是<code>Collection&lt;Cat&gt;</code>的子类型，我们永远可以用<code>List&lt;Cat&gt;</code>来替换<code>Collection&lt;Cat&gt;</code>。这种情况比较简单。</p>
+<p>但是对于第二种情况，<code>List&lt;Cat&gt;</code>是否是<code>List&lt;Animal&gt;</code>的子类型呢？这个问题就比较难了。不同语言的实现是不一样的。在Java、Julia等语言中，<code>List&lt;Cat&gt;</code>和<code>List&lt;Animal&gt;</code>之间没有任何的关系。</p>
+<p>在由多个类型复合而形成的类型中（比如泛型），复合类型之间的关系随其中的成员类型的关系而变化的方式，分为<strong>不变（Invariance）、协变（Covariance）和逆变（Contravariance）</strong>三种情况。理解清楚这三种变化，对于我们理解引入泛型后的类型体系非常重要，这也是编译器进行正确的类型计算的基础。</p>
+<p><strong>首先说说不变。</strong>在Java语言中，<code>List&lt;Animal&gt;</code>和<code>List&lt;Cat&gt;</code>之间并没有什么关系，在下面的示例代码中，如果我们把<code>List&lt;Cat&gt;</code>赋值给<code>List&lt;Animal&gt;</code>，编译器会报错。因此，我们说<code>List&lt;T&gt;</code>基于T是不变的。</p>
+<pre><code>List&lt;Cat&gt; catList = new ArrayList&lt;&gt;();
+List&lt;Animal&gt; animalList = catList;  //报错，不是子类型
+</code></pre>
+<p><strong>那么协变是什么呢？</strong>就是复合类型的变化方向，跟成员类型是相同的。我给你举两个在Java语言中关于协变的例子。</p>
+<p>第一个例子。假设Animal有个reproduce()方法，也就是繁殖。而Cat覆盖（Override）了这个方法，但这个方法的返回值是Cat而不是Animal。因为猫肯定繁殖出的是小猫，而不是其他动物。这样，当我们调用Cat.reproduce()方法的时候，就不用对其返回值做强制转换。这个时候，我们说reproduce()方法的返回值与它所在类的类型，是协变的，也就是<strong>一起变化</strong>。</p>
+<pre><code>class Animal{
+    public abstract Animal reproduce();
+}
+
+class Cat extends Animal{
+    @Override
+    public Cat reproduce() {  //方法的返回值可以是Animal的子类型
+        ...
+    }
+}
+</code></pre>
+<p>第二个例子。在Java语言中，数组是协变的。也就是<code>Cat[]</code>其实是<code>Animal[]</code>的子类型，在下面的示例代码中，一个猫的数组可以赋值给一个动物数组。</p>
+<pre><code>Cat[] cats = {new Cat(), new Cat()}; //创建Cat数组
+Animal[] animals = cats;             //赋值给Animal数组
+animals[0] = new Dog();              //修改第一个元素的值
+Cat aCat = cats[0];                  //运行时错误
+</code></pre>
+<p>但你接下来会看到，Animal数组中的值可以被修改为Dog，这会导致Cat数组中的元素类型错误。至于为什么Java语言要把数组设计为协变的，以及由此导致的一些问题，我们暂且不管它。我们要问的是，<strong><code>List&lt;T&gt;</code>这样的泛型可以变成协变关系吗？</strong></p>
+<p>答案是可以的。我前面也提过，我们可以在类型参数中指定上界。<code>List&lt;Cat&gt;</code>是<code>List&lt;? Extends Animal&gt;</code>的子类型，<code>List&lt;? Extends Animal&gt;</code>的意思，是任何以Animal为祖先的子类。我们可以把一个<code>List&lt;Cat&gt;</code>赋值给<code>List&lt;? Extends Animal&gt;</code>。你可以看一下示例代码：</p>
+<pre><code>List&lt;Cat&gt; catList = new ArrayList&lt;&gt;();
+List&lt;? extends Animal&gt; animalList = catList;  //子类型
+catList.add(new Cat());
+Animal animal = animalList.get(0);
+</code></pre>
+<p>实际上，不仅仅<code>List&lt;Cat&gt;</code>是<code>List&lt;? extends Animal&gt;</code>的子类型，连<code>List&lt;Animal&gt;</code>也是<code>List&lt;? extends Animal&gt;</code>的子类型。你可以自己测试一下。</p>
+<p><strong>我们再来说说逆变。</strong>逆变的意思是：虽然Cat是Animal的子类型，但包含了Cat的复合类型，竟然是包含了Animal的复合类型的父类型！它们颠倒过来了？</p>
+<p>这有点违反直觉。在真实世界里有这样的例子吗？当然有。</p>
+<p>比如，假设有两个函数，<code>getWeight&lt;Cat&gt;()</code>函数是返回Cat的重量，<code>getWeight&lt;Animal&gt;()</code>函数是返回Animal的重量。你知道，从函数式编程的观点，每个函数也都是有类型的。那么这两个函数，谁是谁的子类型呢？</p>
+<p>实际上，求Animal重量的函数，其实是求Cat重量的函数的子类型。怎么说呢？</p>
+<p>来假设一下。如果你想用一个getTotalWeight()函数，求一群Cat的总重量，你会怎么办呢？你可以把求Cat重量的函数作为参数传进去，这肯定没问题。但是，你也可以把求Animal重量的函数传进去。因为既然它能返回普通动物的重量，那么也一定能返回猫的重量。</p>
+<pre><code>//伪代码，求Cat的总重量
+getTotalWeight(List&lt;Cat&gt; cats, function fun)
+</code></pre>
+<p>而根据类型理论，<strong>如果类型B能顶替类型A的位置，那么B就是A的子类型</strong>。</p>
+<p>所以，<code>getWeigh&lt;Animal&gt;()</code>反倒是<code>getWeight&lt;Cat&gt;()</code>的子类型，这种情况就叫做逆变。</p>
+<p>总的来说，加入泛型以后，计算机语言的类型体系变得更加复杂了。我们在编写编译器的时候，一定要弄清楚这些变化关系，这样才能执行正确的类型计算。</p>
+<p>那么，在了解了加入泛型以后对类型体系的影响后，我们接着借助Julia语言，来进一步验证一下如何进行正确的类型计算。</p>
+<h2 id="julia中的泛型和类型计算">Julia中的泛型和类型计算</h2>
+<p>Julia设计了一个精巧的类型体系。这个类型体系有着共同的根，也就是Any。在这个类型层次中，橙色的类型是叶子节点，它们是具体的类型，也就是可以创建具体的实例。而中间层次的节点（蓝色），都是抽象的，主要是用于类型的计算。</p>
+<p><img alt="" src="assets/c0e93500c07647b2b8cad0b763e8857d.jpg"/></p>
+<p>你在<a href="https://time.geekbang.org/column/article/264333" target="_blank">第22讲</a>中，已经了解到了Julia做函数编译的特点。在编写函数的时候，你可以根本不用指定参数的类型，编译器会根据传入的参数的实际类型，来编译成相应版本的机器码。另外，你也可以为函数编写多个版本的方法，每个版本的参数采用不同的类型。编译器会根据实际参数的类型，动态分派到不同的版本。而<strong>这个动态分派机制，就需要用到类型的计算</strong>。</p>
+<p>比如说，有一个函数foo()，定义了三个版本的方法，其参数分别是没有指定类型（也就是Any）、Real类型和Float64类型。如果参数是Float64类型，那它当然会被分派到第三个方法。如果是Float32类型，那么就会被分派到第二个方法。如果是一个字符串类型呢，则会被分派到第一个方法。</p>
+<pre><code>julia&gt; function foo(x)          #方法1
+           ...
+       end
+       
+julia&gt; function foo(x::Real)    #方法2  
+           ...
+       end
+       
+julia&gt; function foo(x::Float64) #方法3  
+           ...
+       end
+</code></pre>
+<p>再进一步，<strong>Julia还支持在定义结构体和函数的时候使用泛型。</strong>比如，下面的一个Point结构中，坐标x和y的类型是参数化的。</p>
+<pre><code>julia&gt; struct Point{T}
+           x::T
+           y::T
+       end
+
+
+julia&gt; Point{Float64}
+Point{Float64}
+
+julia&gt; Point{Float64} &lt;: Point     #在Julia里，如果一个类型更具体，则&lt;:为真
+true
+
+julia&gt; Point{Float64} &lt;: Point{Real} #Invariant
+false
+
+julia&gt; p1 = Point(1.0,2.3)   #创建一个Point实例
+Point{Float64}(1.0, 2.3)     #自动推断出类型
+</code></pre>
+<p>如果我们再为foo()函数添加几个方法，其参数类型分别是Point类型、Point{Real}类型和Point{Float64}类型，那动态分派的算法也必须能够做正确的分派。所以，在这里，我们就必须能够识别出带有参数的类型之间的关系。</p>
+<pre><code>julia&gt; function foo(x::Point)          #方法4
+           ...
+       end
+       
+julia&gt; function foo(x::Point{Real})    #方法5  
+           ...
+       end
+       
+julia&gt; function foo(x::Point{Float64}) #方法6  
+           ...
+       end
+</code></pre>
+<p>通过以上的示例代码你可以看到，Point{Float64} &lt;: Point，也就是Point{Float64}是Point的子类型。这个关系是有意义的。</p>
+<p><strong>Julia的逻辑是</strong>，Point{Float64} 比Point更具体，能够在程序里替代Point。而Point{Float64} 和Point{Real}之间是没有什么关系的，虽然Float64是Real的子类型。这说明，Point{T}基于T是不变的（Invariant），这跟Java语言的泛型处理是一样的。</p>
+<p>所以，在Julia编译的时候，如果我们给foo()传递一个Point{Float64}参数，那么应该被分派到方法6。而如果传递一个Point{Float32}参数呢？分派算法不会选择方法5，因为Point{Float32}不是Point{Real}的子类型。因此，分配算法会选择方法4，因为Point{Float32}是Point的子类型。</p>
+<p>那么，<strong>如何让Point{T}基于T协变呢</strong>？这样我们就可以针对Real类型写一些通用的算法，让采用Float32、Float16等类型的Point，都按照这个算法去编译了。</p>
+<p><strong>答案就是需要指定上界。</strong>我们可以把Point{Real}改为Point{&lt;:Real}，它是Point{Float32}、Point{Float16}等的父类型。</p>
+<p>好，总结起来，Julia的泛型和类型计算是很有特点的。泛型提供的参数化多态（Parametric Polymorphism）跟Julia原来的方法多态（Method Polymorphism）很好地融合在了一起，让我们能够最大程度地去编写通用的程序。而被泛型增强后的类型体系，也对动态分派算法提出了更高的要求。</p>
+<h2 id="课程小结">课程小结</h2>
+<p>这一讲，我们学习了泛型这个现代语言中非常重要的特性的实现机制。在实现泛型机制的时候，我们首先必须弄清楚引入泛型以后，对类型体系的影响。你要掌握<strong>不变、协变和逆变</strong>这三个基本概念和它们的应用场景，从而能够正确地用于类型计算的过程中。</p>
+<p>在泛型的具体实现机制上，有<strong>类型擦除、具体化和模板元编程</strong>等不同的方法。好的实现机制应该有能力同时兼顾值类型和复合类型，同时又便于调试。</p>
+<p>按照惯例，我也把本讲的内容总结成了思维导图，供你参考：</p>
+<p><img alt="" src="assets/d8a80b71bcb744aa8886d5c626bfdef6.jpg"/></p>
+<h2 id="一课一思">一课一思</h2>
+<p>今天，我想给你留两道思考题，你可以根据你熟悉的语言，选择其一。</p>
+<ul>
+<li>如果你对Java语言比较熟悉，那么针对Java的泛型不支持基础数据类型的问题，你能否想出一种技术方案，来弥补这个短板呢？你思考一下。我在下一讲会借助面向对象的话题，给出一个技术方案。</li>
+<li>而如果你对Go语言有所了解，那么你对Go语言的泛型技术方案会提出什么建议？能否避免已有语言在实现泛型上的短板呢？你也可以参考我在文末给出的Go语言泛型方案的草案，来印证你的想法。</li>
+</ul>
+<p>欢迎在留言区分享你的观点，也非常欢迎你把今天的内容分享给更多的朋友。</p>
+<h2 id="参考资料">参考资料</h2>
+<ol>
+<li>Go语言<a href="https://go.googlesource.com/proposal/+/refs/heads/master/design/go2draft-type-parameters.md.html" target="_blank">泛型方案的草案</a>。</li>
+<li><a href="https://docs.julialang.org/en/v1/manual/types/#Parametric-Types" target="_blank">Julia的泛型</a>。</li>
+<li><a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/" target="_blank">C#泛型的文档</a>，你可以看看它在运行期是如何支持泛型的，这跟Java有很大的不同。</li>
+</ol>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#deb2b2b2e7eaefefeee99eb9b3bfb7b2f0bdb1b3" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359f7f7394107fb',t:'MTc0NTU0MzUwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

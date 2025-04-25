@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="21 JavaScript编译器（二）：V8的解释器和优化编译器" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>21 JavaScript编译器（二）：V8的解释器和优化编译器 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97%20%e5%a6%82%e4%bd%95%e5%ad%a6%e4%b9%a0%e8%bf%99%e9%97%a8%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be%ef%bc%9f.md.html" id="00 学习指南 如何学习这门编译原理实战课？.md.html">00 学习指南 如何学习这门编译原理实战课？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9c%a8%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e4%b8%ad%e6%b8%b8%e5%8e%86.md.html" id="00 开篇词 在真实世界的编译器中游历.md.html">00 开篇词 在真实世界的编译器中游历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bc%96%e8%af%91%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b%e9%83%bd%e6%82%84%e6%82%84%e5%81%9a%e4%ba%86%e5%93%aa%e4%ba%9b%e4%ba%8b%e6%83%85%ef%bc%9f.md.html" id="01 编译的全过程都悄悄做了哪些事情？.md.html">01 编译的全过程都悄悄做了哪些事情？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e7%94%a8%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e6%9e%84%e9%80%a0%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba.md.html" id="02 词法分析：用两种方式构造有限自动机.md.html">02 词法分析：用两种方式构造有限自动机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e4%b8%a4%e4%b8%aa%e5%9f%ba%e6%9c%ac%e5%8a%9f%e5%92%8c%e4%b8%a4%e7%a7%8d%e7%ae%97%e6%b3%95%e6%80%9d%e8%b7%af.md.html" id="03 语法分析：两个基本功和两种算法思路.md.html">03 语法分析：两个基本功和两种算法思路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/04%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%9a%e8%ae%a9%e7%a8%8b%e5%ba%8f%e7%ac%a6%e5%90%88%e8%af%ad%e4%b9%89%e8%a7%84%e5%88%99.md.html" id="04 语义分析：让程序符合语义规则.md.html">04 语义分析：让程序符合语义规则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/05%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%ef%bc%8c%e4%bd%a0%e6%9c%89%e5%8f%91%e8%a8%80%e6%9d%83.md.html" id="05 运行时机制：程序如何运行，你有发言权.md.html">05 运行时机制：程序如何运行，你有发言权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/06%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e4%b8%80%e5%89%af%e9%9d%a2%e5%ad%94.md.html" id="06 中间代码：不是只有一副面孔.md.html">06 中间代码：不是只有一副面孔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/07%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e8%b7%9f%e7%bc%96%e8%af%91%e5%99%a8%e5%81%9a%e6%9c%8b%e5%8f%8b%ef%bc%8c%e8%ae%a9%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%a3%9e%e8%b5%b7%e6%9d%a5.md.html" id="07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html">07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/08%20%e4%bb%a3%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%99%a8%e7%9b%b8%e5%85%b3%e7%9a%84%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="08 代码生成：如何实现机器相关的优化？.md.html">08 代码生成：如何实现机器相关的优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/09%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%89%8b%e5%86%99%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="09 Java编译器（一）：手写的编译器有什么优势？.md.html">09 Java编译器（一）：手写的编译器有什么优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/10%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%bf%98%e8%a6%81%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Java编译器（二）：语法分析之后，还要做些什么？.md.html">10 Java编译器（二）：语法分析之后，还要做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/11%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%b1%9e%e6%80%a7%e5%88%86%e6%9e%90%e5%92%8c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90.md.html" id="11 Java编译器（三）：属性分析和数据流分析.md.html">11 Java编译器（三）：属性分析和数据流分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/12%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%8e%bb%e9%99%a4%e8%af%ad%e6%b3%95%e7%b3%96%e5%92%8c%e7%94%9f%e6%88%90%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="12 Java编译器（四）：去除语法糖和生成字节码.md.html">12 Java编译器（四）：去除语法糖和生成字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/13%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%8a%a8%e6%89%8b%e4%bf%ae%e6%94%b9Graal%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="13 Java JIT编译器（一）：动手修改Graal编译器.md.html">13 Java JIT编译器（一）：动手修改Graal编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/14%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSea%20of%20Nodes%e4%b8%ba%e4%bd%95%e5%a6%82%e6%ad%a4%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html">14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/15%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%8e%a2%e7%a9%b6%e5%86%85%e8%81%94%e5%92%8c%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90%e7%9a%84%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/16%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9aGraal%e7%9a%84%e5%90%8e%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html">16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/17%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%b7%a5%e5%85%b7%e7%94%9f%e6%88%90%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="17 Python编译器（一）：如何用工具生成编译器？.md.html">17 Python编译器（一）：如何用工具生成编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/18%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bb%8eAST%e5%88%b0%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="18 Python编译器（二）：从AST到字节码.md.html">18 Python编译器（二）：从AST到字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/19%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6.md.html" id="19 Python编译器（三）：运行时机制.md.html">19 Python编译器（三）：运行时机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/20%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e6%9e%90%e5%92%8c%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b.md.html" id="20 JavaScript编译器（一）：V8的解析和编译过程.md.html">20 JavaScript编译器（一）：V8的解析和编译过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/21%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e9%87%8a%e5%99%a8%e5%92%8c%e4%bc%98%e5%8c%96%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html">21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/22%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e5%8a%a8%e6%80%81%e8%af%ad%e8%a8%80%e6%80%a7%e8%83%bd%e5%be%88%e9%ab%98%ef%bc%9f.md.html" id="22 Julia编译器（一）：如何让动态语言性能很高？.md.html">22 Julia编译器（一）：如何让动态语言性能很高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/23%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8LLVM%e7%9a%84%e4%bc%98%e5%8c%96%e5%92%8c%e5%90%8e%e7%ab%af%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html">23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/24%20Go%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9a%e6%8a%8a%e5%ae%83%e5%bd%93%e4%bd%9c%e6%95%99%e7%a7%91%e4%b9%a6%e5%90%a7.md.html" id="24 Go语言编译器：把它当作教科书吧.md.html">24 Go语言编译器：把它当作教科书吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/25%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%a7%a3%e6%9e%90%e4%b8%80%e6%9d%a1SQL%e8%af%ad%e5%8f%a5%e7%9a%84%e6%89%a7%e8%a1%8c%e8%bf%87%e7%a8%8b.md.html" id="25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html">25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/26%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e5%a6%82%e4%bd%95%e5%b8%ae%e4%bd%a0%e6%8f%90%e5%8d%87%e6%95%b0%e6%8d%ae%e5%ba%93%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html">26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/27%20%e8%af%be%e5%89%8d%e5%af%bc%e8%af%bb%ef%bc%9a%e5%ad%a6%e4%b9%a0%e7%8e%b0%e4%bb%a3%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="27 课前导读：学习现代语言设计的正确姿势.md.html">27 课前导读：学习现代语言设计的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%89%8d%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e4%b9%9f%e6%9c%89%e4%ba%ba%e6%9c%ba%e5%b7%a5%e7%a8%8b%e5%ad%a6.md.html" id="28 前端总结：语言设计也有人机工程学.md.html">28 前端总结：语言设计也有人机工程学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/29%20%e4%b8%ad%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%8d%e9%81%97%e4%bd%99%e5%8a%9b%e5%9c%b0%e8%bf%9b%e8%a1%8c%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96.md.html" id="29 中端总结：不遗余力地进行代码优化.md.html">29 中端总结：不遗余力地进行代码优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%90%8e%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e5%85%85%e5%88%86%e5%8f%91%e6%8c%a5%e7%a1%ac%e4%bb%b6%e7%9a%84%e8%83%bd%e5%8a%9b.md.html" id="30 后端总结：充分发挥硬件的能力.md.html">30 后端总结：充分发挥硬件的能力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/31%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e0%e5%88%b0%e8%af%ad%e8%a8%80%e7%ba%a7%e7%9a%84%e8%99%9a%e6%8b%9f%e5%8c%96.md.html" id="31 运行时（一）：从0到语言级的虚拟化.md.html">31 运行时（一）：从0到语言级的虚拟化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/32%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e4%b8%8e%e8%af%ad%e8%a8%80%e7%9a%84%e7%89%b9%e6%80%a7%e6%9c%89%e5%85%b3%e5%90%97%ef%bc%9f.md.html" id="32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html">32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html">33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e5%8d%8f%e7%a8%8b%ef%bc%9f.md.html" id="34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html">34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/35%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9aErlang%e8%af%ad%e8%a8%80%e5%8e%89%e5%ae%b3%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html">35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/36%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%85%83%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="36 高级特性（一）：揭秘元编程的实现机制.md.html">36 高级特性（一）：揭秘元编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/37%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="37 高级特性（二）：揭秘泛型编程的实现机制.md.html">37 高级特性（二）：揭秘泛型编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="38 综合实现（一）：如何实现面向对象编程？.md.html">38 综合实现（一）：如何实现面向对象编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/39%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="39 综合实现（二）：如何实现函数式编程？.md.html">39 综合实现（二）：如何实现函数式编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/40%20%e6%88%90%e6%9e%9c%e6%a3%80%e9%aa%8c%ef%bc%9a%e6%96%b9%e8%88%9f%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%bc%98%e5%8a%bf%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 成果检验：方舟编译器的优势在哪里？.md.html">40 成果检验：方舟编译器的优势在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%901%20%e8%bf%9c%e7%a8%8b%e5%8a%9e%e5%85%ac%ef%bc%8c%e9%9c%80%e8%a6%81%e4%bd%a0%e6%88%91%e5%85%b7%e5%a4%87%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e7%b4%a0%e8%b4%a8%ef%bc%9f.md.html" id="不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html">不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%902%20%e5%ad%a6%e4%b9%a0%e6%8a%80%e6%9c%af%e7%9a%84%e8%bf%87%e7%a8%8b%ef%bc%8c%e5%85%b6%e5%ae%9e%e6%98%af%e8%ae%ad%e7%bb%83%e5%bf%83%e7%90%86%e7%b4%a0%e8%b4%a8%e7%9a%84%e8%bf%87%e7%a8%8b.md.html" id="不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html">不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%903%20%e8%bf%99%e5%87%a0%e5%b9%b4%ef%bc%8c%e6%89%93%e5%8a%a8%e6%88%91%e7%9a%84%e4%b8%a4%e6%9c%ac%e5%a5%bd%e4%b9%a6.md.html" id="不定期加餐3 这几年，打动我的两本好书.md.html">不定期加餐3 这几年，打动我的两本好书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%904%20%e4%bb%8e%e8%ba%ab%e8%be%b9%e7%9a%84%e7%89%9b%e4%ba%ba%e8%ba%ab%e4%b8%8a%ef%bc%8c%e6%88%91%e5%ad%a6%e5%88%b0%e7%9a%84%e4%b8%80%e4%ba%9b%e4%bc%98%e7%a7%80%e5%93%81%e8%b4%a8.md.html" id="不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html">不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%905%20%e5%80%9f%e5%8a%a9%e5%ae%9e%e4%be%8b%ef%bc%8c%e6%8e%a2%e7%a9%b6C++%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%86%85%e9%83%a8%e6%9c%ba%e5%88%b6.md.html" id="不定期加餐5 借助实例，探究C++编译器的内部机制.md.html">不定期加餐5 借助实例，探究C++编译器的内部机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e5%88%92%e9%87%8d%e7%82%b9%207%e7%a7%8d%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="划重点 7种编译器的核心概念与算法.md.html">划重点 7种编译器的核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e6%9c%9f%e6%9c%ab%e7%ad%94%e7%96%91%e4%b8%8e%e6%80%bb%e7%bb%93%20%e5%86%8d%e6%ac%a1%e5%ae%a1%e8%a7%86%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e7%9a%84%e4%bd%9c%e7%94%a8.md.html" id="期末答疑与总结 再次审视学习编译原理的作用.md.html">期末答疑与总结 再次审视学习编译原理的作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%20%e5%a6%82%e4%bd%95%e5%90%83%e9%80%8f7%e7%a7%8d%e7%9c%9f%e5%ae%9e%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="热点问题答疑 如何吃透7种真实的编译器？.md.html">热点问题答疑 如何吃透7种真实的编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%98%93%e6%98%8a%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b8%8d%e6%ad%a2%e6%9c%89Bug%e5%92%8c%e5%8a%a0%e7%8f%ad%ef%bc%8c%e8%bf%98%e6%9c%89%e8%af%97%e5%92%8c%e8%bf%9c%e6%96%b9.md.html" id="用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html">用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%9f%a5%e8%af%86%e5%9c%b0%e5%9b%be%20%e4%b8%80%e8%b5%b7%e6%9d%a5%e5%a4%8d%e4%b9%a0%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="知识地图 一起来复习编译技术核心概念与算法.md.html">知识地图 一起来复习编译技术核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ae%9e%e6%88%98%e6%98%af%e5%94%af%e4%b8%80%e6%a0%87%e5%87%86%ef%bc%81.md.html" id="结束语 实战是唯一标准！.md.html">结束语 实战是唯一标准！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="21 JavaScript编译器（二）：V8的解释器和优化编译器" id="title">21 JavaScript编译器（二）：V8的解释器和优化编译器</h1>
+<div><p>你好，我是宫文学。通过前一讲的学习，我们已经了解了V8的整个编译过程，并重点探讨了一个问题，就是<strong>V8的编译速度为什么那么快</strong>。</p>
+<p>V8把解析过程做了重点的优化，解析完毕以后就可以马上通过Ignition解释执行了。这就让JavaScript可以快速运行起来。</p>
+<p>今天这一讲呢，我们重点来讨论一下，<strong>V8的运行速度为什么也这么快</strong>，一起来看看V8所采用的优化技术。</p>
+<p>上一讲我也提及过，V8在2008年刚推出的时候，它提供了一个快速编译成机器码的编译器，虽然没做太多优化，但性能已经是当时其他JavaScript引擎的10倍了。而现在，V8的速度又是2008年刚发布时候的10倍。那么，是什么技术造成了这么大的性能优化的呢？</p>
+<p>这其中，<strong>一方面原因，是TurboFan这个优化编译器，采用了很多的优化技术。</strong>那么，它采用了什么优化算法？采用了什么IR？其优化思路跟Java的JIT编译器有什么相同点和不同点？</p>
+<p><strong>另一方面，最新的Ignition解释器，虽然只是做解释执行的功能，但竟然也比一个基础的编译器生成的代码慢不了多少。</strong>这又是什么原因呢？</p>
+<p>所以今天，我们就一起把这些问题都搞清楚，这样你就能全面了解V8所采用的编译技术的特点了，你对动态类型语言的编译，也就能有更深入的了解，并且这也有助于你编写更高效的JavaScript程序。</p>
+<p>好，首先，我们来了解一下TurboFan的优化编译技术。</p>
+<h2 id="turbofan的优化编译技术">TurboFan的优化编译技术</h2>
+<p>TurboFan是一个优化编译器。不过它跟Java的优化编译器要完成的任务是不太相同的。因为JavaScript是动态类型的语言，所以如果它能够推断出准确的类型再来做优化，就会带来巨大的性能提升。</p>
+<p>同时，TurboFan也会像Java的JIT编译器那样，基于IR来运行各种优化算法，以及在后端做指令选择、寄存器分配等优化。所有的这些因素加起来，才使得TurboFan能达到很高的性能。</p>
+<p>我们先来看看V8最特别的优化，也就是通过对类型的推理所做的优化。</p>
+<h3 id="基于推理的优化-speculative-optimazition">基于推理的优化（Speculative Optimazition）</h3>
+<p>对于基于推理的优化，我们其实并不陌生。在研究<a href="https://time.geekbang.org/column/article/257504" target="_blank">Java的JIT编译器</a>时，你就发现了Graal会针对解释器收集的一些信息，对于代码做一些推断，从而做一些激进的优化，比如说会跳过一些不必要的程序分支。</p>
+<p>而JavaScript是动态类型的语言，所以对于V8来说，最重要的优化，就是能够在运行时正确地做出类型推断。举个例子来说，假设示例函数中的add函数，在解释器里多次执行的时候，接受的参数都是整型，那么TurboFan就处理整型加法运算的代码就行了。这也就是上一讲中我们生成的汇编代码。</p>
+<pre><code>function add(a,b){
+    return a+b;
+}
+
+for (i = 0; i&lt;100000; i++){
+    if (i%1000==0)
+        console.log(i);
+    
+    add(i, i+1);
+}
+</code></pre>
+<p><img alt="" src="assets/591e5be4ce5f4195afe28c80defdb5cd.jpg"/></p>
+<p>但是，<strong>如果不在解释器里执行，直接要求TurboFan做编译，会生成什么样的汇编代码呢？</strong></p>
+<p>你可以在运行d8的时候，加上“–always-opt”参数，这样V8在第一次遇到add函数的时候，就会编译成机器码。</p>
+<pre><code>./d8 --trace-opt-verbose \
+    --trace-turbo \
+    --turbo-filter=add \
+    --print-code \
+    --print-opt-code \
+    --code-comments \
+    --always-opt \
+    add.js
+</code></pre>
+<p>这一次生成的汇编代码，跟上一讲生成的就不一样了。由于编译器不知道add函数的参数是什么类型的，所以实际上，编译器是去调用实现Add指令的内置函数，来生成了汇编代码。</p>
+<p>这个内置函数当然支持所有加法操作的语义，但是它也就无法启动基于推理的优化机制了。这样的代码，跟解释器直接解释执行，性能上没太大的差别，因为它们本质上都是调用一个全功能的内置函数。</p>
+<p><img alt="" src="assets/d476023463804026aaac523850e97d6f.jpg"/></p>
+<p>而推理式优化的版本则不同，它直接生成了针对整型数字进行处理的汇编代码：</p>
+<p><img alt="" src="assets/93ca9a395da34034839b2546e5104cde.jpg"/></p>
+<p>我来给你解释一下这几行指令的意思：</p>
+<ul>
+<li>第1行和第3行，是把参数1和参数2分别拷贝到r8和r9寄存器。<strong>注意</strong>，这里是从物理寄存器里取值，而不是像前一个版本一样，在栈里取值。前一个版本遵循的是更加保守和安全的调用约定。</li>
+<li>第2行和第4行，是把r8和r9寄存器的值向右移1位。</li>
+<li>第5行，是把r8和r9相加。</li>
+</ul>
+<p>看到这里，你可能就发现了一个问题：<strong>只是做个简单的加法而已，为什么要做移位操作呢？</strong>实际上，如果你熟悉汇编语言的话，要想实现上面的功能，其实只需要下面这两行代码就可以了：</p>
+<pre><code>movq rax, rdi   #把参数1拷贝到rax寄存器
+addq rax, rcx   #把参数2加到rax寄存器上，作为返回值
+</code></pre>
+<p>那么，多出来的移位操作是干什么的呢？</p>
+<p>这就涉及到了V8的<strong>内存管理机制</strong>。原来，V8对象都保存在堆中。在栈帧中保存的数值，都是指向堆的指针。垃圾收集器可以通过这些指针，知道哪些内存对象是不再被使用的，从而把它们释放掉。我们前面学过，Java的虚拟机和Python对于对象引用，本质上也是这么处理的。</p>
+<p>但是，这种机制对于基础数据类型，比如整型，就不太合适了。因为你没有必要为一个简单的整型数据在堆中申请内存，这样既浪费内存，又降低了访问效率，V8需要访问两次内存才能读到一个整型变量的值（第一次读到地址，第二次根据该地址到堆里读到值）。你记得，Python就是这么访问基础数据的。</p>
+<p>V8显然不能忍受这种低效的方式。它采用的优化机制，是一种被广泛采用的技术，叫做<strong>标记指针</strong>（Tagged Pointer）或者<strong>标记值</strong>（Tagged Value）。《<a href="https://v8.dev/blog/pointer-compression" target="_blank">Pointer Compression in V8</a>》这篇文章，就介绍了V8中采用Tagged Pointer技术的细节。</p>
+<p>比如说，对于一个32位的指针值，它的最低位是标记位。当标记位是0的时候，前31位是一个短整数（简写为Smi）；而当标记位是1的时候，那么前31位是一个地址。这样，V8就可以用指针来直接保存一个整数值，用于计算，从而降低了内存占用，并提高了运行效率。</p>
+<p><img alt="" src="assets/54d00eb40c1843a796d91e890cb08154.jpg"/></p>
+<p>图1：用标记指针技术来表示一个整数</p>
+<p>好了，现在你已经理解了V8的推理式编译的机制。那么，还有什么手段能提升代码的性能呢？</p>
+<p>当然，还有基于IR的各种优化算法。</p>
+<h3 id="ir和优化算法">IR和优化算法</h3>
+<p>在讲<a href="https://time.geekbang.org/column/article/256914" target="_blank">Java的JIT编译器</a>时我就提过，V8做优化编译时采用的IR，也是基于Sea of Nodes的。</p>
+<p>你可以回忆一下Sea of Nodes的特点：合并了数据流图与控制流图；是SSA形式；没有把语句划分成基本块。</p>
+<p>它的重要优点，就是优化算法可以自由调整语句的顺序，只要不破坏数据流图中的依赖关系。在Sea of Nodes中，没有变量（有时也叫做寄存器）的概念，只有一个个数据节点，所以对于死代码删除等优化方法来说，它也具备天然的优势。</p>
+<p><strong>说了这么多，那么要如何查看TurboFan的IR呢？</strong>一个好消息是，V8也像GraalVm一样，提供了一个图形化的工具，来查看TurboFan的IR。这个工具是<strong>turbolizer</strong>，它位于V8源代码的tools/turbolizer目录下。你可以按照该目录下的README.md文档，构建一下该工具，并运行它。</p>
+<pre><code>python -m SimpleHTTPServer 8000
+</code></pre>
+<p>它实际启动了一个简单的Web服务。你可以在浏览器中输入“0.0.0.0:8000”，打开turbolizer的界面。</p>
+<p>在运行d8的时候，如果带上参数“–trace-turbo”，就会在当前目录下输出一个.json文件，打开这个文件就能显示出TurboFan的IR来。比如，上一讲的示例程序add.js，所显示出的add函数的IR：</p>
+<p><img alt="" src="assets/36e933df7fb64db19f1bc0c6fa2585b5.jpg"/></p>
+<p>图2：在turbolizer中显示add函数的IR</p>
+<p>界面中最左边一栏是源代码，中间一栏是IR，最右边一栏是生成的汇编代码。</p>
+<p>上图中的IR只显示了控制节点。你可以在工具栏中找到一个按钮，把所有节点都呈现出来。在左侧的Info标签页中，还有一些命令的快捷键，你最好熟悉一下它们，以便于控制IR都显示哪些节点。这对于一个大的IR图来说很重要，否则你会看得眼花缭乱：</p>
+<p><img alt="" src="assets/60b76fef580c47bdaff68da4c020c58e.jpg"/></p>
+<p>图3：完整展开的add函数的IR</p>
+<p>在这个图中，不同类型的节点用了不同的颜色来区分：</p>
+<ul>
+<li>黄色：控制流的节点，比如Start、End和Return；</li>
+<li>淡蓝色：代表一个值的节点；</li>
+<li>红色：JavaScript层级的操作，比如JSEqual、JSToBoolean等；</li>
+<li>深蓝色：代表一种中间层次的操作，介于JavaScript层和机器层级中间；</li>
+<li>绿色：机器级别的语言，代表一些比较低层级的操作。</li>
+</ul>
+<p>在turbolizer的界面上，还有一个下拉菜单，里面有多个优化步骤。你可以挨个点击，看看经过不同的优化步骤以后，IR的变化是什么样子的。</p>
+<p><img alt="" src="assets/1dfedf031f3944e3975f1e41c4d3fca5.jpg"/></p>
+<p>图4：TurboFan对IR的处理步骤</p>
+<p>你可以看到，在第一步“v8.TFBytecodeGraphBuilder”阶段显示的IR中，它显示的节点还是有点儿多。我们先隐藏掉与计算功能无关的节点，得到了下面的主干。<strong>你要注意其中的绿色节点</strong>，这里已经进行了类型推测，因此它采用了一个整型计算节点：SpeculativeSafeIntegerAdd。</p>
+<p>这个节点的功能是：当两个参数都是整数的时候，那就符合类型推断，做整数加法操作；如果不符合类型推断，那么就执行逆优化。</p>
+<p><img alt="" src="assets/c8cf597e7a694da4867a03ed0bee3129.jpg"/></p>
+<p>图5：v8.TFBytecodeGraphBuilder”阶段的IR</p>
+<p>你可以再去点击其他的优化步骤，看看图形会有什么变化。</p>
+<p><strong>在v8.TFGenericLowering阶段</strong>，我们得到了如下所示的IR图，这个图只保留了计算过程的主干。里面增加了两个绿色节点，这两个节点就是把标记指针转换成整数的；还增加了一个深蓝色的节点，这个节点是在函数返回之前，把整数再转换成标记指针。</p>
+<p><img alt="" src="assets/c626c05136d9402c8c44991387ae9f62.jpg"/></p>
+<p>图6：v8.TFGenericLowering阶段的IR</p>
+<p><strong>在v8.TFLateGraphTrimming阶段</strong>，图中的节点增加了更多的细节，它更接近于具体CPU架构的汇编代码。比如，我们把前面图6中的标记指针，转换成32位整数的操作，就变成了两个节点：</p>
+<ul>
+<li>TruncateInt64ToInt32：把64位整型截短为32位整型；</li>
+<li>Word32Sar：32位整数的移位运算，用于把标记指针转换为整数。</li>
+</ul>
+<p><img alt="" src="assets/1412676dca1846fb830f57d59ffddcad.jpg"/></p>
+<p>图7：v8.TFLateGraphTrimming阶段的IR</p>
+<p>这三个阶段就形象地展示出了TurboFan的IR是如何Lower的，从比较抽象的、机器无关的节点，逐步变成了与具体架构相关的操作。</p>
+<p>所以，基本上IR的节点可以分为四类：顶层代表复杂操作的JavaScript节点、底层代表简单操作的机器节点、处于二者之间做了一定简化的节点，以及可以被各个层次共享的节点。</p>
+<p>刚才我们对V8做优化编译时，所采用的IR的分析，只关注了与加法计算有关的主干节点。你还可以用同样的方法，来看看其他的节点。这些节点主要是针对异常情况的处理。比如，如果发现参数类型不是整型，那么就要去执行逆优化。</p>
+<p>在做完了所有的优化之后，编译器就会进入指令排序、寄存器分配等步骤，最后生成机器码。</p>
+<p>现在，你就了解了TurboFan是如何借助Sea of Nodes来做优化和Lower的了。但我们还没有涉及具体的优化算法。<strong>那么，什么优化算法会帮助V8提升性能呢？</strong></p>
+<p>前面在研究<a href="https://time.geekbang.org/column/article/257504" target="_blank">Java的JIT编译器</a>的时候，我们重点关注了内联和逃逸分析的优化算法。那么，对于JavaScript来说，这两种优化也同样非常重要，一样能带来巨大的优化效果。</p>
+<p>我们先来看看<strong>内联优化</strong>。对于之前的示例程序，由于我们使用了“–turbo-filter=add”选项来运行代码，因此TurboFan只会编译add方法，这就避免了顶层函数把add函数给内联进去。而如果你去掉了这个选项，就会发现TurboFan在编译完毕以后，程序后面的运行速度会大大加快，一闪而过。这是因为整个顶层函数都被优化编译了，并且在这个过程中，把add函数给内联进去了。</p>
+<p>然后再说说<strong>逃逸分析</strong>。V8运用逃逸分析算法，也可以像Java的编译器一样，把从堆中申请的内存优化为从栈中申请（甚至使用寄存器），从而提升性能，并避免垃圾收集带来的消耗。</p>
+<p>不过，JavaScript和Java的对象体系设计毕竟是不一样的。在Java的类里，每个成员变量相对于对象指针的偏移量都是固定的；而JavaScript则在内部用了<strong>隐藏类</strong>来表示对象的内存布局。这也引出V8的另一个有特色的优化主题：<strong>内联缓存</strong>。</p>
+<p>那接下来，我就带你详细了解一下V8的隐藏类和内联缓存机制。</p>
+<h3 id="隐藏类-shapes-和内联缓存-inline-caching">隐藏类（Shapes）和内联缓存（Inline Caching）</h3>
+<p>隐藏类，学术上一般叫做Hidden Class，但不同的编译器的叫法也不一样，比如Shapes、Maps，等等。</p>
+<p><strong>隐藏类有什么用呢？</strong>你应该知道，在JavaScript中，你不需要先声明一个类，才能创建一个对象。你可以随时创建对象，比如下面的示例程序中，就创建了几个表示坐标点的对象：</p>
+<pre><code>point1 = {x:2, y:3};
+point2 = {x:4, y:5};
+point3 = {y:7, x:6};
+point4 = {x:8, y:9, z:10};
+</code></pre>
+<p>那么，V8在内部是怎么来存储x和y这些对象属性的呢？</p>
+<p>如果按照Java的内存布局方案，一定是在对象头后面依次存放x和y的值；而如果按照Python的方案，那就需要用一个字典来保存不同属性的值。但显然用类似Java的方案更加节省内存，访问速度也更快。</p>
+<p>所以，V8内部就采用了隐藏类的设计。如果两个对象，有着相同的属性，并且顺序也相同，那么它们就对应相同的隐藏类。</p>
+<p>在上面的程序中，point1和point2就对应着同一个隐藏类；而point3和point4要么是属性的顺序不同，要么是属性的数量不同，对应着另外的隐藏类。</p>
+<p>所以在这里，你就会得到一个<strong>编写高性能程序的要点</strong>：对于相同类型的对象，一定要保证它们的属性数量和顺序完全一致，这样才会被V8当作相同的类型，从而那些基于类型推断的优化才会发挥作用。</p>
+<p>此外，V8还用到了一种叫做<strong>内联缓存</strong>的技术，来<strong>加快对象属性的访问时间</strong>。它的原理是这样的：当V8第一次访问某个隐藏类的属性的时候，它要到隐藏类里，去查找某个属性的地址相对于对象指针的偏移量。但V8会把这个偏移量缓存下来，这样下一次遇到同样的shape的时候，直接使用这个缓存的偏移量就行了。</p>
+<p>比如下面的示例代码，如果对象o是上面的point1或point2，属性x的地址偏移量就是相同的，因为它们对应的隐藏类是一样的：</p>
+<pre><code>function getX(o){
+  return o.x;
+}
+</code></pre>
+<p>有了内联优化技术，那么V8只有在第一次访问某个隐藏类的属性时，速度会慢一点，之后的访问效率就跟Java的差不多了。因为Java这样的静态类型的代码，在编译期就可以确定每个属性相对于对象地址的偏移量。</p>
+<p>好，现在你已经了解了TurboFan做优化的一些关键思路。接下来，我们再返回来，重新探讨一下Ignition的运行速度问题。</p>
+<h2 id="提升ignition的速度">提升Ignition的速度</h2>
+<p>最新版本的V8已经不需要多级的编译器了，只需要一个解释器（Ignition）和一个优化编译器（TurboFan）就行。在公开的测试数据中，Ignition的运行速度，已经接近一个基线编译器生成的机器码的速度了，也就是那种没有做太多优化的机器码。</p>
+<p>这听上去似乎不符合常理，毕竟，解释执行怎么能赶得上运行机器码呢？所以，这里一定有一些值得探究的技术原理。</p>
+<p>让我们再来看看Ignition解释执行的原理吧。</p>
+<p>在上一讲中你已经了解到，V8的字节码是很精简的。比如，对于各种加法操作，它只有一个Add指令。</p>
+<p>但是我们知道，Add指令的语义是很复杂的，比如在ECMAScript标准中，就对加法的语义有很多的规定，如数字相加该怎么做、字符串连接该怎么做，等等。</p>
+<p><img alt="" src="assets/7a739ff702154a45b8b336b6903630e7.jpg"/></p>
+<p>图8：ECMAScript标准中加法操作的语义规则</p>
+<p>这样的话，<strong>V8在解释执行Add指令的时候，就要跳到一个内置的函数去执行，其他指令也是如此。这些内置函数的实现质量，就会大大影响解释器的运行速度。</strong></p>
+<p>那么如果换做你，你会怎么实现这些内置函数呢？</p>
+<p><strong>选择1：用汇编语言去实现</strong>。这样，我们可以针对每种情况写出最优化的代码。但问题是，这样做的工作量很大。因为V8现在已经支持了9种架构的CPU，而要为每种架构编写这些内置功能，都需要敲几万行的汇编代码。</p>
+<p><strong>选择2：用C++去实现</strong>。这是一个不错的选择，因为C++代码最后编译的结果也是很优化的。不过这里也有一个问题：C++有它自己的调用约定，跟V8中JavaScript的调用约定是不同的。</p>
+<p>比如，在调用C++的内置函数之前，解释器要把自己所使用的物理寄存器保护起来，避免被C++程序破坏，在调用完毕以后还要恢复。这使得从解释器到内置函数，以及从内置函数回到解释器，都要做不少的转换工作。你还要写专门的代码，来对标记指针进行转换。而如果要使用V8的对象，那要处理的事情就更多了，比如它要去隐藏类中查找信息，以及能否通过优化实现栈上内存分配，等等。</p>
+<p><strong>那么，我们还有别的选择吗？</strong></p>
+<p>有的。你看，V8已经有了一个不错的优化编译器TurboFan。<strong>既然它能产生很高效的代码，那么我们为什么不直接用TurboFan来生成机器码呢？</strong>这个思路其实是可行的。这可以看做是V8编译器的一种自举能力，用自己的编译器，来生成自己内部要使用的内置函数的目标代码。</p>
+<p>毕竟，TurboFan本来就是要处理标记指针、JavaScript对象的内存表示等这些问题。这个方案还省去了做调用约定的转换的工作，因为本来V8执行的过程中，就要不断在解释执行和运行机器码之间切换，V8内部对栈桢和调用约定的设计，就是要确保这种切换的代价最低。</p>
+<p>在具体实现的时候，编写这些内置函数是用JavaScript调用TurboFan提供的一些宏。这些宏可以转化为TurboFan的IR节点，从而跟TurboFan的优化编译功能无缝衔接。</p>
+<p>好了，分析到这里，你就知道为什么Ignition的运行速度会这么快了：<strong>它采用了高度优化过的内置函数的实现，并且没有调用约定转换的负担。</strong>而一个基线编译器生成的机器码，因为没有经过充分的优化，反倒并没有那么大的优势。</p>
+<p>再补充一点，V8对字节码也提供了一些优化算法。比如，通过优化，可以减少对临时变量的使用，使得代码可以更多地让累加器起到临时变量的作用，从而减少内存访问次数，提高运行效率。如果你有兴趣在这个话题上去做深入研究，可以参考我在文末链接中给出的一篇论文。</p>
+<h2 id="课程小结">课程小结</h2>
+<p>本讲，我围绕运行速度这个主题，给你讲解了V8在TurboFan和Ignition上所采用的优化技术。你需要记住以下几个要点：</p>
+<ul>
+<li>第一，由于JavaScript是动态类型的语言，所以优化的要点，就是推断出函数参数的类型，并形成有针对性的优化代码。</li>
+<li>第二，同Graal一样，V8也使用了Sea of Nodes的IR，而且对V8来说，内联和逃逸优化算法仍然非常重要。我在<a href="https://time.geekbang.org/column/article/257504" target="_blank">解析Graal编译器</a>的时候已经给你介绍过了，所以这一讲并没有详细展开，你可以自己去回顾复习一下。</li>
+<li>第三，V8所采用的内联缓存技术，能够在运行期提高对象属性访问的性能。另外你要注意的是，在编写代码的时候，一定要避免对于相同的对象生成不同的隐藏类。</li>
+<li>第四，Ignition采用了TurboFan来编译内置函数，这种技术非常聪明，既省了工作量，又简化了系统的结构。实际上，在Graal编译器里也有类似的技术，它叫做Snippet，也是用自身的中后端功能来编译内置函数。所以，你会再次发现，多个编译器之间所采用的编译技术，是可以互相印证的。</li>
+</ul>
+<p>这节课的思维导图我同样帮你整理出来了，供你参考和复习：</p>
+<p><img alt="" src="assets/9b6ae41dc4064b5bbb5e580aea26f7e8.jpg"/></p>
+<h2 id="一课一思">一课一思</h2>
+<p>我们已经学了两种动态类型的语言的编译技术：Python和JavaScript。那我现在问一个开脑洞的问题：如果你要给Python加一个JIT编译器，那么你可以从JavaScript这里借鉴哪些技术呢？在哪些方面，编译器会得到巨大的性能提升？</p>
+<h2 id="参考资料">参考资料</h2>
+<ol>
+<li>V8的指针压缩技术：<a href="https://v8.dev/blog/pointer-compression" target="_blank">Pointer Compression in V8</a></li>
+<li>介绍V8基于推理的优化机制：<a href="https://ponyfoo.com/articles/an-introduction-to-speculative-optimization-in-v8" target="_blank">An Introduction to Speculative Optimization in V8</a></li>
+<li>对Ignition字节码做优化的论文：<a href="https://docs.google.com/document/d/1wW_VkkIwhAAgAxLYM0wvoTEkq8XykibDIikGpWH7l1I/edit?ts=570d7131#heading=h.6jz9dj3bnr8t" target="_blank">Register equivalence optimization</a>，我在GitHub上也放了一份<a href="https://github.com/RichardGong/CompilersInPractice/blob/master/v8/Ignition_%20Register%20Equivalence%20Optimization.pdf" target="_blank">拷贝</a></li>
+</ol>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#aac6c6c6939e9b9b9a9deacdc7cbc3c684c9c5c7" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359f4e4890887a2',t:'MTc0NTU0MzM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

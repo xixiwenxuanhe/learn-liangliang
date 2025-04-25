@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="22 Julia编译器（一）：如何让动态语言性能很高？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>22 Julia编译器（一）：如何让动态语言性能很高？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97%20%e5%a6%82%e4%bd%95%e5%ad%a6%e4%b9%a0%e8%bf%99%e9%97%a8%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be%ef%bc%9f.md.html" id="00 学习指南 如何学习这门编译原理实战课？.md.html">00 学习指南 如何学习这门编译原理实战课？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9c%a8%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e4%b8%ad%e6%b8%b8%e5%8e%86.md.html" id="00 开篇词 在真实世界的编译器中游历.md.html">00 开篇词 在真实世界的编译器中游历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bc%96%e8%af%91%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b%e9%83%bd%e6%82%84%e6%82%84%e5%81%9a%e4%ba%86%e5%93%aa%e4%ba%9b%e4%ba%8b%e6%83%85%ef%bc%9f.md.html" id="01 编译的全过程都悄悄做了哪些事情？.md.html">01 编译的全过程都悄悄做了哪些事情？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e7%94%a8%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e6%9e%84%e9%80%a0%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba.md.html" id="02 词法分析：用两种方式构造有限自动机.md.html">02 词法分析：用两种方式构造有限自动机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e4%b8%a4%e4%b8%aa%e5%9f%ba%e6%9c%ac%e5%8a%9f%e5%92%8c%e4%b8%a4%e7%a7%8d%e7%ae%97%e6%b3%95%e6%80%9d%e8%b7%af.md.html" id="03 语法分析：两个基本功和两种算法思路.md.html">03 语法分析：两个基本功和两种算法思路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/04%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%9a%e8%ae%a9%e7%a8%8b%e5%ba%8f%e7%ac%a6%e5%90%88%e8%af%ad%e4%b9%89%e8%a7%84%e5%88%99.md.html" id="04 语义分析：让程序符合语义规则.md.html">04 语义分析：让程序符合语义规则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/05%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%ef%bc%8c%e4%bd%a0%e6%9c%89%e5%8f%91%e8%a8%80%e6%9d%83.md.html" id="05 运行时机制：程序如何运行，你有发言权.md.html">05 运行时机制：程序如何运行，你有发言权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/06%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e4%b8%80%e5%89%af%e9%9d%a2%e5%ad%94.md.html" id="06 中间代码：不是只有一副面孔.md.html">06 中间代码：不是只有一副面孔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/07%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e8%b7%9f%e7%bc%96%e8%af%91%e5%99%a8%e5%81%9a%e6%9c%8b%e5%8f%8b%ef%bc%8c%e8%ae%a9%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%a3%9e%e8%b5%b7%e6%9d%a5.md.html" id="07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html">07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/08%20%e4%bb%a3%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%99%a8%e7%9b%b8%e5%85%b3%e7%9a%84%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="08 代码生成：如何实现机器相关的优化？.md.html">08 代码生成：如何实现机器相关的优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/09%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%89%8b%e5%86%99%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="09 Java编译器（一）：手写的编译器有什么优势？.md.html">09 Java编译器（一）：手写的编译器有什么优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/10%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%bf%98%e8%a6%81%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Java编译器（二）：语法分析之后，还要做些什么？.md.html">10 Java编译器（二）：语法分析之后，还要做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/11%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%b1%9e%e6%80%a7%e5%88%86%e6%9e%90%e5%92%8c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90.md.html" id="11 Java编译器（三）：属性分析和数据流分析.md.html">11 Java编译器（三）：属性分析和数据流分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/12%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%8e%bb%e9%99%a4%e8%af%ad%e6%b3%95%e7%b3%96%e5%92%8c%e7%94%9f%e6%88%90%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="12 Java编译器（四）：去除语法糖和生成字节码.md.html">12 Java编译器（四）：去除语法糖和生成字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/13%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%8a%a8%e6%89%8b%e4%bf%ae%e6%94%b9Graal%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="13 Java JIT编译器（一）：动手修改Graal编译器.md.html">13 Java JIT编译器（一）：动手修改Graal编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/14%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSea%20of%20Nodes%e4%b8%ba%e4%bd%95%e5%a6%82%e6%ad%a4%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html">14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/15%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%8e%a2%e7%a9%b6%e5%86%85%e8%81%94%e5%92%8c%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90%e7%9a%84%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/16%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9aGraal%e7%9a%84%e5%90%8e%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html">16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/17%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%b7%a5%e5%85%b7%e7%94%9f%e6%88%90%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="17 Python编译器（一）：如何用工具生成编译器？.md.html">17 Python编译器（一）：如何用工具生成编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/18%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bb%8eAST%e5%88%b0%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="18 Python编译器（二）：从AST到字节码.md.html">18 Python编译器（二）：从AST到字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/19%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6.md.html" id="19 Python编译器（三）：运行时机制.md.html">19 Python编译器（三）：运行时机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/20%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e6%9e%90%e5%92%8c%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b.md.html" id="20 JavaScript编译器（一）：V8的解析和编译过程.md.html">20 JavaScript编译器（一）：V8的解析和编译过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/21%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e9%87%8a%e5%99%a8%e5%92%8c%e4%bc%98%e5%8c%96%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html">21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/22%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e5%8a%a8%e6%80%81%e8%af%ad%e8%a8%80%e6%80%a7%e8%83%bd%e5%be%88%e9%ab%98%ef%bc%9f.md.html" id="22 Julia编译器（一）：如何让动态语言性能很高？.md.html">22 Julia编译器（一）：如何让动态语言性能很高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/23%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8LLVM%e7%9a%84%e4%bc%98%e5%8c%96%e5%92%8c%e5%90%8e%e7%ab%af%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html">23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/24%20Go%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9a%e6%8a%8a%e5%ae%83%e5%bd%93%e4%bd%9c%e6%95%99%e7%a7%91%e4%b9%a6%e5%90%a7.md.html" id="24 Go语言编译器：把它当作教科书吧.md.html">24 Go语言编译器：把它当作教科书吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/25%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%a7%a3%e6%9e%90%e4%b8%80%e6%9d%a1SQL%e8%af%ad%e5%8f%a5%e7%9a%84%e6%89%a7%e8%a1%8c%e8%bf%87%e7%a8%8b.md.html" id="25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html">25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/26%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e5%a6%82%e4%bd%95%e5%b8%ae%e4%bd%a0%e6%8f%90%e5%8d%87%e6%95%b0%e6%8d%ae%e5%ba%93%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html">26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/27%20%e8%af%be%e5%89%8d%e5%af%bc%e8%af%bb%ef%bc%9a%e5%ad%a6%e4%b9%a0%e7%8e%b0%e4%bb%a3%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="27 课前导读：学习现代语言设计的正确姿势.md.html">27 课前导读：学习现代语言设计的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%89%8d%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e4%b9%9f%e6%9c%89%e4%ba%ba%e6%9c%ba%e5%b7%a5%e7%a8%8b%e5%ad%a6.md.html" id="28 前端总结：语言设计也有人机工程学.md.html">28 前端总结：语言设计也有人机工程学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/29%20%e4%b8%ad%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%8d%e9%81%97%e4%bd%99%e5%8a%9b%e5%9c%b0%e8%bf%9b%e8%a1%8c%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96.md.html" id="29 中端总结：不遗余力地进行代码优化.md.html">29 中端总结：不遗余力地进行代码优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%90%8e%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e5%85%85%e5%88%86%e5%8f%91%e6%8c%a5%e7%a1%ac%e4%bb%b6%e7%9a%84%e8%83%bd%e5%8a%9b.md.html" id="30 后端总结：充分发挥硬件的能力.md.html">30 后端总结：充分发挥硬件的能力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/31%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e0%e5%88%b0%e8%af%ad%e8%a8%80%e7%ba%a7%e7%9a%84%e8%99%9a%e6%8b%9f%e5%8c%96.md.html" id="31 运行时（一）：从0到语言级的虚拟化.md.html">31 运行时（一）：从0到语言级的虚拟化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/32%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e4%b8%8e%e8%af%ad%e8%a8%80%e7%9a%84%e7%89%b9%e6%80%a7%e6%9c%89%e5%85%b3%e5%90%97%ef%bc%9f.md.html" id="32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html">32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html">33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e5%8d%8f%e7%a8%8b%ef%bc%9f.md.html" id="34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html">34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/35%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9aErlang%e8%af%ad%e8%a8%80%e5%8e%89%e5%ae%b3%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html">35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/36%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%85%83%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="36 高级特性（一）：揭秘元编程的实现机制.md.html">36 高级特性（一）：揭秘元编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/37%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="37 高级特性（二）：揭秘泛型编程的实现机制.md.html">37 高级特性（二）：揭秘泛型编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="38 综合实现（一）：如何实现面向对象编程？.md.html">38 综合实现（一）：如何实现面向对象编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/39%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="39 综合实现（二）：如何实现函数式编程？.md.html">39 综合实现（二）：如何实现函数式编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/40%20%e6%88%90%e6%9e%9c%e6%a3%80%e9%aa%8c%ef%bc%9a%e6%96%b9%e8%88%9f%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%bc%98%e5%8a%bf%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 成果检验：方舟编译器的优势在哪里？.md.html">40 成果检验：方舟编译器的优势在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%901%20%e8%bf%9c%e7%a8%8b%e5%8a%9e%e5%85%ac%ef%bc%8c%e9%9c%80%e8%a6%81%e4%bd%a0%e6%88%91%e5%85%b7%e5%a4%87%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e7%b4%a0%e8%b4%a8%ef%bc%9f.md.html" id="不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html">不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%902%20%e5%ad%a6%e4%b9%a0%e6%8a%80%e6%9c%af%e7%9a%84%e8%bf%87%e7%a8%8b%ef%bc%8c%e5%85%b6%e5%ae%9e%e6%98%af%e8%ae%ad%e7%bb%83%e5%bf%83%e7%90%86%e7%b4%a0%e8%b4%a8%e7%9a%84%e8%bf%87%e7%a8%8b.md.html" id="不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html">不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%903%20%e8%bf%99%e5%87%a0%e5%b9%b4%ef%bc%8c%e6%89%93%e5%8a%a8%e6%88%91%e7%9a%84%e4%b8%a4%e6%9c%ac%e5%a5%bd%e4%b9%a6.md.html" id="不定期加餐3 这几年，打动我的两本好书.md.html">不定期加餐3 这几年，打动我的两本好书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%904%20%e4%bb%8e%e8%ba%ab%e8%be%b9%e7%9a%84%e7%89%9b%e4%ba%ba%e8%ba%ab%e4%b8%8a%ef%bc%8c%e6%88%91%e5%ad%a6%e5%88%b0%e7%9a%84%e4%b8%80%e4%ba%9b%e4%bc%98%e7%a7%80%e5%93%81%e8%b4%a8.md.html" id="不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html">不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%905%20%e5%80%9f%e5%8a%a9%e5%ae%9e%e4%be%8b%ef%bc%8c%e6%8e%a2%e7%a9%b6C++%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%86%85%e9%83%a8%e6%9c%ba%e5%88%b6.md.html" id="不定期加餐5 借助实例，探究C++编译器的内部机制.md.html">不定期加餐5 借助实例，探究C++编译器的内部机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e5%88%92%e9%87%8d%e7%82%b9%207%e7%a7%8d%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="划重点 7种编译器的核心概念与算法.md.html">划重点 7种编译器的核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e6%9c%9f%e6%9c%ab%e7%ad%94%e7%96%91%e4%b8%8e%e6%80%bb%e7%bb%93%20%e5%86%8d%e6%ac%a1%e5%ae%a1%e8%a7%86%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e7%9a%84%e4%bd%9c%e7%94%a8.md.html" id="期末答疑与总结 再次审视学习编译原理的作用.md.html">期末答疑与总结 再次审视学习编译原理的作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%20%e5%a6%82%e4%bd%95%e5%90%83%e9%80%8f7%e7%a7%8d%e7%9c%9f%e5%ae%9e%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="热点问题答疑 如何吃透7种真实的编译器？.md.html">热点问题答疑 如何吃透7种真实的编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%98%93%e6%98%8a%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b8%8d%e6%ad%a2%e6%9c%89Bug%e5%92%8c%e5%8a%a0%e7%8f%ad%ef%bc%8c%e8%bf%98%e6%9c%89%e8%af%97%e5%92%8c%e8%bf%9c%e6%96%b9.md.html" id="用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html">用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%9f%a5%e8%af%86%e5%9c%b0%e5%9b%be%20%e4%b8%80%e8%b5%b7%e6%9d%a5%e5%a4%8d%e4%b9%a0%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="知识地图 一起来复习编译技术核心概念与算法.md.html">知识地图 一起来复习编译技术核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ae%9e%e6%88%98%e6%98%af%e5%94%af%e4%b8%80%e6%a0%87%e5%87%86%ef%bc%81.md.html" id="结束语 实战是唯一标准！.md.html">结束语 实战是唯一标准！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="22 Julia编译器（一）：如何让动态语言性能很高？" id="title">22 Julia编译器（一）：如何让动态语言性能很高？</h1>
+<div><p>你好，我是宫文学。</p>
+<p>Julia这门语言，其实是最近几年才逐渐获得人们越来越多的关注的。有些人会拿它跟Python进行比较，认为Julia已经成为了Python的劲敌，甚至还有人觉得它在未来可能会取代Python的地位。虽然这样的说法可能是有点夸张了，不过Julia确实是有它的可取之处的。</p>
+<p>为什么这么说呢？前面我们已经研究了Java、Python和JavaScript这几门主流语言的编译器，这几门语言都是很有代表性的：Java语言是静态类型的、编译型的语言；Python语言是动态类型的、解释型的语言；JavaScript是动态类型的语言，但可以即时编译成本地代码来执行。</p>
+<p>而Julia语言却声称同时兼具了静态编译型和动态解释型语言的优点：<strong>一方面它的性能很高，可以跟Java和C语言媲美；而另一方面，它又是动态类型的，编写程序时不需要指定类型。</strong>一般来说，我们很难能期望一门语言同时具有动态类型和静态类型语言的优点的，那么Julia又是如何实现这一切的呢？</p>
+<p>原来它是充分利用了LLVM来实现即时编译的功能。因为LLVM是Clang、Rust、Swift等很多语言所采用的后端工具，所以我们可以借助Julia语言的编译器，来研究如何恰当地利用LLVM。不过，Julia使用LLVM的方法很有创造性，使得它可以同时具备这两类语言的优点。我将在这一讲中给你揭秘。</p>
+<p>此外，Julia编译器的类型系统的设计也很独特，它体现了函数式编程的一些设计哲学，能够帮助你启迪思维。</p>
+<p>还有一点，Julia来自MIT，这里也曾经是Lisp的摇篮，所以Julia有一种学术风和极客风相结合的品味，也值得你去仔细体会一下。</p>
+<p>所以，接下来的两讲，我会带你来好好探究一下Julia的编译器。你从中能够学习到Julia编译器的处理过程，如何创造性地使用LLVM的即时编译功能、如何使用LLVM的优化功能，以及它的独特的类型系统和方法分派。</p>
+<p>那今天这一讲，我会先带你来了解Julia的编译过程，以及它高性能背后的原因。</p>
+<h2 id="初步认识julia">初步认识Julia</h2>
+<p><strong>Julia的性能有多高呢？</strong>你可以去它的网站上看看与其他编程语言的<a href="https://julialang.org/benchmarks/" target="_blank">性能对比</a>：</p>
+<p><img alt="" src="assets/22aa9973afd041b2b8e0ee88de89d746.jpg"/></p>
+<p>图1：Julia和各种语言的性能对比</p>
+<p>可以看出，它的性能是在C、Rust这一个级别的，很多指标甚至比Java还要好，比起那些动态语言（如Python、R和Octave），那更是高了一到两个数量级。</p>
+<p>所以，Julia的编译器声称它具备了静态类型语言的性能，确实是不虚此言的。</p>
+<p>你可以从<a href="https://julialang.org/" target="_blank">Julia的官网</a>下载Julia的二进制版本和源代码。如果你下载的是源代码，那你可以用make debug编译成debug版本，这样比较方便用GDB或LLDB调试。</p>
+<p>Julia的设计目的主要是用于<strong>科学计算</strong>。过去，这一领域的用户主要是使用R语言和Python，但麻省理工（MIT）的研究者们对它们的性能不够满意，同时又想要保留R和Python的友好性，于是就设计出了这门新的语言。目前这门语言受到了很多用户的欢迎，使用者也在持续地上升中。</p>
+<p>我个人对它感兴趣的点，正是因为它打破了静态编译和动态编译语言的边界，我认为这体现了未来语言的趋势：<strong>编译和优化的过程是全生命周期的，而不局限在某个特定阶段。</strong></p>
+<p>好了，让我们先通过一个例子来认识Juia，直观了解一下这门语言的特点：</p>
+<pre><code>julia&gt; function countdown(n)
+           if n &lt;= 0
+               println("end")
+           else
+               print(n, " ")
+               countdown(n-1)
+           end
+       end
+countdown (generic function with 1 method)
+
+julia&gt; countdown(10)
+10 9 8 7 6 5 4 3 2 1 end
+</code></pre>
+<p>所以从这段示例代码中，可以看出，Julia主要有这样几个特点：</p>
+<ul>
+<li>用function关键字来声明一个函数；</li>
+<li>用end关键字作为块（函数声明、if语句、for语句等）的结尾；</li>
+<li>函数的参数可以不用指定类型（变量声明也不需要），因为它是动态类型的；</li>
+<li>Julia支持递归函数。</li>
+</ul>
+<p><strong>那么Julia的编译器是用什么语言实现的呢？又是如何支持它的这些独特的特性的呢？</strong>带着这些好奇，让我们来看一看Julia编译器的源代码。</p>
+<p><img alt="" src="assets/aeaf8b9f480846b6b04375ba9a2c5e06.jpg"/></p>
+<p>图2：Julia的源代码目录</p>
+<p>其实Julia的实现会让人有点困扰，因为它使用了4种语言：C、C++、Lisp和Julia自身。相比而言，CPython的实现只用了两种语言：C语言和Python。这种情况，就对社区的其他技术人员理解这个编译器和参与开发，带来了不小的困难。</p>
+<p>Julia的作者用C语言实现了一些运行时的核心功能，包括垃圾收集器。他们是比较偏爱C语言的。C++主要是用来实现跟LLVM衔接的功能，因为LLVM是用C++实现的。</p>
+<p>但是，为什么又冒出了一个Lisp语言呢？而且前端部分的主要功能都是用Lisp实现的。</p>
+<p>原来，Julia中用到Lisp叫做<a href="https://github.com/JeffBezanson/femtolisp" target="_blank">femtolisp</a>（简称flisp），这是杰夫·贝赞松（Jeff Bezanson）做的一个开源Lisp实现，当时的目标是做一个最小的、编译速度又最快的Lisp版本。后来Jeff Bezanson作为Julia的核心开发人员，又把flisp带进了Julia。</p>
+<p>实际上，Julia语言本身也宣称是继承了Lisp语言的精髓。在其核心的设计思想里，在函数式编程风格和元编程功能方面，也确实是如此。Lisp在研究界一直有很多的追随者，Julia这个项目诞生于MIT，同时又主要服务于各种科研工作者，所以它也就带上了这种科学家的味道。它还有其他特性，也能看出这种科研工作者的倾向，比如说：</p>
+<ul>
+<li>对于类型系统，Julia的开发者们进行了很好的形式化，是我在所有语言中看到的最像数学家做的类型系统。</li>
+<li>在它的语法和语义设计上，带有Metalab和Mathematics这些数学软件的痕迹，科研工作者们应该很熟悉这种感觉。</li>
+<li>在很多特性的实现上，都带有很强的前沿探索的特征，锋芒突出，不像我们平常使用的那些商业公司设计的计算机语言一样，追求四平八稳。</li>
+</ul>
+<p>以上就是我对Julia的感觉，一种<strong>结合了数据家风格的自由不羁的极客风</strong>。实际上，Lisp最早的设计者约翰·麦卡锡（John McCarthy）就是一位数学博士，所以数学上的美感是Lisp给人的感受之一。而且，Lisp语言本身也是在MIT发源的，所以Julia可以说是继承了这个传统、这种风格。</p>
+<h2 id="julia的编译过程">Julia的编译过程</h2>
+<p>刚刚说了，Julia的前端主要是用Lisp来实现的。你在启动Julia的时候，通过“–lisp”参数就可以进入flisp的REPL：</p>
+<pre><code>./julia --lisp
+</code></pre>
+<p>在这个REPL界面中调用一个julia-parse函数，就可以把一个Julia语句编译成AST。</p>
+<pre><code>&gt; (julia-parse "a = 2+3*5")
+(= a (call + 2
+	     (call * 3 5)))
+&gt; (julia-parse "function countdown(n)
+                	  if n &lt;= 0
+                		    println(\"end\")
+                	  else
+                		    print(n, \" \")        
+                		    countdown(n-1)
+                	  end
+                end")
+(function (call countdown n) (block (line 2 none)
+				            (if (call &lt;= n 0)
+					          (block (line 3 none)
+					                 (call println "end"))
+					          (block (line 5 none)
+					                 (call print n " ")
+					                 (line 6 none)
+					                 (call countdown (call - n 1))))))
+</code></pre>
+<p>编译后的AST，采用的也是Lisp那种括号嵌套括号的方式。</p>
+<p>Julia的编译器中，主要用到了几个“<code>.scm</code>”结尾的代码，来完成词法和语法分析的功能：julia-parser.scm、julia-syntax.scm和ast.scm。（<code>.scm</code>文件是Scheme的缩写，而Scheme是Lisp的一种实现，特点是设计精简、语法简单。著名的计算机教科书<a href="http://mitpress.mit.edu/sicp/" target="_blank">SICP</a>就是用<a href="http://www.gnu.org/software/mit-scheme/" target="_blank">Scheme</a>作为教学语言，而SICP和Scheme也都是源自MIT。）它的词法分析和语法分析的过程，主要是在parser.scm文件里实现的，我们刚才调用的“julia-parse”函数就是在这个文件中声明的。</p>
+<p>Julia的语法分析过程仍然是你非常熟悉的递归下降算法。因为Lisp语言处理符号的能力很强，又有很好的元编程功能（宏），所以Lisp在实现词法分析和语法分析的任务的时候，代码会比其他语言更短。但是不熟悉Lisp语言的人，可能会看得一头雾水，因为这种括号嵌套括号的语言对于人类的阅读不那么友好，不像Java、JavaScript这样的语言一样，更像自然语言。</p>
+<p>julia-parser.scm输出的成果是比较经典的AST，Julia的文档里叫做“<a href="http://mortenpi.eu/documenter-html/devdocs/ast.html#Surface-syntax-AST-1" target="_blank">表面语法AST</a>”（surface syntax AST）。所谓表面语法AST，它是跟另一种IR对应的，叫做<a href="http://mortenpi.eu/documenter-html/devdocs/ast.html#Lowered-form-1" target="_blank">Lowered Form</a>。</p>
+<p>“Lowered”这个词你应该已经很熟悉了，它的意思是<strong>更靠近计算机的物理实现机制</strong>。比如，LLVM的IR跟AST相比，就更靠近底层实现，也更加不适合人类阅读。</p>
+<p>julia-syntax.scm输出的结果就是Lowered Form，这是一种内部IR。它比AST的节点类型更少，所有的宏都被展开了，控制流也简化成了无条件和有条件跳转的节点（“goto”格式）。这种IR后面被用来做类型推断和代码生成。</p>
+<p>你查看julia-syntax.scm的代码，会发现Julia编译器的处理过程是由多个Pass构成的，包括了去除语法糖、识别和重命名本地变量、分析变量的作用域和闭包、把闭包函数做转换、转换成线性IR、记录Slot和标签（label）等。</p>
+<p>这里，我根据Jeff Bezanson在JuliaCon上讲座的内容，把Julia编译器的工作过程、每个阶段涉及的源代码和主要的函数给你概要地梳理了一下，你可以只看这张图，就能大致把握Julia的编译过程，并且可以把它跟你学过的其他几个编译器做一下对比：</p>
+<p><img alt="" src="assets/7e04e1835178490e92bfcf964dfb3e04.jpg"/></p>
+<p>图3：Julia的编译过程</p>
+<p>Julia有很好的<a href="http://mortenpi.eu/documenter-html/devdocs/reflection.html#Reflection-and-introspection-1" target="_blank">反射(Reflection)和自省(Introspection)</a>的能力，你可以调用一些函数或者宏来观察各个阶段的成果。</p>
+<p>比如，采用@code_lowered宏，来看countdown(10)产生的代码，你会看到if…else…的结构被转换成了“goto”语句，这个IR看上去已经有点像LLVM的IR格式了。</p>
+<p><img alt="" src="assets/3eff64557cd549f3b78a81b5248ab716.jpg"/></p>
+<p>进一步，你还可以用@code_typed宏，来查看它做完类型推断以后的结果，每条语句都标注了类型：</p>
+<p><img alt="" src="assets/c3401c0a43ab41538401a4f0a9e51979.jpg"/></p>
+<p>接下来，你可以用@code_llvm和@code_native宏，来查看生成的LLVM IR和汇编代码。这次，我们用一个更简单的函数foo()，让生成的代码更容易看懂：</p>
+<pre><code>julia&gt; function foo(x,y)   #一个简单的函数，把两个参数相加
+           x+y        #最后一句的结果就是返回值，这里可以省略return
+       end
+</code></pre>
+<p>通过@code_llvm宏生成的LLVM IR，如下图所示：</p>
+<p><img alt="" src="assets/46be59e2974c401eb5ec32e57017b4b8.jpg"/></p>
+<p>通过@code_native宏输出的汇编代码是这样的：</p>
+<p><img alt="" src="assets/6d499a49987a49d89be28fece39034c9.jpg"/></p>
+<p>最后生成的汇编代码，可以通过汇编器迅速生成机器码并运行。</p>
+<p>通过上面的梳理，你应该已经了解了Julia的编译过程脉络：<strong>通过Lisp的程序，把程序变成AST，然后再变成更低级一点的IR，在这个过程中编译器要进行类型推断等语义层面的处理；最后，翻译成LLVM的IR，并生成可执行的本地代码。</strong></p>
+<p>对于静态类型的语言来说，我们根据准确的类型信息，就可以生成高效的本地代码，这也是C语言性能高的原因。比如，我们用C语言来写一下foo函数：</p>
+<pre><code>long foo(long x, long y){
+    return x+y;
+}
+</code></pre>
+<p>Clang的LLVM IR跟Julia生成的基本一样：</p>
+<p><img alt="" src="assets/9e0a53871b3c4f4c943bccc6d9dddd29.jpg"/></p>
+<p>生成的汇编代码也差不多：</p>
+<p><img alt="" src="assets/9b6ab42530594985aab73c17a23c76a0.jpg"/></p>
+<p>所以，对于这样的程序，Julia的编译后的本地代码，跟C语言的比起来可以说是完全一样。那性能高也就不足为奇了。</p>
+<p>你可能由此就会下结论：因为Julia能够借助LLVM生成本地代码，这就是它性能高的原因。</p>
+<p><strong>且慢！事情没有这么简单。</strong>为什么这么说？因为在基于前面生成的机器码的这个例子中，当参数是整型的时候，运行效率自然是会比较快。但是，你别忘了Julia是动态类型的语言。我们在Julia中声明foo函数的时候，并没有指定参数的数据类型。如果参数类型变了，会怎样呢？</p>
+<h2 id="julia的最大突破-生成多个版本的目标代码">Julia的最大突破：生成多个版本的目标代码</h2>
+<p>实际上，我们可以给它传递不同的参数，比如可以传递两个浮点数给它，甚至传递两个向量或者矩阵给它，都能得到正确的结果：</p>
+<pre><code>julia&gt; foo(2.1, 3.2)
+5.300000000000001
+
+julia&gt; foo([1,2,3], [3,4,5])
+3-element Array{Int64,1}:
+ 4
+ 6
+ 8
+</code></pre>
+<p>显然，如果上面两次对foo()函数的调用，我们也是用之前生成的汇编代码，那是行不通的。因为之前的汇编代码只能用于处理64位的整数。</p>
+<p>实际上，如果我们观察调用foo(2.1, 3.2)时，Julia生成的LLVM IR和汇编代码，就会发现，它智能地适应了新的数据类型，生成了用于处理浮点数的代码，使用了不同的指令和寄存器。</p>
+<p><img alt="" src="assets/265f6258cf99443b91a571f09f3eb5c5.jpg"/></p>
+<p>你可以用同样的方法，来试一下 <code>foo([1,2,3], [3,4,5])</code> 对应的LLVM IR和汇编代码。这个就要复杂一点了，因为它要处理数组的存储。但不管怎样，Julia生成的代码确实是适应了它的参数类型的。</p>
+<p>数学中的很多算法，其实是概念层面的，它不关心涉及的数字是32位整数、64位整数，还是一个浮点数。但同样是实现一个加法操作，对于计算机内部实现来说，不同的数据类型对应的指令则是完全不同的，那么编译器就要弥合抽象的算法和计算机的具体实现之间的差别。</p>
+<p>对于C语言这样的静态语言来说，它需要针对x、y的各种不同的数据类型，分别编写不同的函数。这些函数的逻辑是一样的，但就是因为数据类型不同，我们就要写很多遍。这是不太合理的，太啰嗦了。</p>
+<p>对于Python这样的动态类型语言来说呢，倒是简洁地写一遍就可以了。但在运行时，对于每一次运算，我们都要根据数据类型来选择合适的操作。这样就大大拉低了整体的运行效率。</p>
+<p>所以，这才是Julia真正的突破：<strong>它能针对同一个算法，根据运行时获得的数据，进行类型推断，并编译生成最优化的本地代码。</strong>在每种参数类型组合的情况下，只要编译一次，就可以被缓存下来，可以使用很多次，从而使得程序运行的总体性能很高。</p>
+<p>你对比一下JavaScript编译器基于类型推断的编译优化，就会发现它们之间的明显的不同。JavaScript编译器一般只会针对类型推断生成一个版本的目标代码，而Julia则会针对每种参数类型组合，都生成一个版本。</p>
+<p>不过，既然Julia编译器存在多个版本的目标代码，那么在运行期，就要有一个程序来确定到底采用哪个版本的目标代码，这就是Julia的一个非常重要的功能：<strong>函数分派算法</strong>。</p>
+<p>函数分派，就是指让编译器在编译时或运行时来确定采用函数的哪个实现版本。针对函数分派，我再给你讲一下Julia的一个特色功能，多重分派。这个知识点有助于你加深对于函数分派的理解，也有助于你理解函数式编程的特点。</p>
+<h2 id="julia的多重分派功能">Julia的多重分派功能</h2>
+<p>我们在编程的时候，经常会涉及同一个函数名称的多个实现。比如在做面向对象编程的时候，同一个类里可以有多个相同名称的方法，但参数不同，这种现象有时被叫做<strong>重载（Overload）</strong>；同时，在这个类的子类里，也可以定义跟父类完全相同的方法，这种现象叫做<strong>覆盖（Override）</strong>。</p>
+<p>而程序在调用一个方法的时候，到底调用的是哪个实现，有时候我们在编译期就能确定下来，有时候却必须到运行期才能确定（就像多态的情形），这两种情形就分别叫做<strong>静态分派（Static Dispatch）和动态分派（Dynamic Dispatch）</strong>。</p>
+<p>方法的分派还有另一个分类：<strong>单一分派（Single Dispatch）和多重分派（Multiple Dispatch）</strong>。传统的面向对象的语言使用的都是单一分派。比如，在面向对象语言里面，实现加法的运算：</p>
+<pre><code>a.add(b)
+</code></pre>
+<p>这里我们假设a和b都有多个add方法的版本，但实际上，无论怎样分派，程序的调用都是分派到a对象的方法上。这是因为，对于add方法，实质上它的第一个参数是对象a（编译成目标代码时，a会成为第一个参数，以便访问封装在a里面的数据），也就是相当于这样一个函数：</p>
+<pre><code>add(a, b)
+</code></pre>
+<p>所以，<strong>面向对象的方法分派相当于是由第一个参数决定的。这种就是单一分派</strong>。</p>
+<p>实际上，采用面向对象的编程方式，在方法分派时经常会让人觉得很别扭。你回顾一下，我在讲<a href="https://time.geekbang.org/column/article/261063" target="_blank">Python编译器</a>的时候，讲到加法操作采用的实现是第一个操作数对象的类型里，定义的与加法有关的函数。<strong>但为什么它是用第一个对象的方法，而不是第二个对象的呢？如果第一个对象和第二个对象的类型不同怎么办呢？</strong>（这就是我在那讲中留给你的问题）</p>
+<p>还有一个很不方便的地方。如果你增加了一种新的数据类型，比如矩阵（Matrix），它要能够跟整数、浮点数等进行加减乘除运算，但你没有办法给Integer和Float这些已有的类增加方法。</p>
+<p>所以，针对这些很别扭的情况，Julia和Lisp等函数式语言，就支持<strong>多重分派</strong>的方式。</p>
+<p>你只需要定义几个相同名称的函数（在Julia里，这被叫做同一个函数的多个方法），编译器在运行时会根据参数，决定分派给哪个方法。</p>
+<p>我们来看下面这个例子，foo函数有两个方法，根据调用参数的不同，分别分派给不同的方法。</p>
+<pre><code>julia&gt; foo(x::Int64, y::Int64) = x + y  #第一个方法
+foo (generic function with 1 method)    
+
+julia&gt; foo(x, y) = x - y                #第二个方法
+foo (generic function with 2 methods)
+
+julia&gt; methods(foo)                     #显示foo函数的所有方法
+# 2 methods for generic function "foo":
+[1] foo(x::Int64, y::Int64) in Main at REPL[38]:1
+[2] foo(x, y) in Main at REPL[39]:1
+
+julia&gt; foo(2, 3)                        #分派到第一个方法
+5
+
+julia&gt; foo(2.0, 3)                      #分派到第二个方法
+-1.0
+</code></pre>
+<p>你可以发现，这种分派方法会<strong>公平对待函数的所有参数，而不是由一个特殊的参数来决定。这种分派方法就叫做多重分派。</strong></p>
+<p>在Julia中，其实“+”操作符（以及其他操作符）也是函数，它有上百个不同的方法，分别处理不同数据类型的加法操作。</p>
+<pre><code>julia&gt; methods(+)
+# 166 methods for generic function "+":
+[1] +(x::Bool, z::Complex{Bool}) in Base at complex.jl:282
+[2] +(x::Bool, y::Bool) in Base at bool.jl:96
+[3] +(x::Bool) in Base at bool.jl:93
+[4] +(x::Bool, y::T) where T&lt;:AbstractFloat in Base at bool.jl:104
+[5] +(x::Bool, z::Complex) in Base at complex.jl:289
+[6] +(a::Float16, b::Float16) in Base at float.jl:398
+[7] +(x::Float32, y::Float32) in Base at float.jl:400
+[8] +(x::Float64, y::Float64) in Base at float.jl:401
+[9] +(z::Complex{Bool}, x::Bool) in Base at complex.jl:283
+...
+[165] +(J::LinearAlgebra.UniformScaling, F::LinearAlgebra.Hessenberg) in LinearAlgebra ... at hessenberg.jl:518
+[166] +(a, b, c, xs...) in Base at operators.jl:529
+</code></pre>
+<p>最重要的是，当你引入新的数据类型，想要支持加法运算的时候，你只需要为加法函数定义一系列新的方法，那么编译器就可以正确地分派了。这种实现方式就方便多了。这也是某些函数式编程语言的一个优势，你可以体会一下。</p>
+<p>而且在Julia中，因为方法分派是动态实现的，所以分派算法的性能就很重要。你看，不同的语言特性的设计，它的运行时就要完成不同的任务。这就是真实世界中，各种编译器的魅力所在。</p>
+<h2 id="课程小结">课程小结</h2>
+<p>这一讲我给你介绍了一门并不是那么大众的语言，Julia。介绍它的原因，就是因为这门语言有自己非常独特的特点，非常值得我们学习。我希望你能记住以下几点核心的知识：</p>
+<ul>
+<li><strong>编译器的实现语言</strong>：编译器在选择采用什么实现的语言上，拥有很大的自由度。Julia很别具一格地采用了Lisp作为主要的前端语言。不过，我个人猜测，既然Julia本身也算是一种Lisp实现，未来可能就可以用Julia取代flisp，来实现前端的功能，实现更大程度的自举（Bootstraping）了。当然，这仅仅是我自己的猜测。</li>
+<li><strong>又是递归下降算法</strong>：一如既往地，递归下降算法仍然是最常被用来实现语法分析的方法，Julia也不例外。</li>
+<li><strong>多种IR</strong>：Julia在AST之外，采用了“goto”格式的IR，还用到了LLVM的IR（实际上，LLVM内部在转换成本地代码之前，还有一个中间格式的IR）。</li>
+<li><strong>多版本的目标代码</strong>：Julia创造性地利用了LLVM的即时编译功能。它可以在运行期通过类型推断确定变量的类型，进行即时编译，根据不同的参数类型生成多个版本的目标代码，让程序员写一个程序就能适应多种数据类型，既降低了程序员的工作量，同时又保证了程序的高性能。这使得Julia同时拥有了动态类型语言的灵活性和静态类型语言的高性能。</li>
+<li><strong>多重分派功能</strong>：多重分派能够根据方法参数的类型，确定其分派到哪个实现。它的优点是容易让同一个操作，扩展到支持不同的数据类型。</li>
+</ul>
+<p>你学了这讲有什么体会呢？深入探究Julia这样的语言的实现过程，真的有助于我们大开脑洞，突破思维的限制，更好地融合编译原理的各方面的知识，从而为你的实际工作带来更加创新的思路。</p>
+<p>这一讲的思维导图我也给你整理出来了，供你参考和复习回顾：</p>
+<p><img alt="" src="assets/ac8f1ecb72914fafb825713bfa97e9f3.jpg"/></p>
+<h2 id="一课一思">一课一思</h2>
+<p>一个很有意思的问题：为什么Julia会为一个函数，根据不同的参数类型组合，生成多个版本的目标代码，而JavaScript的引擎一般只会保存一个版本的目标代码？这个问题你可以从多个角度进行思考，欢迎在留言区分享你的观点。</p>
+<p>感谢你的阅读，如果你觉得有收获，欢迎把今天的内容分享给更多的朋友。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#85e9e9e9bcb1b4b4b5b2c5e2e8e4ece9abe6eae8" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359f5212e4da9c4',t:'MTc0NTU0MzM5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

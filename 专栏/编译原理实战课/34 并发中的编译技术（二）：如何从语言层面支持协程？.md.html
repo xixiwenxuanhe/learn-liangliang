@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="34 并发中的编译技术（二）：如何从语言层面支持协程？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>34 并发中的编译技术（二）：如何从语言层面支持协程？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97%20%e5%a6%82%e4%bd%95%e5%ad%a6%e4%b9%a0%e8%bf%99%e9%97%a8%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be%ef%bc%9f.md.html" id="00 学习指南 如何学习这门编译原理实战课？.md.html">00 学习指南 如何学习这门编译原理实战课？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9c%a8%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e4%b8%ad%e6%b8%b8%e5%8e%86.md.html" id="00 开篇词 在真实世界的编译器中游历.md.html">00 开篇词 在真实世界的编译器中游历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bc%96%e8%af%91%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b%e9%83%bd%e6%82%84%e6%82%84%e5%81%9a%e4%ba%86%e5%93%aa%e4%ba%9b%e4%ba%8b%e6%83%85%ef%bc%9f.md.html" id="01 编译的全过程都悄悄做了哪些事情？.md.html">01 编译的全过程都悄悄做了哪些事情？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e7%94%a8%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e6%9e%84%e9%80%a0%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba.md.html" id="02 词法分析：用两种方式构造有限自动机.md.html">02 词法分析：用两种方式构造有限自动机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e4%b8%a4%e4%b8%aa%e5%9f%ba%e6%9c%ac%e5%8a%9f%e5%92%8c%e4%b8%a4%e7%a7%8d%e7%ae%97%e6%b3%95%e6%80%9d%e8%b7%af.md.html" id="03 语法分析：两个基本功和两种算法思路.md.html">03 语法分析：两个基本功和两种算法思路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/04%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%9a%e8%ae%a9%e7%a8%8b%e5%ba%8f%e7%ac%a6%e5%90%88%e8%af%ad%e4%b9%89%e8%a7%84%e5%88%99.md.html" id="04 语义分析：让程序符合语义规则.md.html">04 语义分析：让程序符合语义规则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/05%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%ef%bc%8c%e4%bd%a0%e6%9c%89%e5%8f%91%e8%a8%80%e6%9d%83.md.html" id="05 运行时机制：程序如何运行，你有发言权.md.html">05 运行时机制：程序如何运行，你有发言权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/06%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e4%b8%80%e5%89%af%e9%9d%a2%e5%ad%94.md.html" id="06 中间代码：不是只有一副面孔.md.html">06 中间代码：不是只有一副面孔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/07%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e8%b7%9f%e7%bc%96%e8%af%91%e5%99%a8%e5%81%9a%e6%9c%8b%e5%8f%8b%ef%bc%8c%e8%ae%a9%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%a3%9e%e8%b5%b7%e6%9d%a5.md.html" id="07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html">07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/08%20%e4%bb%a3%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%99%a8%e7%9b%b8%e5%85%b3%e7%9a%84%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="08 代码生成：如何实现机器相关的优化？.md.html">08 代码生成：如何实现机器相关的优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/09%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%89%8b%e5%86%99%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="09 Java编译器（一）：手写的编译器有什么优势？.md.html">09 Java编译器（一）：手写的编译器有什么优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/10%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%bf%98%e8%a6%81%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Java编译器（二）：语法分析之后，还要做些什么？.md.html">10 Java编译器（二）：语法分析之后，还要做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/11%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%b1%9e%e6%80%a7%e5%88%86%e6%9e%90%e5%92%8c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90.md.html" id="11 Java编译器（三）：属性分析和数据流分析.md.html">11 Java编译器（三）：属性分析和数据流分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/12%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%8e%bb%e9%99%a4%e8%af%ad%e6%b3%95%e7%b3%96%e5%92%8c%e7%94%9f%e6%88%90%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="12 Java编译器（四）：去除语法糖和生成字节码.md.html">12 Java编译器（四）：去除语法糖和生成字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/13%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%8a%a8%e6%89%8b%e4%bf%ae%e6%94%b9Graal%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="13 Java JIT编译器（一）：动手修改Graal编译器.md.html">13 Java JIT编译器（一）：动手修改Graal编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/14%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSea%20of%20Nodes%e4%b8%ba%e4%bd%95%e5%a6%82%e6%ad%a4%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html">14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/15%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%8e%a2%e7%a9%b6%e5%86%85%e8%81%94%e5%92%8c%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90%e7%9a%84%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/16%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9aGraal%e7%9a%84%e5%90%8e%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html">16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/17%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%b7%a5%e5%85%b7%e7%94%9f%e6%88%90%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="17 Python编译器（一）：如何用工具生成编译器？.md.html">17 Python编译器（一）：如何用工具生成编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/18%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bb%8eAST%e5%88%b0%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="18 Python编译器（二）：从AST到字节码.md.html">18 Python编译器（二）：从AST到字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/19%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6.md.html" id="19 Python编译器（三）：运行时机制.md.html">19 Python编译器（三）：运行时机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/20%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e6%9e%90%e5%92%8c%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b.md.html" id="20 JavaScript编译器（一）：V8的解析和编译过程.md.html">20 JavaScript编译器（一）：V8的解析和编译过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/21%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e9%87%8a%e5%99%a8%e5%92%8c%e4%bc%98%e5%8c%96%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html">21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/22%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e5%8a%a8%e6%80%81%e8%af%ad%e8%a8%80%e6%80%a7%e8%83%bd%e5%be%88%e9%ab%98%ef%bc%9f.md.html" id="22 Julia编译器（一）：如何让动态语言性能很高？.md.html">22 Julia编译器（一）：如何让动态语言性能很高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/23%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8LLVM%e7%9a%84%e4%bc%98%e5%8c%96%e5%92%8c%e5%90%8e%e7%ab%af%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html">23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/24%20Go%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9a%e6%8a%8a%e5%ae%83%e5%bd%93%e4%bd%9c%e6%95%99%e7%a7%91%e4%b9%a6%e5%90%a7.md.html" id="24 Go语言编译器：把它当作教科书吧.md.html">24 Go语言编译器：把它当作教科书吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/25%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%a7%a3%e6%9e%90%e4%b8%80%e6%9d%a1SQL%e8%af%ad%e5%8f%a5%e7%9a%84%e6%89%a7%e8%a1%8c%e8%bf%87%e7%a8%8b.md.html" id="25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html">25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/26%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e5%a6%82%e4%bd%95%e5%b8%ae%e4%bd%a0%e6%8f%90%e5%8d%87%e6%95%b0%e6%8d%ae%e5%ba%93%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html">26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/27%20%e8%af%be%e5%89%8d%e5%af%bc%e8%af%bb%ef%bc%9a%e5%ad%a6%e4%b9%a0%e7%8e%b0%e4%bb%a3%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="27 课前导读：学习现代语言设计的正确姿势.md.html">27 课前导读：学习现代语言设计的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%89%8d%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e4%b9%9f%e6%9c%89%e4%ba%ba%e6%9c%ba%e5%b7%a5%e7%a8%8b%e5%ad%a6.md.html" id="28 前端总结：语言设计也有人机工程学.md.html">28 前端总结：语言设计也有人机工程学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/29%20%e4%b8%ad%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%8d%e9%81%97%e4%bd%99%e5%8a%9b%e5%9c%b0%e8%bf%9b%e8%a1%8c%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96.md.html" id="29 中端总结：不遗余力地进行代码优化.md.html">29 中端总结：不遗余力地进行代码优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%90%8e%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e5%85%85%e5%88%86%e5%8f%91%e6%8c%a5%e7%a1%ac%e4%bb%b6%e7%9a%84%e8%83%bd%e5%8a%9b.md.html" id="30 后端总结：充分发挥硬件的能力.md.html">30 后端总结：充分发挥硬件的能力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/31%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e0%e5%88%b0%e8%af%ad%e8%a8%80%e7%ba%a7%e7%9a%84%e8%99%9a%e6%8b%9f%e5%8c%96.md.html" id="31 运行时（一）：从0到语言级的虚拟化.md.html">31 运行时（一）：从0到语言级的虚拟化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/32%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e4%b8%8e%e8%af%ad%e8%a8%80%e7%9a%84%e7%89%b9%e6%80%a7%e6%9c%89%e5%85%b3%e5%90%97%ef%bc%9f.md.html" id="32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html">32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html">33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e5%8d%8f%e7%a8%8b%ef%bc%9f.md.html" id="34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html">34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/35%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9aErlang%e8%af%ad%e8%a8%80%e5%8e%89%e5%ae%b3%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html">35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/36%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%85%83%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="36 高级特性（一）：揭秘元编程的实现机制.md.html">36 高级特性（一）：揭秘元编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/37%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="37 高级特性（二）：揭秘泛型编程的实现机制.md.html">37 高级特性（二）：揭秘泛型编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="38 综合实现（一）：如何实现面向对象编程？.md.html">38 综合实现（一）：如何实现面向对象编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/39%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="39 综合实现（二）：如何实现函数式编程？.md.html">39 综合实现（二）：如何实现函数式编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/40%20%e6%88%90%e6%9e%9c%e6%a3%80%e9%aa%8c%ef%bc%9a%e6%96%b9%e8%88%9f%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%bc%98%e5%8a%bf%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 成果检验：方舟编译器的优势在哪里？.md.html">40 成果检验：方舟编译器的优势在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%901%20%e8%bf%9c%e7%a8%8b%e5%8a%9e%e5%85%ac%ef%bc%8c%e9%9c%80%e8%a6%81%e4%bd%a0%e6%88%91%e5%85%b7%e5%a4%87%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e7%b4%a0%e8%b4%a8%ef%bc%9f.md.html" id="不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html">不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%902%20%e5%ad%a6%e4%b9%a0%e6%8a%80%e6%9c%af%e7%9a%84%e8%bf%87%e7%a8%8b%ef%bc%8c%e5%85%b6%e5%ae%9e%e6%98%af%e8%ae%ad%e7%bb%83%e5%bf%83%e7%90%86%e7%b4%a0%e8%b4%a8%e7%9a%84%e8%bf%87%e7%a8%8b.md.html" id="不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html">不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%903%20%e8%bf%99%e5%87%a0%e5%b9%b4%ef%bc%8c%e6%89%93%e5%8a%a8%e6%88%91%e7%9a%84%e4%b8%a4%e6%9c%ac%e5%a5%bd%e4%b9%a6.md.html" id="不定期加餐3 这几年，打动我的两本好书.md.html">不定期加餐3 这几年，打动我的两本好书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%904%20%e4%bb%8e%e8%ba%ab%e8%be%b9%e7%9a%84%e7%89%9b%e4%ba%ba%e8%ba%ab%e4%b8%8a%ef%bc%8c%e6%88%91%e5%ad%a6%e5%88%b0%e7%9a%84%e4%b8%80%e4%ba%9b%e4%bc%98%e7%a7%80%e5%93%81%e8%b4%a8.md.html" id="不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html">不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%905%20%e5%80%9f%e5%8a%a9%e5%ae%9e%e4%be%8b%ef%bc%8c%e6%8e%a2%e7%a9%b6C++%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%86%85%e9%83%a8%e6%9c%ba%e5%88%b6.md.html" id="不定期加餐5 借助实例，探究C++编译器的内部机制.md.html">不定期加餐5 借助实例，探究C++编译器的内部机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e5%88%92%e9%87%8d%e7%82%b9%207%e7%a7%8d%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="划重点 7种编译器的核心概念与算法.md.html">划重点 7种编译器的核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e6%9c%9f%e6%9c%ab%e7%ad%94%e7%96%91%e4%b8%8e%e6%80%bb%e7%bb%93%20%e5%86%8d%e6%ac%a1%e5%ae%a1%e8%a7%86%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e7%9a%84%e4%bd%9c%e7%94%a8.md.html" id="期末答疑与总结 再次审视学习编译原理的作用.md.html">期末答疑与总结 再次审视学习编译原理的作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%20%e5%a6%82%e4%bd%95%e5%90%83%e9%80%8f7%e7%a7%8d%e7%9c%9f%e5%ae%9e%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="热点问题答疑 如何吃透7种真实的编译器？.md.html">热点问题答疑 如何吃透7种真实的编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%98%93%e6%98%8a%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b8%8d%e6%ad%a2%e6%9c%89Bug%e5%92%8c%e5%8a%a0%e7%8f%ad%ef%bc%8c%e8%bf%98%e6%9c%89%e8%af%97%e5%92%8c%e8%bf%9c%e6%96%b9.md.html" id="用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html">用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%9f%a5%e8%af%86%e5%9c%b0%e5%9b%be%20%e4%b8%80%e8%b5%b7%e6%9d%a5%e5%a4%8d%e4%b9%a0%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="知识地图 一起来复习编译技术核心概念与算法.md.html">知识地图 一起来复习编译技术核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ae%9e%e6%88%98%e6%98%af%e5%94%af%e4%b8%80%e6%a0%87%e5%87%86%ef%bc%81.md.html" id="结束语 实战是唯一标准！.md.html">结束语 实战是唯一标准！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="34 并发中的编译技术（二）：如何从语言层面支持协程？" id="title">34 并发中的编译技术（二）：如何从语言层面支持协程？</h1>
+<div><p>你好，我是宫文学。</p>
+<p>上一讲我们提到了线程模式是当前计算机语言支持并发的主要方式。</p>
+<p>不过，在有些情况下，线程模式并不能满足要求。当需要运行大量并发任务的时候，线程消耗的内存、线程上下文切换的开销都太大。这就限制了程序所能支持的并发任务的数量。</p>
+<p>在这个背景下，一个很“古老”的技术重新焕发了青春，这就是协程（Coroutine）。它能以非常低的代价、友好的编程方式支持大量的并发任务。像Go、Python、Kotlin、C#等语言都提供了对协程的支持。</p>
+<p>今天这一讲，我们就来探究一下如何在计算机语言中支持协程的奇妙功能，它与编译技术又是怎样衔接的。</p>
+<p>首先，我们来认识一下协程。</p>
+<h2 id="协程-coroutine-的特点与使用场景">协程（Coroutine）的特点与使用场景</h2>
+<p>我说协程“古老”，是因为这个概念是在1958年被马尔文 · 康威（Melvin Conway）提出来、在20世纪60年代又被高德纳（Donald Ervin Knuth）总结为两种子过程（Subroutine）的模式之一。一种是我们常见的函数调用的方式，而另一种就是协程。在当时，计算机的性能很低，完全没有现代的多核计算机。而采用协程就能够在这样低的配置上实现并发计算，可见它是多么的轻量级。</p>
+<p>有的时候，协程又可能被称作绿色线程、纤程等，所采用的技术也各有不同。但总的来说，<strong>它们都有一些共同点</strong>。</p>
+<p>首先，协程占用的资源非常少。你可以在自己的笔记本电脑上随意启动几十万个协程，而如果你启动的是几十万个线程，那结果就是不可想象的。比如，在JVM中，缺省会为每个线程分配1MB的内存，用于线程栈等。这样的话，几千个线程就要消耗掉几个GB的内存，而几十万个线程理论上需要消耗几百GB的内存，这还没算程序在堆中需要申请的内存。当然，由于底层操作系统和Java应用服务器的限制，你也无法启动这么多线程。</p>
+<p>其次，协程是用户自己的程序所控制的并发。也就是说，协程模式，一般是程序交出运行权，之后又被另外的程序唤起继续执行，整个过程完全是由用户程序自己控制的。而线程模式就完全不同了，它是由操作系统中的调度器（Scheduler）来控制的。</p>
+<p>我们看个Python的例子：</p>
+<pre><code>def running_avg():
+    total = 0.0
+    count = 0
+    avg = 0
+    while True:
+        num = yield avg
+        total += num
+        count += 1
+        avg = total/count
+
+#生成协程，不会有任何输出
+ra = running_avg()
+#运行到yield
+next(ra)     
+
+print(ra.send(2))  
+print(ra.send(3))  
+print(ra.send(4)) 
+print(ra.send(7))  
+print(ra.send(9))  
+print(ra.send(11)) 
+
+#关掉协程
+ra.close
+</code></pre>
+<p>可以看到，使用协程跟我们平常使用函数几乎没啥差别，对编程人员很友好。实际上，它可以认为是跟函数并列的一种子程序形式。和函数的区别是，函数调用时，调用者跟被调用者之间像是一种上下级的关系；而在协程中，调用者跟被调用者更像是互相协作的关系，比如一个是生产者，一个是消费者。这也是“协程”这个名字直观反映出来的含义。</p>
+<p>我们用一张图来对比下函数和协程中的调用关系。</p>
+<p><img alt="" src="assets/9502a94ef4044ccf98b09e9b7ce8f488.jpg"/></p>
+<p>图1：函数（左）与协程（右）的控制流</p>
+<p>细想一下，编程的时候，这种需要子程序之间互相协作的场景有很多，我们一起看两种比较常见的场景。</p>
+<p><strong>第一种比较典型的场景，就是生产者和消费者模式</strong>。如果你用过Unix管道或者消息队列编程的话，会非常熟悉这种模式。但那是在多个进程之间的协作。如果用协程的话，在一个进程内部就能实现这种协作，非常轻量级。</p>
+<p>就拿编译器前端来说，词法分析器（Tokenizer）和语法分析器（Parser）就可以是这样的协作关系。也就是说，为了更好的性能，没有必要一次把词法分析完毕，而是语法分析器消费一个，就让词法分析器生产一个。因此，这个过程就没有必要做成两个线程了，否则就太重量级了。这种场景，我们可以叫做生成器（Generator）场景：主程序调用生成器，给自己提供数据。</p>
+<p><strong>特别适合使用协程的第二种场景是IO密集型的应用</strong>。比如做一个网络爬虫同时执行很多下载任务，或者做一个服务器同时响应很多客户端的请求，这样的任务大部分时间是在等待网络传输。</p>
+<p>如果用同步阻塞的方式来做，一个下载任务在等待的时候就会把整个线程阻塞掉。而用异步的方式，协程在发起请求之后就把控制权交出，调度程序接收到数据之后再重新激活协程，这样就能高效地完成IO操作，同时看上去又是用同步的方式编程，不需要像异步编程那样写一大堆难以阅读的回调逻辑。</p>
+<p>这样的场景在微服务架构的应用中很常见，我们来简化一个实际应用场景，分析下如何使用协程。</p>
+<p>在下面的示例中，应用A从客户端接收大量的并发请求，而应用A需要访问应用B的服务接口，从中获得一些信息，然后返回给客户端。</p>
+<p><img alt="" src="assets/89b8be7e907f4ca78f381d2e59ba3a65.jpg"/></p>
+<p>图2：应用间通讯的场景</p>
+<p>要满足这样的场景，我们最容易想到的就是，<strong>编写同步通讯的程序</strong>，其实就是同步调用。</p>
+<p>假设应用A对于每一个客户端的请求，都会起一个线程做处理。而你呢，则在这个线程里发起一个针对应用B的请求。在等待网络返回结果的时候，当前线程会被阻塞住。</p>
+<p><img alt="" src="assets/117eb842af1846c4ab86b61d7138686b.jpg"/></p>
+<p>图3：采用同步编程实现应用间的通讯</p>
+<p>这个架构是最简单的，你如果采用Java的Servlet容器来编写程序的话，很可能会采用这个结构。但它有一些缺陷：</p>
+<ul>
+<li>对于每个客户端请求，都要起一个线程。如果请求应用B的时延比较长，那么在应用A里会积压成千上万的线程，从而浪费大量的服务器资源。而且，当线程超过一定数量，应用服务器就会拒绝后续的请求。</li>
+<li>大量的请求毫无节制地涌向应用B，使得应用B难以承受负载，从而导致响应变慢，甚至宕机。</li>
+</ul>
+<p>因为同步调用的这种缺点，近年来<strong>异步编程模型</strong>得到了更多的应用，典型的就是Node.js。在异步编程模型中，网络通讯等IO操作不必阻塞线程，而是通过回调来让主程序继续执行后续的逻辑。</p>
+<p><img alt="" src="assets/10fdb15bbd2f426b8880cefd92333da3.jpg"/></p>
+<p>图4：使用异步编程实现应用间通讯</p>
+<p>上图中，我们只用到了4个线程，对应操作系统的4个真线程，可以减少线程切换的开销。在每个线程里，维护一个任务队列。首先，getDataFromApp2()会被放到任务队列；当数据返回以后，系统的调度器会把sendBack()函数放进任务队列。</p>
+<p>这个例子比较简单，只有一层回调，你还能读懂它的逻辑。但是，采用这种异步编程模式，经常会导致多层回调，让代码很难阅读。这种现象，被叫做“回调地狱（Callback Hell）”。</p>
+<p>这时候，就显示出协程的优势了。<strong>协程可以让你用自己熟悉的命令式编程的风格，来编写异步的程序</strong>。比如，对于上面的示例程序，用协程可以这样写，看上去跟编写同步调用的代码没啥区别。</p>
+<pre><code>requestHandler(){
+  ...;
+  await getDataFromApp2();
+  ...;
+  sendBack(); 
+}
+</code></pre>
+<p>当然，我要强调一下，在协程用于同步和异步编程的时候，其调度机制是不同的。跟异步编程配合的时候，要把异步IO机制与协程调度机制关联起来。</p>
+<p>好了，现在你已经了解了协程的特点和适用场景。那么问题来了，如何让一门语言支持协程呢？要回答这个问题，我们就要先学习一下协程的运行原理。</p>
+<h2 id="协程的运行原理">协程的运行原理</h2>
+<p>当我们使用函数的时候，简单地保持一个调用栈就行了。当fun1调用fun2的时候，就往栈里增加一个新的栈帧，用于保存fun2的本地变量、参数等信息；这个函数执行完毕的时候，fun2的栈帧会被弹出（恢复栈顶指针sp），并跳转到返回地址（调用fun2的下一条指令），继续执行调用者fun1的代码。</p>
+<p><img alt="" src="assets/4574fb1cb36c4e59881b0560ed5a33a6.jpg"/></p>
+<p>图5：调用函数时的控制流和栈桢管理</p>
+<p>但如果调用的是协程coroutine1，该怎么处理协程的栈帧呢？因为协程并没有执行完，显然还不能把它简单地丢掉。</p>
+<p>这种情况下，程序可以从堆里申请一块内存，保存协程的活动记录，包括本地变量的值、程序计数器的值（当前执行位置）等等。这样，当下次再激活这个协程的时候，可以在栈帧和寄存器中恢复这些信息。</p>
+<p><img alt="" src="assets/2fb39eabf0c7443a82b317e3aac39a26.jpg"/></p>
+<p>图6：调用协程时的控制流和栈桢管理</p>
+<p>把活动记录保存到堆里，是不是有些眼熟？其实，这有点像闭包的运行机制。</p>
+<p>程序在使用闭包的时候，也需要在堆里保存闭包中的自由变量的信息，并且在下一次调用的时候，从堆里恢复。只不过，闭包不需要保存本地变量，只保存自由变量就行了；也不需要保存程序计数器的值，因为再一次调用闭包函数的时候，还是从头执行，而协程则是接着执行yield之后的语句。</p>
+<p>fun1通过resume语句，让协程继续运行。这个时候，协程会去调用一个普通函数fun2，而fun2的栈帧也会加到栈上。</p>
+<p><img alt="" src="assets/1d26db4611554920860e2eccefa4aa2e.jpg"/></p>
+<p>图7：在协程里调用普通函数时的栈桢情况</p>
+<p>如果fun2执行完毕，那么就会返回到协程。而协程也会接着执行下一个语句，这个语句是一个专门针对协程的返回语句，我们叫它co_return吧，以便区别于传统的return。在执行了co_return以后，协程就结束了，无法再resume。这样的话，保存在堆里的活动记录也就可以销毁了。</p>
+<p><img alt="" src="assets/ca6c1afeeff248689836e8d4537620dc.jpg"/></p>
+<p>图8：协程结束时对栈桢的处理</p>
+<p>通过上面的例子，你应该已经了解了协程的运行原理。那么我们学习编译原理会关心的问题是：<strong>实现协程的调度，包括协程信息的保存与恢复、指令的跳转，需要编译器的帮忙吗？还是用一个库就可以实现？</strong></p>
+<p>实际上，对于C和C++这样的语言来说，确实用一个库就可以实现。因为C和C++比较灵活，比如可以用setjmp、longjmp等函数，跨越函数的边界做指令的跳转。但如果用库实现，通常要由程序管理哪些状态信息需要被保存下来。为此，你可能要专门设计一个类型，来参与实现协程状态信息的维护。</p>
+<p>而如果用编译器帮忙，那么就可以自动确定需要保存的协程的状态信息，并确定需要申请的内存大小。一个协程和函数的区别，就仅仅在于是否使用了yield和co_return语句而已，减轻了程序员编程的负担。</p>
+<p>好了，刚才我们讨论了，在实现协程的时候，要能够正确保存协程的活动记录。在具体实现上，有Stackful和Stackless两种机制。采用不同的机制，对于协程能支持的特性也很有关系。所以接下来，我带你再进一步地分析一下Stackful和Stackless这两种机制。</p>
+<h2 id="stackful和stackless的协程">Stackful和Stackless的协程</h2>
+<p>到目前为止，看上去协程跟普通函数（子程序）的差别也不大嘛，你看：</p>
+<ul>
+<li>都是由一个主程序调用，运行一段时间以后再把控制流交回给主程序；</li>
+<li>都使用栈来管理本地变量和参数等信息，只不过协程在没有完全运行完毕时，要用堆来保存活动记录；</li>
+<li>在协程里也可以调用其他的函数。</li>
+</ul>
+<p>可是，在有的情况下，我们没有办法直接在coroutine1里确定是否要暂停线程的执行，可能需要在下一级的子程序中来确定。比如说，coroutine1函数变得太大，我们重构后，把它的功能分配到了几个子程序中。那么暂停协程的功能，也会被分配到子程序中。</p>
+<p><img alt="" src="assets/01dffad7d2704edb9b5d667b99d848a5.jpg"/></p>
+<p>图9：在辅助函数里暂停协程时的控制流和栈桢情况</p>
+<p>这个时候，在helper()中暂停协程，会让控制流回到fun1函数。而当在fun1中调用resume的时候，控制流应该回到helper()函数中yield语句的下一条，继续执行。coroutine1()和helper()加在一起，起到了跟原来只有一个coroutine1()一样的效果。</p>
+<p>这个时候，在栈里不仅要加载helper()的活动记录，还要加载它的上一级，也就是coroutine1()的活动记录，这样才能维护正确的调用顺序。当helper()执行完毕的时候，控制流会回到coroutine1()，继续执行里面的逻辑。</p>
+<p>在这个场景下，不仅要从堆里恢复多个活动记录，还要维护它们之间的正确顺序。上面的示例中，还只有两级调用。如果存在多级的调用，那就更麻烦了。</p>
+<p>那么，怎么解决这个技术问题呢？你会发现，其实协程的逐级调用过程，形成了自己的调用栈，这个调用栈需要作为一个整体来使用，不能拆成一个个单独的活动记录。</p>
+<p>既然如此，那我们就加入一个辅助的运行栈好了。这个栈通常被叫做<strong>Side Stack</strong>。每个协程，都有一个自己专享的协程栈。</p>
+<p><img alt="" src="assets/355a2fd0dc2549998dc2fe93791f9a7d.jpg"/></p>
+<p>图10：协程的Side Stack</p>
+<p>好了，现在是时候给你介绍两个术语了：这种需要一个辅助的栈来运行协程的机制，叫做<strong>Stackful Coroutine</strong>；而在主栈上运行协程的机制，叫做<strong>Stackless Coroutine</strong>。</p>
+<p>对于Stackless的协程来说，只能在顶层的函数里把控制权交回给调用者。如果这个协程调用了其他函数或者协程，必须等它们返回后，才能去执行暂停协程的操作。从这种角度看，Stackless的特征更像一个函数。</p>
+<p>而对于Stackful的协程来说，可以在协程栈的任意一级，暂停协程的运行。从这个角度看，Stackful的协程像是一个线程，不管有多少级的调用，随时可以让这个协程暂停，交出控制权。</p>
+<p>除此之外，我们再仔细去想，因为设计上的不同，Stackless和Stackful的协程其实还会产生其他的差别：</p>
+<ul>
+<li>Stackless的协程用的是主线程的栈，也就是说它基本上会被绑定在创建它的线程上了。而Stackful的协程，可以从一个线程脱离，附加到另一个线程上。</li>
+<li>Stackless的协程的生命周期，一般来说受制于它的创建者的生命周期。而Stackful的协程的生命周期，可以超过它的创建者的生命周期。</li>
+</ul>
+<p>好了，以上就是对Stackless和Stackful的协程的概念和区别了。其实，对于协程，我们可能还会听说一种分类方法，就是对称的和非对称的。</p>
+<p>到目前为止，我们讲到的协程都是非对称的。有一个主程序，而协程像是子程序。主程序和子程序控制程序执行的原语是不同的，一个用于激活协程，另一个用于暂停协程。而对称的协程，相互之间是平等的关系，它们使用相同的原语在协程之间移交控制权。</p>
+<p>那么，C++、Python、Java、JavaScript、Julia和Go这些常见语言中，哪些是支持协程的？是Stackless的 ，还是Stackful的？是对称的，还是非对称的？需要编译器做什么配合？</p>
+<p>接下来，我们就一起梳理下。</p>
+<h2 id="不同语言的协程实现和差异">不同语言的协程实现和差异</h2>
+<h3 id="c-语言的协程实现">C++语言的协程实现</h3>
+<p>今年发布的C++20标准中，增加了协程特性。标准化组织经过长期的讨论，采用了微软的Stackless模式。采纳的原因也比较简单，就是因为它实现起来简单可靠，并且已经在微软有多年的成熟运行的经验了。</p>
+<p>在这个方案里，采用了co_await、co_yield和co_return三个新的关键字让程序员使用协程，并在编译器层面给予了支持。</p>
+<p>而我们说过，C和C++的协程功能，只用库也可以实现。其中，腾讯的微信团队就开源了一套协程库，叫做libco。这个协程库是支撑微信背后海量并发调用的基础。采用这个协程库，单机竟然可以处理千万级的连接！</p>
+<p>并且，libco还做了一点创新。因为libco是Stackful的，对每个协程都要分配一块栈空间，在libco中给每个协程分配的是128KB。那么，1千万协程就需要1.2TB的内存，这样服务器的内存就会成为资源瓶颈。所以，<strong>libco发明了共享栈的机制</strong>：当一个协程不用栈的时候，把里面的活动记录保存到协程私有的内存中，把协程栈腾出来给其他协程使用。一般来说，一个活动记录的大小要远小于128KB，所以总体上节省了内存。</p>
+<p>另外，libco还跟异步通讯机制紧密整合，实现了<strong>用同步的编程风格来实现异步的功能</strong>，使得微信后台的处理能力大大提升。微信后台用协程做升级的案例，你可以看看<a href="https://www.infoq.cn/article/CplusStyleCorourtine-At-Wechat/" target="_blank">这篇文章</a>。</p>
+<p>接下来，我们说说Python语言的协程实现。</p>
+<h3 id="python语言的协程实现">Python语言的协程实现</h3>
+<p>我们前面讲协程的运行原理用的示例程序，就是用Python写的。这是Python的一种协程的实现，支持的是同步处理，叫做generator模式。3.4版本之后，Python支持一种异步IO的协程模式，采用了async/await关键字，能够以同步的语法编写异步程序。</p>
+<p>总体来说，Python是一种解释型的语言，而且内部所有成员都是对象，所以实现协程的机制是很简单的，保存协程的执行状态也很容易。只不过，你不可能把Python用于像刚才微信那样高并发的场景，因为解释型语言对资源的消耗太高了。尽管如此，在把Python当作脚本语言使用的场景中，比如编写网络爬虫，采用它提供的协程加异步编程的机制，还是能够带来很多好处的。</p>
+<p>我们再来说说Java和JavaScript语言的协程实现。</p>
+<h3 id="java的协程实现">Java的协程实现</h3>
+<p>其实，Java原生是不支持协程的，但是也有几种方法可以让Java支持协程：</p>
+<ul>
+<li>方法1：给虚拟机打补丁，从底层支持协程。</li>
+<li>方法2：做字节码操纵，从而改变Java缺省的控制流执行方式，并保存协程的活动记录。</li>
+<li>方法3：基于JNI。比如，C语言可以实现协程，然后再用JNI去调用C语言实现的功能。</li>
+<li>方法4：把线程封装成协程。这种实现技术太过于重量级，因为没有体现出协程占据资源少的优点。</li>
+</ul>
+<p>现在有一些第三方库实现了协程功能，基本上都是基于方法2，也就是做字节码操纵。目前还没有哪一个库被广泛接受。如果你不想冒险的话，可能还是要等待官方的实现了。</p>
+<h3 id="javascript中的协程">JavaScript中的协程</h3>
+<p>JavaScript从ES6（ECMAScript 6.0）引入了generator功能，ES7引入了支持异步编程的async/await。由于JavaScript本来就非常重视异步编程，所以协程的引入，会让异步编程变得更友好。</p>
+<h3 id="julia和go语言的协程实现">Julia和Go语言的协程实现</h3>
+<p>Julia语言的协程机制，跟以上几种语言都不同。它提供的是对称的协程机制。多个协程可以通过channel通讯，当从channel里取不出信息时，或者channel已满不能再发信息时，自然就停下来了。</p>
+<p>当我谈到channel的时候，熟悉Go语言的同学马上就会想到Goroutine。Goroutine是Go语言的协程机制，也是用channel实现协程间的协作的。</p>
+<p>我把对Go语言协程机制的介绍放在最后，是因为Goroutine实在是很强大。我觉得，<strong>所有对并发编程有兴趣的同学，都要看一看Goroutine的实现机制，都会得到很大的启发</strong>。</p>
+<p>我的感受是，Goroutine简直是实现轻量级并发功能的集大成者，几乎考虑到了你能想到的所有因素。介绍Goroutine的文章有很多，我就不去重复已有的内容了，你可以看看“<a href="https://blog.cloudflare.com/how-stacks-are-handled-in-go/" target="_blank">How Stacks are Handled in Go</a>”这篇文章。现在，我就顺着本讲的知识点，对Goroutine的部分特点做一点介绍。</p>
+<p>首先我们来看一下，Goroutine是Stackful还是Stackless？答案是<strong>Stackful</strong>的。就像我们前面已经总结过的，Stackful协程的特点主要是两点：协程的生命周期可以超过其创建者，以及协程可以从一个线程转移到另一个线程。后者在Goroutine里特别有用。当一个协程调用了一个系统功能，导致线程阻塞的时候，那么排在这条线程上的其他Goroutine岂不是也要被迫等待？为了避免这种尴尬，Goroutine的调度程序会把被阻塞的线程上的其他Goroutine迁移到其他线程上。</p>
+<p>我们讲libco的时候还讲过，Stackful的缺点是要预先分配比较多的内存用作协程的栈空间，比如libco要为每个协程分配128K的栈。而Go语言只需要为每个Goroutine分配2KB的栈。你可能会问了，万一空间不够了怎么办，不会导致内存访问错误吗？</p>
+<p>不会的。Go语言的函数在运行的时候，会有一小块序曲代码，用来检查栈空间够不够用。如果不够用，就马上申请新的内存。需要注意的是，像这样的机制，必须有编译器的配合才行，编译器可以为每个函数生成这样的序曲代码。如果你用库来实现协程，就无法实现这样的功能。</p>
+<p>通过这个例子，你也可以体会到把某个特性做成语言原生的，以及用库去实现的差别。</p>
+<p>我想说的Go语言协程机制的第二个特点，就是<strong>channel机制</strong>。channel提供了Goroutine之间互相通讯，从而能够协调行为的机制。Go语言的运行时保证了在同一个时刻，只有一个Goroutine能够读写channel，这就避免了我们前一讲提到的，用锁来保证多个线程访问共享数据的难题。当然，channel在底层也采用了锁的机制，毕竟现在不需要程序员去使用这么复杂且容易出错的机制了。</p>
+<p>Go语言协程机制的第三个特点，是关于<strong>协程的调度时机</strong>。今天这一讲，我们其实看到了两种调度时机：对于generator类型的协程，基本上是同步调度的，协程暂停以后，控制立即就回到主程序；第二个调度机制，是跟异步IO机制配合。</p>
+<p>而我关心的，是能否实现像线程那样的抢占式（preemptive）的调度。操作系统的线程调度器，在进行调度的时候，可以不管当前线程运行到了什么位置，直接中断它的运行，并把相关的寄存器的值保存下来，然后去运行另一个线程。这种抢占式的调度的一个最大的好处，是不会让某个程序霸占CPU资源不放，而是公平地分配给各个程序。而协程也存在着类似的问题。如果一个协程长时间运行，那么排在这条线程上的其他协程，就被剥夺了运行的机会。</p>
+<p>Goroutine在解决这个问题上也做了一些努力。比如，在下面的示例程序中，foo函数中的循环会一直运行。这时候，编译器就可以在bar()函数的序曲中，插入一些代码，检查当前协程是否运行时间太久，从而主动让出控制权。不过，如果bar()函数被内联了，处理方式就要有所变化。但总的来说，由于有编译器的参与，这种类似抢占的逻辑是可以实现的。</p>
+<pre><code>func foo(){
+  while true{
+    bar();   //可以在bar函数的序曲中做检查。
+  }
+}
+</code></pre>
+<p>在Goroutine实现了各种丰富的调度机制以后，它已经变得不完全由用户的程序来主导协程的调度了，而是能够更加智能、更加优化地实现协程的调度，由操作系统的线程调度器、Go语言的调度器和用户程序三者配合实现。这也是Go语言的一个重要优点。</p>
+<p>那么，我们从C、C++、Python、Java、JavaScript、Julia和Go语言中，就能总结出协程实现上的特点了：</p>
+<ul>
+<li>除了Julia和Go，其他语言采用的都是非对称的协程机制。Go语言是采用协程最彻底的。在采用了协程以后，已经不需要用过去的线程。</li>
+<li>像C++、Go这样编译成机器码执行的语言，对协程栈的良好管理，能够大大降低内存占用，增加支持的协程的数量。</li>
+<li>协程与异步IO结合是一个趋势。</li>
+</ul>
+<h2 id="课程小结">课程小结</h2>
+<p>今天这一讲，我们学习了协程的定义、使用场景、实现原理和不同语言的具体实现机制。我们特别从编译技术的角度，关注了协程对栈的使用机制，看看它与传统的程序有什么不同。</p>
+<p>在这个过程中，一方面，你会通过今天的课程对协程产生深入的认识；另一方面，你会更加深刻地认识到编译技术是如何跟语言特性的设计和运行时紧密配合的。</p>
+<p>协程可以用库实现，也可以借助编译技术成为一门语言的原生特性。采用编译技术，能帮助我们自动计算活动记录的大小，实现自己独特的栈管理机制，实现抢占式调度等功能。</p>
+<p>本讲的思维导图我也放在了下面，供你参考：</p>
+<p><img alt="" src="assets/64a65b80848f4658b5ade0a12a8a8ef7.jpg"/></p>
+<h2 id="一课一思">一课一思</h2>
+<p>上一讲我们讨论的是线程模式。我们知道，当并发访问量非常大的时候，线程模式消耗的资源会太多。那么你会如何解决这个问题？是否会采用协程？如果你使用的是Java语言，其原生并不支持协程，你会怎么办？欢迎发表你的观点。</p>
+<h2 id="参考资料">参考资料</h2>
+<ol>
+<li><a href="https://blog.cloudflare.com/how-stacks-are-handled-in-go/" target="_blank">How Stacks are Handled in Go</a>，这篇文章介绍了Goroutine使用栈的机制，你可以看看它是如何很节约地使用内存的。</li>
+<li><a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.1041.3083&amp;rep=rep1&amp;type=pdf" target="_blank">Coroutines in Java</a>，这篇文章探讨了在Java中实现协程的各种技术考虑。</li>
+</ol>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#b7dbdbdb8e8386868780f7d0dad6dedb99d4d8da" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359f7810a7f5d13',t:'MTc0NTU0MzQ5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

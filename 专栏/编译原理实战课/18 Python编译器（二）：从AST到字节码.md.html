@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="18 Python编译器（二）：从AST到字节码" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>18 Python编译器（二）：从AST到字节码 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97%20%e5%a6%82%e4%bd%95%e5%ad%a6%e4%b9%a0%e8%bf%99%e9%97%a8%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be%ef%bc%9f.md.html" id="00 学习指南 如何学习这门编译原理实战课？.md.html">00 学习指南 如何学习这门编译原理实战课？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%9c%a8%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e4%b8%ad%e6%b8%b8%e5%8e%86.md.html" id="00 开篇词 在真实世界的编译器中游历.md.html">00 开篇词 在真实世界的编译器中游历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/01%20%e7%bc%96%e8%af%91%e7%9a%84%e5%85%a8%e8%bf%87%e7%a8%8b%e9%83%bd%e6%82%84%e6%82%84%e5%81%9a%e4%ba%86%e5%93%aa%e4%ba%9b%e4%ba%8b%e6%83%85%ef%bc%9f.md.html" id="01 编译的全过程都悄悄做了哪些事情？.md.html">01 编译的全过程都悄悄做了哪些事情？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/02%20%e8%af%8d%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e7%94%a8%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e6%9e%84%e9%80%a0%e6%9c%89%e9%99%90%e8%87%aa%e5%8a%a8%e6%9c%ba.md.html" id="02 词法分析：用两种方式构造有限自动机.md.html">02 词法分析：用两种方式构造有限自动机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/03%20%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%ef%bc%9a%e4%b8%a4%e4%b8%aa%e5%9f%ba%e6%9c%ac%e5%8a%9f%e5%92%8c%e4%b8%a4%e7%a7%8d%e7%ae%97%e6%b3%95%e6%80%9d%e8%b7%af.md.html" id="03 语法分析：两个基本功和两种算法思路.md.html">03 语法分析：两个基本功和两种算法思路.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/04%20%e8%af%ad%e4%b9%89%e5%88%86%e6%9e%90%ef%bc%9a%e8%ae%a9%e7%a8%8b%e5%ba%8f%e7%ac%a6%e5%90%88%e8%af%ad%e4%b9%89%e8%a7%84%e5%88%99.md.html" id="04 语义分析：让程序符合语义规则.md.html">04 语义分析：让程序符合语义规则.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/05%20%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%ef%bc%8c%e4%bd%a0%e6%9c%89%e5%8f%91%e8%a8%80%e6%9d%83.md.html" id="05 运行时机制：程序如何运行，你有发言权.md.html">05 运行时机制：程序如何运行，你有发言权.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/06%20%e4%b8%ad%e9%97%b4%e4%bb%a3%e7%a0%81%ef%bc%9a%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e4%b8%80%e5%89%af%e9%9d%a2%e5%ad%94.md.html" id="06 中间代码：不是只有一副面孔.md.html">06 中间代码：不是只有一副面孔.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/07%20%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96%ef%bc%9a%e8%b7%9f%e7%bc%96%e8%af%91%e5%99%a8%e5%81%9a%e6%9c%8b%e5%8f%8b%ef%bc%8c%e8%ae%a9%e4%bd%a0%e7%9a%84%e4%bb%a3%e7%a0%81%e9%a3%9e%e8%b5%b7%e6%9d%a5.md.html" id="07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html">07 代码优化：跟编译器做朋友，让你的代码飞起来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/08%20%e4%bb%a3%e7%a0%81%e7%94%9f%e6%88%90%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%99%a8%e7%9b%b8%e5%85%b3%e7%9a%84%e4%bc%98%e5%8c%96%ef%bc%9f.md.html" id="08 代码生成：如何实现机器相关的优化？.md.html">08 代码生成：如何实现机器相关的优化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/09%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%89%8b%e5%86%99%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e5%8a%bf%ef%bc%9f.md.html" id="09 Java编译器（一）：手写的编译器有什么优势？.md.html">09 Java编译器（一）：手写的编译器有什么优势？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/10%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e8%af%ad%e6%b3%95%e5%88%86%e6%9e%90%e4%b9%8b%e5%90%8e%ef%bc%8c%e8%bf%98%e8%a6%81%e5%81%9a%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="10 Java编译器（二）：语法分析之后，还要做些什么？.md.html">10 Java编译器（二）：语法分析之后，还要做些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/11%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e5%b1%9e%e6%80%a7%e5%88%86%e6%9e%90%e5%92%8c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%88%86%e6%9e%90.md.html" id="11 Java编译器（三）：属性分析和数据流分析.md.html">11 Java编译器（三）：属性分析和数据流分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/12%20Java%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9a%e5%8e%bb%e9%99%a4%e8%af%ad%e6%b3%95%e7%b3%96%e5%92%8c%e7%94%9f%e6%88%90%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="12 Java编译器（四）：去除语法糖和生成字节码.md.html">12 Java编译器（四）：去除语法糖和生成字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/13%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%8a%a8%e6%89%8b%e4%bf%ae%e6%94%b9Graal%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="13 Java JIT编译器（一）：动手修改Graal编译器.md.html">13 Java JIT编译器（一）：动手修改Graal编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/14%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSea%20of%20Nodes%e4%b8%ba%e4%bd%95%e5%a6%82%e6%ad%a4%e5%bc%ba%e5%a4%a7%ef%bc%9f.md.html" id="14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html">14 Java JIT编译器（二）：Sea of Nodes为何如此强大？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/15%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%8e%a2%e7%a9%b6%e5%86%85%e8%81%94%e5%92%8c%e9%80%83%e9%80%b8%e5%88%86%e6%9e%90%e7%9a%84%e7%ae%97%e6%b3%95%e5%8e%9f%e7%90%86.md.html" id="15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html">15 Java JIT编译器（三）：探究内联和逃逸分析的算法原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/16%20Java%20JIT%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9aGraal%e7%9a%84%e5%90%8e%e7%ab%af%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84%ef%bc%9f.md.html" id="16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html">16 Java JIT编译器（四）：Graal的后端是如何工作的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/17%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e5%b7%a5%e5%85%b7%e7%94%9f%e6%88%90%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="17 Python编译器（一）：如何用工具生成编译器？.md.html">17 Python编译器（一）：如何用工具生成编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/18%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e4%bb%8eAST%e5%88%b0%e5%ad%97%e8%8a%82%e7%a0%81.md.html" id="18 Python编译器（二）：从AST到字节码.md.html">18 Python编译器（二）：从AST到字节码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/19%20Python%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e8%bf%90%e8%a1%8c%e6%97%b6%e6%9c%ba%e5%88%b6.md.html" id="19 Python编译器（三）：运行时机制.md.html">19 Python编译器（三）：运行时机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/20%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e6%9e%90%e5%92%8c%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b.md.html" id="20 JavaScript编译器（一）：V8的解析和编译过程.md.html">20 JavaScript编译器（一）：V8的解析和编译过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/21%20JavaScript%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aV8%e7%9a%84%e8%a7%a3%e9%87%8a%e5%99%a8%e5%92%8c%e4%bc%98%e5%8c%96%e7%bc%96%e8%af%91%e5%99%a8.md.html" id="21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html">21 JavaScript编译器（二）：V8的解释器和优化编译器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/22%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e5%8a%a8%e6%80%81%e8%af%ad%e8%a8%80%e6%80%a7%e8%83%bd%e5%be%88%e9%ab%98%ef%bc%9f.md.html" id="22 Julia编译器（一）：如何让动态语言性能很高？.md.html">22 Julia编译器（一）：如何让动态语言性能很高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/23%20Julia%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8LLVM%e7%9a%84%e4%bc%98%e5%8c%96%e5%92%8c%e5%90%8e%e7%ab%af%e5%8a%9f%e8%83%bd%ef%bc%9f.md.html" id="23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html">23 Julia编译器（二）：如何利用LLVM的优化和后端功能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/24%20Go%e8%af%ad%e8%a8%80%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9a%e6%8a%8a%e5%ae%83%e5%bd%93%e4%bd%9c%e6%95%99%e7%a7%91%e4%b9%a6%e5%90%a7.md.html" id="24 Go语言编译器：把它当作教科书吧.md.html">24 Go语言编译器：把它当作教科书吧.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/25%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e8%a7%a3%e6%9e%90%e4%b8%80%e6%9d%a1SQL%e8%af%ad%e5%8f%a5%e7%9a%84%e6%89%a7%e8%a1%8c%e8%bf%87%e7%a8%8b.md.html" id="25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html">25 MySQL编译器（一）：解析一条SQL语句的执行过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/26%20MySQL%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e5%a6%82%e4%bd%95%e5%b8%ae%e4%bd%a0%e6%8f%90%e5%8d%87%e6%95%b0%e6%8d%ae%e5%ba%93%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html">26 MySQL编译器（二）：编译技术如何帮你提升数据库性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/27%20%e8%af%be%e5%89%8d%e5%af%bc%e8%af%bb%ef%bc%9a%e5%ad%a6%e4%b9%a0%e7%8e%b0%e4%bb%a3%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e7%9a%84%e6%ad%a3%e7%a1%ae%e5%a7%bf%e5%8a%bf.md.html" id="27 课前导读：学习现代语言设计的正确姿势.md.html">27 课前导读：学习现代语言设计的正确姿势.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/28%20%e5%89%8d%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e8%af%ad%e8%a8%80%e8%ae%be%e8%ae%a1%e4%b9%9f%e6%9c%89%e4%ba%ba%e6%9c%ba%e5%b7%a5%e7%a8%8b%e5%ad%a6.md.html" id="28 前端总结：语言设计也有人机工程学.md.html">28 前端总结：语言设计也有人机工程学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/29%20%e4%b8%ad%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%8d%e9%81%97%e4%bd%99%e5%8a%9b%e5%9c%b0%e8%bf%9b%e8%a1%8c%e4%bb%a3%e7%a0%81%e4%bc%98%e5%8c%96.md.html" id="29 中端总结：不遗余力地进行代码优化.md.html">29 中端总结：不遗余力地进行代码优化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/30%20%e5%90%8e%e7%ab%af%e6%80%bb%e7%bb%93%ef%bc%9a%e5%85%85%e5%88%86%e5%8f%91%e6%8c%a5%e7%a1%ac%e4%bb%b6%e7%9a%84%e8%83%bd%e5%8a%9b.md.html" id="30 后端总结：充分发挥硬件的能力.md.html">30 后端总结：充分发挥硬件的能力.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/31%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e4%bb%8e0%e5%88%b0%e8%af%ad%e8%a8%80%e7%ba%a7%e7%9a%84%e8%99%9a%e6%8b%9f%e5%8c%96.md.html" id="31 运行时（一）：从0到语言级的虚拟化.md.html">31 运行时（一）：从0到语言级的虚拟化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/32%20%e8%bf%90%e8%a1%8c%e6%97%b6%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e4%b8%8e%e8%af%ad%e8%a8%80%e7%9a%84%e7%89%b9%e6%80%a7%e6%9c%89%e5%85%b3%e5%90%97%ef%bc%9f.md.html" id="32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html">32 运行时（二）：垃圾收集与语言的特性有关吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/33%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e7%ba%bf%e7%a8%8b%ef%bc%9f.md.html" id="33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html">33 并发中的编译技术（一）：如何从语言层面支持线程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/34%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bb%8e%e8%af%ad%e8%a8%80%e5%b1%82%e9%9d%a2%e6%94%af%e6%8c%81%e5%8d%8f%e7%a8%8b%ef%bc%9f.md.html" id="34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html">34 并发中的编译技术（二）：如何从语言层面支持协程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/35%20%e5%b9%b6%e5%8f%91%e4%b8%ad%e7%9a%84%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9aErlang%e8%af%ad%e8%a8%80%e5%8e%89%e5%ae%b3%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html">35 并发中的编译技术（三）：Erlang语言厉害在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/36%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e5%85%83%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="36 高级特性（一）：揭秘元编程的实现机制.md.html">36 高级特性（一）：揭秘元编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/37%20%e9%ab%98%e7%ba%a7%e7%89%b9%e6%80%a7%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e6%8f%ad%e7%a7%98%e6%b3%9b%e5%9e%8b%e7%bc%96%e7%a8%8b%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6.md.html" id="37 高级特性（二）：揭秘泛型编程的实现机制.md.html">37 高级特性（二）：揭秘泛型编程的实现机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/38%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="38 综合实现（一）：如何实现面向对象编程？.md.html">38 综合实现（一）：如何实现面向对象编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/39%20%e7%bb%bc%e5%90%88%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%ef%bc%9f.md.html" id="39 综合实现（二）：如何实现函数式编程？.md.html">39 综合实现（二）：如何实现函数式编程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/40%20%e6%88%90%e6%9e%9c%e6%a3%80%e9%aa%8c%ef%bc%9a%e6%96%b9%e8%88%9f%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e4%bc%98%e5%8a%bf%e5%9c%a8%e5%93%aa%e9%87%8c%ef%bc%9f.md.html" id="40 成果检验：方舟编译器的优势在哪里？.md.html">40 成果检验：方舟编译器的优势在哪里？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%901%20%e8%bf%9c%e7%a8%8b%e5%8a%9e%e5%85%ac%ef%bc%8c%e9%9c%80%e8%a6%81%e4%bd%a0%e6%88%91%e5%85%b7%e5%a4%87%e4%bb%80%e4%b9%88%e6%a0%b7%e7%9a%84%e7%b4%a0%e8%b4%a8%ef%bc%9f.md.html" id="不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html">不定期加餐1 远程办公，需要你我具备什么样的素质？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%902%20%e5%ad%a6%e4%b9%a0%e6%8a%80%e6%9c%af%e7%9a%84%e8%bf%87%e7%a8%8b%ef%bc%8c%e5%85%b6%e5%ae%9e%e6%98%af%e8%ae%ad%e7%bb%83%e5%bf%83%e7%90%86%e7%b4%a0%e8%b4%a8%e7%9a%84%e8%bf%87%e7%a8%8b.md.html" id="不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html">不定期加餐2 学习技术的过程，其实是训练心理素质的过程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%903%20%e8%bf%99%e5%87%a0%e5%b9%b4%ef%bc%8c%e6%89%93%e5%8a%a8%e6%88%91%e7%9a%84%e4%b8%a4%e6%9c%ac%e5%a5%bd%e4%b9%a6.md.html" id="不定期加餐3 这几年，打动我的两本好书.md.html">不定期加餐3 这几年，打动我的两本好书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%904%20%e4%bb%8e%e8%ba%ab%e8%be%b9%e7%9a%84%e7%89%9b%e4%ba%ba%e8%ba%ab%e4%b8%8a%ef%bc%8c%e6%88%91%e5%ad%a6%e5%88%b0%e7%9a%84%e4%b8%80%e4%ba%9b%e4%bc%98%e7%a7%80%e5%93%81%e8%b4%a8.md.html" id="不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html">不定期加餐4 从身边的牛人身上，我学到的一些优秀品质.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e4%b8%8d%e5%ae%9a%e6%9c%9f%e5%8a%a0%e9%a4%905%20%e5%80%9f%e5%8a%a9%e5%ae%9e%e4%be%8b%ef%bc%8c%e6%8e%a2%e7%a9%b6C++%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e5%86%85%e9%83%a8%e6%9c%ba%e5%88%b6.md.html" id="不定期加餐5 借助实例，探究C++编译器的内部机制.md.html">不定期加餐5 借助实例，探究C++编译器的内部机制.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e5%88%92%e9%87%8d%e7%82%b9%207%e7%a7%8d%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="划重点 7种编译器的核心概念与算法.md.html">划重点 7种编译器的核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e6%9c%9f%e6%9c%ab%e7%ad%94%e7%96%91%e4%b8%8e%e6%80%bb%e7%bb%93%20%e5%86%8d%e6%ac%a1%e5%ae%a1%e8%a7%86%e5%ad%a6%e4%b9%a0%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e7%9a%84%e4%bd%9c%e7%94%a8.md.html" id="期末答疑与总结 再次审视学习编译原理的作用.md.html">期末答疑与总结 再次审视学习编译原理的作用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%83%ad%e7%82%b9%e9%97%ae%e9%a2%98%e7%ad%94%e7%96%91%20%e5%a6%82%e4%bd%95%e5%90%83%e9%80%8f7%e7%a7%8d%e7%9c%9f%e5%ae%9e%e7%9a%84%e7%bc%96%e8%af%91%e5%99%a8%ef%bc%9f.md.html" id="热点问题答疑 如何吃透7种真实的编译器？.md.html">热点问题答疑 如何吃透7种真实的编译器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%98%93%e6%98%8a%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e4%b8%8d%e6%ad%a2%e6%9c%89Bug%e5%92%8c%e5%8a%a0%e7%8f%ad%ef%bc%8c%e8%bf%98%e6%9c%89%e8%af%97%e5%92%8c%e8%bf%9c%e6%96%b9.md.html" id="用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html">用户故事 易昊：程序员不止有Bug和加班，还有诗和远方.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%9f%a5%e8%af%86%e5%9c%b0%e5%9b%be%20%e4%b8%80%e8%b5%b7%e6%9d%a5%e5%a4%8d%e4%b9%a0%e7%bc%96%e8%af%91%e6%8a%80%e6%9c%af%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="知识地图 一起来复习编译技术核心概念与算法.md.html">知识地图 一起来复习编译技术核心概念与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ae%9e%e6%88%98%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ae%9e%e6%88%98%e6%98%af%e5%94%af%e4%b8%80%e6%a0%87%e5%87%86%ef%bc%81.md.html" id="结束语 实战是唯一标准！.md.html">结束语 实战是唯一标准！.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="18 Python编译器（二）：从AST到字节码" id="title">18 Python编译器（二）：从AST到字节码</h1>
+<div><p>你好，我是宫文学。</p>
+<p>今天这一讲，我们继续来研究Python的编译器，一起来看看它是如何做语义分析的，以及是如何生成字节码的。学完这一讲以后，你就能回答出下面几个问题了：</p>
+<ul>
+<li><strong>像Python这样的动态语言，在语义分析阶段都要做什么事情呢，跟Java这样的静态类型语言有什么不同？</strong></li>
+<li><strong>Python的字节码有什么特点？生成字节码的过程跟Java有什么不同？</strong></li>
+</ul>
+<p>好了，让我们开始吧。首先，我们来了解一下从AST到生成字节码的整个过程。</p>
+<h2 id="编译过程">编译过程</h2>
+<p>Python编译器把词法分析和语法分析叫做“<strong>解析（Parse）</strong>”，并且放在Parser目录下。而从AST到生成字节码的过程，才叫做“<strong>编译（Compile）</strong>”。当然，这里编译的含义是比较狭义的。你要注意，不仅是Python编译器，其他编译器也是这样来使用这两个词汇，包括我们已经研究过的Java编译器，你要熟悉这两个词汇的用法，以便阅读英文文献。</p>
+<p>Python的编译工作的主干代码是在Python/compile.c中，它主要完成5项工作。</p>
+<p><strong>第一步，检查</strong><a href="https://docs.python.org/3/reference/simple_stmts.html#future-statements" target="_blank"><strong>future语句</strong></a>。future语句是Python的一个特性，让你可以提前使用未来版本的特性，提前适应语法和语义上的改变。这显然会影响到编译器如何工作。比如，对于“8/7”，用不同版本的语义去处理，得到的结果是不一样的。有的会得到整数“1”，有的会得到浮点数“1.14285…”，编译器内部实际上是调用了不同的除法函数。</p>
+<p><strong>第二步，建立符号表。</strong></p>
+<p><strong>第三步，为基本块产生指令。</strong></p>
+<p><strong>第四步，汇编过程：把所有基本块的代码组装在一起。</strong></p>
+<p><strong>第五步，对字节码做窥孔优化。</strong></p>
+<p>其中的第一步，它是Python语言的一个特性，但不是我们编译技术关注的重点，所以这里略过。我们从建立符号表开始。</p>
+<h2 id="语义分析-建立符号表和引用消解">语义分析：建立符号表和引用消解</h2>
+<p>通常来说，在语义分析阶段首先是建立符号表，然后在此基础上做引用消解和类型检查。</p>
+<p>而Python是动态类型的语言，类型检查应该是不需要了，但引用消解还是要做的。并且你会发现，Python的引用消解有其独特之处。</p>
+<p>首先，我们来看看Python的符号表是一个什么样的数据结构。在<strong>Include/symtable.h</strong>中定义了两个结构，分别是符号表和符号表的条目：</p>
+<p><img alt="" src="assets/2c6549261d7a4627882d0a2c8041d15c.jpg"/></p>
+<p>图1：符号表和符号表条目</p>
+<p>在编译的过程中，针对每个模块（也就是一个Python文件）会生成一个<strong>符号表</strong>（symtable）。</p>
+<p>Python程序被划分成“块（block）”，块分为三种：模块、类和函数。每种块其实就是一个作用域，而在Python里面还叫做命名空间。<strong>每个块对应一个符号表条目（PySTEntryObject），每个符号表条目里存有该块里的所有符号（ste_symbols）。</strong>每个块还可以有多个子块（ste_children），构成树状结构。</p>
+<p>在符号表里，有一个st_blocks字段，这是个字典，它能通过模块、类和函数的AST节点，查找到Python程序的符号表条目，通过这种方式，就把AST和符号表关联在了一起。</p>
+<p>我们来看看，对于下面的示例程序，它对应的符号表是什么样子的。</p>
+<pre><code>a = 2 #模块级变量
+class myclass:
+    def __init__(self, x):
+        self.x = x    
+    def foo(self, b):
+        c = a + self.x + b  #引用了外部变量a
+        return c
+</code></pre>
+<p>这个示例程序有模块、类和函数三个级别的块。它们分别对应一条符号表条目。</p>
+<p><img alt="" src="assets/b115fda16305403d9fb729dff44dad07.jpg"/></p>
+<p>图2：示例程序对应的符号表</p>
+<p>你可以看到，每个块里都有ste_symbols字段，它是一个字典，里面保存了本命名空间涉及的符号，以及每个符号的各种标志位（flags）。关于标志位，我下面会给你解释。</p>
+<p>然后，我们再看看针对这个示例程序，符号表里的主要字段的取值：</p>
+<p><img alt="" src="assets/d0239cc8559d4ae1ac1d142f3cec9d21.jpg"/></p>
+<p>好了，通过这样一个例子，你大概就知道了Python的符号表是怎样设计的了。下面我们来看看符号表的建立过程。</p>
+<p>建立符号表的主程序是Python/symtable.c中的<strong>PySymtable_BuildObject()函数</strong>。</p>
+<p>Python建立符号表的过程，需要做两遍处理，如下图所示。</p>
+<p><img alt="" src="assets/111fb8f85f6a47258c5dd40e1220ab32.jpg"/></p>
+<p>图3：Python建立符号表的过程</p>
+<p><strong>第一遍</strong>，主要做了两件事情。第一件事情是建立一个个的块（也就是符号表条目），并形成树状结构，就像示例程序那样；第二件事情，就是给块中的符号打上一定的标记（flag）。</p>
+<p>我们用GDB跟踪一下第一遍处理后生成的结果。你可以参考下图，看一下我在Python的REPL中的输入信息：</p>
+<p><img alt="" src="assets/edf88be7fffc4a619679b706d29d0b1f.jpg"/></p>
+<p>我在symtable_add_def_helper()函数中设置了断点，便于调试。当编译器处理到foo函数的时候，我在GDB中打印输出了一些信息：</p>
+<p><img alt="" src="assets/a04c51813c0f491fab0a4cd504e07bf8.jpg"/></p>
+<p>在这些输出信息中，你能看到前面我给你整理的表格中的信息，比如，符号表中各个字段的取值。</p>
+<p>我重点想让你看的，是foo块中各个符号的标志信息：self和b是20，c是2，a是16。这是什么意思呢？</p>
+<pre><code>ste_symbols = {'self': 20, 'b': 20, 'c': 2, 'a': 16}
+</code></pre>
+<p>这就需要看一下symtable.h中，对这些标志位的定义：</p>
+<p><img alt="" src="assets/bc0d16bd6c1947d9825dbac33d9aa272.jpg"/></p>
+<p>我给你整理成了一张更容易理解的图，你参考一下：</p>
+<p><img alt="" src="assets/4bcc1b74641b4c7e85544deffd6d5aab.jpg"/></p>
+<p>图4：符号标志信息中每个位的含义</p>
+<p>根据上述信息，你会发现self和b，其实是被标记了3号位和5号位，意思是这两个变量是函数参数，并且在foo中被使用。而a只标记了5号位，意思是a这个变量在foo中被使用，但这个变量又不是参数，所以肯定是来自外部作用域的。我们再看看c，c只在2号位被标记，表示这个变量在foo里被赋值了。</p>
+<p>到目前为止，第一遍处理就完成了。通过第一遍处理，我们会知道哪些变量是本地声明的变量、哪些变量在本块中被使用、哪几个变量是函数参数等几方面的信息。</p>
+<p>但是，现在还有一些信息是不清楚的。比如，在foo中使用了a，那么外部作用域中是否有这个变量呢？这需要结合上下文做一下分析。</p>
+<p>还有，变量c是在foo中赋值的。那它是本地变量，还是外部变量呢？</p>
+<p>在这里，你能体会出<strong>Python语言使用变量的特点：由于变量在赋值前，可以不用显式声明。</strong>所以你不知道这是新声明了一个变量，还是引用了外部变量。</p>
+<p>正由于Python的这个特点，所以它在变量引用上有一些特殊的规定。</p>
+<p>比如，想要在函数中给全局变量赋值，就必须加<strong>global关键字</strong>，否则编译器就会认为这个变量只是一个本地变量。编译器会给这个符号的1号位做标记。</p>
+<p>而如果给其他外部作用域中的变量赋值，那就必须加<strong>nonlocal关键字</strong>，并在4号位上做标记。这时候，该变量就是一个自由变量。在闭包功能中，编译器还要对自由变量的存储做特殊的管理。</p>
+<p>接下来，编译器会<strong>做第二遍的分析</strong>（见symtable_analyze()函数）。在这遍分析里，编译器会根据我们刚才说的Python关于变量引用的语义规则，分析出哪些是全局变量、哪些是自由变量，等等。这些信息也会被放到符号的标志位的第12~15位。</p>
+<pre><code>ste_symbols = {'self': 2068, 'b': 2068, 'c': 2050, 'a': 6160}
+</code></pre>
+<p><img alt="" src="assets/dd948120037040159e810153056dd14c.jpg"/></p>
+<p>图5：symtable.h中对作用域的标志位</p>
+<p>以变量a为例，它的标志值是6160，也就是二进制的1100000010000。其标记位设置如下，其作用域的标志位是3，也就是说，a是个隐式的全局变量。而self、b和c的作用域标志位都是1，它们的意思是本地变量。</p>
+<p><img alt="" src="assets/d57804dc95f14476bf9eefe077518084.jpg"/></p>
+<p>图6：作用域的标志位</p>
+<p>在第二遍的分析过程中，Python也做了一些语义检查。你可以搜索一下Python/symtable.c的代码，里面有很多地方会产生错误信息，比如“nonlocal declaration not allowed at module level（在模块级不允许非本地声明）”。</p>
+<p>另外，Python语言提供了访问符号表的API，方便你直接在REPL中，来查看编译过程中生成的符号表。你可以参考我的屏幕截图：</p>
+<p><img alt="" src="assets/0687b295bd3f4fd288eb89508c22a6ef.jpg"/></p>
+<p>好了，现在符号表已经生成了。基于AST和符号表，Python编译器就可以生成字节码。</p>
+<h2 id="生成cfg和指令">生成CFG和指令</h2>
+<p>我们可以用Python调用编译器的API，来观察字节码生成的情况：</p>
+<pre><code>&gt;&gt;&gt; co = compile("a+2", "test.py", "eval")  //编译表达式"a+2"
+&gt;&gt;&gt; dis.dis(co.co_code)                     //反编译字节码
+          0 LOAD_NAME                0 (0)  //装载变量a
+          2 LOAD_CONST               0 (0)  //装载常数2
+          4 BINARY_ADD                      //执行加法
+          6 RETURN_VALUE                    //返回值
+</code></pre>
+<p>其中的LOAD_NAME、LOAD_CONST、BINARY_ADD和RETURN_VALUE都是字节码的指令。</p>
+<p>对比一下，Java的字节码的每个指令只有一个字节长，这意味着指令的数量不会超过2的8次方（256）个。</p>
+<p>Python的指令一开始也是一个字节长的，后来变成了一个字（word）的长度，但我们仍然习惯上称为字节码。Python的在线文档里有对所有<a href="https://docs.python.org/zh-cn/3/library/dis.html#python-bytecode-instructions" target="_blank">字节码的说明</a>，这里我就不展开了，感兴趣的话你可以自己去看看。</p>
+<p>并且，Python和Java的虚拟机一样，都是基于栈的虚拟机。所以，它们的指令也很相似。比如，加法操作的指令是不需要带操作数的，因为只需要取出栈顶的两个元素相加，把结果再放回栈顶就行了。</p>
+<p>进一步，你可以对比一下这两种语言的字节码，来看看它们的异同点，并且试着分析一下原因。</p>
+<p><img alt="" src="assets/6d481d6682064d318a3b51f0d25b9a87.jpg"/></p>
+<p>这样对比起来，你可以发现，它们主要的区别就在于，<strong>Java的字节码对不同的数据类型会提供不同的指令，而Python则不加区分。</strong>因为Python对所有的数值，都会提供统一的计算方式。</p>
+<p>所以你可以看出，一门语言的IR，是跟这门语言的设计密切相关的。</p>
+<p>生成CFG和字节码的代码在<strong>Python/compile.c</strong>中。调用顺序如下：</p>
+<p><img alt="" src="assets/30798c9192a74c19bec0398ea65351af.jpg"/></p>
+<p><strong>总的逻辑是：以visit模式遍历整个AST，并建立基本块和指令。</strong>对于每种AST节点，都由相应的函数来处理。</p>
+<p>以compiler_visit_expr1()为例，对于二元操作，编译器首先会递归地遍历左侧子树和右侧子树，然后根据结果添加字节码的指令。</p>
+<pre><code>compiler_visit_expr1(struct compiler *c, expr_ty e)
+{
+    switch (e-&gt;kind) {
+...
+.    
+    case BinOp_kind:
+        VISIT(c, expr, e-&gt;v.BinOp.left);    //遍历左侧子树
+        VISIT(c, expr, e-&gt;v.BinOp.right);   //遍历右侧子树
+        ADDOP(c, binop(c, e-&gt;v.BinOp.op));  //添加二元操作的指令
+        break;
+...
+}
+</code></pre>
+<p><strong>那么基本块是如何生成的呢？</strong></p>
+<p>编译器在进入一个作用域的时候（比如函数），至少要生成一个基本块。而像循环语句、if语句，还会产生额外的基本块。</p>
+<p>所以，编译的结果，会在compiler结构中保存一系列的基本块，这些基本块相互连接，构成CFG；基本块中又包含一个指令数组，每个指令又包含操作码、参数等信息。</p>
+<p><img alt="" src="assets/dbc237008fda441290fff17d49b80fdd.jpg"/></p>
+<p>图7：基本块和指令</p>
+<p>为了直观理解，我设计了一个简单的示例程序。foo函数里面有一个if语句，这样会产生多个基本块。</p>
+<pre><code>def foo(a):
+    if a &gt; 10 :
+        b = a
+    else:
+        b = 10
+    return b
+</code></pre>
+<p>通过GDB跟踪编译过程，我们发现，它生成的CFG如下图所示：</p>
+<p><img alt="" src="assets/8de316045ede4272a6b72029ed7be95c.jpg"/></p>
+<p>图8：示例程序对应的CFG</p>
+<p>在CFG里，你要注意两组箭头。</p>
+<p><strong>实线箭头</strong>是基本块之间的跳转关系，用b_next字段来标记。<strong>虚线箭头</strong>能够基于b_list字段把所有的基本块串起来，形成一个链表，每一个新生成的基本块指向前一个基本块。只要有一个指针指向最后一个基本块，就能访问所有的基本块。</p>
+<p>你还可以通过GDB来查看每个基本块中的指令分别是什么，这样你就会理解每个基本块到底干了啥。不过我这里先给你留个小伏笔，在下一个小节讲汇编的时候一起给你介绍。</p>
+<p>到目前为止，我们已经生成了CFG和针对每个基本块的指令数组。但我们还没有生成最后的字节码。这个任务，是由汇编（Assembly）阶段负责的。</p>
+<h2 id="汇编-assembly">汇编（Assembly）</h2>
+<p>汇编过程是在Python/compiler.c中的assemble()函数中完成的。听名字，你会感觉这个阶段做的事情似乎应该比较像汇编语言的汇编器的功能。也确实如此。汇编语言的汇编器，能够生成机器码；而Python的汇编阶段，是生成字节码，它们都是生成目标代码。</p>
+<p>具体来说，汇编阶段主要会完成以下任务：</p>
+<ul>
+<li>把每个基本块的指令对象转化成字节码。</li>
+<li>把所有基本块的字节码拼成一个整体。</li>
+<li>对于从一个基本块跳转到另一个基本块的jump指令，它们有些采用的是相对定位方式，比如往前跳几个字的距离。这个时候，编译器要计算出正确的偏移值。</li>
+<li>生成PyCodeObject对象，这个对象里保存着最后生成的字节码和其他辅助信息，用于Python的解释器执行。</li>
+</ul>
+<p>我们还是通过示例程序，来直观地看一下汇编阶段的工作成果。你可以参照下图，使用instaviz工具看一下foo函数的编译结果。</p>
+<p><img alt="" src="assets/0342e07e7958463c8f77831909ceef9b.jpg"/></p>
+<p>在PyCodeObject对象中，co_code字段是生成的字节码（用16进制显示）。你还能看到常量表和变量表，这些都是在解释器中运行所需要的信息。</p>
+<p><img alt="" src="assets/80f2bf7f207e4a03bed7197c2db610b3.jpg"/></p>
+<p>如果把co_code字段的那一串字节码反编译一下，你会得到下面的信息：</p>
+<p><img alt="" src="assets/718117f177b54e76a5fcdfdbec5b6edf.jpg"/></p>
+<p>你会看到，一共11条指令，其中BB1是7条，BB2和BB3各2条。BB1里面是If条件和if块中的内容，BB2对应的是else块的内容，BB3则对应return语句。</p>
+<p>不过，如果你对照基本块的定义，你其实会发现，BB1不是一个标准的基本块。因为一般来说，标准的基本块只允许在最后一个语句做跳转，其他语句都是顺序执行的。而我们看到第4个指令“POP_JUMP_IF_FALSE 14”其实是一个条件跳转指令。</p>
+<p>尽管如此，因为Python把CFG只是作为生成字节码的一个中间结构，并没有基于CFG做数据流分析和优化，所以虽然基本块不标准，但是对Python的编译过程并无影响。</p>
+<p>你还会注意到第7行指令“JUMP_FORWARD”，这个指令是一个基于相对位置的跳转指令，它往前跳4个字，就会跳到BB3。这个跳转距离就是在assemble阶段去计算的，这个距离取决于你如何在代码里排列各个基本块。</p>
+<p>好了，到目前为止，字节码已经生成了。不过，在最后放到解释器里执行之前，编译器还会再做一步窥孔优化工作。</p>
+<h2 id="窥孔优化">窥孔优化</h2>
+<p>说到优化，总体来说，在编译的过程中，Python编译器的优化功能是很有限的。在compiler.c的代码中，你会看到一点优化逻辑。比如，在为if语句生成指令的时候，编译器就会看看if条件是否是个常数，从而不必生成if块或者else块的代码。</p>
+<p><img alt="" src="assets/f5723a10e0c44e3c9b757cb765fd2919.jpg"/></p>
+<p>另一个优化机会，就是在字节码的基础上优化，这就是窥孔优化，其实现是在<strong>Python/peephole.c</strong>中。它能完成的优化包括：</p>
+<ul>
+<li>把多个LOAD_CONST指令替换为一条加载常数元组的指令。</li>
+<li>如果一个跳转指令，跳到return指令，那么可以把跳转指令直接替换成return指令。</li>
+<li>如果一个条件跳转指令，跳到另一个条件跳转指令，则可以基于逻辑运算的规则做优化。比如，“x:JUMP_IF_FALSE_OR_POP y”和“y:JUMP_IF_FALSE_OR_POP z”可以直接简化为“x:JUMP_IF_FALSE_OR_POP z”。这是什么意思呢？第一句是依据栈顶的值做判断，如果为false就跳转到y。而第二句，继续依据栈顶的值做判断，如果为false就跳转到z。那么，简化后，可以直接从第一句跳转到z。</li>
+<li>去掉return指令后面的代码。</li>
+<li>……</li>
+</ul>
+<p>在做优化的时候，窥孔优化器会去掉原来的指令，替换成新的指令。如果有多余出来的位置，则会先填充NOP指令，也就是不做任何操作。最后，才扫描一遍整个字节码，把NOP指令去掉，并且调整受影响的jump指令的参数。</p>
+<h2 id="课程小结">课程小结</h2>
+<p>今天这一讲，我们继续深入探索Python的编译之旅。你需要记住以下几点：</p>
+<ul>
+<li>Python通过一个<strong>建立符号表</strong>的过程来做相关的语义分析，包括做引用消解和其他语义检查。由于Python可以不声明变量就直接使用，所以编译器要能识别出正确的“定义-使用”关系。</li>
+<li><strong>生成字节码</strong>的工作实际上包含了生成CFG、为每个基本块生成指令，以及把指令汇编成字节码，并生成PyCodeObject对象的过程。</li>
+<li><strong>窥孔优化器</strong>在字节码的基础上做了一些优化，研究这个程序，会让你对窥孔优化的认识变得具象起来。</li>
+</ul>
+<p>按照惯例，我把这一讲的思维导图也整理出来了，供你参考：</p>
+<p><img alt="" src="assets/e36b59404b35406c96ea0650160b2e7f.jpg"/></p>
+<h2 id="一课一思">一课一思</h2>
+<p>在语义分析过程中，针对函数中的本地变量，Python编译器没有像Java编译器那样，一边添加符号，一边做引用消解。这是为什么？请在留言区分享你的观点。</p>
+<p>如果你觉得有收获，欢迎你把今天的内容分享给更多的朋友。</p>
+<h2 id="参考资料">参考资料</h2>
+<p>Python<a href="https://docs.python.org/zh-cn/3/library/dis.html#python-bytecode-instructions" target="_blank">字节码的说明</a>。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#1c70707025282d2d2c2b5c7b717d7570327f7371" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359f4076c0807fb',t:'MTc0NTU0MzM0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
