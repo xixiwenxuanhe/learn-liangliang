@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="37 从内核到应用：网络数据在内核中如何流转" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>37 从内核到应用：网络数据在内核中如何流转 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%ad%a6%e5%86%99%e4%b8%80%e4%b8%aa%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="00 开篇词 为什么要学写一个操作系统？.md.html">00 开篇词 为什么要学写一个操作系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e7%bc%96%e8%be%91%e6%89%8b%e8%ae%b0%20%e5%8d%87%e7%ba%a7%e8%ae%a4%e7%9f%a5%ef%bc%8c%e8%bf%ad%e4%bb%a3%e8%87%aa%e5%b7%b1%e7%9a%84%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f.md.html" id="00 编辑手记 升级认知，迭代自己的操作系统.md.html">00 编辑手记 升级认知，迭代自己的操作系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/01%20%e7%a8%8b%e5%ba%8f%e7%9a%84%e8%bf%90%e8%a1%8c%e8%bf%87%e7%a8%8b%ef%bc%9a%e4%bb%8e%e4%bb%a3%e7%a0%81%e5%88%b0%e6%9c%ba%e5%99%a8%e8%bf%90%e8%a1%8c.md.html" id="01 程序的运行过程：从代码到机器运行.md.html">01 程序的运行过程：从代码到机器运行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/02%20%e5%87%a0%e8%a1%8c%e6%b1%87%e7%bc%96%e5%87%a0%e8%a1%8cC%ef%bc%9a%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e5%8d%95%e7%9a%84%e5%86%85%e6%a0%b8.md.html" id="02 几行汇编几行C：实现一个最简单的内核.md.html">02 几行汇编几行C：实现一个最简单的内核.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/03%20%e9%bb%91%e7%9b%92%e4%b9%8b%e4%b8%ad%e6%9c%89%e4%bb%80%e4%b9%88%ef%bc%9a%e5%86%85%e6%a0%b8%e7%bb%93%e6%9e%84%e4%b8%8e%e8%ae%be%e8%ae%a1.md.html" id="03 黑盒之中有什么：内核结构与设计.md.html">03 黑盒之中有什么：内核结构与设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/04%20%e9%9c%87%e6%92%bc%e7%9a%84Linux%e5%85%a8%e6%99%af%e5%9b%be%ef%bc%9a%e4%b8%9a%e7%95%8c%e6%88%90%e7%86%9f%e7%9a%84%e5%86%85%e6%a0%b8%e6%9e%b6%e6%9e%84%e9%95%bf%e4%bb%80%e4%b9%88%e6%a0%b7%ef%bc%9f.md.html" id="04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html">04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/05%20CPU%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%89%a7%e8%a1%8c%e7%a8%8b%e5%ba%8f%e7%9a%84%e4%b8%89%e7%a7%8d%e6%a8%a1%e5%bc%8f.md.html" id="05 CPU工作模式：执行程序的三种模式.md.html">05 CPU工作模式：执行程序的三种模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/06%20%e8%99%9a%e5%b9%bb%e4%b8%8e%e7%9c%9f%e5%ae%9e%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e7%9a%84%e5%9c%b0%e5%9d%80%e5%a6%82%e4%bd%95%e8%bd%ac%e6%8d%a2%ef%bc%9f.md.html" id="06 虚幻与真实：程序中的地址如何转换？.md.html">06 虚幻与真实：程序中的地址如何转换？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/07%20Cache%e4%b8%8e%e5%86%85%e5%ad%98%ef%bc%9a%e7%a8%8b%e5%ba%8f%e6%94%be%e5%9c%a8%e5%93%aa%e5%84%bf%ef%bc%9f.md.html" id="07 Cache与内存：程序放在哪儿？.md.html">07 Cache与内存：程序放在哪儿？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/08%20%e9%94%81%ef%bc%9a%e5%b9%b6%e5%8f%91%e6%93%8d%e4%bd%9c%e4%b8%ad%ef%bc%8c%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%e7%9a%84%e5%9b%9b%e7%a7%8d%e6%96%b9%e6%b3%95.md.html" id="08 锁：并发操作中，解决数据同步的四种方法.md.html">08 锁：并发操作中，解决数据同步的四种方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/09%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e7%9a%84%e8%87%aa%e6%97%8b%e9%94%81%e5%92%8c%e4%bf%a1%e5%8f%b7%e9%87%8f%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html">09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/10%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%bb%ba%e7%ab%8b%e8%ae%a1%e7%ae%97%e6%9c%ba.md.html" id="10 设置工作模式与环境（上）：建立计算机.md.html">10 设置工作模式与环境（上）：建立计算机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/11%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%bb%ba%e9%80%a0%e4%ba%8c%e7%ba%a7%e5%bc%95%e5%af%bc%e5%99%a8.md.html" id="11 设置工作模式与环境（中）：建造二级引导器.md.html">11 设置工作模式与环境（中）：建造二级引导器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/12%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%8e%a2%e6%9f%a5%e5%92%8c%e6%94%b6%e9%9b%86%e4%bf%a1%e6%81%af.md.html" id="12 设置工作模式与环境（下）：探查和收集信息.md.html">12 设置工作模式与环境（下）：探查和收集信息.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/13%20%e7%ac%ac%e4%b8%80%e4%b8%aaC%e5%87%bd%e6%95%b0%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9d%bf%e7%ba%a7%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="13 第一个C函数：如何实现板级初始化？.md.html">13 第一个C函数：如何实现板级初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/14%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aGRUB%e4%b8%8evmlinuz%e7%9a%84%e7%bb%93%e6%9e%84.md.html" id="14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html">14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/15%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8e_start%e5%88%b0%e7%ac%ac%e4%b8%80%e4%b8%aa%e8%bf%9b%e7%a8%8b.md.html" id="15 Linux初始化（下）：从_start到第一个进程.md.html">15 Linux初始化（下）：从_start到第一个进程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/16%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%92%e5%88%86%e4%b8%8e%e7%bb%84%e7%bb%87%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="16 划分土地（上）：如何划分与组织内存？.md.html">16 划分土地（上）：如何划分与组织内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/17%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e9%9d%a2%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="17 划分土地（中）：如何实现内存页面初始化？.md.html">17 划分土地（中）：如何实现内存页面初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/18%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e7%9a%84%e5%88%86%e9%85%8d%e4%b8%8e%e9%87%8a%e6%94%be%ef%bc%9f.md.html" id="18 划分土地（下）：如何实现内存页的分配与释放？.md.html">18 划分土地（下）：如何实现内存页的分配与释放？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/19%20%e5%9c%9f%e5%9c%b0%e4%b8%8d%e8%83%bd%e6%b5%aa%e8%b4%b9%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%86%85%e5%ad%98%e5%af%b9%e8%b1%a1%ef%bc%9f.md.html" id="19 土地不能浪费：如何管理内存对象？.md.html">19 土地不能浪费：如何管理内存对象？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/20%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="20 土地需求扩大与保障：如何表示虚拟内存？.md.html">20 土地需求扩大与保障：如何表示虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/21%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%92%8c%e9%87%8a%e6%94%be%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html">21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/22%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e4%bc%99%e4%bc%b4%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html">22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/23%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aSLAB%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="23 瞧一瞧Linux：SLAB如何分配内存？.md.html">23 瞧一瞧Linux：SLAB如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/24%20%e6%b4%bb%e5%8a%a8%e7%9a%84%e6%8f%8f%e8%bf%b0%ef%bc%9a%e5%88%b0%e5%ba%95%e4%bb%80%e4%b9%88%e6%98%af%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="24 活动的描述：到底什么是进程？.md.html">24 活动的描述：到底什么是进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/25%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a4%9a%e8%bf%9b%e7%a8%8b%e5%a6%82%e4%bd%95%e8%b0%83%e5%ba%a6%ef%bc%9f.md.html" id="25 多个活动要安排（上）：多进程如何调度？.md.html">25 多个活动要安排（上）：多进程如何调度？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/26%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e7%9a%84%e7%ad%89%e5%be%85%e4%b8%8e%e5%94%a4%e9%86%92%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html">26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/27%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e4%b8%8e%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6_.md.html" id="27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html">27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/28%20%e9%83%a8%e9%97%a8%e5%88%86%e7%b1%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%ae%be%e5%a4%87%e7%b1%bb%e5%9e%8b%e4%b8%8e%e8%ae%be%e5%a4%87%e9%a9%b1%e5%8a%a8%ef%bc%9f.md.html" id="28 部门分类：如何表示设备类型与设备驱动？.md.html">28 部门分类：如何表示设备类型与设备驱动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/29%20%e9%83%a8%e9%97%a8%e5%bb%ba%e7%ab%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e6%b3%a8%e5%86%8c%e8%ae%be%e5%a4%87%ef%bc%9f.md.html" id="29 部门建立：如何在内核中注册设备？.md.html">29 部门建立：如何在内核中注册设备？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/30%20%e9%83%a8%e9%97%a8%e5%93%8d%e5%ba%94%ef%bc%9a%e8%ae%be%e5%a4%87%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%86%85%e6%a0%b8I_O%e5%8c%85%ef%bc%9f.md.html" id="30 部门响应：设备如何处理内核I_O包？.md.html">30 部门响应：设备如何处理内核I_O包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/31%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e6%89%80%e6%9c%89%e8%ae%be%e5%a4%87%e4%bf%a1%e6%81%af%ef%bc%9f.md.html" id="31 瞧一瞧Linux：如何获取所有设备信息？.md.html">31 瞧一瞧Linux：如何获取所有设备信息？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/32%20%e4%bb%93%e5%ba%93%e7%bb%93%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e6%96%87%e4%bb%b6_.md.html" id="32 仓库结构：如何组织文件_.md.html">32 仓库结构：如何组织文件_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/33%20%e4%bb%93%e5%ba%93%e5%88%92%e5%88%86%ef%bc%9a%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%a0%bc%e5%bc%8f%e5%8c%96%e6%93%8d%e4%bd%9c.md.html" id="33 仓库划分：文件系统的格式化操作.md.html">33 仓库划分：文件系统的格式化操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/34%20%e4%bb%93%e5%ba%93%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%96%87%e4%bb%b6%e7%9a%84%e5%85%ad%e5%a4%a7%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="34 仓库管理：如何实现文件的六大基本操作？.md.html">34 仓库管理：如何实现文件的六大基本操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/35%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%99%9a%e6%8b%9f%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html">35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/36%20%e4%bb%8eURL%e5%88%b0%e7%bd%91%e5%8d%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e5%85%a8%e5%b1%80%e8%a7%82%e5%af%9f%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%8a%a8%ef%bc%9f.md.html" id="36 从URL到网卡：如何全局观察网络数据流动？.md.html">36 从URL到网卡：如何全局观察网络数据流动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/37%20%e4%bb%8e%e5%86%85%e6%a0%b8%e5%88%b0%e5%ba%94%e7%94%a8%ef%bc%9a%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e5%a6%82%e4%bd%95%e6%b5%81%e8%bd%ac.md.html" id="37 从内核到应用：网络数据在内核中如何流转.md.html">37 从内核到应用：网络数据在内核中如何流转.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/38%20%e4%bb%8e%e5%8d%95%e6%8e%92%e5%88%b0%e5%9b%a2%e6%88%98%ef%bc%9a%e8%af%a6%e8%a7%a3%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e7%9a%84%e5%ae%8f%e8%a7%82%e7%bd%91%e7%bb%9c%e6%9e%b6%e6%9e%84.md.html" id="38 从单排到团战：详解操作系统的宏观网络架构.md.html">38 从单排到团战：详解操作系统的宏观网络架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/39%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e5%ae%9e%e7%8e%b0%e4%b8%8e%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e6%8e%a5%e5%8f%a3.md.html" id="39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html">39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/40%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0.md.html" id="40 瞧一瞧Linux：详解socket的接口实现.md.html">40 瞧一瞧Linux：详解socket的接口实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/41%20%e6%9c%8d%e5%8a%a1%e6%8e%a5%e5%8f%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e6%90%ad%e5%bb%ba%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="41 服务接口：如何搭建沟通桥梁？.md.html">41 服务接口：如何搭建沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/42%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%b3%bb%e7%bb%9fAPI%ef%bc%9f.md.html" id="42 瞧一瞧Linux：如何实现系统API？.md.html">42 瞧一瞧Linux：如何实现系统API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/43%20%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%86%85%e6%a0%b8%ef%bc%9aKVM%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="43 虚拟机内核：KVM是什么？.md.html">43 虚拟机内核：KVM是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/44%20%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e5%ae%b9%e5%99%a8%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="44 容器：如何理解容器的实现机制？.md.html">44 容器：如何理解容器的实现机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/45%20ARM%e6%96%b0%e5%ae%a0%ef%bc%9a%e8%8b%b9%e6%9e%9c%e7%9a%84M1%e8%8a%af%e7%89%87%e5%9b%a0%e4%bd%95%e8%80%8c%e5%bf%ab%ef%bc%9f.md.html" id="45 ARM新宠：苹果的M1芯片因何而快？.md.html">45 ARM新宠：苹果的M1芯片因何而快？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/46%20AArch64%e4%bd%93%e7%b3%bb%ef%bc%9aARM%e6%9c%80%e6%96%b0%e7%bc%96%e7%a8%8b%e6%9e%b6%e6%9e%84%e6%a8%a1%e5%9e%8b%e5%89%96%e6%9e%90.md.html" id="46 AArch64体系：ARM最新编程架构模型剖析.md.html">46 AArch64体系：ARM最新编程架构模型剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/LMOS%e6%9d%a5%e4%bf%a1%ef%bc%9a%e7%ac%ac%e4%ba%8c%e5%ad%a3%e8%af%be%e7%a8%8b%e5%b8%a6%e4%bd%a0%e2%80%9c%e6%89%8b%e6%92%95%e2%80%9d%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80.md.html" id="LMOS来信：第二季课程带你“手撕”计算机基础.md.html">LMOS来信：第二季课程带你“手撕”计算机基础.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e4%bb%a5%e6%97%a0%e6%b3%95%e4%b8%ba%e6%9c%89%e6%b3%95%ef%bc%8c%e4%bb%a5%e6%97%a0%e9%99%90%e4%b8%ba%e6%9c%89%e9%99%90.md.html" id="大咖助场 以无法为有法，以无限为有限.md.html">大咖助场 以无法为有法，以无限为有限.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20yiyang%ef%bc%9a%e6%88%91%e7%9a%84%e4%b8%8a%e6%9c%ba%e5%ae%9e%e9%aa%8c%e2%80%9c%e7%88%ac%e5%9d%91%e6%8c%87%e5%8d%97%e2%80%9d.md.html" id="用户故事 yiyang：我的上机实验“爬坑指南”.md.html">用户故事 yiyang：我的上机实验“爬坑指南”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%90%e4%b8%ba%e9%9d%a2%e5%90%91%e2%80%9c%e7%9f%a5%e8%af%86%e5%ba%93%e2%80%9d%e7%9a%84%e5%b7%a5%e7%a8%8b%e5%b8%88.md.html" id="用户故事 成为面向“知识库”的工程师.md.html">用户故事 成为面向“知识库”的工程师.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%8a%80%e6%9c%af%e4%ba%ba%e5%a6%82%e4%bd%95%e5%81%9a%e9%80%89%e6%8b%a9%ef%bc%8c%e8%b7%af%e6%89%8d%e8%b6%8a%e8%b5%b0%e8%b6%8a%e5%ae%bd%ef%bc%9f.md.html" id="用户故事 技术人如何做选择，路才越走越宽？.md.html">用户故事 技术人如何做选择，路才越走越宽？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8f%91%e7%83%a7%e5%8f%8b%ef%bc%9a%e7%9c%8b%e4%b8%8d%e6%87%82%ef%bc%9f%e5%9b%a0%e4%b8%ba%e4%bd%a0%e6%b2%a1%e5%8a%a8%e6%89%8b.md.html" id="用户故事 操作系统发烧友：看不懂？因为你没动手.md.html">用户故事 操作系统发烧友：看不懂？因为你没动手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%94%a8%e5%a5%bd%e5%8a%a8%e6%80%81%e8%b0%83%e8%af%95%ef%bc%8c%e5%8a%a9%e5%8a%9b%e8%af%be%e7%a8%8b%e5%ad%a6%e4%b9%a0.md.html" id="用户故事 用好动态调试，助力课程学习.md.html">用户故事 用好动态调试，助力课程学习.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%89%be%e5%90%8c%e5%ad%a6%ef%bc%9a%e8%b7%af%e8%99%bd%e8%bf%9c%ef%bc%8c%e8%a1%8c%e5%88%99%e5%b0%86%e8%87%b3.md.html" id="用户故事 艾同学：路虽远，行则将至.md.html">用户故事 艾同学：路虽远，行则将至.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e7%94%9f%e6%b4%bb%e5%8f%af%e4%bb%a5%e4%b8%80%e5%9c%b0%e9%b8%a1%e6%af%9b%ef%bc%8c%e4%bd%86%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8d%b4%e6%98%af%e5%bf%83%e4%b8%ad%e7%9a%84%e5%85%89.md.html" id="结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html">结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="37 从内核到应用：网络数据在内核中如何流转" id="title">37 从内核到应用：网络数据在内核中如何流转</h1>
+<div><p>你好，我是 LMOS。</p>
+<p>上节课我们对一次请求到响应的过程积累了一些宏观认识，相信你已经对整个网络架构有了一个整体蓝图。这节课，让我们来仔细研究一下网络数据是如何在内核中流转的，让你开阔视野，真正理解底层工程的实现思路。</p>
+<p>凡事先问目的，在网络数据在内核中的流转，最终要服务于网络收发功能。所以，我会先带你了解一次具体的网络发收过程，然后带你了解lwIP的网络数据收发。有了这些基础，我还会示范一下如何实现协议栈移植，你可以在课后自行动手拓展。</p>
+<p>好，让我们正式开始今天的学习吧。课程配套代码，你可以点击<a href="https://gitee.com/lmos/cosmos/tree/master/lesson37/Cosmos" target="_blank">这里</a>获取。</p>
+<h2 id="先看看一次具体的网络发收过程">先看看一次具体的网络发收过程</h2>
+<p>理解软件的设计思想，最重要的是先要理解需求。而内核中的数据流转也只是为了满足网络收发的需求而进行的设计。</p>
+<h3 id="发送过程总览">发送过程总览</h3>
+<p>下面我们一起来看看应用程序通过网络发送数据的全过程。</p>
+<p>应用程序首先会准备好数据，调用用户态下的库函数。接着调用系统API接口函数，进入到内核态。</p>
+<p>内核态对应的系统服务函数会复制应用程序的数据到内核的内存空间中，然后将数据移交给网络协议栈，在网络协议栈中将数据层层打包。</p>
+<p>最后，包装好的数据会交给网卡驱动，网卡驱动程序负责将打包好的数据写入网卡并让其发送出去。</p>
+<p>我为你准备了一张流程图供你参考，如下所示。</p>
+<p><img alt="" src="assets/16e690ac2dd64f96a53f2b9358c26a0d.jpg"/></p>
+<p>上图中，只是展示了大致流程，其中还有DMA处理、CRC校验、出错处理等细节，但对于我们理解梳理发送流程，这些就够了。</p>
+<h3 id="接收过程总览">接收过程总览</h3>
+<p>了解了发送数据的过程以后，掌握接收数据的过程就更容易了，因为它就是<strong>发送数据的逆过程</strong>。</p>
+<p>首先，网卡接收到数据，通过DMA复制到指定的内存，接着发送中断，以便通知网卡驱动，由网卡驱动处理中断复制数据。然后网络协议收到网卡驱动传过来的数据，层层解包，获取真正的有效数据。最后，这个数据会发送给用户态监听的应用进程。</p>
+<p>为了让你更加直观地了解这一过程，我特意准备了一张流程图供你参考，如下所示。</p>
+<p><img alt="" src="assets/3b20be6bee9b441ca11a28d621f3afa3.jpg"/></p>
+<p>前面只是帮你梳理一下数据的发送与接收的流程，其实我们真正要关注的是网络协议。可是我们若手动实现一个完整的网络协议，不太现实，网络协议的复杂度大到也许要重新开一门课程，才可以完全解决，所以下面我们借用一下lwIP项目，以这个为基础来讨论网络协议。</p>
+<h2 id="认识一下lwip架构">认识一下lwIP架构</h2>
+<p>现在我们清楚了一次具体网络发收过程是怎么回事，那怎么让Cosmos实现网络通信呢？这里我们选择lwIP这个TCP/IP协议的轻量级开源项目，让它成为Cosmos的网络部的战略合作伙伴。</p>
+<p>lwIP是由瑞典计算机科学研究院（SICS）的Adam Dunkels开发的小型开源TCP/IP协议栈。它是一个用C语言实现的软件组件，一共有两套接口层，向下是操作系统要提供的，向上是提供给应用程序的。这样lwIP就能嵌入到任何操作系统之中工作，并为这个操作系统上的应用软件提供网络功能支持了。</p>
+<p>为啥说lwIP是轻量级的呢？很简单，跟Linux比，从代码行数上就能看得出。lwIP的设计目标就是尽量用少量资源消耗，实现一个相对完整的TCP/IP协议栈。</p>
+<p>这里的“完整性”主要是指TCP协议的完整性，实现的关键点就是<strong>在保持TCP协议主要功能的基础上减少对RAM的占用。</strong>同时，lwIP还支持IPv6的标准实现，这也让我们与现代交换设备的对接变得非常方便。</p>
+<p>这里额外提供你一份扩展阅读资料，lwIP的项目<a href="http://savannah.nongnu.org/projects/lwip/" target="_blank">主页链接</a>，这里包含了大量相关资料，感兴趣的同学可以课后深入了解。另外，lwIP既可以移植到操作系统上运行，也可以在没有操作系统的情况下独立运行。</p>
+<p>lwIP在结构上可分为四层：OS层、API层、核心层、硬件驱动层，如下图所示。</p>
+<p><img alt="" src="assets/8bce3a7c4c934711872ca8c53ffb770b.jpg"/></p>
+<p><strong>第一层</strong></p>
+<p>MCU的业务层是lwIP的服务对象，也是其自身代码使用lwIP的地方。大部分时候我们都是从这里入手，通过netconn或lwip_api使用lwIP的各种功能函数。</p>
+<p>在典型的TCP通信的客户端应用程序中，一般先要通过netconn_new创建一个struct netconn对象，然后调用netconn_connect连接到服务器，并返回成功或失败。成功后，可以调用netconn_write向服务器发送数据，也可以调用netconn_recv接收数据。最后，关闭连接并通过netconn_close释放资源。</p>
+<p><strong>第二层</strong></p>
+<p>lwIP的api层是netconn的功能代码所在的层，负责为上层代码提供netconn的api。习惯使用socket的同学也可以使用lwip_socket等函数，以标准的socket方式调用lwIP。新版本增加了http、mqtt等应用的代码，这些额外的应用对目前的物联网通信来说确实很方便。</p>
+<p><strong>第三层</strong></p>
+<p>lwIP的核心层存放了TCP/IP协议栈的核心代码，它不仅实现了大部分的TCP和UDP功能，还实现了DNS、ICMP、IGMP等协议，同时也实现了内存管理和网络接口功能。</p>
+<p>该层提供了sys_arch模块设计，便于将lwIP移植到不同的操作系统，如线程创建、信号量、消息队列等功能。和操作系统相关的真正定义写在了lwip/include/sys.h文件中。</p>
+<p><strong>第四层</strong></p>
+<p>硬件驱动层提供PHY芯片驱动，用来匹配lwIP的使用。lwIP会调用该层的代码将组装好的数据包发送到网络，同时从网络接收数据包并进行分析，实现通信功能。</p>
+<h3 id="lwip的三套应用程序编程接口">lwIP的三套应用程序编程接口</h3>
+<p>理清了架构，我们再说一说lwIP的应用程序编程接口，一共有三套。</p>
+<p>原始API：原始的lwIP API。它通过事件回调机制开发应用程序。该应用编程接口提供了最佳的性能和优化的代码长度，但它增加了应用程序开发的复杂性。</p>
+<p>Netconn API：是高级的有序API、需要实时操作系统（RTOS）的支持（提供进程间通信的方法）。Netconn API支持多线程。</p>
+<p>BSD套接字API：类似伯克利的套接字API（在Netconn API上开发，需要注意NETCONN API 即为 Sequential API）。</p>
+<p>对于以上三种接口，前者只需要裸机调用，后两种需要操作系统调用。因此，移植lwIP有两种方法，一种是只移植内核，不过这样之后只能基于RAW/Callback API编写应用程序。第二种是移植内核和上层API。这时应用程序编程可以使用三种API，即RAW/Callback API、顺序API和Socket API。</p>
+<h2 id="lwip执行流程">lwIP执行流程</h2>
+<p>现在，想必聪明的你已经理解了前文中的网络收发过程。</p>
+<p>接下来，让我们顺着之前的思路来对应到lwIP在收发过程中的核心函数，具体过程我同样梳理了流程图。你可以结合图里关键的函数名以及步骤顺序，按这个顺序在IwIP代码中检索阅读。</p>
+<h3 id="数据发送">数据发送</h3>
+<p>首先要说的是数据发送过程。</p>
+<p>由于我们把lwIP作为Cosmos的一个内核组件来工作，自然要由lwIP接收来自内核上层发来的数据。内核上层首先会调用lwIP的netconn层的接口函数<strong>netconn_write</strong>，通过这个函数，数据正式流进lwIP组件层。</p>
+<p>接着，netconn层调用lwIP组件的TCP层的接口函数tcp_write，在TCP层对数据首次进行打包。然后，TCP层将打包好的数据通过调用io_output函数，向下传递给lwIP组件的IP层，进行打包。</p>
+<p>最后，IP层将打包好的数据发送给网卡驱动接口层netif，这里调用了实际的网卡驱动程序，将数据发送出去。</p>
+<p><img alt="" src="assets/0f51bccca337440285e4f8bf40a06e44.jpg"/></p>
+<h3 id="数据接收">数据接收</h3>
+<p>数据接收的步骤相比数据发送稍微多一些，但也不用害怕，跟住我的讲解思路一定可以理清这个过程。</p>
+<p>数据接收需要应用程序首先调用lwIP的netconn层的netconn_recv接口。然后由netconn层调用sys_arch_mbox_fetch函数，进入监听等待相关的mbox。</p>
+<p>接着，数据会进入网卡，驱动程序相关的函数负责把它复制到内存。再然后是调用ethernet_input函数，进入ethernet层。完成相关处理后，调用ip4_input函数，数据在lwIP组件的IP层对数据解包，进行相应处理之后，还会调用tcp_input函数，进入lwIP组件的TCP层对数据解包。</p>
+<p>最后，调用sys_mbox_trypost函数把数据放入特定的mbox，也就是消息盒子里，这样等待监听的应用程序就能得到数据了。</p>
+<p><img alt="" src="assets/59eeb77067734cd7b09c51f0184ccbe5.jpg"/></p>
+<p>在了解了lwIP组件收发数据的过程之后，就可以进行移植的相关工作了。lwIP的结构设计非常优秀，这让移植工作变得很容易。我们这里只要了解lwIP组件的<strong>sys_arch层的接口函数</strong>即可。</p>
+<p>下面我们一起了解lwIP的移植细节。</p>
+<h2 id="协议栈移植">协议栈移植</h2>
+<p>lwIP有两种移植模式，一种是NO_SYS，无操作系统模式，一种是有操作系统模式。用NO_SYS模式比较简单，你可以自行探索。</p>
+<p>操作系统模式主要需要基于操作系统的 IPC 机制，对网络连接进行了抽象（信号量、邮箱/队列、互斥体等机制），从而保证内核与应用层API的通讯，这样做的好处是<strong>lwIP 内核线程可以只负责数据包的 TCP/IP 封装和拆封，而不用进行数据的应用层处理，从而极大地提高系统对网络数据包的处理效率。</strong></p>
+<p>而这些操作系统模拟层的函数主要是在sys.h中声明的，我们一般在sys_arch.c文件中完成其定义。所以，我们很清楚，带操作系统的移植就是在无操作系统的基础上添加操作系统模拟层。</p>
+<p>再接下来我们就看看操作系统模拟层的编写。</p>
+<h3 id="有操作系统模式">有操作系统模式</h3>
+<p>在之前的课程里我们已经正确实现了Cosmos操作系统了，现在我们就可以在Cosmos系统提供的IPC等机制基础之上，对照 sys.h 文件中声明的函数一一去实现了。</p>
+<p>实际工程中完整移植网络栈，需要将后面表格里的这30多个函数全部实现。我会带你完成邮箱和系统线程相关的关键部分移植，其他函数的移植思路也大同小异，这里就不一一演示了。</p>
+<p><img alt="" src="assets/a1e25da73e99488aae8421476c8fc611.jpg"/></p>
+<p>从上表中我们可以发现，这些变量和函数主要面向信号量、互斥体和邮箱，包括创建、删除、释放和获取等各种操作，所以我们需要根据操作系统的规定来实现这些函数。</p>
+<p>突然看到这么多功能，是不是有点慌？其实不用怕，因为这些功能的实现起来非常简单。首先，我们通过一个例子来看看邮箱功能的实现。</p>
+<p>在lwIP中，用户代码通过邮箱与协议栈内部交互。邮箱本质上是指向数据的指针。API将指针传递给内核，内核通过这个指针访问数据，然后进行处理。相反，内核也是通过邮箱将数据传递给用户代码的。</p>
+<p>具体代码如下，关键内容我都做了详细注释。</p>
+<pre><code>/*创建一个空的邮箱。*/
+err_t sys_mbox_new(sys_mbox_t *mbox, int size)
+{
+osMessageQDef(QUEUE, size, void *);
+*mbox = osMessageCreate(osMessageQ(QUEUE), NULL);
+#if SYS_STATS
+++lwip_stats.sys.mbox.used;
+if (lwip_stats.sys.mbox.max &lt; lwip_stats.sys.mbox.used) {
+lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
+}
+#endif /* SYS_STATS */
+if (*mbox == NULL)
+return ERR_MEM;
+return ERR_OK;
+}
+/*重新分配一个邮箱。如果邮箱被释放时，邮箱中仍有消息，在lwIP中这是出现编码错误的指示，并通知开发人员。*/
+void sys_mbox_free(sys_mbox_t *mbox)
+{
+if( osMessageWaiting(*mbox) )
+{
+portNOP();
+#if SYS_STATS
+lwip_stats.sys.mbox.err++;
+#endif /* SYS_STATS */
+}
+osMessageDelete(*mbox);
+#if SYS_STATS
+--lwip_stats.sys.mbox.used;
+#endif /* SYS_STATS */
+}
+/*发送消息到邮箱*/
+void sys_mbox_post(sys_mbox_t *mbox, void *data)
+{
+while(osMessagePut(*mbox, (uint32_t)data, osWaitForever) != osOK);
+}
+/*尝试将消息发送到邮箱*/
+err_t sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
+{
+err_t result;
+if ( osMessagePut(*mbox, (uint32_t)msg, 0) == osOK)
+{
+result = ERR_OK;
+}
+else {
+result = ERR_MEM;
+#if SYS_STATS
+lwip_stats.sys.mbox.err++;
+#endif /* SYS_STATS */
+}
+return result;
+}
+/*阻塞进程从邮箱获取消息*/
+u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeout)
+{
+osEvent event;
+uint32_t starttime = osKernelSysTick();;
+if(timeout != 0)
+{
+event = osMessageGet (*mbox, timeout);
+if(event.status == osEventMessage)
+{
+*msg = (void *)event.value.v;
+return (osKernelSysTick() - starttime);
+}
+else
+{
+return SYS_ARCH_TIMEOUT;
+}
+}
+else
+{
+event = osMessageGet (*mbox, osWaitForever);
+*msg = (void *)event.value.v;
+return (osKernelSysTick() - starttime);
+}
+}
+/*尝试从邮箱获取消息*/
+u32_t sys_arch_mbox_tryfetch(sys_mbox_t *mbox, void **msg)
+{
+osEvent event;
+event = osMessageGet (*mbox, 0);
+if(event.status == osEventMessage)
+{
+*msg = (void *)event.value.v;
+return ERR_OK;
+}
+else
+{
+return SYS_MBOX_EMPTY;
+}
+}
+/*判断一个邮箱是否有效*/
+int sys_mbox_valid(sys_mbox_t *mbox)
+{
+if (*mbox == SYS_MBOX_NULL)
+return 0;
+else
+return 1;
+}
+/*设置一个邮箱无效*/
+void sys_mbox_set_invalid(sys_mbox_t *mbox)
+{
+*mbox = SYS_MBOX_NULL;
+}
+// 创建一个新的信号量。而 "count"参数指示该信号量的初始状态
+err_t sys_sem_new(sys_sem_t *sem, u8_t count)
+{
+osSemaphoreDef(SEM);
+*sem = osSemaphoreCreate (osSemaphore(SEM), 1);
+if(*sem == NULL)
+{
+#if SYS_STATS
+++lwip_stats.sys.sem.err;
+#endif /* SYS_STATS */
+return ERR_MEM;
+}
+if(count == 0) // Means it can't be taken
+{
+osSemaphoreWait(*sem,0);
+}
+#if SYS_STATS
+++lwip_stats.sys.sem.used;
+if (lwip_stats.sys.sem.max &lt; lwip_stats.sys.sem.used) {
+lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
+}
+#endif /* SYS_STATS */
+return ERR_OK;
+}
+</code></pre>
+<p>此外还有一些函数也是协议栈需要的函数，特别是sys_thread_new函数，不但协议栈在初始化时需要用到，在后续我们实现各类基于lwIP的应用时也会用得到，它的具体实现如下。</p>
+<pre><code>sys_thread_t sys_thread_new(const char *name, lwip_thread_fn thread , void *arg, int stacksize, int prio)
+{
+const osThreadDef_t os_thread_def = { (char *)name, (os_pthread)thread, (osPriority)prio, 0, stacksize};
+return osThreadCreate(&amp;os_thread_def, arg);
+}
+osThreadId osThreadCreate (const osThreadDef_t *thread_def, void *argument)
+{
+TaskHandle_t handle;
+#if( configSUPPORT_STATIC_ALLOCATION == 1 ) &amp;&amp; ( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
+if((thread_def-&gt;buffer != NULL) &amp;&amp; (thread_def-&gt;controlblock != NULL)) {
+handle = xTaskCreateStatic((TaskFunction_t)thread_def-&gt;pthread,(const portCHAR *)thread_def-&gt;name,
+thread_def-&gt;stacksize, argument, makeFreeRtosPriority(thread_def-&gt;tpriority),
+thread_def-&gt;buffer, thread_def-&gt;controlblock);
+}
+else {
+if (xTaskCreate((TaskFunction_t)thread_def-&gt;pthread,(const portCHAR *)thread_def-&gt;name,
+thread_def-&gt;stacksize, argument, makeFreeRtosPriority(thread_def-&gt;tpriority),
+&amp;handle) != pdPASS) {
+return NULL;
+}
+}
+#elif( configSUPPORT_STATIC_ALLOCATION == 1 )
+handle = xTaskCreateStatic((TaskFunction_t)thread_def-&gt;pthread,(const portCHAR *)thread_def-&gt;name,
+thread_def-&gt;stacksize, argument, makeFreeRtosPriority(thread_def-&gt;tpriority),
+thread_def-&gt;buffer, thread_def-&gt;controlblock);
+#else
+if (xTaskCreate((TaskFunction_t)thread_def-&gt;pthread,(const portCHAR *)thread_def-&gt;name,
+thread_def-&gt;stacksize, argument, makeFreeRtosPriority(thread_def-&gt;tpriority),
+&amp;handle) != pdPASS) {
+return NULL;
+}
+#endif
+return handle;
+}
+</code></pre>
+<p>至此，基于Cosmos操作系统移植lwIP协议栈的关键部分就算完成了。</p>
+<h2 id="重点回顾">重点回顾</h2>
+<p>好，这节课的内容告一段落了，我来给你做个总结。</p>
+<p>我们首先从数据发送接收的视角，观察了数据从用户态到内核态，再从内核态到流动到用户态的全过程。</p>
+<p>接着，我们发现网络协议栈移植与DMA、内核的IPC、信号量、DMA等机制密切相关。理解网络栈移植的关键步骤，能够让我们更好地理解内核特性在工程中是如何应用的。</p>
+<p>最后，我们实现了将lwIP网络协议栈的关键部分移植到Cosmos操作系统下。不过这节课我带你实现了邮箱和系统线程相关的关键部分，其他函数移植道理相通，感兴趣的同学可以自行探索。</p>
+<h2 id="思考题">思考题</h2>
+<p>我们已经了解到了操作系统内核和网络协议栈的关系，可是网络协议栈真的一定只能放在内核态实现么？</p>
+<p>欢迎你在留言区跟我交流探讨。也欢迎你把这节课分享给自己的朋友、同事。</p>
+<p>我是LMOS，我们下节课见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#660a0a0a5f525757565126010b070f0a4805090b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359a27f1884ef61',t:'MTc0NTU0MDAwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="39 瞧一瞧Linux：详解socket实现与网络编程接口" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>39 瞧一瞧Linux：详解socket实现与网络编程接口 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%ad%a6%e5%86%99%e4%b8%80%e4%b8%aa%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="00 开篇词 为什么要学写一个操作系统？.md.html">00 开篇词 为什么要学写一个操作系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e7%bc%96%e8%be%91%e6%89%8b%e8%ae%b0%20%e5%8d%87%e7%ba%a7%e8%ae%a4%e7%9f%a5%ef%bc%8c%e8%bf%ad%e4%bb%a3%e8%87%aa%e5%b7%b1%e7%9a%84%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f.md.html" id="00 编辑手记 升级认知，迭代自己的操作系统.md.html">00 编辑手记 升级认知，迭代自己的操作系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/01%20%e7%a8%8b%e5%ba%8f%e7%9a%84%e8%bf%90%e8%a1%8c%e8%bf%87%e7%a8%8b%ef%bc%9a%e4%bb%8e%e4%bb%a3%e7%a0%81%e5%88%b0%e6%9c%ba%e5%99%a8%e8%bf%90%e8%a1%8c.md.html" id="01 程序的运行过程：从代码到机器运行.md.html">01 程序的运行过程：从代码到机器运行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/02%20%e5%87%a0%e8%a1%8c%e6%b1%87%e7%bc%96%e5%87%a0%e8%a1%8cC%ef%bc%9a%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e5%8d%95%e7%9a%84%e5%86%85%e6%a0%b8.md.html" id="02 几行汇编几行C：实现一个最简单的内核.md.html">02 几行汇编几行C：实现一个最简单的内核.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/03%20%e9%bb%91%e7%9b%92%e4%b9%8b%e4%b8%ad%e6%9c%89%e4%bb%80%e4%b9%88%ef%bc%9a%e5%86%85%e6%a0%b8%e7%bb%93%e6%9e%84%e4%b8%8e%e8%ae%be%e8%ae%a1.md.html" id="03 黑盒之中有什么：内核结构与设计.md.html">03 黑盒之中有什么：内核结构与设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/04%20%e9%9c%87%e6%92%bc%e7%9a%84Linux%e5%85%a8%e6%99%af%e5%9b%be%ef%bc%9a%e4%b8%9a%e7%95%8c%e6%88%90%e7%86%9f%e7%9a%84%e5%86%85%e6%a0%b8%e6%9e%b6%e6%9e%84%e9%95%bf%e4%bb%80%e4%b9%88%e6%a0%b7%ef%bc%9f.md.html" id="04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html">04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/05%20CPU%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%89%a7%e8%a1%8c%e7%a8%8b%e5%ba%8f%e7%9a%84%e4%b8%89%e7%a7%8d%e6%a8%a1%e5%bc%8f.md.html" id="05 CPU工作模式：执行程序的三种模式.md.html">05 CPU工作模式：执行程序的三种模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/06%20%e8%99%9a%e5%b9%bb%e4%b8%8e%e7%9c%9f%e5%ae%9e%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e7%9a%84%e5%9c%b0%e5%9d%80%e5%a6%82%e4%bd%95%e8%bd%ac%e6%8d%a2%ef%bc%9f.md.html" id="06 虚幻与真实：程序中的地址如何转换？.md.html">06 虚幻与真实：程序中的地址如何转换？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/07%20Cache%e4%b8%8e%e5%86%85%e5%ad%98%ef%bc%9a%e7%a8%8b%e5%ba%8f%e6%94%be%e5%9c%a8%e5%93%aa%e5%84%bf%ef%bc%9f.md.html" id="07 Cache与内存：程序放在哪儿？.md.html">07 Cache与内存：程序放在哪儿？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/08%20%e9%94%81%ef%bc%9a%e5%b9%b6%e5%8f%91%e6%93%8d%e4%bd%9c%e4%b8%ad%ef%bc%8c%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%e7%9a%84%e5%9b%9b%e7%a7%8d%e6%96%b9%e6%b3%95.md.html" id="08 锁：并发操作中，解决数据同步的四种方法.md.html">08 锁：并发操作中，解决数据同步的四种方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/09%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e7%9a%84%e8%87%aa%e6%97%8b%e9%94%81%e5%92%8c%e4%bf%a1%e5%8f%b7%e9%87%8f%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html">09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/10%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%bb%ba%e7%ab%8b%e8%ae%a1%e7%ae%97%e6%9c%ba.md.html" id="10 设置工作模式与环境（上）：建立计算机.md.html">10 设置工作模式与环境（上）：建立计算机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/11%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%bb%ba%e9%80%a0%e4%ba%8c%e7%ba%a7%e5%bc%95%e5%af%bc%e5%99%a8.md.html" id="11 设置工作模式与环境（中）：建造二级引导器.md.html">11 设置工作模式与环境（中）：建造二级引导器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/12%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%8e%a2%e6%9f%a5%e5%92%8c%e6%94%b6%e9%9b%86%e4%bf%a1%e6%81%af.md.html" id="12 设置工作模式与环境（下）：探查和收集信息.md.html">12 设置工作模式与环境（下）：探查和收集信息.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/13%20%e7%ac%ac%e4%b8%80%e4%b8%aaC%e5%87%bd%e6%95%b0%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9d%bf%e7%ba%a7%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="13 第一个C函数：如何实现板级初始化？.md.html">13 第一个C函数：如何实现板级初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/14%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aGRUB%e4%b8%8evmlinuz%e7%9a%84%e7%bb%93%e6%9e%84.md.html" id="14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html">14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/15%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8e_start%e5%88%b0%e7%ac%ac%e4%b8%80%e4%b8%aa%e8%bf%9b%e7%a8%8b.md.html" id="15 Linux初始化（下）：从_start到第一个进程.md.html">15 Linux初始化（下）：从_start到第一个进程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/16%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%92%e5%88%86%e4%b8%8e%e7%bb%84%e7%bb%87%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="16 划分土地（上）：如何划分与组织内存？.md.html">16 划分土地（上）：如何划分与组织内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/17%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e9%9d%a2%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="17 划分土地（中）：如何实现内存页面初始化？.md.html">17 划分土地（中）：如何实现内存页面初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/18%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e7%9a%84%e5%88%86%e9%85%8d%e4%b8%8e%e9%87%8a%e6%94%be%ef%bc%9f.md.html" id="18 划分土地（下）：如何实现内存页的分配与释放？.md.html">18 划分土地（下）：如何实现内存页的分配与释放？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/19%20%e5%9c%9f%e5%9c%b0%e4%b8%8d%e8%83%bd%e6%b5%aa%e8%b4%b9%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%86%85%e5%ad%98%e5%af%b9%e8%b1%a1%ef%bc%9f.md.html" id="19 土地不能浪费：如何管理内存对象？.md.html">19 土地不能浪费：如何管理内存对象？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/20%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="20 土地需求扩大与保障：如何表示虚拟内存？.md.html">20 土地需求扩大与保障：如何表示虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/21%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%92%8c%e9%87%8a%e6%94%be%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html">21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/22%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e4%bc%99%e4%bc%b4%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html">22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/23%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aSLAB%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="23 瞧一瞧Linux：SLAB如何分配内存？.md.html">23 瞧一瞧Linux：SLAB如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/24%20%e6%b4%bb%e5%8a%a8%e7%9a%84%e6%8f%8f%e8%bf%b0%ef%bc%9a%e5%88%b0%e5%ba%95%e4%bb%80%e4%b9%88%e6%98%af%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="24 活动的描述：到底什么是进程？.md.html">24 活动的描述：到底什么是进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/25%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a4%9a%e8%bf%9b%e7%a8%8b%e5%a6%82%e4%bd%95%e8%b0%83%e5%ba%a6%ef%bc%9f.md.html" id="25 多个活动要安排（上）：多进程如何调度？.md.html">25 多个活动要安排（上）：多进程如何调度？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/26%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e7%9a%84%e7%ad%89%e5%be%85%e4%b8%8e%e5%94%a4%e9%86%92%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html">26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/27%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e4%b8%8e%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6_.md.html" id="27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html">27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/28%20%e9%83%a8%e9%97%a8%e5%88%86%e7%b1%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%ae%be%e5%a4%87%e7%b1%bb%e5%9e%8b%e4%b8%8e%e8%ae%be%e5%a4%87%e9%a9%b1%e5%8a%a8%ef%bc%9f.md.html" id="28 部门分类：如何表示设备类型与设备驱动？.md.html">28 部门分类：如何表示设备类型与设备驱动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/29%20%e9%83%a8%e9%97%a8%e5%bb%ba%e7%ab%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e6%b3%a8%e5%86%8c%e8%ae%be%e5%a4%87%ef%bc%9f.md.html" id="29 部门建立：如何在内核中注册设备？.md.html">29 部门建立：如何在内核中注册设备？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/30%20%e9%83%a8%e9%97%a8%e5%93%8d%e5%ba%94%ef%bc%9a%e8%ae%be%e5%a4%87%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%86%85%e6%a0%b8I_O%e5%8c%85%ef%bc%9f.md.html" id="30 部门响应：设备如何处理内核I_O包？.md.html">30 部门响应：设备如何处理内核I_O包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/31%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e6%89%80%e6%9c%89%e8%ae%be%e5%a4%87%e4%bf%a1%e6%81%af%ef%bc%9f.md.html" id="31 瞧一瞧Linux：如何获取所有设备信息？.md.html">31 瞧一瞧Linux：如何获取所有设备信息？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/32%20%e4%bb%93%e5%ba%93%e7%bb%93%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e6%96%87%e4%bb%b6_.md.html" id="32 仓库结构：如何组织文件_.md.html">32 仓库结构：如何组织文件_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/33%20%e4%bb%93%e5%ba%93%e5%88%92%e5%88%86%ef%bc%9a%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%a0%bc%e5%bc%8f%e5%8c%96%e6%93%8d%e4%bd%9c.md.html" id="33 仓库划分：文件系统的格式化操作.md.html">33 仓库划分：文件系统的格式化操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/34%20%e4%bb%93%e5%ba%93%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%96%87%e4%bb%b6%e7%9a%84%e5%85%ad%e5%a4%a7%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="34 仓库管理：如何实现文件的六大基本操作？.md.html">34 仓库管理：如何实现文件的六大基本操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/35%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%99%9a%e6%8b%9f%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html">35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/36%20%e4%bb%8eURL%e5%88%b0%e7%bd%91%e5%8d%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e5%85%a8%e5%b1%80%e8%a7%82%e5%af%9f%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%8a%a8%ef%bc%9f.md.html" id="36 从URL到网卡：如何全局观察网络数据流动？.md.html">36 从URL到网卡：如何全局观察网络数据流动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/37%20%e4%bb%8e%e5%86%85%e6%a0%b8%e5%88%b0%e5%ba%94%e7%94%a8%ef%bc%9a%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e5%a6%82%e4%bd%95%e6%b5%81%e8%bd%ac.md.html" id="37 从内核到应用：网络数据在内核中如何流转.md.html">37 从内核到应用：网络数据在内核中如何流转.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/38%20%e4%bb%8e%e5%8d%95%e6%8e%92%e5%88%b0%e5%9b%a2%e6%88%98%ef%bc%9a%e8%af%a6%e8%a7%a3%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e7%9a%84%e5%ae%8f%e8%a7%82%e7%bd%91%e7%bb%9c%e6%9e%b6%e6%9e%84.md.html" id="38 从单排到团战：详解操作系统的宏观网络架构.md.html">38 从单排到团战：详解操作系统的宏观网络架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/39%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e5%ae%9e%e7%8e%b0%e4%b8%8e%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e6%8e%a5%e5%8f%a3.md.html" id="39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html">39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/40%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0.md.html" id="40 瞧一瞧Linux：详解socket的接口实现.md.html">40 瞧一瞧Linux：详解socket的接口实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/41%20%e6%9c%8d%e5%8a%a1%e6%8e%a5%e5%8f%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e6%90%ad%e5%bb%ba%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="41 服务接口：如何搭建沟通桥梁？.md.html">41 服务接口：如何搭建沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/42%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%b3%bb%e7%bb%9fAPI%ef%bc%9f.md.html" id="42 瞧一瞧Linux：如何实现系统API？.md.html">42 瞧一瞧Linux：如何实现系统API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/43%20%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%86%85%e6%a0%b8%ef%bc%9aKVM%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="43 虚拟机内核：KVM是什么？.md.html">43 虚拟机内核：KVM是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/44%20%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e5%ae%b9%e5%99%a8%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="44 容器：如何理解容器的实现机制？.md.html">44 容器：如何理解容器的实现机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/45%20ARM%e6%96%b0%e5%ae%a0%ef%bc%9a%e8%8b%b9%e6%9e%9c%e7%9a%84M1%e8%8a%af%e7%89%87%e5%9b%a0%e4%bd%95%e8%80%8c%e5%bf%ab%ef%bc%9f.md.html" id="45 ARM新宠：苹果的M1芯片因何而快？.md.html">45 ARM新宠：苹果的M1芯片因何而快？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/46%20AArch64%e4%bd%93%e7%b3%bb%ef%bc%9aARM%e6%9c%80%e6%96%b0%e7%bc%96%e7%a8%8b%e6%9e%b6%e6%9e%84%e6%a8%a1%e5%9e%8b%e5%89%96%e6%9e%90.md.html" id="46 AArch64体系：ARM最新编程架构模型剖析.md.html">46 AArch64体系：ARM最新编程架构模型剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/LMOS%e6%9d%a5%e4%bf%a1%ef%bc%9a%e7%ac%ac%e4%ba%8c%e5%ad%a3%e8%af%be%e7%a8%8b%e5%b8%a6%e4%bd%a0%e2%80%9c%e6%89%8b%e6%92%95%e2%80%9d%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80.md.html" id="LMOS来信：第二季课程带你“手撕”计算机基础.md.html">LMOS来信：第二季课程带你“手撕”计算机基础.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e4%bb%a5%e6%97%a0%e6%b3%95%e4%b8%ba%e6%9c%89%e6%b3%95%ef%bc%8c%e4%bb%a5%e6%97%a0%e9%99%90%e4%b8%ba%e6%9c%89%e9%99%90.md.html" id="大咖助场 以无法为有法，以无限为有限.md.html">大咖助场 以无法为有法，以无限为有限.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20yiyang%ef%bc%9a%e6%88%91%e7%9a%84%e4%b8%8a%e6%9c%ba%e5%ae%9e%e9%aa%8c%e2%80%9c%e7%88%ac%e5%9d%91%e6%8c%87%e5%8d%97%e2%80%9d.md.html" id="用户故事 yiyang：我的上机实验“爬坑指南”.md.html">用户故事 yiyang：我的上机实验“爬坑指南”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%90%e4%b8%ba%e9%9d%a2%e5%90%91%e2%80%9c%e7%9f%a5%e8%af%86%e5%ba%93%e2%80%9d%e7%9a%84%e5%b7%a5%e7%a8%8b%e5%b8%88.md.html" id="用户故事 成为面向“知识库”的工程师.md.html">用户故事 成为面向“知识库”的工程师.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%8a%80%e6%9c%af%e4%ba%ba%e5%a6%82%e4%bd%95%e5%81%9a%e9%80%89%e6%8b%a9%ef%bc%8c%e8%b7%af%e6%89%8d%e8%b6%8a%e8%b5%b0%e8%b6%8a%e5%ae%bd%ef%bc%9f.md.html" id="用户故事 技术人如何做选择，路才越走越宽？.md.html">用户故事 技术人如何做选择，路才越走越宽？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8f%91%e7%83%a7%e5%8f%8b%ef%bc%9a%e7%9c%8b%e4%b8%8d%e6%87%82%ef%bc%9f%e5%9b%a0%e4%b8%ba%e4%bd%a0%e6%b2%a1%e5%8a%a8%e6%89%8b.md.html" id="用户故事 操作系统发烧友：看不懂？因为你没动手.md.html">用户故事 操作系统发烧友：看不懂？因为你没动手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%94%a8%e5%a5%bd%e5%8a%a8%e6%80%81%e8%b0%83%e8%af%95%ef%bc%8c%e5%8a%a9%e5%8a%9b%e8%af%be%e7%a8%8b%e5%ad%a6%e4%b9%a0.md.html" id="用户故事 用好动态调试，助力课程学习.md.html">用户故事 用好动态调试，助力课程学习.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%89%be%e5%90%8c%e5%ad%a6%ef%bc%9a%e8%b7%af%e8%99%bd%e8%bf%9c%ef%bc%8c%e8%a1%8c%e5%88%99%e5%b0%86%e8%87%b3.md.html" id="用户故事 艾同学：路虽远，行则将至.md.html">用户故事 艾同学：路虽远，行则将至.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e7%94%9f%e6%b4%bb%e5%8f%af%e4%bb%a5%e4%b8%80%e5%9c%b0%e9%b8%a1%e6%af%9b%ef%bc%8c%e4%bd%86%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8d%b4%e6%98%af%e5%bf%83%e4%b8%ad%e7%9a%84%e5%85%89.md.html" id="结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html">结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="39 瞧一瞧Linux：详解socket实现与网络编程接口" id="title">39 瞧一瞧Linux：详解socket实现与网络编程接口</h1>
+<div><p>你好，我是LMOS。</p>
+<p>前面我们了解了网络的宏观架构，建立了网络模块知识的大局观，也进行了实际的组网实践。现在我们来瞧一瞧Linux的网络程序，不过想要入门Linux的网络编程，套接字也是一个绕不开的重要知识点，正是有了套接字，Linux系统才拥有了网络通信的能力。而且网络协议的最底层也是套接字，有了这个基础，你再去看相关的网络协议的时候也会更加轻松。</p>
+<p>我会通过两节课的内容带你了解套接字的原理和具体实现。这节课，我们先来了解套接字的作用、工作原理和关键数据结构。下一节课，我们再一起研究它在Linux内核中的设计与实现。</p>
+<p>好，让我们开始今天的学习吧。</p>
+<h2 id="如何理解套接字">如何理解套接字</h2>
+<p>根据底层网络机制的差异，计算机网络世界中定义了不同协议族的套接字（socket），比如DARPA Internet地址（Internet套接字）、本地节点的路径名（Unix套接字）、CCITT X.25地址（X.25 套接字）等。</p>
+<p>我们会重点讲解跟网络子系统和TCP/IP协议栈息息相关的一种套接字——Internet 套接字。如果你对其他类型的套接字有兴趣，可以自行阅读这里的<a href="https://elixir.bootlin.com/linux/v5.10.23/source/include/linux/socket.h" target="_blank">资料</a>。</p>
+<p>Internet套接字是TCP/IP协议栈中传输层协议的接口，也是传输层以上所有协议的实现。</p>
+<p>同时，套接字接口在网络程序功能中是内核与应用层之间的接口。TCP/IP协议栈的所有数据和控制功能都来自于套接字接口，与OSI网络分层模型相比，TCP/IP协议栈本身在传输层以上就不包含任何其他协议。</p>
+<p>在Linux操作系统中，替代传输层以上协议实体的标准接口，称为套接字，它负责实现传输层以上所有的功能，可以说套接字是TCP/IP协议栈对外的窗口。</p>
+<p>Linux套接字API适合所有的应用标准，现在的应用层协议也全部移植到了Linux系统中。但请你注意，在套接字层下的基础体系结构实现却是Linux系统独有的，Linux内核支持的套接字结构如图所示。-
+<img alt="" src="assets/eabc326f54b54c7080dc3174ae75b47b.jpg"/></p>
+<p>我们创建套接字时，可以通过参数选择协议族，为应用程序指定不同的网络机制。如果指定为PF_INET协议族，这里的套接字就叫做INET套接字，它的套接字接口函数提供了TCP/IP网络服务功能。现在我先带你了解一下套接字的数据结构。</p>
+<h2 id="套接字的数据结构">套接字的数据结构</h2>
+<p>在Linux操作系统下，对套接字、套接字的属性、套接字传输的数据格式还有管理套接字连接状态的数据结构分别做了一系列抽象定义。</p>
+<p>每个程序使用的套接字都有一个<strong>struct socket</strong>数据结构<strong>与struct sock</strong>数据结构的实例。</p>
+<p>Linux内核在套接字层定义了包含套接字通用属性的数据结构，分别是struct socket与struct sock，它们独立于具体协议；而具体的协议族与协议实例继承了通用套接字的属性，加入协议相关属性，就形成了管理协议本身套接字的结构。</p>
+<h3 id="struct-socket数据结构">struct socket数据结构</h3>
+<p>struct socket是套接字结构类型，每个套接字在内核中都对应唯一的struct socket结构（用户程序通过唯一的套接字描述符来表示套接字，且描述符与struct socket结构一一对应）。</p>
+<p>我们来看看struct socket数据结构是什么样，代码如下，我相信配合注释你有能力理解它。</p>
+<pre><code>struct socket { 
+    socket_state            state;  // 套接字的状态
+    unsigned long           flags;  // 套接字的设置标志。存放套接字等待缓冲区的状态信息，其值的形式如SOCK_ASYNC_NOSPACE等
+    struct fasync_struct    *fasync_list;  // 等待被唤醒的套接字列表，该链表用于异步文件调用
+    struct file             *file;  // 套接字所属的文件描述符
+    struct sock             *sk;  // 指向存放套接字属性的结构指针
+    wait_queue_head_t       wait;  //套接字的等待队列
+    short                   type;  // 套接字的类型。其取值为SOCK_XXXX形式
+    const struct proto_ops *ops;  // 套接字层的操作函数块
+}
+</code></pre>
+<h3 id="struct-sock数据结构">struct sock数据结构</h3>
+<p>在Linux内核的早期版本中，struct sock数据结构非常复杂。从Linux2.6版本以后，从两个方面对该数据结构做了优化。</p>
+<p>其一是将struct sock数据结构划分成了两个部分。一部分为描述<strong>套接字的共有属性</strong>，所有协议族的这些属性都一样；另一部分属性定义在了<strong>struct sock_common</strong>数据结构中。</p>
+<p>其二是为新套接字创建struct sock数据结构实例时，会从协议特有的缓冲槽中分配内存，不再从通用缓冲槽中分配内存。</p>
+<p>struct sock数据结构包含了大量的内核管理套接字的信息，内核把最重要的成员存放在struct sock_common数据结构中，struct sock_common数据结构嵌入在struct sock结构中，它是struct sock数据结构的第一个成员。</p>
+<p>struct sock_common数据结构是套接字在网络中的最小描述，它包含了内核管理套接字最重要信息的集合。而struct sock数据结构中包含了套接字的全部信息与特点，有的特性很少用到，甚至根本就没有用到。我们这里就看一下struct sock_common的数据结构，代码如下。</p>
+<pre><code>    struct sock_common {
+        unsigned short      skc_family;         /*地址族*/
+        volatile unsigned char  skc_state;      /*连接状态*/
+        unsigned char       skc_reuse;          /*SO_REUSEADDR设置*/
+        int         skc_bound_dev_if;
+        struct hlist_node   skc_node;
+        struct hlist_node   skc_bind_node;      /*哈希表相关*/
+        atomic_t        skc_refcnt;             /*引用计数*/
+    };
+</code></pre>
+<p>结合代码可以看到，系统中struct sock数据结构组织在特定协议的哈希链表中，skc_node是连接哈希链表中成员的哈希节点，skc_hash是引用的哈希值。接收和发送数据放在数据struct sock数据结构的两个等待队列中：sk_receive_queue和sk_write_queue。这两个队列中包含的都是Socket Buffer（后面我会展开讲）。</p>
+<p>内核使用struct sock数据结构实例中的回调函数，获取套接字上某些事件发生的消息或套接字状态发生变化。其中，使用最频繁的回调函数是<strong>sk_data_ready</strong>，用户进程等待数据到达时，就会调用该回调函数。</p>
+<h2 id="套接字与文件">套接字与文件</h2>
+<p>套接字的连接建立起来后，用户进程就可以使用常规文件操作访问套接字了。</p>
+<p>这种方式在内核中如何实现，这要取决于Linux虚拟文件系统层（VFS）的实现。在VFS中，每个文件都有一个VFS inode结构，每个套接字都分配了一个该类型的inode，套接字中的inode指针连接管理常规文件的其他结构。操作文件的函数存放在一个独立的指针表中，代码如下。</p>
+<pre><code>struct inode{
+    struct file_operation *i_fop // 指向默认文件操作函数块
+}
+</code></pre>
+<p>套接字的文件描述符的文件访问的重定向，对网络协议栈各层是透明的。而inode和socket的链接是通过直接分配一个辅助数据结构来实现的，这个数据结构的代码如下。</p>
+<pre><code>struct socket_slloc {
+  struct socket socket;
+  struct inode vfs_inode;
+}
+</code></pre>
+<h2 id="套接字缓存">套接字缓存</h2>
+<p>前面我们提到了一个Socket Buffer，也就是套接字缓存，它代表了一个要发送或者处理的报文。在Linux网络子系统中，Socket Buffer是一个关键的数据结构，因为它贯穿于整个TCP/IP协议栈的各层。Linux内核对网络数据打包处理的全过程中，始终伴随着这个Socket Buffer。</p>
+<p>你可以这样理解，<strong>Socket Buffer就是网络数据包在内核中的对象实例。</strong></p>
+<p>Socket Buffer主要由两部分组成。</p>
+<p>1.数据包：存放了在网络中实际流通的数据。-
+2.管理数据结构（struct sk_buff）：当在内核中对数据包进行时，内核还需要一些其他的数据来管理数据包和操作数据包，例如协议之间的交换信息，数据的状态，时间等。</p>
+<p>Socket Buffer有什么作用呢？struct sk_buff数据结构中存放了套接字接收/发送的数据。在发送数据时，在套接字层创建了Socket Buffer缓冲区与管理数据结构，存放来自应用程序的数据。在接收数据包时，Socket Buffer则在网络设备的驱动程序中创建，存放来自网络的数据。</p>
+<p>在发送和接受数据的过程中，各层协议的头信息会不断从数据包中插入和去掉，sk_buff结构中描述协议头信息的地址指针也会被不断地赋值和复位。</p>
+<h3 id="套接字的初始化">套接字的初始化</h3>
+<p>Linux的网络体系结构可以支持多个协议栈和网络地址类型。内核支持的每一个协议栈都会在套接字层注册一个地址族。这就解释了为什么在套接字层可以有一个通用的API，供完全不同的协议栈使用。</p>
+<p>Linux内核支持的地址族非常多，TCP/IP协议栈在套接字层注册的地址族是AF_INET，AF_INET地址族是在内核启动时注册到内核中的。TCP/IP协议栈与AF_INET地址族相连的处理函数，既可以在套接字初始化时与AF_INET地址连接起来，也可以在套接字中动态地注册新的协议栈。</p>
+<p>套接字层的初始化要为以后各协议初始化struct sock数据结构对象、套接字缓冲区Socket Buffer对象等做好准备，预留内存空间。</p>
+<p>套接字层初始化要完成的基本任务包括后面这三项。</p>
+<p>1.初始化套接字的缓存槽-
+2.为Socket Buffer创建内存缓存槽-
+3.创建虚拟文件系统</p>
+<p>初始化函数代码如下所示。</p>
+<pre><code>static int __init sock_init(void) {
+int err;       
+ /*      
+  *      初始化.sock缓存       
+  */        
+ sk_init();       
+  /*     
+  *      初始化sk_buff缓存       
+        skb_init();           
+  /*      初始化协议模块缓存      
+        
+  init_inodecache();           
+  /* 注册文件系统类型   */
+err = register_filesystem(&amp;sock_fs_type);       
+if (err)           goto out_fs;       
+sock_mnt = kern_mount(&amp;sock_fs_type);       
+if (IS_ERR(sock_mnt)) {        
+  err = PTR_ERR(sock_mnt);         
+   goto out_mount;      
+  }
+ }
+</code></pre>
+<p><strong>地址族的值和协议交换表</strong></p>
+<p>套接字是一个通用接口，它可以与多个协议族建立接口，每个协议族中又可以实现多个协议实例。</p>
+<p>TCP/IP协议栈处理完输入数据包后，将数据包交给套接字层，放在套接字的接收缓冲区队列（sk_rcv_queue）。然后数据包从套接字层离开内核，送给应用层等待数据包的用户程序。用户程序向外发送的数据包缓存在套接字的传送缓冲区队列（sk_write_queue），从套接字层进入内核地址空间。</p>
+<p>在同一个主机中，可以同时在多个协议上打开多个套接字，来接收和发送网络数据，套接字层必须确定哪个套接字是当前数据包的目标套接字。</p>
+<p>怎么精准确定呢？</p>
+<p>在Linux内核里有一个叫做struct inet_protosw的数据结构，它就负责完成这个功能，具体来看就是管理和描述struct proto_ops和struct proto之间的对应关系。这里struct proto_ops就是系统调用套接字的操作函数块，而struct proto就是跟内核协议相关的套接字操作函数块。</p>
+<p>后面这段代码是inet_protosw。</p>
+<pre><code>struct inet_protosw {
+	struct list_head list;
+	unsigned short	 type;	   /* AF_INET协议族套接字的类型,如TCP为SOCK_STREAM*/
+	unsigned short	 protocol; /* 协议族中某个协议实例的编号。如TCP协议的编码为IPPROTO_TCP  */
+ 
+	struct proto	 *prot;
+	const struct proto_ops *ops;
+  
+	unsigned char	 flags;      /* 该套接字属性的相关标志  */
+
+}
+</code></pre>
+<p>结合上面代码我们发现，内核使用<strong>struct</strong> <strong>inet_protosw</strong>数据结构实现的协议交换表，将应用程序通过socketcall系统调用指定的套接字操作，转换成对某个协议实例实现的套接字操作函数的调用。</p>
+<p>struct inet_protosw类型把INET套接字的协议族操作集与传输层协议操作集关联起来。该类型的<strong>inetsw_array</strong>数组变量实现了INET套接字的协议族操作集与具体的传输层协议关联。由struct inet_protosw数据结构类型数组inetsw_array[]构成的向量表，称为<strong>协议交换表</strong>，协议交换表满足了套接字支持多协议栈这项功能。</p>
+<h2 id="重点回顾">重点回顾</h2>
+<p>好，这节课的内容告一段落了，我来给你做个总结。这节课我们一起理解了Linux内核套接字的概念。</p>
+<p>套接字是UNIX兼容系统的一大特色，是UNIX一切皆是文件操作概念的具体实现，从实现的角度来看，<strong>套接字是通信的抽象描述；</strong>从内核角度看，同时也是一个管理通信过程的对象——<strong>struct socket结构</strong>。</p>
+<p>Linux的网络体系结构可以支持多个协议栈和网络地址类型，通过地址族的值和协议交换表，Linux的套接字实现了支持多协议栈这项功能。</p>
+<p>我特意为你梳理了这节课最关键的两个要点，需要你重点理解。</p>
+<p>1.从描述Linux套接字接口的数据结构、套接字接口初始化过程可知，Linux套接字体系结构独立于具体网络协议栈的套接字，可以同时支持多个网络协议栈的工作。-
+2.套接字内核实现，我们具体分析了套接字从创建的过程。根据分析我们可以发现，任何协议栈都可以在套接字通用体系结构的基础上，派生出具有<strong>协议族特点</strong>的套接字接口。</p>
+<h2 id="思考题">思考题</h2>
+<p>套接字也是一种进程间通信机制，它和其他通信机制有什么不同？</p>
+<p>欢迎你在留言区记录你的疑惑或者心得，也推荐你把这节课分享给身边的同事、朋友，跟他一起学习进步。</p>
+<p>我是LMOS。我们下节课见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#573b3b3b6e636666676017303a363e3b7934383a" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359a2fdcb9c5997',t:'MTc0NTU0MDAyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

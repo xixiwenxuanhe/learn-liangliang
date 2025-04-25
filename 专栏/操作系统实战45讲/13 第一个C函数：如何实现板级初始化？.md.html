@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="13 第一个C函数：如何实现板级初始化？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>13 第一个C函数：如何实现板级初始化？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%ad%a6%e5%86%99%e4%b8%80%e4%b8%aa%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="00 开篇词 为什么要学写一个操作系统？.md.html">00 开篇词 为什么要学写一个操作系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e7%bc%96%e8%be%91%e6%89%8b%e8%ae%b0%20%e5%8d%87%e7%ba%a7%e8%ae%a4%e7%9f%a5%ef%bc%8c%e8%bf%ad%e4%bb%a3%e8%87%aa%e5%b7%b1%e7%9a%84%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f.md.html" id="00 编辑手记 升级认知，迭代自己的操作系统.md.html">00 编辑手记 升级认知，迭代自己的操作系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/01%20%e7%a8%8b%e5%ba%8f%e7%9a%84%e8%bf%90%e8%a1%8c%e8%bf%87%e7%a8%8b%ef%bc%9a%e4%bb%8e%e4%bb%a3%e7%a0%81%e5%88%b0%e6%9c%ba%e5%99%a8%e8%bf%90%e8%a1%8c.md.html" id="01 程序的运行过程：从代码到机器运行.md.html">01 程序的运行过程：从代码到机器运行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/02%20%e5%87%a0%e8%a1%8c%e6%b1%87%e7%bc%96%e5%87%a0%e8%a1%8cC%ef%bc%9a%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e5%8d%95%e7%9a%84%e5%86%85%e6%a0%b8.md.html" id="02 几行汇编几行C：实现一个最简单的内核.md.html">02 几行汇编几行C：实现一个最简单的内核.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/03%20%e9%bb%91%e7%9b%92%e4%b9%8b%e4%b8%ad%e6%9c%89%e4%bb%80%e4%b9%88%ef%bc%9a%e5%86%85%e6%a0%b8%e7%bb%93%e6%9e%84%e4%b8%8e%e8%ae%be%e8%ae%a1.md.html" id="03 黑盒之中有什么：内核结构与设计.md.html">03 黑盒之中有什么：内核结构与设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/04%20%e9%9c%87%e6%92%bc%e7%9a%84Linux%e5%85%a8%e6%99%af%e5%9b%be%ef%bc%9a%e4%b8%9a%e7%95%8c%e6%88%90%e7%86%9f%e7%9a%84%e5%86%85%e6%a0%b8%e6%9e%b6%e6%9e%84%e9%95%bf%e4%bb%80%e4%b9%88%e6%a0%b7%ef%bc%9f.md.html" id="04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html">04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/05%20CPU%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%89%a7%e8%a1%8c%e7%a8%8b%e5%ba%8f%e7%9a%84%e4%b8%89%e7%a7%8d%e6%a8%a1%e5%bc%8f.md.html" id="05 CPU工作模式：执行程序的三种模式.md.html">05 CPU工作模式：执行程序的三种模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/06%20%e8%99%9a%e5%b9%bb%e4%b8%8e%e7%9c%9f%e5%ae%9e%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e7%9a%84%e5%9c%b0%e5%9d%80%e5%a6%82%e4%bd%95%e8%bd%ac%e6%8d%a2%ef%bc%9f.md.html" id="06 虚幻与真实：程序中的地址如何转换？.md.html">06 虚幻与真实：程序中的地址如何转换？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/07%20Cache%e4%b8%8e%e5%86%85%e5%ad%98%ef%bc%9a%e7%a8%8b%e5%ba%8f%e6%94%be%e5%9c%a8%e5%93%aa%e5%84%bf%ef%bc%9f.md.html" id="07 Cache与内存：程序放在哪儿？.md.html">07 Cache与内存：程序放在哪儿？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/08%20%e9%94%81%ef%bc%9a%e5%b9%b6%e5%8f%91%e6%93%8d%e4%bd%9c%e4%b8%ad%ef%bc%8c%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%e7%9a%84%e5%9b%9b%e7%a7%8d%e6%96%b9%e6%b3%95.md.html" id="08 锁：并发操作中，解决数据同步的四种方法.md.html">08 锁：并发操作中，解决数据同步的四种方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/09%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e7%9a%84%e8%87%aa%e6%97%8b%e9%94%81%e5%92%8c%e4%bf%a1%e5%8f%b7%e9%87%8f%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html">09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/10%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%bb%ba%e7%ab%8b%e8%ae%a1%e7%ae%97%e6%9c%ba.md.html" id="10 设置工作模式与环境（上）：建立计算机.md.html">10 设置工作模式与环境（上）：建立计算机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/11%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%bb%ba%e9%80%a0%e4%ba%8c%e7%ba%a7%e5%bc%95%e5%af%bc%e5%99%a8.md.html" id="11 设置工作模式与环境（中）：建造二级引导器.md.html">11 设置工作模式与环境（中）：建造二级引导器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/12%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%8e%a2%e6%9f%a5%e5%92%8c%e6%94%b6%e9%9b%86%e4%bf%a1%e6%81%af.md.html" id="12 设置工作模式与环境（下）：探查和收集信息.md.html">12 设置工作模式与环境（下）：探查和收集信息.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/13%20%e7%ac%ac%e4%b8%80%e4%b8%aaC%e5%87%bd%e6%95%b0%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9d%bf%e7%ba%a7%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="13 第一个C函数：如何实现板级初始化？.md.html">13 第一个C函数：如何实现板级初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/14%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aGRUB%e4%b8%8evmlinuz%e7%9a%84%e7%bb%93%e6%9e%84.md.html" id="14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html">14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/15%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8e_start%e5%88%b0%e7%ac%ac%e4%b8%80%e4%b8%aa%e8%bf%9b%e7%a8%8b.md.html" id="15 Linux初始化（下）：从_start到第一个进程.md.html">15 Linux初始化（下）：从_start到第一个进程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/16%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%92%e5%88%86%e4%b8%8e%e7%bb%84%e7%bb%87%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="16 划分土地（上）：如何划分与组织内存？.md.html">16 划分土地（上）：如何划分与组织内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/17%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e9%9d%a2%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="17 划分土地（中）：如何实现内存页面初始化？.md.html">17 划分土地（中）：如何实现内存页面初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/18%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e7%9a%84%e5%88%86%e9%85%8d%e4%b8%8e%e9%87%8a%e6%94%be%ef%bc%9f.md.html" id="18 划分土地（下）：如何实现内存页的分配与释放？.md.html">18 划分土地（下）：如何实现内存页的分配与释放？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/19%20%e5%9c%9f%e5%9c%b0%e4%b8%8d%e8%83%bd%e6%b5%aa%e8%b4%b9%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%86%85%e5%ad%98%e5%af%b9%e8%b1%a1%ef%bc%9f.md.html" id="19 土地不能浪费：如何管理内存对象？.md.html">19 土地不能浪费：如何管理内存对象？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/20%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="20 土地需求扩大与保障：如何表示虚拟内存？.md.html">20 土地需求扩大与保障：如何表示虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/21%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%92%8c%e9%87%8a%e6%94%be%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html">21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/22%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e4%bc%99%e4%bc%b4%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html">22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/23%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aSLAB%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="23 瞧一瞧Linux：SLAB如何分配内存？.md.html">23 瞧一瞧Linux：SLAB如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/24%20%e6%b4%bb%e5%8a%a8%e7%9a%84%e6%8f%8f%e8%bf%b0%ef%bc%9a%e5%88%b0%e5%ba%95%e4%bb%80%e4%b9%88%e6%98%af%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="24 活动的描述：到底什么是进程？.md.html">24 活动的描述：到底什么是进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/25%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a4%9a%e8%bf%9b%e7%a8%8b%e5%a6%82%e4%bd%95%e8%b0%83%e5%ba%a6%ef%bc%9f.md.html" id="25 多个活动要安排（上）：多进程如何调度？.md.html">25 多个活动要安排（上）：多进程如何调度？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/26%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e7%9a%84%e7%ad%89%e5%be%85%e4%b8%8e%e5%94%a4%e9%86%92%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html">26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/27%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e4%b8%8e%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6_.md.html" id="27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html">27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/28%20%e9%83%a8%e9%97%a8%e5%88%86%e7%b1%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%ae%be%e5%a4%87%e7%b1%bb%e5%9e%8b%e4%b8%8e%e8%ae%be%e5%a4%87%e9%a9%b1%e5%8a%a8%ef%bc%9f.md.html" id="28 部门分类：如何表示设备类型与设备驱动？.md.html">28 部门分类：如何表示设备类型与设备驱动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/29%20%e9%83%a8%e9%97%a8%e5%bb%ba%e7%ab%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e6%b3%a8%e5%86%8c%e8%ae%be%e5%a4%87%ef%bc%9f.md.html" id="29 部门建立：如何在内核中注册设备？.md.html">29 部门建立：如何在内核中注册设备？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/30%20%e9%83%a8%e9%97%a8%e5%93%8d%e5%ba%94%ef%bc%9a%e8%ae%be%e5%a4%87%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%86%85%e6%a0%b8I_O%e5%8c%85%ef%bc%9f.md.html" id="30 部门响应：设备如何处理内核I_O包？.md.html">30 部门响应：设备如何处理内核I_O包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/31%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e6%89%80%e6%9c%89%e8%ae%be%e5%a4%87%e4%bf%a1%e6%81%af%ef%bc%9f.md.html" id="31 瞧一瞧Linux：如何获取所有设备信息？.md.html">31 瞧一瞧Linux：如何获取所有设备信息？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/32%20%e4%bb%93%e5%ba%93%e7%bb%93%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e6%96%87%e4%bb%b6_.md.html" id="32 仓库结构：如何组织文件_.md.html">32 仓库结构：如何组织文件_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/33%20%e4%bb%93%e5%ba%93%e5%88%92%e5%88%86%ef%bc%9a%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%a0%bc%e5%bc%8f%e5%8c%96%e6%93%8d%e4%bd%9c.md.html" id="33 仓库划分：文件系统的格式化操作.md.html">33 仓库划分：文件系统的格式化操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/34%20%e4%bb%93%e5%ba%93%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%96%87%e4%bb%b6%e7%9a%84%e5%85%ad%e5%a4%a7%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="34 仓库管理：如何实现文件的六大基本操作？.md.html">34 仓库管理：如何实现文件的六大基本操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/35%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%99%9a%e6%8b%9f%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html">35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/36%20%e4%bb%8eURL%e5%88%b0%e7%bd%91%e5%8d%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e5%85%a8%e5%b1%80%e8%a7%82%e5%af%9f%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%8a%a8%ef%bc%9f.md.html" id="36 从URL到网卡：如何全局观察网络数据流动？.md.html">36 从URL到网卡：如何全局观察网络数据流动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/37%20%e4%bb%8e%e5%86%85%e6%a0%b8%e5%88%b0%e5%ba%94%e7%94%a8%ef%bc%9a%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e5%a6%82%e4%bd%95%e6%b5%81%e8%bd%ac.md.html" id="37 从内核到应用：网络数据在内核中如何流转.md.html">37 从内核到应用：网络数据在内核中如何流转.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/38%20%e4%bb%8e%e5%8d%95%e6%8e%92%e5%88%b0%e5%9b%a2%e6%88%98%ef%bc%9a%e8%af%a6%e8%a7%a3%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e7%9a%84%e5%ae%8f%e8%a7%82%e7%bd%91%e7%bb%9c%e6%9e%b6%e6%9e%84.md.html" id="38 从单排到团战：详解操作系统的宏观网络架构.md.html">38 从单排到团战：详解操作系统的宏观网络架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/39%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e5%ae%9e%e7%8e%b0%e4%b8%8e%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e6%8e%a5%e5%8f%a3.md.html" id="39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html">39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/40%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0.md.html" id="40 瞧一瞧Linux：详解socket的接口实现.md.html">40 瞧一瞧Linux：详解socket的接口实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/41%20%e6%9c%8d%e5%8a%a1%e6%8e%a5%e5%8f%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e6%90%ad%e5%bb%ba%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="41 服务接口：如何搭建沟通桥梁？.md.html">41 服务接口：如何搭建沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/42%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%b3%bb%e7%bb%9fAPI%ef%bc%9f.md.html" id="42 瞧一瞧Linux：如何实现系统API？.md.html">42 瞧一瞧Linux：如何实现系统API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/43%20%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%86%85%e6%a0%b8%ef%bc%9aKVM%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="43 虚拟机内核：KVM是什么？.md.html">43 虚拟机内核：KVM是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/44%20%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e5%ae%b9%e5%99%a8%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="44 容器：如何理解容器的实现机制？.md.html">44 容器：如何理解容器的实现机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/45%20ARM%e6%96%b0%e5%ae%a0%ef%bc%9a%e8%8b%b9%e6%9e%9c%e7%9a%84M1%e8%8a%af%e7%89%87%e5%9b%a0%e4%bd%95%e8%80%8c%e5%bf%ab%ef%bc%9f.md.html" id="45 ARM新宠：苹果的M1芯片因何而快？.md.html">45 ARM新宠：苹果的M1芯片因何而快？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/46%20AArch64%e4%bd%93%e7%b3%bb%ef%bc%9aARM%e6%9c%80%e6%96%b0%e7%bc%96%e7%a8%8b%e6%9e%b6%e6%9e%84%e6%a8%a1%e5%9e%8b%e5%89%96%e6%9e%90.md.html" id="46 AArch64体系：ARM最新编程架构模型剖析.md.html">46 AArch64体系：ARM最新编程架构模型剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/LMOS%e6%9d%a5%e4%bf%a1%ef%bc%9a%e7%ac%ac%e4%ba%8c%e5%ad%a3%e8%af%be%e7%a8%8b%e5%b8%a6%e4%bd%a0%e2%80%9c%e6%89%8b%e6%92%95%e2%80%9d%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80.md.html" id="LMOS来信：第二季课程带你“手撕”计算机基础.md.html">LMOS来信：第二季课程带你“手撕”计算机基础.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e4%bb%a5%e6%97%a0%e6%b3%95%e4%b8%ba%e6%9c%89%e6%b3%95%ef%bc%8c%e4%bb%a5%e6%97%a0%e9%99%90%e4%b8%ba%e6%9c%89%e9%99%90.md.html" id="大咖助场 以无法为有法，以无限为有限.md.html">大咖助场 以无法为有法，以无限为有限.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20yiyang%ef%bc%9a%e6%88%91%e7%9a%84%e4%b8%8a%e6%9c%ba%e5%ae%9e%e9%aa%8c%e2%80%9c%e7%88%ac%e5%9d%91%e6%8c%87%e5%8d%97%e2%80%9d.md.html" id="用户故事 yiyang：我的上机实验“爬坑指南”.md.html">用户故事 yiyang：我的上机实验“爬坑指南”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%90%e4%b8%ba%e9%9d%a2%e5%90%91%e2%80%9c%e7%9f%a5%e8%af%86%e5%ba%93%e2%80%9d%e7%9a%84%e5%b7%a5%e7%a8%8b%e5%b8%88.md.html" id="用户故事 成为面向“知识库”的工程师.md.html">用户故事 成为面向“知识库”的工程师.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%8a%80%e6%9c%af%e4%ba%ba%e5%a6%82%e4%bd%95%e5%81%9a%e9%80%89%e6%8b%a9%ef%bc%8c%e8%b7%af%e6%89%8d%e8%b6%8a%e8%b5%b0%e8%b6%8a%e5%ae%bd%ef%bc%9f.md.html" id="用户故事 技术人如何做选择，路才越走越宽？.md.html">用户故事 技术人如何做选择，路才越走越宽？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8f%91%e7%83%a7%e5%8f%8b%ef%bc%9a%e7%9c%8b%e4%b8%8d%e6%87%82%ef%bc%9f%e5%9b%a0%e4%b8%ba%e4%bd%a0%e6%b2%a1%e5%8a%a8%e6%89%8b.md.html" id="用户故事 操作系统发烧友：看不懂？因为你没动手.md.html">用户故事 操作系统发烧友：看不懂？因为你没动手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%94%a8%e5%a5%bd%e5%8a%a8%e6%80%81%e8%b0%83%e8%af%95%ef%bc%8c%e5%8a%a9%e5%8a%9b%e8%af%be%e7%a8%8b%e5%ad%a6%e4%b9%a0.md.html" id="用户故事 用好动态调试，助力课程学习.md.html">用户故事 用好动态调试，助力课程学习.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%89%be%e5%90%8c%e5%ad%a6%ef%bc%9a%e8%b7%af%e8%99%bd%e8%bf%9c%ef%bc%8c%e8%a1%8c%e5%88%99%e5%b0%86%e8%87%b3.md.html" id="用户故事 艾同学：路虽远，行则将至.md.html">用户故事 艾同学：路虽远，行则将至.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e7%94%9f%e6%b4%bb%e5%8f%af%e4%bb%a5%e4%b8%80%e5%9c%b0%e9%b8%a1%e6%af%9b%ef%bc%8c%e4%bd%86%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8d%b4%e6%98%af%e5%bf%83%e4%b8%ad%e7%9a%84%e5%85%89.md.html" id="结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html">结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="13 第一个C函数：如何实现板级初始化？" id="title">13 第一个C函数：如何实现板级初始化？</h1>
+<div><p>你好，我是LMOS。</p>
+<p>前面三节课，我们为调用Cosmos的<strong>第一个C函数hal_start做了大量工作。</strong>这节课我们要让操作系统Cosmos里的第一个C函数真正跑起来啦，也就是说，我们会真正进入到我们的内核中。</p>
+<p>今天我们会继续在这个hal_start函数里，首先执行板级初始化，其实就是hal层（硬件抽象层，下同）初始化，其中执行了平台初始化，hal层的内存初始化，中断初始化，最后进入到内核层的初始化。</p>
+<p>这节课的配套代码，你可以从<a href="https://gitee.com/lmos/cosmos/tree/master/lesson13/Cosmos" target="_blank">这里</a>下载。</p>
+<h2 id="第一个c函数">第一个C函数</h2>
+<p>任何软件工程，第一个函数总是简单的，因为它是总调用者，像是一个管理者，坐在那里发号施令，自己却是啥活也不干。</p>
+<p>由于这是第一个C函数，也是初始化函数，我们还是要为它单独建立一个文件，以显示对它的尊重，依然在Cosmos/hal/x86/下建立一个hal_start.c文件。写上这样一个函数。</p>
+<pre><code>void hal_start()
+{
+    //第一步：初始化hal层
+    //第二步：初始化内核层
+    for(;;);
+    return;
+}
+</code></pre>
+<p>根据前面的设计，Cosmos是有hal层和内核层之分，所以在上述代码中，要分两步走。第一步是初始化hal层；第二步，初始化内核层。只是这两步的函数我们还没有写。</p>
+<p>然而最后的死循环却有点奇怪，其实它的目的很简单，就是避免这个函数返回，因为这个返回了就无处可去，避免走回头路。</p>
+<h3 id="hal层初始化">hal层初始化</h3>
+<p>为了分离硬件的特性，我们设计了hal层，把硬件相关的操作集中在这个层，并向上提供接口，目的是让内核上层不用关注硬件相关的细节，也能方便以后移植和扩展。(关于hal层的设计，可以回顾<a href="https://time.geekbang.org/column/article/372609" target="_blank">第3节课</a>)</p>
+<p>也许今天我们是在x86平台上写Cosmos，明天就要在ARM平台上开发Cosmos，那时我们就可以写个ARM平台的hal层，来替换Cosmos中的x86平台的hal层。</p>
+<p>下面我们在Cosmos/hal/x86/下建立一个halinit.c文件，写出hal层的初始化函数。</p>
+<pre><code>void init_hal()
+{
+    //初始化平台
+    //初始化内存
+    //初始化中断
+    return;
+}
+</code></pre>
+<p>这个函数也是一个调用者，没怎么干活。不过根据代码的注释能看出，它调用的函数多一点，但主要是完成初始化平台、初始化内存、初始化中断的功能函数。</p>
+<h4 id="初始化平台">初始化平台</h4>
+<p>我们先来写好平台初始化函数，因为它需要最先被调用。</p>
+<p>这个函数主要负责完成两个任务，一是<strong>把二级引导器建立的机器信息结构复制到hal层中的一个全局变量中</strong>，方便内核中的其它代码使用里面的信息，之后二级引导器建立的数据所占用的内存都会被释放。二是要<strong>初始化图形显示驱动</strong>，内核在运行过程要在屏幕上输出信息。</p>
+<p>下面我们在Cosmos/hal/x86/下建立一个halplatform.c文件，写上如下代码。</p>
+<pre><code>void machbstart_t_init(machbstart_t *initp)
+{
+    //清零
+    memset(initp, 0, sizeof(machbstart_t));
+    return;
+}
+
+void init_machbstart()
+{
+    machbstart_t *kmbsp = &amp;kmachbsp;
+    machbstart_t *smbsp = MBSPADR;//物理地址1MB处
+    machbstart_t_init(kmbsp);
+    //复制，要把地址转换成虚拟地址
+    memcopy((void *)phyadr_to_viradr((adr_t)smbsp), (void *)kmbsp, sizeof(machbstart_t));
+    return;
+}
+//平台初始化函数
+void init_halplaltform()
+{
+    //复制机器信息结构
+    init_machbstart();
+    //初始化图形显示驱动
+    init_bdvideo();
+    return;
+}
+</code></pre>
+<p>这个代码中别的地方很好理解，就是kmachbsp你可能会有点奇怪，它是个结构体变量，结构体类型是machbstart_t，这个结构和二级引导器所使用的一模一样。</p>
+<p>同时，它还是一个hal层的全局变量，我们想专门有个文件定义所有hal层的全局变量，于是我们在Cosmos/hal/x86/下建立一个halglobal.c文件，写上如下代码。</p>
+<pre><code>//全局变量定义变量放在data段
+#define HAL_DEFGLOB_VARIABLE(vartype,varname) \
+EXTERN  __attribute__((section(".data"))) vartype varname
+
+HAL_DEFGLOB_VARIABLE(machbstart_t,kmachbsp);
+</code></pre>
+<p>前面的EXTERN，在halglobal.c文件中定义为空，而在其它文件中定义为extern，告诉编译器这是外部文件的变量，避免发生错误。</p>
+<p>下面，我们在Cosmos/hal/x86/下的bdvideo.c文件中，写好init_bdvideo函数。</p>
+<pre><code>void init_bdvideo()
+{
+    dftgraph_t *kghp = &amp;kdftgh;
+    //初始化图形数据结构，里面放有图形模式，分辨率，图形驱动函数指针
+    init_dftgraph();
+    //初始bga图形显卡的函数指针
+    init_bga();
+    //初始vbe图形显卡的函数指针
+    init_vbe();
+    //清空屏幕 为黑色
+    fill_graph(kghp, BGRA(0, 0, 0));
+    //显示背景图片 
+    set_charsdxwflush(0, 0);
+    hal_background();
+    return;
+}
+</code></pre>
+<p>init_dftgraph()函数初始了dftgraph_t结构体类型的变量kdftgh，我们在halglobal.c文件中定义这个变量，结构类型我们这样来定义。</p>
+<pre><code>typedef struct s_DFTGRAPH
+{
+    u64_t gh_mode;         //图形模式
+    u64_t gh_x;            //水平像素点
+    u64_t gh_y;            //垂直像素点
+    u64_t gh_framphyadr;   //显存物理地址 
+    u64_t gh_fvrmphyadr;   //显存虚拟地址
+    u64_t gh_fvrmsz;       //显存大小
+    u64_t gh_onepixbits;   //一个像素字占用的数据位数
+    u64_t gh_onepixbyte;
+    u64_t gh_vbemodenr;    //vbe模式号
+    u64_t gh_bank;         //显存的bank数
+    u64_t gh_curdipbnk;    //当前bank
+    u64_t gh_nextbnk;      //下一个bank
+    u64_t gh_banksz;       //bank大小
+    u64_t gh_fontadr;      //字库地址
+    u64_t gh_fontsz;       //字库大小
+    u64_t gh_fnthight;     //字体高度
+    u64_t gh_nxtcharsx;    //下一字符显示的x坐标
+    u64_t gh_nxtcharsy;    //下一字符显示的y坐标
+    u64_t gh_linesz;       //字符行高
+    pixl_t gh_deffontpx;   //默认字体大小
+    u64_t gh_chardxw;
+    u64_t gh_flush;
+    u64_t gh_framnr;
+    u64_t gh_fshdata;      //刷新相关的
+    dftghops_t gh_opfun;   //图形驱动操作函数指针结构体
+}dftgraph_t;
+typedef struct s_DFTGHOPS
+{
+    //读写显存数据
+    size_t (*dgo_read)(void* ghpdev,void* outp,size_t rdsz);
+    size_t (*dgo_write)(void* ghpdev,void* inp,size_t wesz);
+    sint_t (*dgo_ioctrl)(void* ghpdev,void* outp,uint_t iocode);
+    //刷新
+    void   (*dgo_flush)(void* ghpdev);
+    sint_t (*dgo_set_bank)(void* ghpdev, sint_t bnr);
+    //读写像素
+    pixl_t (*dgo_readpix)(void* ghpdev,uint_t x,uint_t y);
+    void   (*dgo_writepix)(void* ghpdev,pixl_t pix,uint_t x,uint_t y);
+    //直接读写像素 
+    pixl_t (*dgo_dxreadpix)(void* ghpdev,uint_t x,uint_t y);
+    void   (*dgo_dxwritepix)(void* ghpdev,pixl_t pix,uint_t x,uint_t y);
+    //设置x，y坐标和偏移
+    sint_t (*dgo_set_xy)(void* ghpdev,uint_t x,uint_t y);
+    sint_t (*dgo_set_vwh)(void* ghpdev,uint_t vwt,uint_t vhi);
+    sint_t (*dgo_set_xyoffset)(void* ghpdev,uint_t xoff,uint_t yoff);
+    //获取x，y坐标和偏移
+    sint_t (*dgo_get_xy)(void* ghpdev,uint_t* rx,uint_t* ry);
+    sint_t (*dgo_get_vwh)(void* ghpdev,uint_t* rvwt,uint_t* rvhi);
+    sint_t (*dgo_get_xyoffset)(void* ghpdev,uint_t* rxoff,uint_t* ryoff);
+}dftghops_t;
+//刷新显存
+void flush_videoram(dftgraph_t *kghp)
+{
+    kghp-&gt;gh_opfun.dgo_flush(kghp);
+    return;
+}
+</code></pre>
+<p>不难发现，我们正是把这些实际的图形驱动函数的地址填入了这个结构体中，然后通过这个结构体，我们就可以调用到相应的函数了。</p>
+<p>因为写这些函数都是体力活，我已经帮你搞定了，你直接使用就可以。上面的flush_videoram函数已经证明了这一想法。</p>
+<p>来，我们测试一下，看看结果，我们图形驱动程序初始化会显示背景图片——background.bmp，这是在打包映像文件时包含进去的，你自己可以随时替换，只要是满足<strong>1024*768，24位的位图文件</strong>就行了。</p>
+<p>下面我们要把这些函数调用起来：</p>
+<pre><code>//在halinit.c文件中
+void init_hal()
+{
+    init_halplaltform();
+    return;
+}
+//在hal_start.c文件中
+void hal_start()
+{
+    init_hal();//初始化hal层，其中会调用初始化平台函数，在那里会调用初始化图形驱动
+    for(;;);
+    return;
+}
+</code></pre>
+<p>接下来，让我们一起make vboxtest，应该很有成就感。一幅风景图呈现在我们面前，上面有Cosmos的版本、编译时间、CPU工作模式，内存大小等数据。这相当一个我们Cosmos的水印信息。</p>
+<p><img alt="" src="assets/57d85c0b5dbd4d1798a8f6755a8f1842.jpg"/></p>
+<h4 id="初始化内存">初始化内存</h4>
+<p>首先，我们在Cosmos/hal/x86/下建立一个halmm.c文件，用于初始化内存，为了后面的内存管理器作好准备。</p>
+<p>hal层的内存初始化比较容易，只要向内存管理器提供内存空间布局信息就可以。</p>
+<p>你可能在想，不对啊，明明我们在二级引导器中已经获取了内存布局信息，是的，<strong>但Cosmos的内存管理器需要保存更多的信息，最好是顺序的内存布局信息，这样可以增加额外的功能属性，同时降低代码的复杂度。</strong></p>
+<p>不难发现，BIOS提供的结构无法满足前面这些要求。不过我们也有办法解决，只要以BIOS提供的结构为基础，设计一套新的数据结构就搞定了。这个结构可以这样设计。</p>
+<pre><code>#define PMR_T_OSAPUSERRAM 1
+#define PMR_T_RESERVRAM 2
+#define PMR_T_HWUSERRAM 8
+#define PMR_T_ARACONRAM 0xf
+#define PMR_T_BUGRAM 0xff
+#define PMR_F_X86_32 (1&lt;&lt;0)
+#define PMR_F_X86_64 (1&lt;&lt;1)
+#define PMR_F_ARM_32 (1&lt;&lt;2)
+#define PMR_F_ARM_64 (1&lt;&lt;3)
+#define PMR_F_HAL_MASK 0xff
+
+typedef struct s_PHYMMARGE
+{
+    spinlock_t pmr_lock;//保护这个结构是自旋锁
+    u32_t pmr_type;     //内存地址空间类型
+    u32_t pmr_stype;
+    u32_t pmr_dtype;    //内存地址空间的子类型，见上面的宏
+    u32_t pmr_flgs;     //结构的标志与状态
+    u32_t pmr_stus;
+    u64_t pmr_saddr;    //内存空间的开始地址
+    u64_t pmr_lsize;    //内存空间的大小
+    u64_t pmr_end;      //内存空间的结束地址
+    u64_t pmr_rrvmsaddr;//内存保留空间的开始地址
+    u64_t pmr_rrvmend;  //内存保留空间的结束地址
+    void* pmr_prip;     //结构的私有数据指针，以后扩展所用
+    void* pmr_extp;     //结构的扩展数据指针，以后扩展所用
+}phymmarge_t;
+</code></pre>
+<p>有些情况下内核要另起炉灶，不想把所有的内存空间都交给内存管理器去管理，所以要保留一部分内存空间，这就是上面结构中那两个pmr_rrvmsaddr、pmr_rrvmend字段的作用。</p>
+<p>有了数据结构，我们还要写代码来操作它：</p>
+<pre><code>u64_t initpmrge_core(e820map_t *e8sp, u64_t e8nr, phymmarge_t *pmargesp)
+{
+    u64_t retnr = 0;
+    for (u64_t i = 0; i &lt; e8nr; i++)
+    {
+        //根据一个e820map_t结构建立一个phymmarge_t结构
+        if (init_one_pmrge(&amp;e8sp[i], &amp;pmargesp[i]) == FALSE)
+        {
+            return retnr;
+        }
+        retnr++;
+    }
+    return retnr;
+}
+void init_phymmarge()
+{
+    machbstart_t *mbsp = &amp;kmachbsp;
+    phymmarge_t *pmarge_adr = NULL;
+    u64_t pmrgesz = 0;
+    //根据machbstart_t机器信息结构计算获得phymmarge_t结构的开始地址和大小
+    ret_phymmarge_adrandsz(mbsp, &amp;pmarge_adr, &amp;pmrgesz);
+    u64_t tmppmrphyadr = mbsp-&gt;mb_nextwtpadr;
+    e820map_t *e8p = (e820map_t *)((adr_t)(mbsp-&gt;mb_e820padr));
+    //建立phymmarge_t结构
+    u64_t ipmgnr = initpmrge_core(e8p, mbsp-&gt;mb_e820nr, pmarge_adr);
+    //把phymmarge_t结构的地址大小个数保存machbstart_t机器信息结构中
+    mbsp-&gt;mb_e820expadr = tmppmrphyadr;
+    mbsp-&gt;mb_e820exnr = ipmgnr;
+    mbsp-&gt;mb_e820exsz = ipmgnr * sizeof(phymmarge_t);
+    mbsp-&gt;mb_nextwtpadr = PAGE_ALIGN(mbsp-&gt;mb_e820expadr + mbsp-&gt;mb_e820exsz);
+    //phymmarge_t结构中地址空间从低到高进行排序，我已经帮你写好了
+    phymmarge_sort(pmarge_adr, ipmgnr);
+    return;
+}
+</code></pre>
+<p>结合上面的代码，你会发现这是根据e820map_t结构数组，建立了一个phymmarge_t结构数组，init_one_pmrge函数正是把e820map_t结构中的信息复制到phymmarge_t结构中来。理解了这个原理，即使不看我的，你自己也会写。</p>
+<p>下面我们把这些函数，用一个总管函数调动起来，这个总管函数叫什么名字好呢？当然是init_halmm，如下所示。</p>
+<pre><code>void init_halmm()
+{
+    init_phymmarge();
+    //init_memmgr();
+    return;
+}
+</code></pre>
+<p>这里init_halmm函数中还调用了init_memmgr函数，这个正是这我们内存管理器初始化函数，我会在内存管理的那节课展开讲。而init_halmm函数将要被init_hal函数调用。</p>
+<h4 id="初始化中断">初始化中断</h4>
+<p>什么是中断呢？为了帮你快速理解，我们先来看两种情景：</p>
+<ol>
+<li>你在开车时，突然汽车引擎坏了，你需要修复它才能继续驾驶汽车……</li>
+<li>你在外旅游，你女朋友突然来电话了，你可以选择接电话或者不接电话，当然不接电话的后果很严重（笑）……</li>
+</ol>
+<p>在以上两种情景中，虽然不十分恰当，但都是在做一件事时，因为一些原因而要切换到另一件事上。其实计算机中的CPU也是一样，在做一件事时，因为一些原因要转而做另一件事，于是中断产生了……</p>
+<p>根据原因的类型不同，中断被分为两类。</p>
+<p>异常，这是同步的，原因是错误和故障，就像汽车引擎坏了。不修复错误就不能继续运行，所以这时，CPU会跳到这种错误的处理代码那里开始运行，运行完了会返回。</p>
+<p>为啥说它是同步的呢？这是因为如果不修改程序中的错误，下次运行程序到这里同样会发生异常。</p>
+<p>中断，这是异步的，我们通常说的中断就是这种类型，它是因为外部事件而产生的，就好像旅游时女朋友来电话了。通常设备需要CPU关注时，会给CPU发送一个中断信号，所以这时CPU会跳到处理这种事件的代码那里开始运行，运行完了会返回。</p>
+<p>由于不确定何种设备何时发出这种中断信号，所以它是异步的。</p>
+<p>在x86 CPU上，最多支持256个中断，还记得前面所说的中断表和中断门描述符吗，这意味着我们要准备256个中断门描述符和256个中断处理程序的入口。</p>
+<p>下面我们来定义它，如下所示：</p>
+<pre><code>typedef struct s_GATE
+{
+        u16_t   offset_low;     /* 偏移 */
+        u16_t   selector;       /* 段选择子 */
+        u8_t    dcount;         /* 该字段只在调用门描述符中有效。如果在利用调用门调用子程序时引起特权级的转换和堆栈的改变，需要将外层堆栈中的参数复制到内层堆栈。该双字计数字段就是用于说明这种情况发生时，要复制的双字参数的数量。*/
+        u8_t    attr;           /* P(1) DPL(2) DT(1) TYPE(4) */
+        u16_t   offset_high;    /* 偏移的高位段 */
+        u32_t   offset_high_h;
+        u32_t   offset_resv;
+}__attribute__((packed)) gate_t;
+//定义中断表
+HAL_DEFGLOB_VARIABLE(gate_t,x64_idt)[IDTMAX];
+</code></pre>
+<p>说到这里你会发现，中断表其实是个gate_t结构的数组，由CPU的IDTR寄存器指向，IDTMAX为256。</p>
+<p>但是光有数组还不行，还要设置其中的数据，下面我们就来设计这个函数，建立一个文件halsgdidt.c，在其中写一个函数，代码如下。</p>
+<pre><code>//vector 向量也是中断号
+//desc_type 中断门类型，中断门，陷阱门
+//handler 中断处理程序的入口地址
+//privilege 中断门的权限级别
+void set_idt_desc(u8_t vector, u8_t desc_type, inthandler_t handler, u8_t privilege)
+{
+    gate_t *p_gate = &amp;x64_idt[vector];
+    u64_t base = (u64_t)handler;
+    p_gate-&gt;offset_low = base &amp; 0xFFFF;
+    p_gate-&gt;selector = SELECTOR_KERNEL_CS;
+    p_gate-&gt;dcount = 0;
+    p_gate-&gt;attr = (u8_t)(desc_type | (privilege &lt;&lt; 5));
+    p_gate-&gt;offset_high = (u16_t)((base &gt;&gt; 16) &amp; 0xFFFF);
+    p_gate-&gt;offset_high_h = (u32_t)((base &gt;&gt; 32) &amp; 0xffffffff);
+    p_gate-&gt;offset_resv = 0;
+    return;
+}
+</code></pre>
+<p>上面的代码，正是按照要求，把这些数据填入中断门描述符中的。有了中断门之后，还差中断入口处理程序，中断入口处理程序只负责这三件事：</p>
+<p>1.保护CPU 寄存器，即中断发生时的程序运行的上下文。-
+2.调用中断处理程序，这个程序可以是修复异常的，可以是设备驱动程序中对设备响应的程序。-
+3.恢复CPU寄存器，即恢复中断时程序运行的上下文，使程序继续运行。</p>
+<p>以上这些操作又要用汇编代码才可以编写，我觉得这是内核中最重要的部分，所以我们建立一个文件，并用kernel.asm命名。</p>
+<p>我们先来写好完成以上三个功能的汇编宏代码，避免写256遍同样的代码，代码如下所示。</p>
+<pre><code>//保存中断后的寄存器
+%macro	SAVEALL	0
+	push rax
+	push rbx
+	push rcx
+	push rdx
+	push rbp
+	push rsi
+	push rdi
+	push r8
+	push r9
+	push r10
+	push r11
+	push r12
+	push r13
+	push r14
+	push r15
+	xor r14,r14
+	mov r14w,ds
+	push r14
+	mov r14w,es
+	push r14
+	mov r14w,fs
+	push r14
+	mov r14w,gs
+	push r14
+%endmacro
+//恢复中断后寄存器
+%macro	RESTOREALL	0
+	pop r14
+	mov gs,r14w
+	pop r14 
+	mov fs,r14w
+	pop r14
+	mov es,r14w
+	pop r14
+	mov ds,r14w
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rdi
+	pop rsi
+	pop rbp
+	pop rdx
+	pop rcx
+	pop rbx
+	pop rax
+	iretq
+%endmacro
+//保存异常下的寄存器
+%macro	SAVEALLFAULT 0
+	push rax
+	push rbx
+	push rcx
+	push rdx
+	push rbp
+	push rsi
+	push rdi
+	push r8
+	push r9
+	push r10
+	push r11
+	push r12
+	push r13
+	push r14
+	push r15
+	xor r14,r14
+	mov r14w,ds
+	push r14
+	mov r14w,es
+	push r14
+	mov r14w,fs
+	push r14
+	mov r14w,gs
+	push r14
+%endmacro
+//恢复异常下寄存器
+%macro	RESTOREALLFAULT	0
+	pop r14
+	mov gs,r14w
+	pop r14 
+	mov fs,r14w
+	pop r14
+	mov es,r14w
+	pop r14
+	mov ds,r14w
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rdi
+	pop rsi
+	pop rbp
+	pop rdx
+	pop rcx
+	pop rbx
+	pop rax
+	add rsp,8
+	iretq
+%endmacro
+//没有错误码CPU异常
+%macro	SRFTFAULT 1
+	push	  _NOERRO_CODE
+	SAVEALLFAULT
+	mov r14w,0x10
+	mov ds,r14w
+	mov es,r14w
+	mov fs,r14w
+	mov gs,r14w
+	mov 	rdi,%1 ;rdi, rsi
+	mov 	rsi,rsp
+	call 	hal_fault_allocator
+	RESTOREALLFAULT
+%endmacro
+//CPU异常
+%macro	SRFTFAULT_ECODE 1
+	SAVEALLFAULT
+	mov r14w,0x10
+	mov ds,r14w
+	mov es,r14w
+	mov fs,r14w
+	mov gs,r14w
+	mov 	rdi,%1
+	mov 	rsi,rsp
+	call 	hal_fault_allocator
+	RESTOREALLFAULT
+%endmacro
+//硬件中断
+%macro	HARWINT	1
+	SAVEALL
+	mov r14w,0x10
+	mov ds,r14w
+	mov es,r14w
+	mov fs,r14w
+	mov gs,r14w
+	mov	rdi, %1
+	mov 	rsi,rsp
+	call    hal_intpt_allocator
+	RESTOREALL
+%endmacro
+</code></pre>
+<p>别看前面的代码这么长，其实<strong>最重要的只有两个指令：push、pop</strong>，这两个正是用来压入寄存器和弹出寄存器的，正好可以用来保存和恢复CPU所有的通用寄存器。</p>
+<p>有的CPU异常，CPU自动把异常码压入到栈中，而有的CPU异常没有异常码，<strong>为了统一，我们对没有异常码的手动压入一个常数，维持栈的平衡。</strong></p>
+<p>有了中断异常处理的宏，我们还要它们变成中断异常的处理程序入口点函数。汇编函数其实就是一个标号加一段汇编代码，C编译器把C语言函数编译成汇编代码后，也是标号加汇编代码，函数名就是标号。</p>
+<p>下面我们在kernel.asm中写好它们：</p>
+<pre><code>//除法错误异常 比如除0
+exc_divide_error:
+	SRFTFAULT 0
+//单步执行异常
+exc_single_step_exception:
+	SRFTFAULT 1
+exc_nmi:
+	SRFTFAULT 2
+//调试断点异常
+exc_breakpoint_exception:
+	SRFTFAULT 3
+//溢出异常
+exc_overflow:
+	SRFTFAULT 4
+//段不存在异常
+exc_segment_not_present:
+	SRFTFAULT_ECODE 11
+//栈异常
+exc_stack_exception:
+	SRFTFAULT_ECODE 12
+//通用异常
+exc_general_protection:
+	SRFTFAULT_ECODE 13
+//缺页异常
+exc_page_fault:
+	SRFTFAULT_ECODE 14
+hxi_exc_general_intpfault:
+	SRFTFAULT 256
+//硬件1～7号中断
+hxi_hwint00:
+	HARWINT	(INT_VECTOR_IRQ0+0)
+hxi_hwint01:
+	HARWINT	(INT_VECTOR_IRQ0+1)
+hxi_hwint02:
+	HARWINT	(INT_VECTOR_IRQ0+2)
+hxi_hwint03:
+	HARWINT	(INT_VECTOR_IRQ0+3)
+hxi_hwint04:
+	HARWINT	(INT_VECTOR_IRQ0+4)
+hxi_hwint05:
+	HARWINT	(INT_VECTOR_IRQ0+5)
+hxi_hwint06:
+	HARWINT	(INT_VECTOR_IRQ0+6)
+hxi_hwint07:
+	HARWINT	(INT_VECTOR_IRQ0+7)
+</code></pre>
+<p>为了突出重点，这里没有全部展示代码 ，你只用搞清原理就行了。那有了中断处理程序的入口地址，下面我们就可以在halsgdidt.c文件写出函数设置中断门描述符了，代码如下。</p>
+<pre><code>void init_idt_descriptor()
+{
+//一开始把所有中断的处理程序设置为保留的通用处理程序
+    for (u16_t intindx = 0; intindx &lt;= 255; intindx++)
+    {
+        set_idt_desc((u8_t)intindx, DA_386IGate, hxi_exc_general_intpfault, PRIVILEGE_KRNL);
+    }
+    set_idt_desc(INT_VECTOR_DIVIDE, DA_386IGate, exc_divide_error, PRIVILEGE_KRNL);
+    set_idt_desc(INT_VECTOR_DEBUG, DA_386IGate, exc_single_step_exception, PRIVILEGE_KRNL);
+    set_idt_desc(INT_VECTOR_NMI, DA_386IGate, exc_nmi, PRIVILEGE_KRNL);
+    set_idt_desc(INT_VECTOR_BREAKPOINT, DA_386IGate, exc_breakpoint_exception, PRIVILEGE_USER);
+    set_idt_desc(INT_VECTOR_OVERFLOW, DA_386IGate, exc_overflow, PRIVILEGE_USER);
+//篇幅所限，未全部展示
+    set_idt_desc(INT_VECTOR_PAGE_FAULT, DA_386IGate, exc_page_fault, PRIVILEGE_KRNL);
+    set_idt_desc(INT_VECTOR_IRQ0 + 0, DA_386IGate, hxi_hwint00, PRIVILEGE_KRNL);
+    set_idt_desc(INT_VECTOR_IRQ0 + 1, DA_386IGate, hxi_hwint01, PRIVILEGE_KRNL);
+    set_idt_desc(INT_VECTOR_IRQ0 + 2, DA_386IGate, hxi_hwint02, PRIVILEGE_KRNL);
+    set_idt_desc(INT_VECTOR_IRQ0 + 3, DA_386IGate, hxi_hwint03, PRIVILEGE_KRNL);
+    //篇幅所限，未全部展示
+     return;
+}
+</code></pre>
+<p>上面的代码已经很明显了，一开始把所有中断的处理程序设置为保留的通用处理程序，避免未知中断异常发生了CPU无处可去，然后对已知的中断和异常进一步设置，这会覆盖之前的通用处理程序，这样就可以确保万无一失。</p>
+<p>下面我们把这些代码整理一下，安装到具体的调用路径上，让上层调用者调用到就好了。</p>
+<p>我们依然在halintupt.c文件中写上init_halintupt()函数：</p>
+<pre><code>void init_halintupt()
+{
+    init_idt_descriptor();
+    init_intfltdsc();
+    return;
+}
+</code></pre>
+<p>到此为止，CPU体系层面的中断就初始化完成了。你会发现，我们在init_halintupt()函数中还调用了<strong>init_intfltdsc()函数</strong>，这个函数是干什么的呢？请往下看。</p>
+<p>我们先来设计一下Cosmos的中断处理框架，后面我们把中断和异常统称为中断，因为它们的处理方式相同。</p>
+<p>前面我们只是解决了中断的CPU相关部分，而CPU只是响应中断，但是并不能解决产生中断的问题。</p>
+<p>比如缺页中断来了，我们要解决内存地址映射关系，程序才可以继续运行。再比如硬盘中断来了，我们要读取硬盘的数据，要处理这问题，就要写好相应的处理函数。</p>
+<p>因为有些处理是内核所提供的，而有些处理函数是设备驱动提供的，想让它们和中断关联起来，就要好好设计<strong>中断处理框架</strong>了。</p>
+<p>下面我们来画幅图，描述中断框架的设计：</p>
+<p><img alt="" src="assets/484cb56d730342d4ba16c49d415286e7.jpg"/></p>
+<p>可以看到，中断、异常分发器的左侧的东西我们已经处理完成，下面需要写好中断、异常分发器和中断异常描述符。</p>
+<p>我们先来搞定中断异常描述，结合框架图，中断异常描述也是个表，它在C语言中就是个结构数组，让我们一起来写好这个数组：</p>
+<pre><code>typedef struct s_INTFLTDSC{    
+    spinlock_t  i_lock;    
+    u32_t       i_flg;    
+    u32_t       i_stus;    
+    uint_t      i_prity;        //中断优先级    
+    uint_t      i_irqnr;        //中断号    
+    uint_t      i_deep;         //中断嵌套深度    
+    u64_t       i_indx;         //中断计数    
+    list_h_t    i_serlist;      //也可以使用中断回调函数的方式
+    uint_t      i_sernr;        //中断回调函数个数   
+    list_h_t    i_serthrdlst;   //中断线程链表头    
+    uint_t      i_serthrdnr;    //中断线程个数    
+    void*       i_onethread;    //只有一个中断线程时直接用指针    
+    void*       i_rbtreeroot;   //如果中断线程太多则按优先级组成红黑树
+    list_h_t    i_serfisrlst;      
+    uint_t      i_serfisrnr;       
+    void*       i_msgmpool;     //可能的中断消息池    
+    void*       i_privp;    
+    void*       i_extp;
+}intfltdsc_t;
+</code></pre>
+<p>上面结构中，记录了中断的优先级。因为有些中断可以稍后执行，而有的中断需要紧急执行，所以要设计一个优先级。其中还有中断号，中断计数等统计信息。</p>
+<p>中断可以由线程的方式执行，也可以是一个回调函数，该函数的地址放另一个结构体中，这个结构体我已经帮你写好了，如下所示。</p>
+<pre><code>typedef drvstus_t (*intflthandle_t)(uint_t ift_nr,void* device,void* sframe); //中断处理函数的指针类型
+typedef struct s_INTSERDSC{    
+    list_h_t    s_list;        //在中断异常描述符中的链表
+    list_h_t    s_indevlst;    //在设备描述描述符中的链表
+    u32_t       s_flg;        
+    intfltdsc_t* s_intfltp;    //指向中断异常描述符 
+    void*       s_device;      //指向设备描述符
+    uint_t      s_indx;    
+    intflthandle_t s_handle;   //中断处理的回调函数指针
+}intserdsc_t;
+</code></pre>
+<p>如果内核或者设备驱动程序要安装一个中断处理函数，就要先申请一个intserdsc_t结构体，然后把中断函数的地址写入其中，最后把这个结构挂载到对应的intfltdsc_t结构中的i_serlist链表中。</p>
+<p>你可能要问了，为什么不能直接把中断处理函数放在intfltdsc_t结构中呢，还要多此一举搞个intserdsc_t结构体呢？</p>
+<p>这是因为我们的计算机中可能有很多设备，每个设备都可能产生中断，但是中断控制器的中断信号线是有限的。你可以这样理解：中断控制器最多只能产生几十号中断号，而设备不止几十个，所以会有多个设备共享一根中断信号线。</p>
+<p>这就导致一个中断发生后，无法确定是哪个设备产生的中断，所以我们干脆让设备驱动程序来决定，因为它是最了解设备的。</p>
+<p>这里我们让这个intfltdsc_t结构上的所有中断处理函数都依次执行，查看是不是自己的设备产生了中断，如果是就处理，不是则略过。</p>
+<p>好，明白了这两个结构之后，我们就要开始初始化了。首先是在halglobal.c文件定义intfltdsc_t结构。</p>
+<pre><code>//定义intfltdsc_t结构数组大小为256
+HAL_DEFGLOB_VARIABLE(intfltdsc_t,machintflt)[IDTMAX];
+</code></pre>
+<p>下面我们再来实现中断、异常分发器函数，如下所示。</p>
+<pre><code>//中断处理函数
+void hal_do_hwint(uint_t intnumb, void *krnlsframp)
+{    
+    intfltdsc_t *ifdscp = NULL;    
+    cpuflg_t cpuflg;
+    //根据中断号获取中断异常描述符地址    
+    ifdscp = hal_retn_intfltdsc(intnumb);
+    //对断异常描述符加锁并中断    
+    hal_spinlock_saveflg_cli(&amp;ifdscp-&gt;i_lock, &amp;cpuflg);    
+    ifdscp-&gt;i_indx++;    
+    ifdscp-&gt;i_deep++;
+    //运行中断处理的回调函数
+    hal_run_intflthandle(intnumb, krnlsframp);    
+    ifdscp-&gt;i_deep--;
+    //解锁并恢复中断状态    
+    hal_spinunlock_restflg_sti(&amp;ifdscp-&gt;i_lock, &amp;cpuflg);    
+    return;
+}
+//异常分发器
+void hal_fault_allocator(uint_t faultnumb, void *krnlsframp)
+{
+    //我们的异常处理回调函数也是放在中断异常描述符中的
+    hal_do_hwint(faultnumb, krnlsframp);
+    return;
+}
+//中断分发器
+void hal_hwint_allocator(uint_t intnumb, void *krnlsframp)
+{
+    hal_do_hwint(intnumb, krnlsframp);
+    return;
+}
+</code></pre>
+<p>前面的代码确实是按照我们的中断框架设计实现的，下面我们去实现hal_run_intflthandle函数，它负责调用中断处理的回调函数。</p>
+<pre><code>void hal_run_intflthandle(uint_t ifdnr, void *sframe)
+{    
+    intserdsc_t *isdscp;    
+    list_h_t *lst;
+    //根据中断号获取中断异常描述符地址    
+    intfltdsc_t *ifdscp = hal_retn_intfltdsc(ifdnr);
+    //遍历i_serlist链表    
+    list_for_each(lst, &amp;ifdscp-&gt;i_serlist)    
+    {   
+        //获取i_serlist链表上对象即intserdsc_t结构
+        isdscp = list_entry(lst, intserdsc_t, s_list);  
+        //调用中断处理回调函数      
+        isdscp-&gt;s_handle(ifdnr, isdscp-&gt;s_device, sframe);    
+    }
+    return;
+}
+</code></pre>
+<p>上述代码已经很清楚了，循环遍历intfltdsc_t结构中，i_serlist链表上所有挂载的intserdsc_t结构，然后调用intserdsc_t结构中的中断处理的回调函数。</p>
+<p>我们Cosmos链表借用了Linux所用的链表，代码我已经帮你写好了，放在了list.h和list_t.h文件中，请自行查看。</p>
+<h4 id="初始化中断控制器">初始化中断控制器</h4>
+<p>我们把CPU端的中断搞定了以后，还有设备端的中断，这个可以交给设备驱动程序，但是CPU和设备之间的中断控制器，还需要我们出面解决。</p>
+<p>多个设备的中断信号线都会连接到中断控制器上，中断控制器可以决定启用或者屏蔽哪些设备的中断，还可以决定设备中断之间的优先线，所以它才叫中断控制器。</p>
+<p>x86平台上的中断控制器有多种，最开始是8259A，然后是IOAPIC，最新的是MSI-X。为了简单的说明原理，我们选择了8259A中断控制器。</p>
+<p>8259A在任何x86平台上都可以使用，x86平台使用了两片8259A芯片，以级联的方式存在。它拥有15个中断源（即可以有15个中断信号接入）。让我们看看8259A在系统上的框架图：</p>
+<p><img alt="" src="assets/f77dbede83ce43f6a4c87e67a4de0207.jpg"/></p>
+<p>上面直接和CPU连接的是主8259A，下面的是从8259A，每一个8259A芯片都有两个I/O端口，我们可以通过它们对8259A进行编程。主8259A的端口地址是0x20，0x21；从8259A的端口地址是0xA0，0xA1。</p>
+<p>下面我们来做代码初始化，我们程序员可以向8259A写两种命令字： ICW和OCW；ICW这种命令字用来实现8259a芯片的初始化。而OCW这种命令用来向8259A发布命令，以对其进行控制。OCW可以在8259A被初始化之后的任何时候被使用。</p>
+<p>我已经把代码定好了，放在了8259.c文件中，如下所示：</p>
+<pre><code>void init_i8259()
+{
+    //初始化主从8259a
+    out_u8_p(ZIOPT, ICW1);    
+    out_u8_p(SIOPT, ICW1);    
+    out_u8_p(ZIOPT1, ZICW2);    
+    out_u8_p(SIOPT1, SICW2);    
+    out_u8_p(ZIOPT1, ZICW3);    
+    out_u8_p(SIOPT1, SICW3);    
+    out_u8_p(ZIOPT1, ICW4);    
+    out_u8_p(SIOPT1, ICW4);
+    //屏蔽全部中断源
+    out_u8_p(ZIOPT1, 0xff);    
+    out_u8_p(SIOPT1, 0xff);        
+    return;
+}
+
+</code></pre>
+<p>如果你要了解8259A的细节，就是上述代码中为什么要写入这些数据，你可以自己在Intel官方网站上搜索8259A的数据手册，自行查看。</p>
+<p>这里你只要在init_halintupt()函数的最后，调用这个函数就行。你有没有想过，既然我们是研究操作系统不是要写硬件驱动，为什么要在初始化中断控制器后，屏蔽所有的中断源呢？因为我们Cosmos在初始化阶段还不能处理中断。</p>
+<p>到此，我们的Cosmos的hal层初始化就结束了。关于内存管理器的初始化，我会在内存管理模块讲解，你先有个印象就行。</p>
+<h3 id="进入内核层">进入内核层</h3>
+<p>hal层的初始化已经完成，按照前面的设计，我们的Cosmos还有内核层，我们下面就要进入到内核层，建立一个文件，写上一个函数，作为本课程的结尾。</p>
+<p>但是这个函数是个<strong>空函数</strong>，目前什么也不做，它是为Cosmos内核层初始化而存在的，但是由于课程只进行到这里，所以我只是写个空函数，为后面的课程做好准备。</p>
+<p>由于内核层是从hal层进入的，必须在hal_start()函数中被调用，所以在此完成这个函数——init_krl()。</p>
+<pre><code>void init_krl()
+{ 
+    //禁止函数返回    
+    die(0);    
+    return;
+}
+
+</code></pre>
+<p>下面我们在hal_start()函数中调用它就行了，如下所示</p>
+<pre><code>void hal_start()
+{   
+    //初始化Cosmos的hal层 
+    init_hal();
+    //初始化Cosmos的内核层    
+    init_krl();    
+    return;
+}
+</code></pre>
+<p>从上面的代码中，不难发现Cosmos的hal层初始化完成后，就自动进入了Cosmos内核层的初始化。至此本课程已经结束。</p>
+<h2 id="重点回顾">重点回顾</h2>
+<p>写一个C函数是容易的，但是写操作系统的第一个C函数并不容易，好在我们一路坚持，没有放弃，才取得了这个阶段性的胜利。但温故而知新，对学过的东西要学而时习之，下面我们来回顾一下本课程的重点。</p>
+<p>1.Cosmos的第一个C函数产生了，它十分简单但极其有意义，它的出现标志着C语言的运行环境已经完善。从此我们可以用C语言高效地开发操作系统了，由爬行时代进入了跑步前行的状态，可喜可贺。</p>
+<p>2.第一个C函数，干的第一件重要工作就是<strong>调用hal层的初始化函数。</strong>这个初始化函数首先初始化了平台，初始化了机器信息结构供内核的其它代码使用，还初始化了我们图形显示驱动、显示了背景图片；其次是初始化了内存管理相关的数据结构；接着初始了中断，中断处理框架是两层，所以最为复杂；最后初始化了中断控制器。</p>
+<p>3.当hal层初始化完成了，我们就进入了内核层，由于到了课程的尾声，我们先暂停在这里。</p>
+<p>在这节课里我帮你写了很多代码，那些代码非常简单和枯燥，但是必须要有它们才可以。综合我们前面讲过的知识，我相信你有能力看懂它们。</p>
+<h2 id="思考题">思考题</h2>
+<p>请你梳理一下，Cosmos hal层的函数调用关系。</p>
+<p>欢迎你在留言区跟我交流互动，也欢迎把这节课转发给你的朋友和同事。</p>
+<p>好，我是LMOS，咱们下节课见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#0c60606035383d3d3c3b4c6b616d6560226f6361" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93599fe5d806d6af',t:'MTc0NTUzOTkwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

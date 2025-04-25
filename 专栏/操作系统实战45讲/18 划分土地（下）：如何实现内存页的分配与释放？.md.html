@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="18 划分土地（下）：如何实现内存页的分配与释放？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>18 划分土地（下）：如何实现内存页的分配与释放？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%ad%a6%e5%86%99%e4%b8%80%e4%b8%aa%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="00 开篇词 为什么要学写一个操作系统？.md.html">00 开篇词 为什么要学写一个操作系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/00%20%e7%bc%96%e8%be%91%e6%89%8b%e8%ae%b0%20%e5%8d%87%e7%ba%a7%e8%ae%a4%e7%9f%a5%ef%bc%8c%e8%bf%ad%e4%bb%a3%e8%87%aa%e5%b7%b1%e7%9a%84%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f.md.html" id="00 编辑手记 升级认知，迭代自己的操作系统.md.html">00 编辑手记 升级认知，迭代自己的操作系统.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/01%20%e7%a8%8b%e5%ba%8f%e7%9a%84%e8%bf%90%e8%a1%8c%e8%bf%87%e7%a8%8b%ef%bc%9a%e4%bb%8e%e4%bb%a3%e7%a0%81%e5%88%b0%e6%9c%ba%e5%99%a8%e8%bf%90%e8%a1%8c.md.html" id="01 程序的运行过程：从代码到机器运行.md.html">01 程序的运行过程：从代码到机器运行.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/02%20%e5%87%a0%e8%a1%8c%e6%b1%87%e7%bc%96%e5%87%a0%e8%a1%8cC%ef%bc%9a%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e5%8d%95%e7%9a%84%e5%86%85%e6%a0%b8.md.html" id="02 几行汇编几行C：实现一个最简单的内核.md.html">02 几行汇编几行C：实现一个最简单的内核.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/03%20%e9%bb%91%e7%9b%92%e4%b9%8b%e4%b8%ad%e6%9c%89%e4%bb%80%e4%b9%88%ef%bc%9a%e5%86%85%e6%a0%b8%e7%bb%93%e6%9e%84%e4%b8%8e%e8%ae%be%e8%ae%a1.md.html" id="03 黑盒之中有什么：内核结构与设计.md.html">03 黑盒之中有什么：内核结构与设计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/04%20%e9%9c%87%e6%92%bc%e7%9a%84Linux%e5%85%a8%e6%99%af%e5%9b%be%ef%bc%9a%e4%b8%9a%e7%95%8c%e6%88%90%e7%86%9f%e7%9a%84%e5%86%85%e6%a0%b8%e6%9e%b6%e6%9e%84%e9%95%bf%e4%bb%80%e4%b9%88%e6%a0%b7%ef%bc%9f.md.html" id="04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html">04 震撼的Linux全景图：业界成熟的内核架构长什么样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/05%20CPU%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%ef%bc%9a%e6%89%a7%e8%a1%8c%e7%a8%8b%e5%ba%8f%e7%9a%84%e4%b8%89%e7%a7%8d%e6%a8%a1%e5%bc%8f.md.html" id="05 CPU工作模式：执行程序的三种模式.md.html">05 CPU工作模式：执行程序的三种模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/06%20%e8%99%9a%e5%b9%bb%e4%b8%8e%e7%9c%9f%e5%ae%9e%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b8%ad%e7%9a%84%e5%9c%b0%e5%9d%80%e5%a6%82%e4%bd%95%e8%bd%ac%e6%8d%a2%ef%bc%9f.md.html" id="06 虚幻与真实：程序中的地址如何转换？.md.html">06 虚幻与真实：程序中的地址如何转换？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/07%20Cache%e4%b8%8e%e5%86%85%e5%ad%98%ef%bc%9a%e7%a8%8b%e5%ba%8f%e6%94%be%e5%9c%a8%e5%93%aa%e5%84%bf%ef%bc%9f.md.html" id="07 Cache与内存：程序放在哪儿？.md.html">07 Cache与内存：程序放在哪儿？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/08%20%e9%94%81%ef%bc%9a%e5%b9%b6%e5%8f%91%e6%93%8d%e4%bd%9c%e4%b8%ad%ef%bc%8c%e8%a7%a3%e5%86%b3%e6%95%b0%e6%8d%ae%e5%90%8c%e6%ad%a5%e7%9a%84%e5%9b%9b%e7%a7%8d%e6%96%b9%e6%b3%95.md.html" id="08 锁：并发操作中，解决数据同步的四种方法.md.html">08 锁：并发操作中，解决数据同步的四种方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/09%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e7%9a%84%e8%87%aa%e6%97%8b%e9%94%81%e5%92%8c%e4%bf%a1%e5%8f%b7%e9%87%8f%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html">09 瞧一瞧Linux：Linux的自旋锁和信号量如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/10%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%bb%ba%e7%ab%8b%e8%ae%a1%e7%ae%97%e6%9c%ba.md.html" id="10 设置工作模式与环境（上）：建立计算机.md.html">10 设置工作模式与环境（上）：建立计算机.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/11%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%bb%ba%e9%80%a0%e4%ba%8c%e7%ba%a7%e5%bc%95%e5%af%bc%e5%99%a8.md.html" id="11 设置工作模式与环境（中）：建造二级引导器.md.html">11 设置工作模式与环境（中）：建造二级引导器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/12%20%e8%ae%be%e7%bd%ae%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f%e4%b8%8e%e7%8e%af%e5%a2%83%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%8e%a2%e6%9f%a5%e5%92%8c%e6%94%b6%e9%9b%86%e4%bf%a1%e6%81%af.md.html" id="12 设置工作模式与环境（下）：探查和收集信息.md.html">12 设置工作模式与环境（下）：探查和收集信息.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/13%20%e7%ac%ac%e4%b8%80%e4%b8%aaC%e5%87%bd%e6%95%b0%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9d%bf%e7%ba%a7%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="13 第一个C函数：如何实现板级初始化？.md.html">13 第一个C函数：如何实现板级初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/14%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aGRUB%e4%b8%8evmlinuz%e7%9a%84%e7%bb%93%e6%9e%84.md.html" id="14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html">14 Linux初始化（上）：GRUB与vmlinuz的结构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/15%20Linux%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%bb%8e_start%e5%88%b0%e7%ac%ac%e4%b8%80%e4%b8%aa%e8%bf%9b%e7%a8%8b.md.html" id="15 Linux初始化（下）：从_start到第一个进程.md.html">15 Linux初始化（下）：从_start到第一个进程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/16%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%92%e5%88%86%e4%b8%8e%e7%bb%84%e7%bb%87%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="16 划分土地（上）：如何划分与组织内存？.md.html">16 划分土地（上）：如何划分与组织内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/17%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e9%9d%a2%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%9f.md.html" id="17 划分土地（中）：如何实现内存页面初始化？.md.html">17 划分土地（中）：如何实现内存页面初始化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/18%20%e5%88%92%e5%88%86%e5%9c%9f%e5%9c%b0%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%86%85%e5%ad%98%e9%a1%b5%e7%9a%84%e5%88%86%e9%85%8d%e4%b8%8e%e9%87%8a%e6%94%be%ef%bc%9f.md.html" id="18 划分土地（下）：如何实现内存页的分配与释放？.md.html">18 划分土地（下）：如何实现内存页的分配与释放？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/19%20%e5%9c%9f%e5%9c%b0%e4%b8%8d%e8%83%bd%e6%b5%aa%e8%b4%b9%ef%bc%9a%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e5%86%85%e5%ad%98%e5%af%b9%e8%b1%a1%ef%bc%9f.md.html" id="19 土地不能浪费：如何管理内存对象？.md.html">19 土地不能浪费：如何管理内存对象？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/20%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="20 土地需求扩大与保障：如何表示虚拟内存？.md.html">20 土地需求扩大与保障：如何表示虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/21%20%e5%9c%9f%e5%9c%b0%e9%9c%80%e6%b1%82%e6%89%a9%e5%a4%a7%e4%b8%8e%e4%bf%9d%e9%9a%9c%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%92%8c%e9%87%8a%e6%94%be%e8%99%9a%e6%8b%9f%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html">21 土地需求扩大与保障：如何分配和释放虚拟内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/22%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e4%bc%99%e4%bc%b4%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html">22 瞧一瞧Linux：伙伴系统如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/23%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aSLAB%e5%a6%82%e4%bd%95%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="23 瞧一瞧Linux：SLAB如何分配内存？.md.html">23 瞧一瞧Linux：SLAB如何分配内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/24%20%e6%b4%bb%e5%8a%a8%e7%9a%84%e6%8f%8f%e8%bf%b0%ef%bc%9a%e5%88%b0%e5%ba%95%e4%bb%80%e4%b9%88%e6%98%af%e8%bf%9b%e7%a8%8b%ef%bc%9f.md.html" id="24 活动的描述：到底什么是进程？.md.html">24 活动的描述：到底什么是进程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/25%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a4%9a%e8%bf%9b%e7%a8%8b%e5%a6%82%e4%bd%95%e8%b0%83%e5%ba%a6%ef%bc%9f.md.html" id="25 多个活动要安排（上）：多进程如何调度？.md.html">25 多个活动要安排（上）：多进程如何调度？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/26%20%e5%a4%9a%e4%b8%aa%e6%b4%bb%e5%8a%a8%e8%a6%81%e5%ae%89%e6%8e%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e7%9a%84%e7%ad%89%e5%be%85%e4%b8%8e%e5%94%a4%e9%86%92%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html">26 多个活动要安排（下）：如何实现进程的等待与唤醒机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/27%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9aLinux%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%bf%9b%e7%a8%8b%e4%b8%8e%e8%bf%9b%e7%a8%8b%e8%b0%83%e5%ba%a6_.md.html" id="27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html">27 瞧一瞧Linux：Linux如何实现进程与进程调度_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/28%20%e9%83%a8%e9%97%a8%e5%88%86%e7%b1%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e8%a1%a8%e7%a4%ba%e8%ae%be%e5%a4%87%e7%b1%bb%e5%9e%8b%e4%b8%8e%e8%ae%be%e5%a4%87%e9%a9%b1%e5%8a%a8%ef%bc%9f.md.html" id="28 部门分类：如何表示设备类型与设备驱动？.md.html">28 部门分类：如何表示设备类型与设备驱动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/29%20%e9%83%a8%e9%97%a8%e5%bb%ba%e7%ab%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e6%b3%a8%e5%86%8c%e8%ae%be%e5%a4%87%ef%bc%9f.md.html" id="29 部门建立：如何在内核中注册设备？.md.html">29 部门建立：如何在内核中注册设备？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/30%20%e9%83%a8%e9%97%a8%e5%93%8d%e5%ba%94%ef%bc%9a%e8%ae%be%e5%a4%87%e5%a6%82%e4%bd%95%e5%a4%84%e7%90%86%e5%86%85%e6%a0%b8I_O%e5%8c%85%ef%bc%9f.md.html" id="30 部门响应：设备如何处理内核I_O包？.md.html">30 部门响应：设备如何处理内核I_O包？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/31%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e6%89%80%e6%9c%89%e8%ae%be%e5%a4%87%e4%bf%a1%e6%81%af%ef%bc%9f.md.html" id="31 瞧一瞧Linux：如何获取所有设备信息？.md.html">31 瞧一瞧Linux：如何获取所有设备信息？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/32%20%e4%bb%93%e5%ba%93%e7%bb%93%e6%9e%84%ef%bc%9a%e5%a6%82%e4%bd%95%e7%bb%84%e7%bb%87%e6%96%87%e4%bb%b6_.md.html" id="32 仓库结构：如何组织文件_.md.html">32 仓库结构：如何组织文件_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/33%20%e4%bb%93%e5%ba%93%e5%88%92%e5%88%86%ef%bc%9a%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e7%9a%84%e6%a0%bc%e5%bc%8f%e5%8c%96%e6%93%8d%e4%bd%9c.md.html" id="33 仓库划分：文件系统的格式化操作.md.html">33 仓库划分：文件系统的格式化操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/34%20%e4%bb%93%e5%ba%93%e7%ae%a1%e7%90%86%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%96%87%e4%bb%b6%e7%9a%84%e5%85%ad%e5%a4%a7%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c%ef%bc%9f.md.html" id="34 仓库管理：如何实现文件的六大基本操作？.md.html">34 仓库管理：如何实现文件的六大基本操作？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/35%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%99%9a%e6%8b%9f%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e5%a6%82%e4%bd%95%e7%ae%a1%e7%90%86%e6%96%87%e4%bb%b6%ef%bc%9f.md.html" id="35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html">35 瞧一瞧Linux：虚拟文件系统如何管理文件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/36%20%e4%bb%8eURL%e5%88%b0%e7%bd%91%e5%8d%a1%ef%bc%9a%e5%a6%82%e4%bd%95%e5%85%a8%e5%b1%80%e8%a7%82%e5%af%9f%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e6%b5%81%e5%8a%a8%ef%bc%9f.md.html" id="36 从URL到网卡：如何全局观察网络数据流动？.md.html">36 从URL到网卡：如何全局观察网络数据流动？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/37%20%e4%bb%8e%e5%86%85%e6%a0%b8%e5%88%b0%e5%ba%94%e7%94%a8%ef%bc%9a%e7%bd%91%e7%bb%9c%e6%95%b0%e6%8d%ae%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e5%a6%82%e4%bd%95%e6%b5%81%e8%bd%ac.md.html" id="37 从内核到应用：网络数据在内核中如何流转.md.html">37 从内核到应用：网络数据在内核中如何流转.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/38%20%e4%bb%8e%e5%8d%95%e6%8e%92%e5%88%b0%e5%9b%a2%e6%88%98%ef%bc%9a%e8%af%a6%e8%a7%a3%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e7%9a%84%e5%ae%8f%e8%a7%82%e7%bd%91%e7%bb%9c%e6%9e%b6%e6%9e%84.md.html" id="38 从单排到团战：详解操作系统的宏观网络架构.md.html">38 从单排到团战：详解操作系统的宏观网络架构.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/39%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e5%ae%9e%e7%8e%b0%e4%b8%8e%e7%bd%91%e7%bb%9c%e7%bc%96%e7%a8%8b%e6%8e%a5%e5%8f%a3.md.html" id="39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html">39 瞧一瞧Linux：详解socket实现与网络编程接口.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/40%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e8%af%a6%e8%a7%a3socket%e7%9a%84%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0.md.html" id="40 瞧一瞧Linux：详解socket的接口实现.md.html">40 瞧一瞧Linux：详解socket的接口实现.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/41%20%e6%9c%8d%e5%8a%a1%e6%8e%a5%e5%8f%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e6%90%ad%e5%bb%ba%e6%b2%9f%e9%80%9a%e6%a1%a5%e6%a2%81%ef%bc%9f.md.html" id="41 服务接口：如何搭建沟通桥梁？.md.html">41 服务接口：如何搭建沟通桥梁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/42%20%e7%9e%a7%e4%b8%80%e7%9e%a7Linux%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%b3%bb%e7%bb%9fAPI%ef%bc%9f.md.html" id="42 瞧一瞧Linux：如何实现系统API？.md.html">42 瞧一瞧Linux：如何实现系统API？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/43%20%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%86%85%e6%a0%b8%ef%bc%9aKVM%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="43 虚拟机内核：KVM是什么？.md.html">43 虚拟机内核：KVM是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/44%20%e5%ae%b9%e5%99%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%e5%ae%b9%e5%99%a8%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="44 容器：如何理解容器的实现机制？.md.html">44 容器：如何理解容器的实现机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/45%20ARM%e6%96%b0%e5%ae%a0%ef%bc%9a%e8%8b%b9%e6%9e%9c%e7%9a%84M1%e8%8a%af%e7%89%87%e5%9b%a0%e4%bd%95%e8%80%8c%e5%bf%ab%ef%bc%9f.md.html" id="45 ARM新宠：苹果的M1芯片因何而快？.md.html">45 ARM新宠：苹果的M1芯片因何而快？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/46%20AArch64%e4%bd%93%e7%b3%bb%ef%bc%9aARM%e6%9c%80%e6%96%b0%e7%bc%96%e7%a8%8b%e6%9e%b6%e6%9e%84%e6%a8%a1%e5%9e%8b%e5%89%96%e6%9e%90.md.html" id="46 AArch64体系：ARM最新编程架构模型剖析.md.html">46 AArch64体系：ARM最新编程架构模型剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/LMOS%e6%9d%a5%e4%bf%a1%ef%bc%9a%e7%ac%ac%e4%ba%8c%e5%ad%a3%e8%af%be%e7%a8%8b%e5%b8%a6%e4%bd%a0%e2%80%9c%e6%89%8b%e6%92%95%e2%80%9d%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80.md.html" id="LMOS来信：第二季课程带你“手撕”计算机基础.md.html">LMOS来信：第二季课程带你“手撕”计算机基础.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e4%bb%a5%e6%97%a0%e6%b3%95%e4%b8%ba%e6%9c%89%e6%b3%95%ef%bc%8c%e4%bb%a5%e6%97%a0%e9%99%90%e4%b8%ba%e6%9c%89%e9%99%90.md.html" id="大咖助场 以无法为有法，以无限为有限.md.html">大咖助场 以无法为有法，以无限为有限.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20yiyang%ef%bc%9a%e6%88%91%e7%9a%84%e4%b8%8a%e6%9c%ba%e5%ae%9e%e9%aa%8c%e2%80%9c%e7%88%ac%e5%9d%91%e6%8c%87%e5%8d%97%e2%80%9d.md.html" id="用户故事 yiyang：我的上机实验“爬坑指南”.md.html">用户故事 yiyang：我的上机实验“爬坑指南”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%88%90%e4%b8%ba%e9%9d%a2%e5%90%91%e2%80%9c%e7%9f%a5%e8%af%86%e5%ba%93%e2%80%9d%e7%9a%84%e5%b7%a5%e7%a8%8b%e5%b8%88.md.html" id="用户故事 成为面向“知识库”的工程师.md.html">用户故事 成为面向“知识库”的工程师.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%8a%80%e6%9c%af%e4%ba%ba%e5%a6%82%e4%bd%95%e5%81%9a%e9%80%89%e6%8b%a9%ef%bc%8c%e8%b7%af%e6%89%8d%e8%b6%8a%e8%b5%b0%e8%b6%8a%e5%ae%bd%ef%bc%9f.md.html" id="用户故事 技术人如何做选择，路才越走越宽？.md.html">用户故事 技术人如何做选择，路才越走越宽？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8f%91%e7%83%a7%e5%8f%8b%ef%bc%9a%e7%9c%8b%e4%b8%8d%e6%87%82%ef%bc%9f%e5%9b%a0%e4%b8%ba%e4%bd%a0%e6%b2%a1%e5%8a%a8%e6%89%8b.md.html" id="用户故事 操作系统发烧友：看不懂？因为你没动手.md.html">用户故事 操作系统发烧友：看不懂？因为你没动手.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e7%94%a8%e5%a5%bd%e5%8a%a8%e6%80%81%e8%b0%83%e8%af%95%ef%bc%8c%e5%8a%a9%e5%8a%9b%e8%af%be%e7%a8%8b%e5%ad%a6%e4%b9%a0.md.html" id="用户故事 用好动态调试，助力课程学习.md.html">用户故事 用好动态调试，助力课程学习.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e8%89%be%e5%90%8c%e5%ad%a6%ef%bc%9a%e8%b7%af%e8%99%bd%e8%bf%9c%ef%bc%8c%e8%a1%8c%e5%88%99%e5%b0%86%e8%87%b3.md.html" id="用户故事 艾同学：路虽远，行则将至.md.html">用户故事 艾同学：路虽远，行则将至.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%ae%9e%e6%88%9845%e8%ae%b2/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e7%94%9f%e6%b4%bb%e5%8f%af%e4%bb%a5%e4%b8%80%e5%9c%b0%e9%b8%a1%e6%af%9b%ef%bc%8c%e4%bd%86%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%8d%b4%e6%98%af%e5%bf%83%e4%b8%ad%e7%9a%84%e5%85%89.md.html" id="结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html">结束语 生活可以一地鸡毛，但操作系统却是心中的光.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="18 划分土地（下）：如何实现内存页的分配与释放？" id="title">18 划分土地（下）：如何实现内存页的分配与释放？</h1>
+<div><p>你好，我是LMOS。</p>
+<p>通过前面两节课的学习，我们已经组织好了内存页，也初始化了内存页和内存区。我们前面做了这么多准备工作，就是为了实现分配和释放内存页面，达到内存管理的目的。</p>
+<p>那有了前面的基础，我想你自己也能大概实现这个分配和释放的代码。但是，根据前面我们设计的数据结构和对其初始化的工作，估计你也可以隐约感觉到，我们的内存管理的算法还是有一点点难度的。</p>
+<p>今天这节课，就让我们一起来实现这项富有挑战性的任务吧！这节课的配套代码，你可以通过<a href="https://gitee.com/lmos/cosmos/tree/master/lesson16~18/Cosmos" target="_blank">这里</a>下载。</p>
+<h2 id="内存页的分配">内存页的分配</h2>
+<p>如果让你实现一次只分配一个页面，我相信这个问题很好解决，因为你只需要写一段循环代码，在其中遍历出一个空闲的msadsc_t结构，就可以返回了，这个算法就可以结束了。</p>
+<p>但现实却不容许我们这么简单地处理问题，我们内存管理器要为内核、驱动，还有应用提供服务，它们对请求内存页面的多少、内存页面是不是连续，内存页面所处的物理地址都有要求。</p>
+<p>这样一来，问题就复杂了。不过你也不必担心，我们可以从<strong>内存分配的接口函数</strong>下手。</p>
+<p>下面我们根据上述要求来设计实现内存分配接口函数。我们还是先来建立一个新的C语言代码文件，在cosmos/hal/x86目录中建立一个memdivmer.c文件，在其中写一个内存分配接口函数，代码如下所示。</p>
+<pre><code>//内存分配页面框架函数
+msadsc_t *mm_divpages_fmwk(memmgrob_t *mmobjp, uint_t pages, uint_t *retrelpnr, uint_t mrtype, uint_t flgs)
+{
+    //返回mrtype对应的内存区结构的指针
+    memarea_t *marea = onmrtype_retn_marea(mmobjp, mrtype);
+    if (NULL == marea)
+    {
+        *retrelpnr = 0;
+        return NULL;
+    }
+    uint_t retpnr = 0;
+    //内存分配的核心函数
+    msadsc_t *retmsa = mm_divpages_core(marea, pages, &amp;retpnr, flgs);
+    if (NULL == retmsa)
+    {
+        *retrelpnr = 0;
+        return NULL;
+    }
+    *retrelpnr = retpnr;
+    return retmsa;
+}
+
+//内存分配页面接口
+
+//mmobjp-&gt;内存管理数据结构指针
+//pages-&gt;请求分配的内存页面数
+//retrealpnr-&gt;存放实际分配内存页面数的指针
+//mrtype-&gt;请求的分配内存页面的内存区类型
+//flgs-&gt;请求分配的内存页面的标志位
+msadsc_t *mm_division_pages(memmgrob_t *mmobjp, uint_t pages, uint_t *retrealpnr, uint_t mrtype, uint_t flgs)
+{
+    if (NULL == mmobjp || NULL == retrealpnr || 0 == mrtype)
+    {
+        return NULL;
+    }
+
+    uint_t retpnr = 0;
+    msadsc_t *retmsa = mm_divpages_fmwk(mmobjp, pages, &amp;retpnr, mrtype, flgs);
+    if (NULL == retmsa)
+    {
+        *retrealpnr = 0;
+        return NULL;
+    }
+    *retrealpnr = retpnr;
+    return retmsa;
+}
+</code></pre>
+<p>我们内存管理代码的结构是：接口函数调用框架函数，框架函数调用核心函数。可以发现，这个接口函数返回的是一个msadsc_t结构的指针，如果是多个页面返回的就是起始页面对应的msadsc_t结构的指针。</p>
+<p>为什么不直接返回内存的物理地址呢？因为我们物理内存管理器是最底层的内存管理器，而上层代码中可能需要页面的相关信息，所以直接返回页面对应msadsc_t结构的指针。</p>
+<p>还有一个参数是用于返回实际分配的页面数的。比如，内核功能代码请求分配三个页面，我们的内存管理器不能分配三个页面，只能分配两个或四个页面，这时内存管理器就会分配四个页面返回，retrealpnr指向的变量中就存放数字4，表示实际分配页面的数量。</p>
+<p>有了内存分配接口、框架函数，下面我们来实现内存分配的核心函数，代码如下所示。</p>
+<pre><code>bool_t onmpgs_retn_bafhlst(memarea_t *malckp, uint_t pages, bafhlst_t **retrelbafh, bafhlst_t **retdivbafh)
+{
+    //获取bafhlst_t结构数组的开始地址
+    bafhlst_t *bafhstat = malckp-&gt;ma_mdmdata.dm_mdmlielst;       
+    //根据分配页面数计算出分配页面在dm_mdmlielst数组中下标
+    sint_t dividx = retn_divoder(pages);
+    //从第dividx个数组元素开始搜索
+    for (sint_t idx = dividx; idx &lt; MDIVMER_ARR_LMAX; idx++)
+    {
+    //如果第idx个数组元素对应的一次可分配连续的页面数大于等于请求的页面数，且其中的可分配对象大于0则返回 
+        if (bafhstat[idx].af_oderpnr &gt;= pages &amp;&amp; 0 &lt; bafhstat[idx].af_fobjnr)
+        {
+            //返回请求分配的bafhlst_t结构指针
+            *retrelbafh = &amp;bafhstat[dividx];
+            //返回实际分配的bafhlst_t结构指针
+            *retdivbafh = &amp;bafhstat[idx];
+            return TRUE;
+        }
+    }
+    *retrelbafh = NULL;
+    *retdivbafh = NULL;
+    return FALSE;
+}
+
+msadsc_t *mm_reldivpages_onmarea(memarea_t *malckp, uint_t pages, uint_t *retrelpnr)
+{
+    bafhlst_t *retrelbhl = NULL, *retdivbhl = NULL;
+    //根据页面数在内存区的m_mdmlielst数组中找出其中请求分配页面的bafhlst_t结构（retrelbhl）和实际要在其中分配页面的bafhlst_t结构(retdivbhl)
+    bool_t rets = onmpgs_retn_bafhlst(malckp, pages, &amp;retrelbhl, &amp;retdivbhl);
+    if (FALSE == rets)
+    {
+        *retrelpnr = 0;
+        return NULL;
+    }
+    uint_t retpnr = 0;
+    //实际在bafhlst_t结构中分配页面
+    msadsc_t *retmsa = mm_reldpgsdivmsa_bafhl(malckp, pages, &amp;retpnr, retrelbhl, retdivbhl);
+    if (NULL == retmsa)
+    {
+        *retrelpnr = 0;
+        return NULL;
+    }
+    *retrelpnr = retpnr;
+    return retmsa;
+}
+
+msadsc_t *mm_divpages_core(memarea_t *mareap, uint_t pages, uint_t *retrealpnr, uint_t flgs)
+{
+    uint_t retpnr = 0;
+    msadsc_t *retmsa = NULL; 
+    cpuflg_t cpuflg;
+    //内存区加锁
+    knl_spinlock_cli(&amp;mareap-&gt;ma_lock, &amp;cpuflg);
+    if (DMF_RELDIV == flgs)
+    {
+        //分配内存
+        retmsa = mm_reldivpages_onmarea(mareap, pages, &amp;retpnr);
+        goto ret_step;
+    }
+    retmsa = NULL;
+    retpnr = 0;
+ret_step:
+    //内存区解锁
+    knl_spinunlock_sti(&amp;mareap-&gt;ma_lock, &amp;cpuflg);
+    *retrealpnr = retpnr;
+    return retmsa;
+}
+</code></pre>
+<p>很明显，上述代码中onmpgs_retn_bafhlst函数返回的两个bafhlst_t结构指针，若是相等的，则在mm_reldpgsdivmsa_bafhl函数中很容易处理，只要取出bafhlst_t结构中对应的msadsc_t结构返回就好了。</p>
+<p>问题是很多时候它们不相等，这就要分隔连续的msadsc_t结构了，下面我们通过mm_reldpgsdivmsa_bafhl这个函数来处理这个问题，代码如下所示。</p>
+<pre><code>bool_t mrdmb_add_msa_bafh(bafhlst_t *bafhp, msadsc_t *msastat, msadsc_t *msaend)
+{
+    //把一段连续的msadsc_t结构加入到它所对应的bafhlst_t结构中
+    msastat-&gt;md_indxflgs.mf_olkty = MF_OLKTY_ODER;
+    msastat-&gt;md_odlink = msaend;
+    msaend-&gt;md_indxflgs.mf_olkty = MF_OLKTY_BAFH;
+    msaend-&gt;md_odlink = bafhp;
+    list_add(&amp;msastat-&gt;md_list, &amp;bafhp-&gt;af_frelst);
+    bafhp-&gt;af_mobjnr++;
+    bafhp-&gt;af_fobjnr++;
+    return TRUE;
+}
+
+msadsc_t *mm_divpages_opmsadsc(msadsc_t *msastat, uint_t mnr)
+{   //单个msadsc_t结构的情况 
+    if (mend == msastat)
+    {//增加msadsc_t结构中分配计数，分配标志位设置为1
+        msastat-&gt;md_indxflgs.mf_uindx++;
+        msastat-&gt;md_phyadrs.paf_alloc = PAF_ALLOC;
+        msastat-&gt;md_indxflgs.mf_olkty = MF_OLKTY_ODER;
+        msastat-&gt;md_odlink = mend;
+        return msastat;
+    }
+    msastat-&gt;md_indxflgs.mf_uindx++;
+    msastat-&gt;md_phyadrs.paf_alloc = PAF_ALLOC;
+    //多个msadsc_t结构的情况下，末端msadsc_t结构也设置已分配状态
+    mend-&gt;md_indxflgs.mf_uindx++;
+    mend-&gt;md_phyadrs.paf_alloc = PAF_ALLOC;
+    msastat-&gt;md_indxflgs.mf_olkty = MF_OLKTY_ODER;
+    msastat-&gt;md_odlink = mend;
+    return msastat;
+}
+
+bool_t mm_retnmsaob_onbafhlst(bafhlst_t *bafhp, msadsc_t **retmstat, msadsc_t **retmend)
+{
+    //取出一个msadsc_t结构
+    msadsc_t *tmp = list_entry(bafhp-&gt;af_frelst.next, msadsc_t, md_list);
+    //从链表中删除
+    list_del(&amp;tmp-&gt;md_list);
+    //减少bafhlst_t结构中的msadsc_t计数
+    bafhp-&gt;af_mobjnr--;
+    bafhp-&gt;af_fobjnr--;
+    //返回msadsc_t结构
+    *retmstat = tmp;
+    //返回当前msadsc_t结构连续的那个结尾的msadsc_t结构 
+    *retmend = (msadsc_t *)tmp-&gt;md_odlink;
+    if (MF_OLKTY_BAFH == tmp-&gt;md_indxflgs.mf_olkty)
+    {//如果只单个msadsc_t结构，那就是它本身 
+        *retmend = tmp;
+    }
+    return TRUE;
+}
+
+msadsc_t *mm_reldpgsdivmsa_bafhl(memarea_t *malckp, uint_t pages, uint_t *retrelpnr, bafhlst_t *relbfl, bafhlst_t *divbfl)
+{
+    msadsc_t *retmsa = NULL;
+    bool_t rets = FALSE;
+    msadsc_t *retmstat = NULL, *retmend = NULL;
+    //处理相等的情况
+    if (relbfl == divbfl)
+    {
+    //从bafhlst_t结构中获取msadsc_t结构的开始与结束地址
+        rets = mm_retnmsaob_onbafhlst(relbfl, &amp;retmstat, &amp;retmend);
+        //设置msadsc_t结构的相关信息表示已经删除
+        retmsa = mm_divpages_opmsadsc(retmstat, relbfl-&gt;af_oderpnr);
+        //返回实际的分配页数
+        *retrelpnr = relbfl-&gt;af_oderpnr;
+        return retmsa;
+    }
+    //处理不等的情况
+    //从bafhlst_t结构中获取msadsc_t结构的开始与结束地址
+    rets = mm_retnmsaob_onbafhlst(divbfl, &amp;retmstat, &amp;retmend);
+     uint_t divnr = divbfl-&gt;af_oderpnr;
+     //从高bafhlst_t数组元素中向下遍历
+    for (bafhlst_t *tmpbfl = divbfl - 1; tmpbfl &gt;= relbfl; tmpbfl--)
+    {
+        //开始分割连续的msadsc_t结构，把剩下的一段连续的msadsc_t结构加入到对应该bafhlst_t结构中
+        if (mrdmb_add_msa_bafh(tmpbfl, &amp;retmstat[tmpbfl-&gt;af_oderpnr], (msadsc_t *)retmstat-&gt;md_odlink) == FALSE)
+        {
+            system_error("mrdmb_add_msa_bafh fail\n");
+        }
+        retmstat-&gt;md_odlink = &amp;retmstat[tmpbfl-&gt;af_oderpnr - 1];
+        divnr -= tmpbfl-&gt;af_oderpnr;
+    }
+
+    retmsa = mm_divpages_opmsadsc(retmstat, divnr);
+    if (NULL == retmsa)
+    {
+        *retrelpnr = 0;
+        return NULL;
+    }
+    *retrelpnr = relbfl-&gt;af_oderpnr;
+    return retmsa;
+}
+</code></pre>
+<p>这个代码有点长，我写出了完成这个逻辑的所有函数，好像很难看懂。别怕，难懂很正常，因为这是一个分配算法的核心逻辑。你之所以看不懂只是因为不懂这个算法，之前我们确实也没提过这个算法。</p>
+<p>下面我就举个例子来演绎一下这个算法，帮助你理解它。比如现在我们要分配一个页面，这个算法将执行如下步骤：</p>
+<p>1.根据一个页面的请求，会返回m_mdmlielst数组中的第0个bafhlst_t结构。</p>
+<p>2.如果第0个bafhlst_t结构中有msadsc_t结构就直接返回，若没有msadsc_t结构，就会继续查找m_mdmlielst数组中的第1个bafhlst_t结构。</p>
+<p>3.如果第1个bafhlst_t结构中也没有msadsc_t结构，就会继续查找m_mdmlielst数组中的第2个bafhlst_t结构。</p>
+<p>4.如果第2个bafhlst_t结构中有msadsc_t结构，记住第2个bafhlst_t结构中对应是4个连续的msadsc_t结构。这时让这4个连续的msadsc_t结构从第2个bafhlst_t结构中脱离。</p>
+<p>5.把这4个连续的msadsc_t结构，对半分割成2个双msadsc_t结构，把其中一个双msadsc_t结构挂载到第1个bafhlst_t结构中。</p>
+<p>6.把剩下一个双msadsc_t结构，继续对半分割成两个单msadsc_t结构，把其中一个单msadsc_t结构挂载到第0个bafhlst_t结构中，剩下一个单msadsc_t结构返回给请求者，完成内存分配。</p>
+<p>我画幅图表示这个过程，如下图所示。</p>
+<p><img alt="" src="assets/060cb6d76cc547ae9a42847b7a595a5b.jpg"/></p>
+<p>代码、文字、图，三管齐下，你一看便明白了。</p>
+<h2 id="内存页的释放">内存页的释放</h2>
+<p>理解了内存页的分配，掌握内存页的释放就是水到渠成的事儿。其实，内存页的释放就是内存页分配的逆向过程。我们从内存页分配过程了解到，可以一次分配一个或者多个页面，那么释放内存页也必须支持一次释放一个或者多个页面。</p>
+<p>我们同样在cosmos/hal/x86/memdivmer.c文件中，写一个内存释放的接口函数和框架函数，代码如下所示。</p>
+<pre><code>//释放内存页面核心
+bool_t mm_merpages_core(memarea_t *marea, msadsc_t *freemsa, uint_t freepgs)
+{
+    bool_t rets = FALSE;
+    cpuflg_t cpuflg;
+    //内存区加锁
+    knl_spinlock_cli(&amp;marea-&gt;ma_lock, &amp;cpuflg);
+    //针对一个内存区进行操作
+    rets = mm_merpages_onmarea(marea, freemsa, freepgs);
+    //内存区解锁
+    knl_spinunlock_sti(&amp;marea-&gt;ma_lock, &amp;cpuflg);
+    return rets;
+}
+//释放内存页面框架函数
+bool_t mm_merpages_fmwk(memmgrob_t *mmobjp, msadsc_t *freemsa, uint_t freepgs)
+{
+    //获取要释放msadsc_t结构所在的内存区
+    memarea_t *marea = onfrmsa_retn_marea(mmobjp, freemsa, freepgs);
+    if (NULL == marea)
+    {
+        return FALSE;
+    }
+    //释放内存页面的核心函数
+    bool_t rets = mm_merpages_core(marea, freemsa, freepgs);
+    if (FALSE == rets)
+    {
+        return FALSE;
+    }
+    return rets;
+}
+
+//释放内存页面接口
+
+//mmobjp-&gt;内存管理数据结构指针
+//freemsa-&gt;释放内存页面对应的首个msadsc_t结构指针
+//freepgs-&gt;请求释放的内存页面数
+bool_t mm_merge_pages(memmgrob_t *mmobjp, msadsc_t *freemsa, uint_t freepgs)
+{
+    if (NULL == mmobjp || NULL == freemsa || 1 &gt; freepgs)
+    {
+        return FALSE;
+    }
+    //调用释放内存页面的框架函数
+    bool_t rets = mm_merpages_fmwk(mmobjp, freemsa, freepgs);
+    if (FALSE == rets)
+    {
+        return FALSE;
+    }
+    return rets;
+}
+</code></pre>
+<p>我们的内存释放页面的代码的结构依然是：接口函数调用框架函数，框架函数调用核心函数，函数的返回值都是bool类型，即TRUE或者FALSE，来表示内存页面释放操作成功与否。</p>
+<p>我们从框架函数中可以发现，内存区是由msadsc_t结构中获取的，因为之前该结构中保留了所在内存区的类型，所以可以查到并返回内存区。</p>
+<p>在释放内存页面的核心mm_merpages_core函数中，会调用mm_merpages_onmarea函数，下面我们来实现这个函数，代码如下。</p>
+<pre><code>sint_t mm_merpages_opmsadsc(bafhlst_t *bafh, msadsc_t *freemsa, uint_t freepgs)
+{
+    msadsc_t *fmend = (msadsc_t *)freemsa-&gt;md_odlink;
+    //处理只有一个单页的情况
+    if (freemsa == fmend)
+    {
+        //页面的分配计数减1
+        freemsa-&gt;md_indxflgs.mf_uindx--;
+        if (0 &lt; freemsa-&gt;md_indxflgs.mf_uindx)
+        {//如果依然大于0说明它是共享页面 直接返回1指示不需要进行下一步操作
+            return 1;
+        }
+        //设置页未分配的标志
+        freemsa-&gt;md_phyadrs.paf_alloc = PAF_NO_ALLOC;
+        freemsa-&gt;md_indxflgs.mf_olkty = MF_OLKTY_BAFH;
+        freemsa-&gt;md_odlink = bafh;//指向所属的bafhlst_t结构
+        //返回2指示需要进行下一步操作
+        return 2;
+    }
+    //多个页面的起始页面和结束页面都要减一
+    freemsa-&gt;md_indxflgs.mf_uindx--;
+    fmend-&gt;md_indxflgs.mf_uindx--;
+    //如果依然大于0说明它是共享页面 直接返回1指示不需要进行下一步操作
+    if (0 &lt; freemsa-&gt;md_indxflgs.mf_uindx)
+    {
+        return 1;
+    }
+    //设置起始、结束页页未分配的标志
+    freemsa-&gt;md_phyadrs.paf_alloc = PAF_NO_ALLOC;
+    fmend-&gt;md_phyadrs.paf_alloc = PAF_NO_ALLOC;
+    freemsa-&gt;md_indxflgs.mf_olkty = MF_OLKTY_ODER;
+    //起始页面指向结束页面
+    freemsa-&gt;md_odlink = fmend;
+    fmend-&gt;md_indxflgs.mf_olkty = MF_OLKTY_BAFH;
+    //结束页面指向所属的bafhlst_t结构
+    fmend-&gt;md_odlink = bafh;
+    //返回2指示需要进行下一步操作
+    return 2;
+}
+
+bool_t onfpgs_retn_bafhlst(memarea_t *malckp, uint_t freepgs, bafhlst_t **retrelbf, bafhlst_t **retmerbf)
+{
+    //获取bafhlst_t结构数组的开始地址
+    bafhlst_t *bafhstat = malckp-&gt;ma_mdmdata.dm_mdmlielst;
+    //根据分配页面数计算出分配页面在dm_mdmlielst数组中下标
+    sint_t dividx = retn_divoder(freepgs);
+    //返回请求释放的bafhlst_t结构指针
+    *retrelbf = &amp;bafhstat[dividx];
+    //返回最大释放的bafhlst_t结构指针
+    *retmerbf = &amp;bafhstat[MDIVMER_ARR_LMAX - 1];
+    return TRUE;
+}
+
+bool_t mm_merpages_onmarea(memarea_t *malckp, msadsc_t *freemsa, uint_t freepgs)
+{
+    bafhlst_t *prcbf = NULL;
+    sint_t pocs = 0;
+    bafhlst_t *retrelbf = NULL, *retmerbf = NULL;
+    bool_t rets = FALSE;
+    //根据freepgs返回请求释放的和最大释放的bafhlst_t结构指针
+    rets = onfpgs_retn_bafhlst(malckp, freepgs, &amp;retrelbf, &amp;retmerbf);
+    //设置msadsc_t结构的信息，完成释放，返回1表示不需要下一步合并操作，返回2表示要进行合并操作
+    sint_t mopms = mm_merpages_opmsadsc(retrelbf, freemsa, freepgs);
+    if (2 == mopms)
+    {
+        //把msadsc_t结构进行合并然后加入对应bafhlst_t结构
+        return mm_merpages_onbafhlst(freemsa, freepgs, retrelbf, retmerbf);
+    }
+    if (1 == mopms)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+</code></pre>
+<p>为了节约篇幅，也为了帮你抓住重点，这段代码我删除了很多检查错误的代码，你可以在<a href="https://gitee.com/lmos/cosmos/blob/master/lesson16~18/Cosmos/hal/x86/memdivmer.c#L1117" target="_blank">源代码</a>中查看。</p>
+<p>显然，在经过mm_merpages_opmsadsc函数操作之后，我们并没有将msadsc_t结构加入到对应的bafhlst_t结构中，这其实是在下一个函数完成的，那就是mm_merpages_onbafhlst这个函数。下面我们来实现它，代码如下所示。</p>
+<pre><code>bool_t mpobf_add_msadsc(bafhlst_t *bafhp, msadsc_t *freemstat, msadsc_t *freemend)
+{
+    freemstat-&gt;md_indxflgs.mf_olkty = MF_OLKTY_ODER;
+    //设置起始页面指向结束页
+    freemstat-&gt;md_odlink = freemend;
+    freemend-&gt;md_indxflgs.mf_olkty = MF_OLKTY_BAFH;
+    //结束页面指向所属的bafhlst_t结构
+    freemend-&gt;md_odlink = bafhp;
+    //把起始页面挂载到所属的bafhlst_t结构中
+    list_add(&amp;freemstat-&gt;md_list, &amp;bafhp-&gt;af_frelst);
+    //增加bafhlst_t结构的空闲页面对象和总的页面对象的计数
+    bafhp-&gt;af_fobjnr++;
+    bafhp-&gt;af_mobjnr++;
+    return TRUE;
+}
+
+bool_t mm_merpages_onbafhlst(msadsc_t *freemsa, uint_t freepgs, bafhlst_t *relbf, bafhlst_t *merbf)
+{
+    sint_t rets = 0;
+    msadsc_t *mnxs = freemsa, *mnxe = &amp;freemsa[freepgs - 1];
+    bafhlst_t *tmpbf = relbf;
+    //从实际要开始遍历，直到最高的那个bafhlst_t结构
+    for (; tmpbf &lt; merbf; tmpbf++)
+    {
+        //查看最大地址连续、且空闲msadsc_t结构，如释放的是第0个msadsc_t结构我们就去查找第1个msadsc_t结构是否空闲，且与第0个msadsc_t结构的地址是不是连续的
+        rets = mm_find_cmsa2blk(tmpbf, &amp;mnxs, &amp;mnxe);
+        if (1 == rets)
+        {
+            break;
+        }
+    }
+    //把合并的msadsc_t结构（从mnxs到mnxe）加入到对应的bafhlst_t结构中
+    if (mpobf_add_msadsc(tmpbf, mnxs, mnxe) == FALSE)
+    {
+        return FALSE;
+    }
+    return TRUE;
+}
+</code></pre>
+<p>这段代码的注释，已经写出了整个释放页面逻辑，<strong>最核心的还是要对空闲页面进行合并，合并成更大的连续的内存页面</strong>，这是这个释放算法的核心逻辑。</p>
+<p>还是老规矩，我同样举个例子来演绎一下这个算法。比如，现在我们要释放一个页面，这个算法将执行如下步骤。</p>
+<p>1.释放一个页面，会返回m_mdmlielst数组中的第0个bafhlst_t结构。</p>
+<ol>
+<li><p>设置这个页面对应的msadsc_t结构的相关信息，表示已经执行了释放操作。</p></li>
+<li><p>开始查看第0个bafhlst_t结构中有没有空闲的msadsc_t，并且它和要释放的msadsc_t对应的物理地址是连续的。没有则把这个释放的msadsc_t挂载第0个bafhlst_t结构中，算法结束，否则进入下一步。</p></li>
+<li><p>把第0个bafhlst_t结构中的msadsc_t结构拿出来与释放的msadsc_t结构，合并成2个连续且更大的msadsc_t。</p></li>
+<li><p>继续查看第1个bafhlst_t结构中有没有空闲的msadsc_t，而且这个空闲msadsc_t要和上一步合并的2个msadsc_t对应的物理地址是连续的。没有则把这个合并的2个msadsc_t挂载第1个bafhlst_t结构中，算法结束，否则进入下一步。</p></li>
+<li><p>把第1个bafhlst_t结构中的2个连续的msadsc_t结构，还有合并的2个地址连续的msadsc_t结构拿出来，合并成4个连续且更大的msadsc_t结构。</p></li>
+<li><p>继续查看第2个bafhlst_t结构，有没有空闲的msadsc_t结构，并且它要和上一步合并的4个msadsc_t结构对应的物理地址是连续的。没有则把这个合并的4个msadsc_t挂载第2个bafhlst_t结构中，算法结束。</p></li>
+</ol>
+<p>上述步骤，我们只要在一个循环中执行就行。我用一幅图表示这个过程，如下所示。</p>
+<p><img alt="" src="assets/6d05741c980249e2bf1f5cfb2e2fc4a8.jpg"/></p>
+<p>这个是不是很熟悉，这正是前面的内存分配图反过来了的结果。最终我们验证了，释放内存就是分配内存的逆向过程。</p>
+<p>好了，到这里，一个优秀的物理内存页面管理器就实现了。</p>
+<h2 id="重点回顾">重点回顾</h2>
+<p>今天我们依赖<a href="https://time.geekbang.org/column/article/384772" target="_blank">上节课</a>设计好的数据结构，实现了内存页面管理算法。下面来回顾一下本课的重点。</p>
+<p>1.我们实现了内存分配接口、框架、核心处理函数，其分配算法是：如果能在dm_mdmlielst数组中找到对应请求页面数的msadsc_t结构就直接返回，如果没有就寻找下一个dm_mdmlielst数组中元素，依次迭代直到最大的dm_mdmlielst数组元素，然后依次对半分割，直到分割到请求的页面数为止。</p>
+<p>2.对应于内存分配过程，我们实现了释放页面的接口、框架、核心处理函数，其释放算法则是<strong>分配算法的逆向过程</strong>，会查找相邻且物理地址连续的msadsc_t结构，进行合并，合并工作也是迭代过程，直到合并到最大的连续msadsc_t结构或者后面不能合并为止，最后把这个合并到最大的连续msadsc_t结构，挂载到对应的dm_mdmlielst数组中。</p>
+<p>你是不是感觉我们的内存管理器还有缺陷，这只能分配页面？是的，只能分配页面是不行的，你有什么更好的方案吗？下一课我们一起讨论。</p>
+<h2 id="思考题">思考题</h2>
+<p>在内存页面分配过程中，是怎样尽可能保证内存页面连续的呢？</p>
+<p>欢迎你在留言区记录你的收获或疑问。如果这节课对你有启发，也欢迎分享给你的同事、朋友。</p>
+<p>好，我是LMOS，我们下节课见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#264a4a4a1f121717161166414b474f4a0845494b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359a054eede8205',t:'MTc0NTUzOTkyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
