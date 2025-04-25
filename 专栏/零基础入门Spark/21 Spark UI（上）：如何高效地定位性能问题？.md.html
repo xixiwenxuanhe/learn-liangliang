@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="21 Spark UI（上）：如何高效地定位性能问题？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>21 Spark UI（上）：如何高效地定位性能问题？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%85%a5%e9%97%a8Spark%ef%bc%8c%e4%bd%a0%e9%9c%80%e8%a6%81%e5%ad%a6%e4%bc%9a%e2%80%9c%e4%b8%89%e6%ad%a5%e8%b5%b0%e2%80%9d.md.html" id="00 开篇词 入门Spark，你需要学会“三步走”.md.html">00 开篇词 入门Spark，你需要学会“三步走”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/01%20Spark%ef%bc%9a%e4%bb%8e%e2%80%9c%e5%a4%a7%e6%95%b0%e6%8d%ae%e7%9a%84Hello%20World%e2%80%9d%e5%bc%80%e5%a7%8b.md.html" id="01 Spark：从“大数据的Hello World”开始.md.html">01 Spark：从“大数据的Hello World”开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/02%20RDD%e4%b8%8e%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%9e%8b%ef%bc%9a%e5%bb%b6%e8%bf%9f%e8%ae%a1%e7%ae%97%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f.md.html" id="02 RDD与编程模型：延迟计算是怎么回事？.md.html">02 RDD与编程模型：延迟计算是怎么回事？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/03%20RDD%e5%b8%b8%e7%94%a8%e7%ae%97%e5%ad%90%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9aRDD%e5%86%85%e9%83%a8%e7%9a%84%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2.md.html" id="03 RDD常用算子（一）：RDD内部的数据转换.md.html">03 RDD常用算子（一）：RDD内部的数据转换.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/04%20%e8%bf%9b%e7%a8%8b%e6%a8%a1%e5%9e%8b%e4%b8%8e%e5%88%86%e5%b8%83%e5%bc%8f%e9%83%a8%e7%bd%b2%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%a1%e7%ae%97%e6%98%af%e6%80%8e%e4%b9%88%e5%9b%9e%e4%ba%8b%ef%bc%9f.md.html" id="04 进程模型与分布式部署：分布式计算是怎么回事？.md.html">04 进程模型与分布式部署：分布式计算是怎么回事？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/05%20%e8%b0%83%e5%ba%a6%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8a%8a%e6%8f%a1%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%a1%e7%ae%97%e7%9a%84%e7%b2%be%e9%ab%93%ef%bc%9f.md.html" id="05 调度系统：如何把握分布式计算的精髓？.md.html">05 调度系统：如何把握分布式计算的精髓？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/06%20Shuffle%e7%ae%a1%e7%90%86%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88Shuffle%e6%98%af%e6%80%a7%e8%83%bd%e7%93%b6%e9%a2%88%ef%bc%9f.md.html" id="06 Shuffle管理：为什么Shuffle是性能瓶颈？.md.html">06 Shuffle管理：为什么Shuffle是性能瓶颈？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/07%20RDD%e5%b8%b8%e7%94%a8%e7%ae%97%e5%ad%90%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9aSpark%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%95%b0%e6%8d%ae%e8%81%9a%e5%90%88%ef%bc%9f.md.html" id="07 RDD常用算子（二）：Spark如何实现数据聚合？.md.html">07 RDD常用算子（二）：Spark如何实现数据聚合？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/08%20%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%ef%bc%9aSpark%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e5%86%85%e5%ad%98%ef%bc%9f.md.html" id="08 内存管理：Spark如何使用内存？.md.html">08 内存管理：Spark如何使用内存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/09%20RDD%e5%b8%b8%e7%94%a8%e7%ae%97%e5%ad%90%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e6%95%b0%e6%8d%ae%e7%9a%84%e5%87%86%e5%a4%87%e3%80%81%e9%87%8d%e5%88%86%e5%b8%83%e4%b8%8e%e6%8c%81%e4%b9%85%e5%8c%96.md.html" id="09 RDD常用算子（三）：数据的准备、重分布与持久化.md.html">09 RDD常用算子（三）：数据的准备、重分布与持久化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/10%20%e5%b9%bf%e6%92%ad%e5%8f%98%e9%87%8f%20&amp;%20%e7%b4%af%e5%8a%a0%e5%99%a8%ef%bc%9a%e5%85%b1%e4%ba%ab%e5%8f%98%e9%87%8f%e6%98%af%e7%94%a8%e6%9d%a5%e5%81%9a%e4%bb%80%e4%b9%88%e7%9a%84%ef%bc%9f.md.html" id="10 广播变量 &amp; 累加器：共享变量是用来做什么的？.md.html">10 广播变量 &amp; 累加器：共享变量是用来做什么的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/11%20%e5%ad%98%e5%82%a8%e7%b3%bb%e7%bb%9f%ef%bc%9a%e6%95%b0%e6%8d%ae%e5%88%b0%e5%ba%95%e9%83%bd%e5%ad%98%e5%93%aa%e5%84%bf%e4%ba%86%ef%bc%9f.md.html" id="11 存储系统：数据到底都存哪儿了？.md.html">11 存储系统：数据到底都存哪儿了？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/12%20%e5%9f%ba%e7%a1%80%e9%85%8d%e7%bd%ae%e8%af%a6%e8%a7%a3%ef%bc%9a%e5%93%aa%e4%ba%9b%e5%8f%82%e6%95%b0%e4%bc%9a%e5%bd%b1%e5%93%8d%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e7%a8%b3%e5%ae%9a%e6%80%a7%ef%bc%9f.md.html" id="12 基础配置详解：哪些参数会影响应用程序稳定性？.md.html">12 基础配置详解：哪些参数会影响应用程序稳定性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/13%20Spark%20SQL%ef%bc%9a%e8%ae%a9%e6%88%91%e4%bb%ac%e4%bb%8e%e2%80%9c%e5%b0%8f%e6%b1%bd%e8%bd%a6%e6%91%87%e5%8f%b7%e5%88%86%e6%9e%90%e2%80%9d%e5%bc%80%e5%a7%8b.md.html" id="13 Spark SQL：让我们从“小汽车摇号分析”开始.md.html">13 Spark SQL：让我们从“小汽车摇号分析”开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/14%20%e5%8f%b0%e5%89%8d%e5%b9%95%e5%90%8e%ef%bc%9aDataFrame%e4%b8%8eSpark%20SQL%e7%9a%84%e7%94%b1%e6%9d%a5.md.html" id="14 台前幕后：DataFrame与Spark SQL的由来.md.html">14 台前幕后：DataFrame与Spark SQL的由来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/15%20%e6%95%b0%e6%8d%ae%e6%ba%90%e4%b8%8e%e6%95%b0%e6%8d%ae%e6%a0%bc%e5%bc%8f%ef%bc%9aDataFrame%e4%bb%8e%e4%bd%95%e8%80%8c%e6%9d%a5%ef%bc%9f.md.html" id="15 数据源与数据格式：DataFrame从何而来？.md.html">15 数据源与数据格式：DataFrame从何而来？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/16%20%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2%ef%bc%9a%e5%a6%82%e4%bd%95%e5%9c%a8DataFrame%e4%b9%8b%e4%b8%8a%e5%81%9a%e6%95%b0%e6%8d%ae%e5%a4%84%e7%90%86%ef%bc%9f.md.html" id="16 数据转换：如何在DataFrame之上做数据处理？.md.html">16 数据转换：如何在DataFrame之上做数据处理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/17%20%e6%95%b0%e6%8d%ae%e5%85%b3%e8%81%94%ef%bc%9a%e4%b8%8d%e5%90%8c%e7%9a%84%e5%85%b3%e8%81%94%e5%bd%a2%e5%bc%8f%e4%b8%8e%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6%e8%af%a5%e6%80%8e%e4%b9%88%e9%80%89%ef%bc%9f.md.html" id="17 数据关联：不同的关联形式与实现机制该怎么选？.md.html">17 数据关联：不同的关联形式与实现机制该怎么选？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/18%20%e6%95%b0%e6%8d%ae%e5%85%b3%e8%81%94%e4%bc%98%e5%8c%96%ef%bc%9a%e9%83%bd%e6%9c%89%e5%93%aa%e4%ba%9bJoin%e7%ad%96%e7%95%a5%ef%bc%8c%e5%bc%80%e5%8f%91%e8%80%85%e8%af%a5%e5%a6%82%e4%bd%95%e5%8f%96%e8%88%8d%ef%bc%9f.md.html" id="18 数据关联优化：都有哪些Join策略，开发者该如何取舍？.md.html">18 数据关联优化：都有哪些Join策略，开发者该如何取舍？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/19%20%e9%85%8d%e7%bd%ae%e9%a1%b9%e8%af%a6%e8%a7%a3%ef%bc%9a%e5%93%aa%e4%ba%9b%e5%8f%82%e6%95%b0%e4%bc%9a%e5%bd%b1%e5%93%8d%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e6%89%a7%e8%a1%8c%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="19 配置项详解：哪些参数会影响应用程序执行性能？.md.html">19 配置项详解：哪些参数会影响应用程序执行性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/20%20Hive%20+%20Spark%e5%bc%ba%e5%bc%ba%e8%81%94%e5%90%88%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%e6%95%b0%e4%bb%93%e7%9a%84%e4%b8%8d%e4%ba%8c%e4%b9%8b%e9%80%89.md.html" id="20 Hive + Spark强强联合：分布式数仓的不二之选.md.html">20 Hive + Spark强强联合：分布式数仓的不二之选.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/21%20Spark%20UI%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%9c%b0%e5%ae%9a%e4%bd%8d%e6%80%a7%e8%83%bd%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="21 Spark UI（上）：如何高效地定位性能问题？.md.html">21 Spark UI（上）：如何高效地定位性能问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/22%20Spark%20UI%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e5%9c%b0%e5%ae%9a%e4%bd%8d%e6%80%a7%e8%83%bd%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="22 Spark UI（下）：如何高效地定位性能问题？.md.html">22 Spark UI（下）：如何高效地定位性能问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/23%20Spark%20MLlib%ef%bc%9a%e4%bb%8e%e2%80%9c%e6%88%bf%e4%bb%b7%e9%a2%84%e6%b5%8b%e2%80%9d%e5%bc%80%e5%a7%8b.md.html" id="23 Spark MLlib：从“房价预测”开始.md.html">23 Spark MLlib：从“房价预测”开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/24%20%e7%89%b9%e5%be%81%e5%b7%a5%e7%a8%8b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e7%94%a8%e7%9a%84%e7%89%b9%e5%be%81%e5%a4%84%e7%90%86%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="24 特征工程（上）：有哪些常用的特征处理函数？.md.html">24 特征工程（上）：有哪些常用的特征处理函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/25%20%e7%89%b9%e5%be%81%e5%b7%a5%e7%a8%8b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e7%94%a8%e7%9a%84%e7%89%b9%e5%be%81%e5%a4%84%e7%90%86%e5%87%bd%e6%95%b0%ef%bc%9f.md.html" id="25 特征工程（下）：有哪些常用的特征处理函数？.md.html">25 特征工程（下）：有哪些常用的特征处理函数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/26%20%e6%a8%a1%e5%9e%8b%e8%ae%ad%e7%bb%83%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%86%b3%e7%ad%96%e6%a0%91%e7%b3%bb%e5%88%97%e7%ae%97%e6%b3%95%e8%af%a6%e8%a7%a3.md.html" id="26 模型训练（上）：决策树系列算法详解.md.html">26 模型训练（上）：决策树系列算法详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/27%20%e6%a8%a1%e5%9e%8b%e8%ae%ad%e7%bb%83%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%9b%9e%e5%bd%92%e3%80%81%e5%88%86%e7%b1%bb%e5%92%8c%e8%81%9a%e7%b1%bb%e7%ae%97%e6%b3%95%e8%af%a6%e8%a7%a3.md.html" id="27 模型训练（中）：回归、分类和聚类算法详解.md.html">27 模型训练（中）：回归、分类和聚类算法详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/28%20%e6%a8%a1%e5%9e%8b%e8%ae%ad%e7%bb%83%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%8d%8f%e5%90%8c%e8%bf%87%e6%bb%a4%e4%b8%8e%e9%a2%91%e7%b9%81%e9%a1%b9%e9%9b%86%e7%ae%97%e6%b3%95%e8%af%a6%e8%a7%a3.md.html" id="28 模型训练（下）：协同过滤与频繁项集算法详解.md.html">28 模型训练（下）：协同过滤与频繁项集算法详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/29%20Spark%20MLlib%20Pipeline%ef%bc%9a%e9%ab%98%e6%95%88%e5%bc%80%e5%8f%91%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e5%ba%94%e7%94%a8.md.html" id="29 Spark MLlib Pipeline：高效开发机器学习应用.md.html">29 Spark MLlib Pipeline：高效开发机器学习应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/30%20Structured%20Streaming%ef%bc%9a%e4%bb%8e%e2%80%9c%e6%b5%81%e5%8a%a8%e7%9a%84Word%20Count%e2%80%9d%e5%bc%80%e5%a7%8b.md.html" id="30 Structured Streaming：从“流动的Word Count”开始.md.html">30 Structured Streaming：从“流动的Word Count”开始.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/31%20%e6%96%b0%e4%b8%80%e4%bb%a3%e6%b5%81%e5%a4%84%e7%90%86%e6%a1%86%e6%9e%b6%ef%bc%9aBatch%20mode%e5%92%8cContinuous%20mode%e5%93%aa%e5%ae%b6%e5%bc%ba%ef%bc%9f.md.html" id="31 新一代流处理框架：Batch mode和Continuous mode哪家强？.md.html">31 新一代流处理框架：Batch mode和Continuous mode哪家强？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/32%20Window%e6%93%8d%e4%bd%9c&amp;Watermark%ef%bc%9a%e6%b5%81%e5%a4%84%e7%90%86%e5%bc%95%e6%93%8e%e6%8f%90%e4%be%9b%e4%ba%86%e5%93%aa%e4%ba%9b%e4%bc%98%e7%a7%80%e6%9c%ba%e5%88%b6%ef%bc%9f.md.html" id="32 Window操作&amp;Watermark：流处理引擎提供了哪些优秀机制？.md.html">32 Window操作&amp;Watermark：流处理引擎提供了哪些优秀机制？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/33%20%e6%b5%81%e8%ae%a1%e7%ae%97%e4%b8%ad%e7%9a%84%e6%95%b0%e6%8d%ae%e5%85%b3%e8%81%94%ef%bc%9a%e6%b5%81%e4%b8%8e%e6%b5%81%e3%80%81%e6%b5%81%e4%b8%8e%e6%89%b9.md.html" id="33 流计算中的数据关联：流与流、流与批.md.html">33 流计算中的数据关联：流与流、流与批.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/34%20Spark%20+%20Kafka%ef%bc%9a%e6%b5%81%e8%ae%a1%e7%ae%97%e4%b8%ad%e7%9a%84%e2%80%9c%e4%b8%87%e9%87%91%e6%b2%b9%e2%80%9d.md.html" id="34 Spark + Kafka：流计算中的“万金油”.md.html">34 Spark + Kafka：流计算中的“万金油”.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/%e7%94%a8%e6%88%b7%e6%95%85%e4%ba%8b%20%e5%b0%8f%e7%8e%8b%ef%bc%9a%e4%bf%9d%e6%8c%81%e7%a9%ba%e6%9d%af%e5%bf%83%e6%80%81%ef%bc%8c%e4%b8%8d%e5%81%9a%e4%ba%95%e5%ba%95%e4%b9%8b%e8%9b%99.md.html" id="用户故事 小王：保持空杯心态，不做井底之蛙.md.html">用户故事 小王：保持空杯心态，不做井底之蛙.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e9%9b%b6%e5%9f%ba%e7%a1%80%e5%85%a5%e9%97%a8Spark/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e8%bf%9b%e5%85%a5%e6%97%b6%e9%97%b4%e8%a3%82%e7%bc%9d%ef%bc%8c%e6%8c%81%e7%bb%ad%e5%ad%a6%e4%b9%a0.md.html" id="结束语 进入时间裂缝，持续学习.md.html">结束语 进入时间裂缝，持续学习.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="21 Spark UI（上）：如何高效地定位性能问题？" id="title">21 Spark UI（上）：如何高效地定位性能问题？</h1>
+<div><p>你好，我是吴磊。</p>
+<p>到目前为止，我们完成了基础知识和Spark SQL这两个模块的学习，这也就意味着，我们完成了Spark入门“三步走”中的前两步，首先恭喜你！在学习的过程中，我们逐渐意识到，Spark Core与Spark SQL作为Spark并驾齐驱的执行引擎与优化引擎，承载着所有类型的计算负载，如批处理、流计算、数据分析、机器学习，等等。</p>
+<p>那么显然，Spark Core与Spark SQL运行得是否稳定与高效，决定着Spark作业或是应用的整体“健康状况”。不过，在日常的开发工作中，我们总会遇到Spark应用运行失败、或是执行效率未达预期的情况。对于这类问题，想找到根本原因（Root Cause），我们往往需要依赖Spark UI来获取最直接、最直观的线索。</p>
+<p>如果我们把失败的、或是执行低效的Spark应用看作是“病人”的话，那么Spark UI中关于应用的众多度量指标（Metrics），就是这个病人的“体检报告”。结合多样的Metrics，身为“大夫”的开发者即可结合经验来迅速地定位“病灶”。</p>
+<p>今天这一讲，让我们以小汽车摇号中“倍率与中签率分析”的应用（详细内容你可以回顾[第13讲]）为例，用图解的方式，一步步地去认识Spark UI，看一看它有哪些关键的度量指标，这些指标都是什么含义，又能为开发者提供哪些洞察（Insights）？</p>
+<p>这里需要说明的是，Spark UI的讲解涉及到大量的图解、代码与指标释义，内容庞杂。因此，为了减轻你的学习负担，我按照Spark UI的入口类型（一级入口、二级入口）把Spark UI拆成了上、下两讲。一级入口比较简单、直接，我们今天这一讲，先来讲解这一部分，二级入口的讲解留到下一讲去展开。</p>
+<h2 id="准备工作">准备工作</h2>
+<p>在正式开始介绍Spark UI之前，我们先来简单交代一下图解案例用到的环境、配置与代码。你可以参考这里给出的细节，去复现“倍率与中签率分析”案例Spark UI中的每一个界面，然后再结合今天的讲解，以“看得见、摸得着”的方式，去更加直观、深入地熟悉每一个页面与度量指标。</p>
+<p>当然，如果你手头一时没有合适的执行环境，也不要紧。咱们这一讲的特点，就是图多，后面我特意准备了大量的图片和表格，带你彻底了解Spark UI。</p>
+<p>由于小汽车摇号数据体量不大，因此在计算资源方面，我们的要求并不高，“倍率与中签率分析”案例用到的资源如下所示：</p>
+<p><img alt="图片" src="assets/0b3635aa7eb123b387c507f6caf4b22b.jpg" title="硬件资源"/></p>
+<p>接下来是代码，在[小汽车摇号应用开发]那一讲，我们一步步地实现了“倍率与中签率分析”的计算逻辑，这里咱们不妨一起回顾一下。</p>
+<pre><code>import org.apache.spark.sql.DataFrame
+
+val rootPath: String = _
+// 申请者数据
+val hdfs_path_apply: String = s"${rootPath}/apply"
+// spark是spark-shell中默认的SparkSession实例
+// 通过read API读取源文件
+val applyNumbersDF: DataFrame = spark.read.parquet(hdfs_path_apply)
+
+// 中签者数据
+val hdfs_path_lucky: String = s"${rootPath}/lucky"
+// 通过read API读取源文件
+val luckyDogsDF: DataFrame = spark.read.parquet(hdfs_path_lucky)
+
+// 过滤2016年以后的中签数据，且仅抽取中签号码carNum字段
+val filteredLuckyDogs: DataFrame = luckyDogsDF.filter(col("batchNum") &gt;= "201601").select("carNum")
+
+// 摇号数据与中签数据做内关联，Join Key为中签号码carNum
+val jointDF: DataFrame = applyNumbersDF.join(filteredLuckyDogs, Seq("carNum"), "inner")
+
+// 以batchNum、carNum做分组，统计倍率系数
+val multipliers: DataFrame = jointDF.groupBy(col("batchNum"),col("carNum"))
+.agg(count(lit(1)).alias("multiplier"))
+
+// 以carNum做分组，保留最大的倍率系数
+val uniqueMultipliers: DataFrame = multipliers.groupBy("carNum")
+.agg(max("multiplier").alias("multiplier"))
+
+// 以multiplier倍率做分组，统计人数
+val result: DataFrame = uniqueMultipliers.groupBy("multiplier")
+.agg(count(lit(1)).alias("cnt"))
+.orderBy("multiplier")
+
+result.collect
+</code></pre>
+<p>今天我们在此基础上做一点变化，为了方便展示StorageTab页面内容，我们这里“强行”给applyNumbersDF 和luckyDogsDF这两个DataFrame都加了Cache。对于引用数量为1的数据集，实际上是没有必要加Cache的，这一点还需要你注意。</p>
+<p>回顾完代码之后，再来看看配置项。为了让Spark UI能够展示运行中以及执行完毕的应用，我们还需要设置如下配置项并启动History Server。</p>
+<p><img alt="图片" src="assets/09d9a96316b00de7a5afe015a1444de9.jpg" title="Event log相关配置项"/></p>
+<pre><code>// SPARK_HOME表示Spark安装目录
+${SPAK_HOME}/sbin/start-history-server.sh
+</code></pre>
+<p>好啦，到此为止，一切准备就绪。接下来，让我们启动spark-shell，并提交“倍率与中签率分析”的代码，然后把目光转移到Host1的8080端口，也就是Driver所在节点的8080端口。</p>
+<h2 id="spark-ui-一级入口">Spark UI 一级入口</h2>
+<p>今天的故事，要从Spark UI的入口开始，其实刚才说的8080端口正是Spark UI的入口，我们可以从这里进入Spark UI。</p>
+<p>打开Spark UI，首先映入眼帘的是默认的Jobs页面。Jobs页面记录着应用中涉及的Actions动作，以及与数据读取、移动有关的动作。其中，每一个Action都对应着一个Job，而每一个Job都对应着一个作业。我们一会再去对Jobs页面做展开，现在先把目光集中在Spark UI最上面的导航条，这里罗列着Spark UI所有的一级入口，如下图所示。</p>
+<p><img alt="图片" src="assets/56563537c4e0ef597629d42618df21d2.png" title="Spark UI导航条：一级入口"/></p>
+<p>导航条最左侧是Spark Logo以及版本号，后面则依次罗列着6个一级入口，每个入口的功能与作用我整理到了如下的表格中，你可以先整体过一下，后面我们再挨个细讲。</p>
+<p><img alt="图片" src="assets/yy40a1yy06a4237dc691e197fa737569.jpg" title="一级入口简介"/></p>
+<p>形象点说，这6个不同的入口，就像是体检报告中6大类不同的体检项，比如内科、外科、血常规，等等。接下来，让我们依次翻开“体检报告”的每一个大项，去看看“倍率与中签率分析”这个家伙的体质如何。</p>
+<p>不过，本着由简入难的原则，咱们并不会按照Spark UI罗列的顺序去查看各个入口，而是按照Executors &gt; Environment &gt; Storage &gt; SQL &gt; Jobs &gt; Stages的顺序，去翻看“体检报告”。</p>
+<p>其中，前3个入口都是详情页，不存在二级入口；而后3个入口都是预览页，都需要访问二级入口，才能获取更加详细的内容。显然，相比预览页，详情页来得更加直接。接下来，让我们从Executors开始，先来了解一下应用的计算负载。</p>
+<h4 id="executors"><strong>Executors</strong></h4>
+<p>Executors Tab的主要内容如下，主要包含“Summary”和“Executors”两部分。这两部分所记录的度量指标是一致的，其中“Executors”以更细的粒度记录着每一个Executor的详情，而第一部分“Summary”是下面所有Executors度量指标的简单加和。</p>
+<p><img alt="图片" src="assets/05769aed159ab5a49e336451a9c5ed7a.png" title="Executors详情页"/></p>
+<p>我们一起来看一下，Spark UI都提供了哪些Metrics，来量化每一个Executor的工作负载（Workload）。为了叙述方便，我们以表格的形式说明这些Metrics的含义与作用。</p>
+<p><img alt="图片" src="assets/f7373c0616470bde9eb282eefb64a2c8.jpg" title="Executor Metrics"/></p>
+<p>不难发现，Executors页面清清楚楚地记录着每一个Executor消耗的数据量，以及它们对CPU、内存与磁盘等硬件资源的消耗。基于这些信息，我们可以轻松判断不同Executors之间是否存在负载不均衡的情况，进而判断应用中是否存在数据倾斜的隐患。</p>
+<p>对于Executors页面中每一个Metrics的具体数值，它们实际上是Tasks执行指标在Executors粒度上的汇总。因此，对于这些Metrics的释义，咱们留到Stages二级入口再去展开，这里暂时不做一一深入。你不妨结合“倍率与中签率分析”的应用，去浏览一下不同Metrics的具体数值，先对这些数字有一个直观上的感受。</p>
+<p>实际上，这些具体的数值，并没有什么特别之处，除了RDD Blocks和Complete Tasks这两个Metrics。细看一下这两个指标，你会发现，RDD Blocks是51（总数），而Complete Tasks（总数）是862。</p>
+<p>之前讲RDD并行度的时候，我们说过，RDD并行度就是RDD的分区数量，每个分区对应着一个Task，因此RDD并行度与分区数量、分布式任务数量是一致的。可是，截图中的51与862，<strong>显然不在一个量级</strong>，这是怎么回事呢？</p>
+<p>这里我先买个关子，把它给你留作思考题，你不妨花些时间，去好好想一想。如果没想清楚也没关系，我们在评论区会继续讨论这个问题。</p>
+<h4 id="environment">Environment</h4>
+<p>接下来，我们再来说说Environment。顾名思义，Environment页面记录的是各种各样的环境变量与配置项信息，如下图所示。</p>
+<p><img alt="图片" src="assets/83byy2288931250e79354dec06cyy079.png" title="Environment详情页"/></p>
+<p>为了让你抓住主线，我并没有给你展示Environment页面所包含的全部信息，就类别来说，它包含5大类环境信息，为了方便叙述，我把它们罗列到了下面的表格中。</p>
+<p><img alt="图片" src="assets/c9596275686485e8a9200b91403b584f.jpg" title="Environment Metrics"/></p>
+<p>显然，这5类信息中，Spark Properties是重点，其中记录着所有在运行时生效的Spark配置项设置。通过Spark Properties，我们可以确认运行时的设置，与我们预期的设置是否一致，从而排除因配置项设置错误而导致的稳定性或是性能问题。</p>
+<h4 id="storage">Storage</h4>
+<p>说完Executors与Environment，我们来看一级入口的最后一个详情页：Storage。</p>
+<p><img alt="图片" src="assets/ff84db596c0c988422e3dfa86a3b865b.png" title="Storage详情页"/></p>
+<p>Storage详情页，记录着每一个分布式缓存（RDD Cache、DataFrame Cache）的细节，包括缓存级别、已缓存的分区数、缓存比例、内存大小与磁盘大小。</p>
+<p>在[第8讲]，我们介绍过Spark支持的不同缓存级别，它是存储介质（内存、磁盘）、存储形式（对象、序列化字节）与副本数量的排列组合。对于DataFrame来说，默认的级别是单副本的Disk Memory Deserialized，如上图所示，也就是存储介质为内存加磁盘，存储形式为对象的单一副本存储方式。</p>
+<p><img alt="图片" src="assets/cd982cc408b3cdcef01018ab7e565718.jpg" title="Storage Metrics"/></p>
+<p>Cached Partitions与Fraction Cached分别记录着数据集成功缓存的分区数量，以及这些缓存的分区占所有分区的比例。当Fraction Cached小于100%的时候，说明分布式数据集并没有完全缓存到内存（或是磁盘），对于这种情况，我们要警惕缓存换入换出可能会带来的性能隐患。</p>
+<p>后面的Size in Memory与Size in Disk，则更加直观地展示了数据集缓存在内存与硬盘中的分布。从上图中可以看到，由于内存受限（3GB/Executor），摇号数据几乎全部被缓存到了磁盘，只有584MB的数据，缓存到了内存中。坦白地说，这样的缓存，对于数据集的重复访问，并没有带来实质上的性能收益。</p>
+<p>基于Storage页面提供的详细信息，我们可以有的放矢地设置与内存有关的配置项，如spark.executor.memory、spark.memory.fraction、spark.memory.storageFraction，从而有针对性对Storage Memory进行调整。</p>
+<h4 id="sql">SQL</h4>
+<p>接下来，我们继续说一级入口的SQL页面。当我们的应用包含DataFrame、Dataset或是SQL的时候，Spark UI的SQL页面，就会展示相应的内容，如下图所示。</p>
+<p><img alt="图片" src="assets/dd3231ca21492ff00c63a111d96516cb.png" title="SQL概览页"/></p>
+<p>具体来说，一级入口页面，以Actions为单位，记录着每个Action对应的Spark SQL执行计划。我们需要点击“Description”列中的超链接，才能进入到二级页面，去了解每个执行计划的详细信息。这部分内容，我们留到下一讲的二级入口详情页再去展开。</p>
+<h4 id="jobs">Jobs</h4>
+<p>同理，对于Jobs页面来说，Spark UI也是以Actions为粒度，记录着每个Action对应作业的执行情况。我们想要了解作业详情，也必须通过“Description”页面提供的二级入口链接。你先有个初步认识就好，下一讲我们再去展开。</p>
+<p><img alt="图片" src="assets/84b6f0188d39c7e268e1b5f68224144b.png" title="Jobs概览页"/></p>
+<p>相比SQL页面的3个Actions：save（保存计算结果）、count（统计申请编号）、count（统计中签编号），结合前面的概览页截图你会发现，Jobs页面似乎凭空多出来很多Actions。</p>
+<p>主要原因在于，在Jobs页面，Spark UI会把数据的读取、访问与移动，也看作是一类“Actions”，比如图中Job Id为0、1、3、4的那些。这几个Job，实际上都是在读取源数据（元数据与数据集本身）。</p>
+<p>至于最后多出来的、Job Id为7的save，你不妨结合最后一行代码，去想想问什么。这里我还是暂时卖个关子，留给你足够的时间去思考，咱们评论区见。</p>
+<pre><code>result05_01.write.mode("Overwrite").format("csv").save(s"${rootPath}/results/result05_01")
+</code></pre>
+<h4 id="stages">Stages</h4>
+<p>我们知道，每一个作业，都包含多个阶段，也就是我们常说的Stages。在Stages页面，Spark UI罗列了应用中涉及的所有Stages，这些Stages分属于不同的作业。要想查看哪些Stages隶属于哪个Job，还需要从Jobs的Descriptions二级入口进入查看。</p>
+<p><img alt="图片" src="assets/71cd54b597be76a1c900864661e3227d.png" title="Stages概览页"/></p>
+<p>Stages页面，更多地是一种预览，要想查看每一个Stage的详情，同样需要从“Description”进入Stage详情页（下一讲详细展开）。</p>
+<p>好啦，到此为止，对于导航条中的不同页面，我们都做了不同程度的展开。简单汇总下来，其中<strong>Executors、Environment、Storage是详情页，开发者可以通过这3个页面，迅速地了解集群整体的计算负载、运行环境，以及数据集缓存的详细情况；而SQL、Jobs、Stages，更多地是一种罗列式的展示，想要了解其中的细节，还需要进入到二级入口</strong>。</p>
+<p>正如开篇所说，二级入口的讲解，我们留到下一讲再去探讨，敬请期待。</p>
+<h2 id="重点回顾">重点回顾</h2>
+<p>好啦，今天的课程，到这里就讲完啦。今天的内容比较多，涉及的Metrics纷繁而又复杂，仅仅听一遍我的讲解，还远远不够，还需要你结合日常的开发，去多多摸索与体会，加油！</p>
+<p>今天这一讲，我们从简单、直接的一级入口入手，按照“Executors -&gt; Environment -&gt; Storage -&gt; SQL -&gt; Jobs -&gt; Stages”的顺序，先后介绍了一级入口的详情页与概览页。对于这些页面中的内容，我把需要重点掌握的部分，整理到了如下表格，供你随时参考。</p>
+<p><img alt="图片" src="assets/e324fa0b2db69499d951290dc4351bc7.jpg"/></p>
+<h2 id="每课一练">每课一练</h2>
+<p>今天的思考题，我们在课程中已经提过了。一个是在Executors页面，为什么RDD Blocks与Complete Tasks的数量不一致。第二个是，在Jobs页面，为什么最后会多出来一个save Action？</p>
+<p>欢迎你在留言区跟我交流探讨，也欢迎推荐你把这一讲分享给有需要的朋友、同事。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#563a3a3a6f626767666116313b373f3a7835393b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935a09e64b4fc94b',t:'MTc0NTU0NDI0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
