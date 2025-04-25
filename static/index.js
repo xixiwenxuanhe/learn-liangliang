@@ -98,3 +98,49 @@ function hide_canvas() {
     sidebar.classList.remove('show')
     overlay.classList.remove('show')
 }
+
+// 全站右上角悬浮GitHub图标
+(function() {
+  var githubDiv = document.createElement('div');
+  githubDiv.style.position = 'fixed';
+  githubDiv.style.top = '24px';
+  githubDiv.style.right = '24px';
+  githubDiv.style.zIndex = '9999';
+  githubDiv.style.cursor = 'pointer';
+  githubDiv.title = '访问 GitHub 仓库';
+
+  var githubLink = document.createElement('a');
+  githubLink.href = 'https://github.com/xixiwenxuanhe/learn-liangliang';
+  githubLink.target = '_blank';
+  githubLink.rel = 'noopener noreferrer';
+
+  // 使用本地SVG图片
+  var githubImg = document.createElement('img');
+  githubImg.src = '/img/github.svg';
+  githubImg.alt = 'GitHub';
+  githubImg.style.width = '40px';
+  githubImg.style.height = '40px';
+  githubImg.style.display = 'block';
+
+  githubLink.appendChild(githubImg);
+  githubDiv.appendChild(githubLink);
+  document.body.appendChild(githubDiv);
+})();
+
+// 移除“因收到Google相关通知，网站将会择期关闭”提示
+(function() {
+  var allDivs = document.getElementsByTagName('div');
+  for (var i = 0; i < allDivs.length; i++) {
+    var div = allDivs[i];
+    if (
+      div.getAttribute('align') === 'center' &&
+      div.innerText &&
+      div.innerText.indexOf('因收到Google相关通知，网站将会择期关闭') !== -1 &&
+      div.querySelector('a[href*="lumendatabase.org/notices/44265620"]')
+    ) {
+      div.parentNode.removeChild(div);
+      break; // 只移除第一个找到的即可
+    }
+  }
+})();
+
