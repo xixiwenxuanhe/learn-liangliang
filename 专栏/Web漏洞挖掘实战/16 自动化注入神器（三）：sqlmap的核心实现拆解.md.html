@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="16 自动化注入神器（三）：sqlmap的核心实现拆解" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>16 自动化注入神器（三）：sqlmap的核心实现拆解 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/00%20%e5%af%bc%e8%af%bb%20%e8%a7%a3%e8%af%bbOWASP%20Top10%202021.md.html" id="00 导读 解读OWASP Top10 2021.md.html">00 导读 解读OWASP Top10 2021.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e4%bb%8e%e9%bb%91%e5%ae%a2%e7%9a%84%e8%a7%86%e8%a7%92%e6%89%be%e6%bc%8f%e6%b4%9e%ef%bc%8c%e4%bb%8e%e5%ae%89%e5%85%a8%e7%9a%84%e8%a7%92%e5%ba%a6%e4%bc%98%e9%9b%85coding.md.html" id="00 开篇词 从黑客的视角找漏洞，从安全的角度优雅coding.md.html">00 开篇词 从黑客的视角找漏洞，从安全的角度优雅coding.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/01%20%e5%a4%b1%e6%95%88%e7%9a%84%e8%ae%bf%e9%97%ae%e6%8e%a7%e5%88%b6%ef%bc%9a%e6%94%bb%e5%87%bb%e8%80%85%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e5%85%b6%e4%bb%96%e7%94%a8%e6%88%b7%e4%bf%a1%e6%81%af%ef%bc%9f.md.html" id="01 失效的访问控制：攻击者如何获取其他用户信息？.md.html">01 失效的访问控制：攻击者如何获取其他用户信息？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/02%20%e8%b7%af%e5%be%84%e7%a9%bf%e8%b6%8a%ef%bc%9a%e4%bd%a0%e7%9a%84Web%e5%ba%94%e7%94%a8%e7%b3%bb%e7%bb%9f%e6%88%90%e4%ba%86%e6%94%bb%e5%87%bb%e8%80%85%e7%9a%84%e8%b5%84%e6%ba%90%e7%ae%a1%e7%90%86%e5%99%a8%ef%bc%9f.md.html" id="02 路径穿越：你的Web应用系统成了攻击者的资源管理器？.md.html">02 路径穿越：你的Web应用系统成了攻击者的资源管理器？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/03%20%e6%95%8f%e6%84%9f%e6%95%b0%e6%8d%ae%e6%b3%84%e9%9c%b2%ef%bc%9a%e6%94%bb%e5%87%bb%e8%80%85%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e7%94%a8%e6%88%b7%e8%b4%a6%e6%88%b7%ef%bc%9f.md.html" id="03 敏感数据泄露：攻击者如何获取用户账户？.md.html">03 敏感数据泄露：攻击者如何获取用户账户？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/04%20%e6%9d%83%e9%99%90%e4%b8%8d%e5%90%88%e7%90%86%ef%bc%9a%e6%94%bb%e5%87%bb%e8%80%85%e8%bf%9b%e6%9d%a5%e5%b0%b1%e6%98%afroot%e6%9d%83%e9%99%90%ef%bc%9f.md.html" id="04 权限不合理：攻击者进来就是root权限？.md.html">04 权限不合理：攻击者进来就是root权限？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/05%20CSRF%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e7%94%a8%e6%88%b7%e7%9a%84%e6%93%8d%e4%bd%9c%e4%bb%96%e8%87%aa%e5%b7%b1%e4%b8%8d%e6%89%bf%e8%ae%a4%ef%bc%9f.md.html" id="05 CSRF：为什么用户的操作他自己不承认？.md.html">05 CSRF：为什么用户的操作他自己不承认？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/06%20%e5%8a%a0%e5%af%86%e5%a4%b1%e8%b4%a5%ef%bc%9a%e4%bd%bf%e7%94%a8%e4%ba%86%e5%8a%a0%e5%af%86%e7%ae%97%e6%b3%95%e4%b9%9f%e4%bc%9a%e8%a2%ab%e7%a0%b4%e8%a7%a3%e5%90%97%ef%bc%9f.md.html" id="06 加密失败：使用了加密算法也会被破解吗？.md.html">06 加密失败：使用了加密算法也会被破解吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/07%20%e5%bc%b1%e7%bc%96%e7%a0%81%ef%bc%9a%e7%a8%8b%e5%ba%8f%e4%b9%8b%e9%97%b4%e7%9a%84%e6%b2%9f%e9%80%9a%e8%af%ad%e8%a8%80%e5%ae%89%e5%85%a8%e5%90%97%ef%bc%9f.md.html" id="07 弱编码：程序之间的沟通语言安全吗？.md.html">07 弱编码：程序之间的沟通语言安全吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/08%20%e6%95%b0%e5%ad%97%e8%af%81%e4%b9%a6%ef%bc%9a%e6%94%bb%e5%87%bb%e8%80%85%e5%8f%af%e4%bb%a5%e4%bc%aa%e9%80%a0%e8%af%81%e4%b9%a6%e5%90%97%ef%bc%9f.md.html" id="08 数字证书：攻击者可以伪造证书吗？.md.html">08 数字证书：攻击者可以伪造证书吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/09%20%e5%af%86%e7%a0%81%e7%ae%97%e6%b3%95%e9%97%ae%e9%a2%98%ef%bc%9a%e6%95%b0%e5%ad%a6%e7%9f%a5%e8%af%86%e5%a6%82%e4%bd%95%e6%8f%90%e9%ab%98%e4%bb%a3%e7%a0%81%e5%8f%af%e9%9d%a0%e6%80%a7%ef%bc%9f.md.html" id="09 密码算法问题：数学知识如何提高代码可靠性？.md.html">09 密码算法问题：数学知识如何提高代码可靠性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/10%20%e5%bc%b1%e9%9a%8f%e6%9c%ba%e6%95%b0%e7%94%9f%e6%88%90%e5%99%a8%ef%bc%9a%e6%94%bb%e5%87%bb%e8%80%85%e5%a6%82%e4%bd%95%e9%a2%84%e6%b5%8b%e9%9a%8f%e6%9c%ba%e6%95%b0%ef%bc%9f.md.html" id="10 弱随机数生成器：攻击者如何预测随机数？.md.html">10 弱随机数生成器：攻击者如何预测随机数？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/11%20%e5%bf%98%e8%ae%b0%e5%8a%a0%e2%80%9c%e7%9b%90%e2%80%9d%ef%bc%9a%e5%8a%a0%e5%af%86%e7%bb%93%e6%9e%9c%e5%bc%ba%e5%ba%a6%e4%b8%8d%e5%a4%9f%e5%90%97%ef%bc%9f.md.html" id="11 忘记加“盐”：加密结果强度不够吗？.md.html">11 忘记加“盐”：加密结果强度不够吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/12%20%e6%b3%a8%e5%85%a5%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9aSQL%e6%b3%a8%e5%85%a5%e8%b5%b7%e6%89%8b%e5%bc%8f.md.html" id="12 注入（上）：SQL注入起手式.md.html">12 注入（上）：SQL注入起手式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/13%20%e6%b3%a8%e5%85%a5%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9aSQL%e6%b3%a8%e5%85%a5%e6%8a%80%e6%88%98%e6%b3%95%e5%8f%8a%e7%9b%b8%e5%85%b3%e5%ae%89%e5%85%a8%e5%ae%9e%e8%b7%b5.md.html" id="13 注入（下）：SQL注入技战法及相关安全实践.md.html">13 注入（下）：SQL注入技战法及相关安全实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/14%20%e8%87%aa%e5%8a%a8%e5%8c%96%e6%b3%a8%e5%85%a5%e7%a5%9e%e5%99%a8%ef%bc%88%e4%b8%80%ef%bc%89%ef%bc%9asqlmap%e7%9a%84%e8%ae%be%e8%ae%a1%e6%80%9d%e8%b7%af%e8%a7%a3%e6%9e%90.md.html" id="14 自动化注入神器（一）：sqlmap的设计思路解析.md.html">14 自动化注入神器（一）：sqlmap的设计思路解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/15%20%e8%87%aa%e5%8a%a8%e5%8c%96%e6%b3%a8%e5%85%a5%e7%a5%9e%e5%99%a8%ef%bc%88%e4%ba%8c%ef%bc%89%ef%bc%9asqlmap%e7%9a%84%e8%ae%be%e8%ae%a1%e6%9e%b6%e6%9e%84%e8%a7%a3%e6%9e%90.md.html" id="15 自动化注入神器（二）：sqlmap的设计架构解析.md.html">15 自动化注入神器（二）：sqlmap的设计架构解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/16%20%e8%87%aa%e5%8a%a8%e5%8c%96%e6%b3%a8%e5%85%a5%e7%a5%9e%e5%99%a8%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9asqlmap%e7%9a%84%e6%a0%b8%e5%bf%83%e5%ae%9e%e7%8e%b0%e6%8b%86%e8%a7%a3.md.html" id="16 自动化注入神器（三）：sqlmap的核心实现拆解.md.html">16 自动化注入神器（三）：sqlmap的核心实现拆解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/17%20%e8%87%aa%e5%8a%a8%e5%8c%96%e6%b3%a8%e5%85%a5%e7%a5%9e%e5%99%a8%ef%bc%88%e5%9b%9b%ef%bc%89%ef%bc%9asqlmap%e7%9a%84%e6%a0%b8%e5%bf%83%e5%8a%9f%e8%83%bd%e8%a7%a3%e6%9e%90.md.html" id="17 自动化注入神器（四）：sqlmap的核心功能解析.md.html">17 自动化注入神器（四）：sqlmap的核心功能解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/19%20%e5%a4%b1%e6%95%88%e7%9a%84%e8%be%93%e5%85%a5%e6%a3%80%e6%b5%8b%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%94%bb%e5%87%bb%e8%80%85%e6%9c%89%e5%93%aa%e4%ba%9b%e7%bb%95%e8%bf%87%e6%96%b9%e6%a1%88%ef%bc%9f.md.html" id="19 失效的输入检测（上）：攻击者有哪些绕过方案？.md.html">19 失效的输入检测（上）：攻击者有哪些绕过方案？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/20%20%e5%a4%b1%e6%95%88%e7%9a%84%e8%be%93%e5%85%a5%e6%a3%80%e6%b5%8b%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%94%bb%e5%87%bb%e8%80%85%e6%9c%89%e5%93%aa%e4%ba%9b%e7%bb%95%e8%bf%87%e6%96%b9%e6%a1%88%ef%bc%9f.md.html" id="20 失效的输入检测（下）：攻击者有哪些绕过方案？.md.html">20 失效的输入检测（下）：攻击者有哪些绕过方案？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/21%20XSS%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%89%8d%e7%ab%af%e6%94%bb%e9%98%b2%e7%9a%84%e4%b8%bb%e6%88%98%e5%9c%ba.md.html" id="21 XSS（上）：前端攻防的主战场.md.html">21 XSS（上）：前端攻防的主战场.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/22%20XSS%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e8%b7%a8%e7%ab%99%e8%84%9a%e6%9c%ac%e6%94%bb%e5%87%bb%e7%9a%84%e5%8d%b1%e5%ae%b3%e6%80%a7.md.html" id="22 XSS（中）：跨站脚本攻击的危害性.md.html">22 XSS（中）：跨站脚本攻击的危害性.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/23%20XSS%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e6%a3%80%e6%b5%8b%e4%b8%8e%e9%98%b2%e5%be%a1%e6%96%b9%e6%a1%88%e8%a7%a3%e6%9e%90.md.html" id="23 XSS（下）：检测与防御方案解析.md.html">23 XSS（下）：检测与防御方案解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/24%20%e8%b5%84%e6%ba%90%e6%b3%a8%e5%85%a5%ef%bc%9a%e6%94%bb%e5%87%bb%e6%96%b9%e5%bc%8f%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bc%9a%e5%8d%87%e7%ba%a7%ef%bc%9f.md.html" id="24 资源注入：攻击方式为什么会升级？.md.html">24 资源注入：攻击方式为什么会升级？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/25%20%e4%b8%9a%e5%8a%a1%e9%80%bb%e8%be%91%e6%bc%8f%e6%b4%9e%ef%bc%9a%e5%a5%bd%e7%9a%84%e5%bc%80%e5%a7%8b%e6%98%af%e6%88%90%e5%8a%9f%e7%9a%84%e4%b8%80%e5%8d%8a.md.html" id="25 业务逻辑漏洞：好的开始是成功的一半.md.html">25 业务逻辑漏洞：好的开始是成功的一半.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/26%20%e5%8c%85%e5%90%ab%e6%95%8f%e6%84%9f%e4%bf%a1%e6%81%af%e7%9a%84%e6%8a%a5%e9%94%99%ef%bc%9a%e5%b0%86%e5%ae%89%e5%85%a8%e5%bc%80%e5%8f%91%e6%a0%87%e5%87%86%e5%ba%94%e7%94%a8%e5%88%b0%e9%a1%b9%e7%9b%ae%e4%b8%ad.md.html" id="26 包含敏感信息的报错：将安全开发标准应用到项目中.md.html">26 包含敏感信息的报错：将安全开发标准应用到项目中.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/27%20%e7%94%a8%e6%88%b7%e8%b4%a6%e6%88%b7%e5%ae%89%e5%85%a8%ef%bc%9a%e8%b4%a6%e6%88%b7%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%e8%ae%be%e8%ae%a1%e6%96%b9%e6%a1%88%e4%b8%8e%e5%ae%9e%e8%b7%b5.md.html" id="27 用户账户安全：账户安全体系设计方案与实践.md.html">27 用户账户安全：账户安全体系设计方案与实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/28%20%e5%ae%89%e5%85%a8%e9%85%8d%e7%bd%ae%e9%94%99%e8%af%af%ef%bc%9a%e5%ae%89%e5%85%a8%e9%97%ae%e9%a2%98%e4%b8%8d%e5%8f%aa%e6%98%af%e4%bb%a3%e7%a0%81%e5%ae%89%e5%85%a8.md.html" id="28 安全配置错误：安全问题不只是代码安全.md.html">28 安全配置错误：安全问题不只是代码安全.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/29%20Session%e4%b8%8eCookie%ef%bc%9a%e8%b4%a6%e6%88%b7%e4%bd%93%e7%b3%bb%e7%9a%84%e5%ae%89%e5%85%a8%e8%ae%be%e8%ae%a1%e5%8e%9f%e7%90%86.md.html" id="29 Session与Cookie：账户体系的安全设计原理.md.html">29 Session与Cookie：账户体系的安全设计原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/30%20HTTP%20Header%e5%ae%89%e5%85%a8%e6%a0%87%e5%bf%97%ef%bc%9a%e5%8d%8f%e8%ae%ae%e7%ba%a7%e5%88%ab%e7%9a%84%e5%ae%89%e5%85%a8%e6%94%af%e6%8c%81.md.html" id="30 HTTP Header安全标志：协议级别的安全支持.md.html">30 HTTP Header安全标志：协议级别的安全支持.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/31%20%e6%98%93%e5%8f%97%e6%94%bb%e5%87%bb%e5%92%8c%e8%bf%87%e6%97%b6%e7%9a%84%e7%bb%84%e4%bb%b6%ef%bc%9aDevSecOps%e4%b8%8e%e4%be%9d%e8%b5%96%e9%a1%b9%e5%ae%89%e5%85%a8%e6%a3%80%e6%9f%a5.md.html" id="31 易受攻击和过时的组件：DevSecOps与依赖项安全检查.md.html">31 易受攻击和过时的组件：DevSecOps与依赖项安全检查.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/32%20%e8%bd%af%e4%bb%b6%e5%92%8c%e6%95%b0%e6%8d%ae%e5%ae%8c%e6%95%b4%e6%80%a7%e6%95%85%e9%9a%9c%ef%bc%9aSolarWinds%e4%ba%8b%e4%bb%b6%e7%9a%84%e5%b9%95%e5%90%8e%e2%bf%8a%e2%bc%bf.md.html" id="32 软件和数据完整性故障：SolarWinds事件的幕后⿊⼿.md.html">32 软件和数据完整性故障：SolarWinds事件的幕后⿊⼿.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/33%20SSRF%ef%bc%9a%e7%a9%bf%e8%b6%8a%e8%be%b9%e7%95%8c%e9%98%b2%e6%8a%a4%e7%9a%84%e5%88%a9%e5%88%83.md.html" id="33 SSRF：穿越边界防护的利刃.md.html">33 SSRF：穿越边界防护的利刃.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/34%20Crawler%20VS%20Fuzzing%ef%bc%9aDAST%e4%b8%8e%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0.md.html" id="34 Crawler VS Fuzzing：DAST与机器学习.md.html">34 Crawler VS Fuzzing：DAST与机器学习.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/35%20%e8%87%aa%e5%8a%a8%e5%8c%96%e6%94%bb%e9%98%b2%ef%bc%9a%e4%bd%8e%e4%bb%a3%e7%a0%81%e9%a9%b1%e5%8a%a8%e7%9a%84%e6%b8%97%e9%80%8f%e5%b7%a5%e5%85%b7%e7%a7%af%e7%b4%af.md.html" id="35 自动化攻防：低代码驱动的渗透工具积累.md.html">35 自动化攻防：低代码驱动的渗透工具积累.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/36%20%e6%99%ba%e8%83%bd%e6%94%bb%e9%98%b2%ef%bc%9a%e6%9e%84%e5%bb%ba%e4%b8%aa%e6%80%a7%e5%8c%96%e6%94%bb%e9%98%b2%e5%b9%b3%e5%8f%b0.md.html" id="36 智能攻防：构建个性化攻防平台.md.html">36 智能攻防：构建个性化攻防平台.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/%e5%a4%a7%e5%92%96%e5%8a%a9%e5%9c%ba%20%e6%95%b0%e5%ad%97%e8%af%81%e4%b9%a6%ef%bc%8c%e5%9b%b0%e5%a2%83%e4%b8%8e%e6%9c%aa%e6%9d%a5.md.html" id="大咖助场 数字证书，困境与未来.md.html">大咖助场 数字证书，困境与未来.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/%e6%98%a5%e8%8a%82%e7%ad%96%e5%88%92%ef%bc%88%e4%b8%80%ef%bc%89%20%20%e8%a7%86%e9%a2%91%e8%af%be%e5%86%85%e5%ae%b9%e7%b2%be%e9%80%89%ef%bc%9aWeb%e6%b8%97%e9%80%8f%e6%b5%8b%e8%af%95%e5%b7%a5%e5%85%b7%e6%95%99%e5%ad%a6.md.html" id="春节策划（一）  视频课内容精选：Web渗透测试工具教学.md.html">春节策划（一）  视频课内容精选：Web渗透测试工具教学.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/%e6%98%a5%e8%8a%82%e7%ad%96%e5%88%92%ef%bc%88%e4%b8%89%ef%bc%89%20%e4%b8%80%e5%a5%97%e6%b5%8b%e8%af%95%e9%a2%98%ef%bc%8c%e7%9c%8b%e7%9c%8b%e5%af%b9%e8%af%be%e7%a8%8b%e5%86%85%e5%ae%b9%e7%9a%84%e6%8e%8c%e6%8f%a1%e6%83%85%e5%86%b5.md.html" id="春节策划（三） 一套测试题，看看对课程内容的掌握情况.md.html">春节策划（三） 一套测试题，看看对课程内容的掌握情况.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/%e6%98%a5%e8%8a%82%e7%ad%96%e5%88%92%ef%bc%88%e4%ba%8c%ef%bc%89%20%20%20%e7%bb%99%e4%bd%a0%e6%8e%a8%e8%8d%904%e6%9c%acWeb%e5%ae%89%e5%85%a8%e5%9b%be%e4%b9%a6.md.html" id="春节策划（二）   给你推荐4本Web安全图书.md.html">春节策划（二）   给你推荐4本Web安全图书.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Web%e6%bc%8f%e6%b4%9e%e6%8c%96%e6%8e%98%e5%ae%9e%e6%88%98/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e6%97%a0%e7%95%8f%e5%89%8d%e8%a1%8c.md.html" id="结束语 无畏前行.md.html">结束语 无畏前行.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="16 自动化注入神器（三）：sqlmap的核心实现拆解" id="title">16 自动化注入神器（三）：sqlmap的核心实现拆解</h1>
+<div><p>你好，我是王昊天。</p>
+<p>在上节课，我们学习了sqlmap中一个非常重要的函数——start函数。我们了解到，它既可以为每个目标配置请求参数，也会对目标进行一些必要的检测，例如判断目标是否存在waf的保护等。</p>
+<p>在讲到如何检测waf时，我们遇到了一个比较陌生的概念，页面相似度。上节课，我给出了一个简单的示例，来帮助你理解它的含义，但是并没有告诉你，页面相似度是如何计算出来的。相信经过这节课的学习，你就可以解决这个问题。</p>
+<h2 id="再看checkwaf函数">再看checkWaf函数</h2>
+<p><strong>为了研究页面相似度算法，我们首先需要找到计算页面相似度的代码。</strong>回顾一下上节课的内容，我们在checkwaf函数中学习了页面相似度的概念，但是并未深入研究这一点。现在让我们回到sqlmap的checkWaf函数，着重观察下面这段代码。在这段代码中，系统会判断Request.queryPage函数的返回值是否小于sqlmap设定的默认页面相似度阈值（IPS_WAF_CHECK_RATIO），如果小于，那么就认为存在waf，否则就会认为不存在waf。我们可以从<code>lib.core.settings.py</code>中得出该阈值的大小为 0.5。</p>
+<pre><code class="language-python">try:
+    retVal = (Request.queryPage(place=place, value=value, getRatioValue=True, noteResponseTime=False, silent=True, raise404=False, disableTampering=True)[1] or 0) &lt; IPS_WAF_CHECK_RATIO
+</code></pre>
+<p>经过上述分析，我们可以知道，函数Request.queryPage的返回值就是页面相似度。所以我们只需要对它进行分析，就可以知道页面相似度的算法了。<strong>在进入到该函数之前，我们首先需要关注，传入该函数的参数。</strong>理解这些参数，会帮助你理解sqlmap页面相似度算法的实际运算过程。</p>
+<pre><code class="language-python">#传入到该函数的参数
+place=place 
+value=value 
+getRatioValue=True 
+noteResponseTime=False 
+silent=True 
+raise404=False 
+disableTampering=True
+</code></pre>
+<h3 id="request-querypage函数">Request.queryPage函数</h3>
+<p>列举完传入到Request.queryPage函数的参数后，我们可以专心地进入到函数内部进行分析。</p>
+<pre><code class="language-python">def queryPage(value=None, place=None, content=False, getRatioValue=False, silent=False, method=None, timeBasedCompare=False, noteResponseTime=True, auxHeaders=None, response=False, raise404=None, removeReflection=True, disableTampering=False, ignoreSecondOrder=False):
+
+# ...
+# 对参数进行定义
+    get = None
+    post = None
+    cookie = None
+    ua = None
+    referer = None
+    host = None
+    page = None
+    pageLength = None
+    uri = None
+    code = None
+
+# ...
+      payload = agent.extractPayload(value)
+
+# 请求参数的配置。
+
+    if PLACE.GET in conf.parameters:
+        get = conf.parameters[PLACE.GET] if place != PLACE.GET or not value else value
+
+# ...
+# 用配置好的请求参数获取页面信息。
+
+            page, headers, code = Connect.getPage(url=conf.csrfUrl or conf.url, data=conf.data if conf.csrfUrl == conf.url else None, method=conf.csrfMethod or (conf.method if conf.csrfUrl == conf.url else None), cookie=conf.parameters.get(PLACE.COOKIE), direct=True, silent=True, ua=conf.parameters.get(PLACE.USER_AGENT), referer=conf.parameters.get(PLACE.REFERER), host=conf.parameters.get(PLACE.HOST))
+
+# ...
+# 由于传入的参数中getRatioValue为真，进入到if条件中，它会返回两个comparsion的结果，所以返回的类型是这两个结果构成的元组。
+
+    if getRatioValue:
+        return comparison(page, headers, code, getRatioValue=False, pageLength=pageLength), comparison(page, headers, code, getRatioValue=True, pageLength=pageLength)
+    else:
+        return comparison(page, headers, code, getRatioValue, pageLength
+</code></pre>
+<p>这里我将queryPage中，关键部分的代码展示出来，你可以结合代码中的注释学习和理解。该函数首先会定义需要的参数，然后用定义好的参数来配置请求信息。</p>
+<p>配置好请求信息之后，我们就可以用<code>Connect.getPage</code>函数获得目标页面的内容。这样我们就获得了在计算页面相似度中需要的第一个参数，即用易于引起waf拦截的payload获取到的页面响应内容。</p>
+<p>由于传入的参数<code>getRatioValue</code>的值为<code>True</code>，所以接下来，函数会进入到<code>if</code>条件中运行，我们看到，系统会返回两个comparison的运行结果，所以这里queryPage的返回的是一个元组类型，即<code>(comparison1,comparison2)</code>。</p>
+<p>通过公式<code>retVal=request.querypage()[1] or 0 &lt; IPS_WAF_CHECK_RATIO</code>，我们知道这里retVal的值就等于<code>comparison2 or 0 &lt; 0.5</code>。你需要特别注意这里的<code>comparison2 or 0</code>，这是因为comparison函数有可能会返回None，这时候就会将0作为retVal的值。</p>
+<h3 id="comparison函数">Comparison函数</h3>
+<p>从retVal的结果可以发现，comparison2的数值很重要，下面让我们重点观察<code>comparison2</code>，它的值为<code>comparison(page, headers, code, getRatioValue=True, pageLength=pageLength)</code>，那么接下来我们进入到<code>comparison</code>函数中。</p>
+<pre><code class="language-python">def comparison(page, headers, code=None, getRatioValue=False, pageLength=None):
+    _ = _adjust(_comparison(page, headers, code, getRatioValue, pageLength), getRatioValue)
+    return _
+</code></pre>
+<p>可以看到，该函数将<code>_comparison</code>函数的运行结果作为<code>_adjust</code>函数的参数，然后返回<code>_adjust</code>函数的运行结果<code>_</code>。</p>
+<p>那么下面我们先进入到<code>_comparison</code>函数中，看看它在不同情况下的返回值是什么。</p>
+<pre><code class="language-python">def _comparison(page, headers, code, getRatioValue, pageLength):
+
+# ...
+# 当 page 和 pagelength 信息都没有时，返回None。
+    if page is None and pageLength is None:
+        return None
+
+# ...
+# 如果使用者利用了-string/-not-string/-regexp等参数配置了特征文本，那么程序就会使用用户指定的特征文本和获取到的页面信息作对比，作为返回结果，这时返回的结果为（True or False）对应为1或者0。
+
+    if any((conf.string, conf.notString, conf.regexp)):
+        rawResponse = "%s%s" % (listToStrValue(_ for _ in headers.headers if not _.startswith("%s:" % URI_HTTP_HEADER)) if headers else "", page)
+
+        if conf.string:
+            return conf.string in rawResponse
+
+        if conf.notString:
+            if conf.notString in rawResponse:
+                return False
+# ...
+
+        if conf.regexp:
+            return re.search(conf.regexp, rawResponse, re.I | re.M) is not None
+
+# 如果使用者配置了code信息，那么就会判断设置的code是否和返回的code一致，若一致就返回1，否则返回0。
+    if conf.code:
+        return conf.code == code
+</code></pre>
+<p>从上面的代码中，我们可以知道，如果使用者配置了响应的参数，那么_comparison函数就会将该参数和获取到的实际响应内容进行比较，直接返回比较的结果。</p>
+<p>当用户没有配置响应参数时，sqlmap就会创建一个比较函数，与页面响应进行比较，计算出页面相似比。你可能会觉得seqMatcher有些眼熟，事实上它就是我们的老熟人，<code>difflib.SequenceMatcher()</code>这个函数在介绍sqlmap时有提到。</p>
+<pre><code class="language-python">    seqMatcher = threadData.seqMatcher
+
+# 将之前测试目标的连通性时获取到的标准响应内容放入到比较函数中，这样只需要再把使用payload之后获取到的响应放入其中，就可以实现页面相似度的计算了。
+    seqMatcher.set_seq1(kb.pageTemplate)
+
+# 当响应为系统的报错信息后，这样比较页面相似度就没有意义，所以返回None。
+    if page:
+        if kb.errorIsNone and (wasLastResponseDBMSError() or wasLastResponseHTTPError()) and not kb.negativeLogic:
+            if not (wasLastResponseHTTPError() and getLastRequestHTTPError() in (conf.ignoreCode or [])):
+                return None
+
+# 当配置中没有设置空连接时，需要删除页面中的动态内容，否则会影响页面相似度的计算。
+        if not kb.nullConnection:
+            page = removeDynamicContent(page)
+   seqMatcher.set_seq1(removeDynamicContent(kb.pageTemplate))
+
+        if not pageLength:
+            pageLength = len(page)
+
+# 当配置中设置空连接后，系统就不会获得页面的响应内容，而仅仅获得响应的长度，这时候就需要根据响应长度来计算页面相似度。
+    if kb.nullConnection and pageLength:
+        if not seqMatcher.a:
+            errMsg = "problem occurred while retrieving original page content "
+            errMsg += "which prevents sqlmap from continuation. Please rerun, "
+            errMsg += "and if the problem persists turn off any optimization switches"
+            raise SqlmapNoneDataException(errMsg)
+
+# 此处的seqMatcher.a，就是之前放入到比较函数中的标准页面响应。
+        ratio = 1. * pageLength / len(seqMatcher.a)
+
+        if ratio &gt; 1.:
+            ratio = 1. / ratio
+
+# 当不配置空链接时，就需要对响应的内容进行比较，需要考虑响应页面的格式不一样（pdf/html），为了防止这个情况导致Unicode编码比较失败，我们将它们都转化为Unicode格式。
+    else:
+        if isinstance(seqMatcher.a, six.binary_type) and isinstance(page, six.text_type):
+            page = getBytes(page, kb.pageEncoding or DEFAULT_PAGE_ENCODING, "ignore")
+        elif isinstance(seqMatcher.a, six.text_type) and isinstance(page, six.binary_type):
+            seqMatcher.a = getBytes(seqMatcher.a, kb.pageEncoding or DEFAULT_PAGE_ENCODING, "ignore")
+
+# 转化之后，当使用payload获取到的响应和标准响应有一个不存在，就无法比较页面相似度，返回None。
+        if any(_ is None for _ in (page, seqMatcher.a)):
+            return None
+
+# 当它们都存在且相等时，内容完全一致，页面相似度为1。
+        elif seqMatcher.a and page and seqMatcher.a == page:
+            ratio = 1.
+
+# 当无法根据页面内容来计算页面相似度时，会选择用其他方法计算页面相似度。
+        elif kb.skipSeqMatcher or seqMatcher.a and page and any(len(_) &gt; MAX_DIFFLIB_SEQUENCE_LENGTH for _ in (seqMatcher.a, page)):
+            if not page or not seqMatcher.a:
+                return float(seqMatcher.a == page)
+            else:
+                ratio = 1. * len(seqMatcher.a) / len(page)
+                if ratio &gt; 1:
+                    ratio = 1. / ratio
+        else:
+            seq1, seq2 = None, None
+
+# 当配置中设置根据页面的标题比较时，会进入到下面的语句中。
+            if conf.titles:
+                seq1 = extractRegexResult(HTML_TITLE_REGEX, seqMatcher.a)
+                seq2 = extractRegexResult(HTML_TITLE_REGEX, page)
+            else:
+
+# 当配置中设置有仅比较文本内容时，就会利用`getFilteredPageContent`来提取其中的文本信息。
+                seq1 = getFilteredPageContent(seqMatcher.a, True) if conf.textOnly else seqMatcher.a
+                seq2 = getFilteredPageContent(page, True) if conf.textOnly else page
+
+# 当在上述操作中获得的seq1或者seq2的值为None时，就无法判断页面相似度，返回 None。
+            if seq1 is None or seq2 is None:
+                return None
+</code></pre>
+<p>在不同的情况下，seqMatcher的结果有不同的计算方式，我们可以结合代码中的注释进行深入的了解。</p>
+<p>当我们需要比较两个页面中的内容，来计算页面相似度时，我们需要删除页面中的<code>REFLECTED_VALUE_MARKER</code>，防止它干扰计算。想要知道<code>REFLECTED_VALUE_MARKER</code>是什么，我们需要回顾下之前获取页面响应内容的参数配置。</p>
+<p>在一些情况下，比如，当页面将输入的参数显示在页面上时，payload会回显在页面上。这些payload显然会影响我们计算页面相似度。那么sqlmap是如何解决这个问题的呢？</p>
+<p>在之前queryPage的函数中，参数<code>removeReflection</code>的值被设置为<code>True</code>，所以sqlmap在获取页面的时候，会将payload的值替换为<code>REFLECTED_VALUE_MARKER</code>的值。下面这段代码，会去除页面内容中的<code>REFLECTED_VALUE_MARKER</code>，防止它的存在影响页面相似度的判断。</p>
+<pre><code class="language-python">            seq1 = seq1.replace(REFLECTED_VALUE_MARKER, "")
+            seq2 = seq2.replace(REFLECTED_VALUE_MARKER, "")
+
+# ...
+# 将它们计算出一个哈希元组，并在缓存中查找是否存在这个元组，如果存在则无需再次计算，否则需要计算出一个页面相似度。计算出之后，将该数据存入到缓存中。
+            else:
+                key = (hash(seq1), hash(seq2))
+
+            seqMatcher.set_seq1(seq1)
+            seqMatcher.set_seq2(seq2)
+
+            if key in kb.cache.comparison:
+                ratio = kb.cache.comparison[key]
+            else:
+                ratio = round(seqMatcher.quick_ratio() if not kb.heavilyDynamic else seqMatcher.ratio(), 3)
+
+            if key:
+                kb.cache.comparison[key] = ratio
+
+# ...
+# 最后会返回页面相似度的值。
+    if getRatioValue:
+        return ratio
+</code></pre>
+<p>这样我们就获得了<code>_comparison</code>函数的返回值，也就是传入到adjust函数中的参数的值。</p>
+<p>下面让我们一起进入到adjust函数内，对获取到的页面相似度做一些处理，获取最终的页面相似度的值。我们可以将它简单理解为，<strong>如果sqlmap携带了攻击的载荷，但是响应内容和没有攻击载荷的sqlmap是相同的，就可以判定出目标应用不存在waf</strong>。</p>
+<pre><code class="language-python">def _adjust(condition, getRatioValue):
+    if not any((conf.string, conf.notString, conf.regexp, conf.code)):
+        retVal = not condition if kb.negativeLogic and condition is not None and not getRatioValue else condition
+    else:
+        retVal = condition if not getRatioValue else (MAX_RATIO if condition else MIN_RATIO)
+
+    return retVal
+</code></pre>
+<p>这样checkwaf函数就执行完成了，让我们再次回到start函数内部，继续学习它的运行流程。我们可以发现，<strong>检测完waf之后，系统会判断是否配置了空连接</strong>。</p>
+<p>如果配置了空连接，在与标准响应进行比较的环节，就不再需要获得完整的页面响应内容，仅仅需要获得页面响应内容的长度，将它的长度和标准响应页面的长度进行比较，就能获得页面相似度。</p>
+<p>那么在判断页面相似度的时候，就不需要获得完整的页面的响应内容和标准响应进行比较，而仅仅需要获得页面响应内容的长度，将它的长度和标准响应页面的长度进行比较即可获得页面相似度。</p>
+<pre><code class="language-python">if conf.nullConnection:
+    checkNullConnection()
+</code></pre>
+<p>做完上述工作后，sqlmap就进入到了下一个阶段，即注入点检测阶段。这部分的内容我们会在下一节课中学习。</p>
+<h2 id="总结">总结</h2>
+<p>这节课，我们详细学习了sqlmap中的页面相似度算法。</p>
+<p>我们首先回顾了之前学过的checkwaf函数，通过对这个函数进行分析，我们找到了计算页面相似度的函数Request.querypage。</p>
+<p>为了更好地理解它，我们进入到函数内部进行观察。经过对它代码的分析，我们知道，它首先对测试目标做了请求的参数的配置，然后给目标发送请求信息，在获取到页面的内容之后，将内容传递给comparison函数进行比较。</p>
+<p>根据用户配置的不同情况，comparison函数会采用不同的页面相似度算法来进行计算。值得一提的是，该函数会在比较两个页面的内容时，删掉其中的payload内容，避免存在影响计算结果的因素。</p>
+<p>截止目前，你已经掌握了sqlmap对waf检测的方法原理，下节课我们将学习，如何对目标进行自动化的多种SQL注入攻击。</p>
+<h2 id="思考">思考</h2>
+<p>sqlmap的页面相似度算法有什么值得改进的地方吗？</p>
+<p>欢迎在评论区留下你的思考，我们下节课再见。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#2b474747121f1a1a1b1c6b4c464a424705484446" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359d7efae140a7d',t:'MTc0NTU0MjE5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
