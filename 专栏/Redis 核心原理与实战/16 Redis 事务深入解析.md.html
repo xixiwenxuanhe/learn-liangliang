@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="16 Redis 事务深入解析" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>16 Redis 事务深入解析 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/01%20Redis%20%e6%98%af%e5%a6%82%e4%bd%95%e6%89%a7%e8%a1%8c%e7%9a%84.md.html" id="01 Redis 是如何执行的.md.html">01 Redis 是如何执行的.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/02%20Redis%20%e5%bf%ab%e9%80%9f%e6%90%ad%e5%bb%ba%e4%b8%8e%e4%bd%bf%e7%94%a8.md.html" id="02 Redis 快速搭建与使用.md.html">02 Redis 快速搭建与使用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/03%20Redis%20%e6%8c%81%e4%b9%85%e5%8c%96%e2%80%94%e2%80%94RDB.md.html" id="03 Redis 持久化——RDB.md.html">03 Redis 持久化——RDB.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/04%20Redis%20%e6%8c%81%e4%b9%85%e5%8c%96%e2%80%94%e2%80%94AOF.md.html" id="04 Redis 持久化——AOF.md.html">04 Redis 持久化——AOF.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/05%20Redis%20%e6%8c%81%e4%b9%85%e5%8c%96%e2%80%94%e2%80%94%e6%b7%b7%e5%90%88%e6%8c%81%e4%b9%85%e5%8c%96.md.html" id="05 Redis 持久化——混合持久化.md.html">05 Redis 持久化——混合持久化.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/06%20%e5%ad%97%e7%ac%a6%e4%b8%b2%e4%bd%bf%e7%94%a8%e4%b8%8e%e5%86%85%e9%83%a8%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="06 字符串使用与内部实现原理.md.html">06 字符串使用与内部实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/07%20%e9%99%84%e5%bd%95%ef%bc%9a%e6%9b%b4%e5%a4%9a%e5%ad%97%e7%ac%a6%e4%b8%b2%e6%93%8d%e4%bd%9c%e5%91%bd%e4%bb%a4.md.html" id="07 附录：更多字符串操作命令.md.html">07 附录：更多字符串操作命令.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/08%20%e5%ad%97%e5%85%b8%e4%bd%bf%e7%94%a8%e4%b8%8e%e5%86%85%e9%83%a8%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="08 字典使用与内部实现原理.md.html">08 字典使用与内部实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/09%20%e9%99%84%e5%bd%95%ef%bc%9a%e6%9b%b4%e5%a4%9a%e5%ad%97%e5%85%b8%e6%93%8d%e4%bd%9c%e5%91%bd%e4%bb%a4.md.html" id="09 附录：更多字典操作命令.md.html">09 附录：更多字典操作命令.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/10%20%e5%88%97%e8%a1%a8%e4%bd%bf%e7%94%a8%e4%b8%8e%e5%86%85%e9%83%a8%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="10 列表使用与内部实现原理.md.html">10 列表使用与内部实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/11%20%e9%99%84%e5%bd%95%ef%bc%9a%e6%9b%b4%e5%a4%9a%e5%88%97%e8%a1%a8%e6%93%8d%e4%bd%9c%e5%91%bd%e4%bb%a4.md.html" id="11 附录：更多列表操作命令.md.html">11 附录：更多列表操作命令.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/12%20%e9%9b%86%e5%90%88%e4%bd%bf%e7%94%a8%e4%b8%8e%e5%86%85%e9%83%a8%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="12 集合使用与内部实现原理.md.html">12 集合使用与内部实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/13%20%e9%99%84%e5%bd%95%ef%bc%9a%e6%9b%b4%e5%a4%9a%e9%9b%86%e5%90%88%e6%93%8d%e4%bd%9c%e5%91%bd%e4%bb%a4.md.html" id="13 附录：更多集合操作命令.md.html">13 附录：更多集合操作命令.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/14%20%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e4%bd%bf%e7%94%a8%e4%b8%8e%e5%86%85%e9%83%a8%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86.md.html" id="14 有序集合使用与内部实现原理.md.html">14 有序集合使用与内部实现原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/15%20%e9%99%84%e5%bd%95%ef%bc%9a%e6%9b%b4%e5%a4%9a%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e6%93%8d%e4%bd%9c%e5%91%bd%e4%bb%a4.md.html" id="15 附录：更多有序集合操作命令.md.html">15 附录：更多有序集合操作命令.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/16%20Redis%20%e4%ba%8b%e5%8a%a1%e6%b7%b1%e5%85%a5%e8%a7%a3%e6%9e%90.md.html" id="16 Redis 事务深入解析.md.html">16 Redis 事务深入解析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/17%20Redis%20%e9%94%ae%e5%80%bc%e8%bf%87%e6%9c%9f%e6%93%8d%e4%bd%9c.md.html" id="17 Redis 键值过期操作.md.html">17 Redis 键值过期操作.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/18%20Redis%20%e8%bf%87%e6%9c%9f%e7%ad%96%e7%95%a5%e4%b8%8e%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90.md.html" id="18 Redis 过期策略与源码分析.md.html">18 Redis 过期策略与源码分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/19%20Redis%20%e7%ae%a1%e9%81%93%e6%8a%80%e6%9c%af%e2%80%94%e2%80%94Pipeline.md.html" id="19 Redis 管道技术——Pipeline.md.html">19 Redis 管道技术——Pipeline.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/20%20%e6%9f%a5%e8%af%a2%e9%99%84%e8%bf%91%e7%9a%84%e4%ba%ba%e2%80%94%e2%80%94GEO.md.html" id="20 查询附近的人——GEO.md.html">20 查询附近的人——GEO.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/21%20%e6%b8%b8%e6%a0%87%e8%bf%ad%e4%bb%a3%e5%99%a8%ef%bc%88%e8%bf%87%e6%bb%a4%e5%99%a8%ef%bc%89%e2%80%94%e2%80%94Scan.md.html" id="21 游标迭代器（过滤器）——Scan.md.html">21 游标迭代器（过滤器）——Scan.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/22%20%e4%bc%98%e7%a7%80%e7%9a%84%e5%9f%ba%e6%95%b0%e7%bb%9f%e8%ae%a1%e7%ae%97%e6%b3%95%e2%80%94%e2%80%94HyperLogLog.md.html" id="22 优秀的基数统计算法——HyperLogLog.md.html">22 优秀的基数统计算法——HyperLogLog.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/23%20%e5%86%85%e5%ad%98%e6%b7%98%e6%b1%b0%e6%9c%ba%e5%88%b6%e4%b8%8e%e7%ae%97%e6%b3%95.md.html" id="23 内存淘汰机制与算法.md.html">23 内存淘汰机制与算法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/24%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e2%80%94%e2%80%94%e5%8f%91%e5%b8%83%e8%ae%a2%e9%98%85%e6%a8%a1%e5%bc%8f.md.html" id="24 消息队列——发布订阅模式.md.html">24 消息队列——发布订阅模式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/25%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e7%9a%84%e5%85%b6%e4%bb%96%e5%ae%9e%e7%8e%b0%e6%96%b9%e5%bc%8f.md.html" id="25 消息队列的其他实现方式.md.html">25 消息队列的其他实现方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/26%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e7%bb%88%e6%9e%81%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88%e2%80%94%e2%80%94Stream%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="26 消息队列终极解决方案——Stream（上）.md.html">26 消息队列终极解决方案——Stream（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/27%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e7%bb%88%e6%9e%81%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88%e2%80%94%e2%80%94Stream%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="27 消息队列终极解决方案——Stream（下）.md.html">27 消息队列终极解决方案——Stream（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/28%20%e5%ae%9e%e6%88%98%ef%bc%9a%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%e8%af%a6%e8%a7%a3%e4%b8%8e%e4%bb%a3%e7%a0%81.md.html" id="28 实战：分布式锁详解与代码.md.html">28 实战：分布式锁详解与代码.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/29%20%e5%ae%9e%e6%88%98%ef%bc%9a%e5%b8%83%e9%9a%86%e8%bf%87%e6%bb%a4%e5%99%a8%e5%ae%89%e8%a3%85%e4%b8%8e%e4%bd%bf%e7%94%a8%e5%8f%8a%e5%8e%9f%e7%90%86%e5%88%86%e6%9e%90.md.html" id="29 实战：布隆过滤器安装与使用及原理分析.md.html">29 实战：布隆过滤器安装与使用及原理分析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/30%20%e5%ae%8c%e6%95%b4%e6%a1%88%e4%be%8b%ef%bc%9a%e5%ae%9e%e7%8e%b0%e5%bb%b6%e8%bf%9f%e9%98%9f%e5%88%97%e7%9a%84%e4%b8%a4%e7%a7%8d%e6%96%b9%e6%b3%95.md.html" id="30 完整案例：实现延迟队列的两种方法.md.html">30 完整案例：实现延迟队列的两种方法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/31%20%e5%ae%9e%e6%88%98%ef%bc%9a%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1%e6%a1%88%e4%be%8b.md.html" id="31 实战：定时任务案例.md.html">31 实战：定时任务案例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/32%20%e5%ae%9e%e6%88%98%ef%bc%9aRediSearch%20%e9%ab%98%e6%80%a7%e8%83%bd%e7%9a%84%e5%85%a8%e6%96%87%e6%90%9c%e7%b4%a2%e5%bc%95%e6%93%8e.md.html" id="32 实战：RediSearch 高性能的全文搜索引擎.md.html">32 实战：RediSearch 高性能的全文搜索引擎.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/33%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%20%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95.md.html" id="33 实战：Redis 性能测试.md.html">33 实战：Redis 性能测试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/34%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%20%e6%85%a2%e6%9f%a5%e8%af%a2.md.html" id="34 实战：Redis 慢查询.md.html">34 实战：Redis 慢查询.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/35%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%20%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96%e6%96%b9%e6%a1%88.md.html" id="35 实战：Redis 性能优化方案.md.html">35 实战：Redis 性能优化方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/36%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%20%e4%b8%bb%e4%bb%8e%e5%90%8c%e6%ad%a5.md.html" id="36 实战：Redis 主从同步.md.html">36 实战：Redis 主从同步.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/37%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%e5%93%a8%e5%85%b5%e6%a8%a1%e5%bc%8f%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="37 实战：Redis哨兵模式（上）.md.html">37 实战：Redis哨兵模式（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/38%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%20%e5%93%a8%e5%85%b5%e6%a8%a1%e5%bc%8f%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="38 实战：Redis 哨兵模式（下）.md.html">38 实战：Redis 哨兵模式（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/39%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%20%e9%9b%86%e7%be%a4%e6%a8%a1%e5%bc%8f%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="39 实战：Redis 集群模式（上）.md.html">39 实战：Redis 集群模式（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/40%20%e5%ae%9e%e6%88%98%ef%bc%9aRedis%20%e9%9b%86%e7%be%a4%e6%a8%a1%e5%bc%8f%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="40 实战：Redis 集群模式（下）.md.html">40 实战：Redis 集群模式（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/41%20%e6%a1%88%e4%be%8b%ef%bc%9aRedis%20%e9%97%ae%e9%a2%98%e6%b1%87%e6%80%bb%e5%92%8c%e7%9b%b8%e5%85%b3%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88.md.html" id="41 案例：Redis 问题汇总和相关解决方案.md.html">41 案例：Redis 问题汇总和相关解决方案.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/42%20%e6%8a%80%e8%83%bd%e5%ad%a6%e4%b9%a0%e6%8c%87%e5%8d%97.md.html" id="42 技能学习指南.md.html">42 技能学习指南.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Redis%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%98/43%20%e5%8a%a0%e9%a4%90%ef%bc%9aRedis%20%e7%9a%84%e5%8f%af%e8%a7%86%e5%8c%96%e7%ae%a1%e7%90%86%e5%b7%a5%e5%85%b7.md.html" id="43 加餐：Redis 的可视化管理工具.md.html">43 加餐：Redis 的可视化管理工具.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="16 Redis 事务深入解析" id="title">16 Redis 事务深入解析</h1>
+<div><blockquote>
+<p>作为关系型数据库中一项非常重要的基础功能——事务，在 Redis 中是如何处理并使用的？</p>
+</blockquote>
+<h3 id="前言">前言</h3>
+<p>事务指的是提供一种将多个命令打包，一次性按顺序地执行的机制，并且保证服务器只有在执行完事务中的所有命令后，才会继续处理此客户端的其他命令。</p>
+<p>事务也是其他关系型数据库所必备的基础功能，以支付的场景为例，正常情况下只有正常消费完成之后，才会减去账户余额。但如果没有事务的保障，可能会发生消费失败了，但依旧会把账户的余额给扣减了，我想这种情况应该任何人都无法接受吧？所以事务是数据库中一项非常重要的基础功能。</p>
+<h3 id="事务基本使用">事务基本使用</h3>
+<p>事务在其他语言中，一般分为以下三个阶段：</p>
+<ul>
+<li>开启事务——Begin Transaction</li>
+<li>执行业务代码，提交事务——Commit Transaction</li>
+<li>业务处理中出现异常，回滚事务——Rollback Transaction</li>
+</ul>
+<p>以 Java 中的事务执行为例：</p>
+<pre><code class="language-java">// 开启事务
+begin();
+try {
+    //......
+    // 提交事务
+    commit();
+} catch(Exception e) {
+    // 回滚事务
+    rollback();
+}
+
+</code></pre>
+<p>Redis 中的事务从开始到结束也是要经历三个阶段：</p>
+<ul>
+<li>开启事务</li>
+<li>命令入列</li>
+<li>执行事务/放弃事务</li>
+</ul>
+<p>其中，开启事务使用 multi 命令，事务执行使用 exec 命令，放弃事务使用 discard 命令。</p>
+<h4 id="开启事务"><strong>开启事务</strong></h4>
+<p>multi 命令用于开启事务，实现代码如下：</p>
+<pre><code class="language-shell">&gt; multi
+OK
+
+</code></pre>
+<p>multi 命令可以让客户端从非事务模式状态，变为事务模式状态，如下图所示：</p>
+<p><img alt="img" src="assets/f2898390-5ddf-11ea-9d6d-67bd1a14f4fe"/></p>
+<p><strong>注意</strong>：multi 命令不能嵌套使用，如果已经开启了事务的情况下，再执行 multi 命令，会提示如下错误：</p>
+<pre><code>(error) ERR MULTI calls can not be nested
+
+</code></pre>
+<p>执行效果，如下代码所示：</p>
+<pre><code class="language-shell">127.0.0.1:6379&gt; multi
+OK
+127.0.0.1:6379&gt; multi
+(error) ERR MULTI calls can not be nested
+
+</code></pre>
+<p>当客户端是非事务状态时，使用 multi 命令，客户端会返回结果 OK，如果客户端已经是事务状态，再执行 multi 命令会 multi 命令不能嵌套的错误，但不会终止客户端为事务的状态，如下图所示：</p>
+<p><img alt="img" src="assets/3aa4ae70-5de0-11ea-9d6d-67bd1a14f4fe"/></p>
+<h4 id="命令入列"><strong>命令入列</strong></h4>
+<p>客户端进入事务状态之后，执行的所有常规 Redis 操作命令（非触发事务执行或放弃和导致入列异常的命令）会依次入列，命令入列成功后会返回 QUEUED，如下代码所示：</p>
+<pre><code class="language-shell">&gt; multi
+OK
+&gt; set k v
+QUEUED
+&gt; get k
+QUEUED
+
+</code></pre>
+<p>执行流程如下图所示：</p>
+<p><img alt="img" src="assets/68d8d640-5de0-11ea-9d6d-67bd1a14f4fe"/></p>
+<p><strong>注意</strong>：命令会按照先进先出（FIFO）的顺序出入列，也就是说事务会按照命令的入列顺序，从前往后依次执行。</p>
+<h4 id="执行事务-放弃事务"><strong>执行事务/放弃事务</strong></h4>
+<p>执行事务的命令是 exec，放弃事务的命令是 discard。</p>
+<p>执行事务示例代码如下：</p>
+<pre><code class="language-shell">&gt; multi
+OK
+&gt; set k v2
+QUEUED
+&gt; exec
+1) OK
+&gt; get k
+"v2"
+
+</code></pre>
+<p>放弃事务示例代码如下：</p>
+<pre><code class="language-shell">&gt; multi
+OK
+&gt; set k v3
+QUEUED
+&gt; discard
+OK
+&gt; get k
+"v2"
+
+</code></pre>
+<p>执行流程如下图所示：</p>
+<p><img alt="img" src="assets/e31a4ab0-5de0-11ea-9359-3b811418c7dd"/></p>
+<h3 id="事务错误-回滚">事务错误&amp;回滚</h3>
+<p>事务执行中的错误分为以下三类：</p>
+<ul>
+<li>执行时才会出现的错误（简称：执行时错误）；</li>
+<li>入列时错误，不会终止整个事务；</li>
+<li>入列时错误，会终止整个事务。</li>
+</ul>
+<h4 id="执行时错误"><strong>执行时错误</strong></h4>
+<p>示例代码如下：</p>
+<pre><code class="language-shell">&gt; get k
+"v"
+&gt; multi
+OK
+&gt; set k v2
+QUEUED
+&gt; expire k 10s
+QUEUED
+&gt; exec
+1) OK
+2) (error) ERR value is not an integer or out of range
+&gt; get k
+"v2"
+
+</code></pre>
+<p>执行命令解释如下图所示：</p>
+<p><img alt="img" src="assets/aa0ca950-5de2-11ea-9e6b-b3dcd9fe8595"/></p>
+<p>从以上结果可以看出，即使事务队列中某个命令在执行期间发生了错误，事务也会继续执行，直到事务队列中所有命令执行完成。</p>
+<h4 id="入列错误不会导致事务结束"><strong>入列错误不会导致事务结束</strong></h4>
+<p>示例代码如下：</p>
+<pre><code class="language-shell">&gt; get k
+"v"
+&gt; multi
+OK
+&gt; set k v2
+QUEUED
+&gt; multi
+(error) ERR MULTI calls can not be nested
+&gt; exec
+1) OK
+&gt; get k
+"v2"
+
+</code></pre>
+<p>执行命令解释如下图所示：</p>
+<p><img alt="img" src="assets/cc4111f0-5de2-11ea-9e6b-b3dcd9fe8595"/></p>
+<p>可以看出，重复执行 multi 会导致入列错误，但不会终止事务，最终查询的结果是事务执行成功了。除了重复执行 multi 命令，还有在事务状态下执行 watch 也是同样的效果，下文会详细讲解关于 watch 的内容。</p>
+<h4 id="入列错误导致事务结束"><strong>入列错误导致事务结束</strong></h4>
+<p>示例代码如下：</p>
+<pre><code class="language-shell">&gt; get k
+"v2"
+&gt; multi
+OK
+&gt; set k v3
+QUEUED
+&gt; set k
+(error) ERR wrong number of arguments for 'set' command
+&gt; exec
+(error) EXECABORT Transaction discarded because of previous errors.
+&gt; get k
+"v2"
+
+</code></pre>
+<p>执行命令解释如下图所示：</p>
+<p><img alt="img" src="assets/fd00c6a0-5de2-11ea-9d6f-15d639c92acd"/></p>
+<h4 id="为什么不支持事务回滚"><strong>为什么不支持事务回滚？</strong></h4>
+<p>Redis 官方文档的解释如下：</p>
+<blockquote>
+<p>If you have a relational databases background, the fact that Redis commands can fail during a transaction, but still Redis will execute the rest of the transaction instead of rolling back, may look odd to you.</p>
+<p>However there are good opinions for this behavior:</p>
+<ul>
+<li>Redis commands can fail only if called with a wrong syntax (and the problem is not detectable during the command queueing), or against keys holding the wrong data type: this means that in practical terms a failing command is the result of a programming errors, and a kind of error that is very likely to be detected during development, and not in production.</li>
+<li>Redis is internally simplified and faster because it does not need the ability to roll back.</li>
+</ul>
+<p>An argument against Redis point of view is that bugs happen, however it should be noted that in general the roll back does not save you from programming errors. For instance if a query increments a key by 2 instead of 1, or increments the wrong key, there is no way for a rollback mechanism to help. Given that no one can save the programmer from his or her errors, and that the kind of errors required for a Redis command to fail are unlikely to enter in production, we selected the simpler and faster approach of not supporting roll backs on errors.</p>
+</blockquote>
+<p>大概的意思是，作者不支持事务回滚的原因有以下两个：</p>
+<ul>
+<li>他认为 Redis 事务的执行时，错误通常都是编程错误造成的，这种错误通常只会出现在开发环境中，而很少会在实际的生产环境中出现，所以他认为没有必要为 Redis 开发事务回滚功能；</li>
+<li>不支持事务回滚是因为这种复杂的功能和 Redis 追求的简单高效的设计主旨不符合。</li>
+</ul>
+<p>这里不支持事务回滚，指的是不支持运行时错误的事务回滚。</p>
+<h3 id="监控">监控</h3>
+<p>watch 命令用于客户端并发情况下，为事务提供一个乐观锁（CAS，Check And Set），也就是可以用 watch 命令来监控一个或多个变量，如果在事务的过程中，某个<strong>监控项被修改</strong>了，那么<strong>整个事务</strong>就会<strong>终止执行</strong>。</p>
+<p>watch 基本语法如下：</p>
+<pre><code>watch key [key ...]
+
+</code></pre>
+<p><code>watch</code> 示例代码如下：</p>
+<pre><code class="language-shell">&gt; watch k
+OK
+&gt; multi
+OK
+&gt; set k v2
+QUEUED
+&gt; exec
+(nil)
+&gt; get k
+"v"
+
+</code></pre>
+<p><strong>注意</strong>：以上事务在执行期间，也就是开启事务（multi）之后，执行事务（exec）之前，模拟多客户端并发操作了变量 k 的值，这个时候再去执行事务，才会出现如上结果，exec 执行的结果为 nil。</p>
+<p>可以看出，当执行 exec 返回的结果是 nil 时，表示 watch 监控的对象在事务执行的过程中被修改了。从 <code>get k</code> 的结果也可以印证，因为事务中设置的值 <code>set k v2</code> 并未正常执行。</p>
+<p>执行流程如下图所示：</p>
+<p><img alt="img" src="assets/191ad650-5de3-11ea-9e57-957b6467a3fc"/></p>
+<p><strong>注意</strong>： watch 命令只能在客户端开启事务之前执行，在事务中执行 watch 命令会引发错误，但不会造成整个事务失败，如下代码所示：</p>
+<pre><code class="language-shell">&gt; multi
+OK
+&gt; set k v3
+QUEUED
+&gt; watch k
+(error) ERR WATCH inside MULTI is not allowed
+&gt; exec
+1) OK
+&gt; get k
+"v3"
+
+</code></pre>
+<p>执行命令解释如下图所示：</p>
+<p><img alt="img" src="assets/4097f000-5de3-11ea-9e57-957b6467a3fc"/></p>
+<p>unwatch 命令用于清除所有之前监控的所有对象（键值对）。</p>
+<p>unwatch 示例如下所示：</p>
+<pre><code class="language-shell">&gt; set k v
+OK
+&gt; watch k
+OK
+&gt; multi
+OK
+&gt; unwatch
+QUEUED
+&gt; set k v2
+QUEUED
+&gt; exec
+1) OK
+2) OK
+&gt; get k
+"v2"
+
+</code></pre>
+<p>可以看出，即使在事务的执行过程中，k 值被修改了，因为调用了 unwatch 命令，整个事务依然会顺利执行。</p>
+<h3 id="代码实战">代码实战</h3>
+<p>以下是事务在 Java 中的使用，代码如下：</p>
+<pre><code class="language-java">import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
+
+public class TransactionExample {
+    public static void main(String[] args) {
+        // 创建 Redis 连接
+        Jedis jedis = new Jedis("xxx.xxx.xxx.xxx", 6379);
+        // 设置 Redis 密码
+        jedis.auth("xxx");
+        // 设置键值
+        jedis.set("k", "v");
+        // 开启监视 watch
+        jedis.watch("k");
+        // 开始事务
+        Transaction tx = jedis.multi();
+        // 命令入列
+        tx.set("k", "v2");
+        // 执行事务
+        tx.exec();
+        System.out.println(jedis.get("k"));
+        jedis.close();
+    }
+}
+
+</code></pre>
+<h3 id="知识点练习">知识点练习</h3>
+<h4 id="以下两个客户端交替执行的结果是"><strong>以下两个客户端交替执行的结果是？</strong></h4>
+<p>客户端一，执行如下命令：</p>
+<pre><code class="language-shell">&gt; set k v
+OK
+&gt; watch k
+OK
+&gt; multi
+OK
+&gt; set k v2
+QUEUED
+
+</code></pre>
+<p>客户端二，执行如下命令：</p>
+<pre><code class="language-shell">&gt; set k v
+OK
+
+</code></pre>
+<p>客户端一，再执行如下命令：</p>
+<pre><code class="language-shell">&gt; exec
+
+</code></pre>
+<p>此时 k 的值为多少？</p>
+<p>答： k 的值为 v，而非 v2。</p>
+<p>题目解析：本题考查的是 watch 命令监控时，即使把原对象的值重新赋值给了原对象，这个时候 watch 命令也会认为监控对象还是被修改了。</p>
+<h3 id="小结">小结</h3>
+<p>事务为多个命令提供一次性按顺序执行的机制，与 Redis 事务相关的命令有以下五个：</p>
+<ul>
+<li>multi：开启事务</li>
+<li>exec：执行事务</li>
+<li>discard：丢弃事务</li>
+<li>watch：为事务提供乐观锁实现</li>
+<li>unwatch：取消监控（取消事务中的乐观锁）</li>
+</ul>
+<p>正常情况下 Redis 事务分为三个阶段：开启事务、命令入列、执行事务。Redis 事务并不支持运行时错误的事务回滚，但在某些入列错误，如 <code>set key</code> 或者是 <code>watch</code> 监控项被修改时，提供整个事务回滚的功能。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#cda1a1a1f4f9fcfcfdfa8daaa0aca4a1e3aea2a0" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935992fdfc0cb506',t:'MTc0NTUzOTM3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
