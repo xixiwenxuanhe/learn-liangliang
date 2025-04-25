@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="07 架构设计：设计一个灵活的RPC框架" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>07 架构设计：设计一个灵活的RPC框架 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%88%ab%e8%80%81%e6%83%b3%e7%9d%80%e6%80%8e%e4%b9%88%e7%94%a8%e5%a5%bdRPC%e6%a1%86%e6%9e%b6%ef%bc%8c%e4%bd%a0%e5%be%97%e5%a4%9a%e8%8a%b1%e6%97%b6%e9%97%b4%e7%90%a2%e7%a3%a8%e5%8e%9f%e7%90%86.md.html" id="00 开篇词 别老想着怎么用好RPC框架，你得多花时间琢磨原理.md.html">00 开篇词 别老想着怎么用好RPC框架，你得多花时间琢磨原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/01%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%ef%bc%9a%e8%83%bd%e5%90%a6%e7%94%bb%e5%bc%a0%e5%9b%be%e8%a7%a3%e9%87%8a%e4%b8%8bRPC%e7%9a%84%e9%80%9a%e4%bf%a1%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="01 核心原理：能否画张图解释下RPC的通信流程？.md.html">01 核心原理：能否画张图解释下RPC的通信流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/02%20%e5%8d%8f%e8%ae%ae%ef%bc%9a%e6%80%8e%e4%b9%88%e8%ae%be%e8%ae%a1%e5%8f%af%e6%89%a9%e5%b1%95%e4%b8%94%e5%90%91%e5%90%8e%e5%85%bc%e5%ae%b9%e7%9a%84%e5%8d%8f%e8%ae%ae%ef%bc%9f.md.html" id="02 协议：怎么设计可扩展且向后兼容的协议？.md.html">02 协议：怎么设计可扩展且向后兼容的协议？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/03%20%e5%ba%8f%e5%88%97%e5%8c%96%ef%bc%9a%e5%af%b9%e8%b1%a1%e6%80%8e%e4%b9%88%e5%9c%a8%e7%bd%91%e7%bb%9c%e4%b8%ad%e4%bc%a0%e8%be%93%ef%bc%9f.md.html" id="03 序列化：对象怎么在网络中传输？.md.html">03 序列化：对象怎么在网络中传输？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/04%20%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%ef%bc%9aRPC%e6%a1%86%e6%9e%b6%e5%9c%a8%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%e4%b8%8a%e6%9b%b4%e5%80%be%e5%90%91%e4%ba%8e%e5%93%aa%e7%a7%8d%e7%bd%91%e7%bb%9cIO%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？.md.html">04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/05%20%e5%8a%a8%e6%80%81%e4%bb%a3%e7%90%86%ef%bc%9a%e9%9d%a2%e5%90%91%e6%8e%a5%e5%8f%a3%e7%bc%96%e7%a8%8b%ef%bc%8c%e5%b1%8f%e8%94%bdRPC%e5%a4%84%e7%90%86%e6%b5%81%e7%a8%8b.md.html" id="05 动态代理：面向接口编程，屏蔽RPC处理流程.md.html">05 动态代理：面向接口编程，屏蔽RPC处理流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/06%20RPC%e5%ae%9e%e6%88%98%ef%bc%9a%e5%89%96%e6%9e%90gRPC%e6%ba%90%e7%a0%81%ef%bc%8c%e5%8a%a8%e6%89%8b%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%ae%8c%e6%95%b4%e7%9a%84RPC.md.html" id="06 RPC实战：剖析gRPC源码，动手实现一个完整的RPC.md.html">06 RPC实战：剖析gRPC源码，动手实现一个完整的RPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/07%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e8%ae%be%e8%ae%a1%e4%b8%80%e4%b8%aa%e7%81%b5%e6%b4%bb%e7%9a%84RPC%e6%a1%86%e6%9e%b6.md.html" id="07 架构设计：设计一个灵活的RPC框架.md.html">07 架构设计：设计一个灵活的RPC框架.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/08%20%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0%ef%bc%9a%e5%88%b0%e5%ba%95%e6%98%af%e8%a6%81CP%e8%bf%98%e6%98%afAP%ef%bc%9f.md.html" id="08 服务发现：到底是要CP还是AP？.md.html">08 服务发现：到底是要CP还是AP？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/09%20%e5%81%a5%e5%ba%b7%e6%a3%80%e6%b5%8b%ef%bc%9a%e8%bf%99%e4%b8%aa%e8%8a%82%e7%82%b9%e9%83%bd%e6%8c%82%e4%ba%86%ef%bc%8c%e4%b8%ba%e5%95%a5%e8%bf%98%e8%a6%81%e7%96%af%e7%8b%82%e5%8f%91%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="09 健康检测：这个节点都挂了，为啥还要疯狂发请求？.md.html">09 健康检测：这个节点都挂了，为啥还要疯狂发请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/10%20%e8%b7%af%e7%94%b1%e7%ad%96%e7%95%a5%ef%bc%9a%e6%80%8e%e4%b9%88%e8%ae%a9%e8%af%b7%e6%b1%82%e6%8c%89%e7%85%a7%e8%ae%be%e5%ae%9a%e7%9a%84%e8%a7%84%e5%88%99%e5%8f%91%e5%88%b0%e4%b8%8d%e5%90%8c%e7%9a%84%e8%8a%82%e7%82%b9%e4%b8%8a%ef%bc%9f.md.html" id="10 路由策略：怎么让请求按照设定的规则发到不同的节点上？.md.html">10 路由策略：怎么让请求按照设定的规则发到不同的节点上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/11%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e8%8a%82%e7%82%b9%e8%b4%9f%e8%bd%bd%e5%b7%ae%e8%b7%9d%e8%bf%99%e4%b9%88%e5%a4%a7%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%94%b6%e5%88%b0%e7%9a%84%e6%b5%81%e9%87%8f%e8%bf%98%e4%b8%80%e6%a0%b7%ef%bc%9f.md.html" id="11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？.md.html">11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/12%20%e5%bc%82%e5%b8%b8%e9%87%8d%e8%af%95%ef%bc%9a%e5%9c%a8%e7%ba%a6%e5%ae%9a%e6%97%b6%e9%97%b4%e5%86%85%e5%ae%89%e5%85%a8%e5%8f%af%e9%9d%a0%e5%9c%b0%e9%87%8d%e8%af%95.md.html" id="12 异常重试：在约定时间内安全可靠地重试.md.html">12 异常重试：在约定时间内安全可靠地重试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/13%20%e4%bc%98%e9%9b%85%e5%85%b3%e9%97%ad%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%9c%8d%e5%8a%a1%e5%81%9c%e6%9c%ba%e5%b8%a6%e6%9d%a5%e7%9a%84%e4%b8%9a%e5%8a%a1%e6%8d%9f%e5%a4%b1%ef%bc%9f.md.html" id="13 优雅关闭：如何避免服务停机带来的业务损失？.md.html">13 优雅关闭：如何避免服务停机带来的业务损失？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/14%20%e4%bc%98%e9%9b%85%e5%90%af%e5%8a%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%b5%81%e9%87%8f%e6%89%93%e5%88%b0%e6%b2%a1%e6%9c%89%e5%90%af%e5%8a%a8%e5%ae%8c%e6%88%90%e7%9a%84%e8%8a%82%e7%82%b9%ef%bc%9f.md.html" id="14 优雅启动：如何避免流量打到没有启动完成的节点？.md.html">14 优雅启动：如何避免流量打到没有启动完成的节点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/15%20%e7%86%94%e6%96%ad%e9%99%90%e6%b5%81%ef%bc%9a%e4%b8%9a%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%87%aa%e6%88%91%e4%bf%9d%e6%8a%a4_.md.html" id="15 熔断限流：业务如何实现自我保护_.md.html">15 熔断限流：业务如何实现自我保护_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/16%20%e4%b8%9a%e5%8a%a1%e5%88%86%e7%bb%84%ef%bc%9a%e5%a6%82%e4%bd%95%e9%9a%94%e7%a6%bb%e6%b5%81%e9%87%8f%ef%bc%9f.md.html" id="16 业务分组：如何隔离流量？.md.html">16 业务分组：如何隔离流量？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/17%20%e5%bc%82%e6%ad%a5RPC%ef%bc%9a%e5%8e%8b%e6%a6%a8%e5%8d%95%e6%9c%ba%e5%90%9e%e5%90%90%e9%87%8f.md.html" id="17 异步RPC：压榨单机吞吐量.md.html">17 异步RPC：压榨单机吞吐量.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/18%20%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bb%ba%e7%ab%8b%e5%8f%af%e9%9d%a0%e7%9a%84%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="18 安全体系：如何建立可靠的安全体系？.md.html">18 安全体系：如何建立可靠的安全体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/19%20%e5%88%86%e5%b8%83%e5%bc%8f%e7%8e%af%e5%a2%83%e4%b8%8b%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e5%ae%9a%e4%bd%8d%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="19 分布式环境下如何快速定位问题？.md.html">19 分布式环境下如何快速定位问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/20%20%e8%af%a6%e8%a7%a3%e6%97%b6%e9%92%9f%e8%bd%ae%e5%9c%a8RPC%e4%b8%ad%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="20 详解时钟轮在RPC中的应用.md.html">20 详解时钟轮在RPC中的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/21%20%e6%b5%81%e9%87%8f%e5%9b%9e%e6%94%be%ef%bc%9a%e4%bf%9d%e9%9a%9c%e4%b8%9a%e5%8a%a1%e6%8a%80%e6%9c%af%e5%8d%87%e7%ba%a7%e7%9a%84%e7%a5%9e%e5%99%a8.md.html" id="21 流量回放：保障业务技术升级的神器.md.html">21 流量回放：保障业务技术升级的神器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/22%20%e5%8a%a8%e6%80%81%e5%88%86%e7%bb%84%ef%bc%9a%e8%b6%85%e9%ab%98%e6%95%88%e5%ae%9e%e7%8e%b0%e7%a7%92%e7%ba%a7%e6%89%a9%e7%bc%a9%e5%ae%b9.md.html" id="22 动态分组：超高效实现秒级扩缩容.md.html">22 动态分组：超高效实现秒级扩缩容.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/23%20%e5%a6%82%e4%bd%95%e5%9c%a8%e6%b2%a1%e6%9c%89%e6%8e%a5%e5%8f%a3%e7%9a%84%e6%83%85%e5%86%b5%e4%b8%8b%e8%bf%9b%e8%a1%8cRPC%e8%b0%83%e7%94%a8%ef%bc%9f.md.html" id="23 如何在没有接口的情况下进行RPC调用？.md.html">23 如何在没有接口的情况下进行RPC调用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/24%20%e5%a6%82%e4%bd%95%e5%9c%a8%e7%ba%bf%e4%b8%8a%e7%8e%af%e5%a2%83%e9%87%8c%e5%85%bc%e5%ae%b9%e5%a4%9a%e7%a7%8dRPC%e5%8d%8f%e8%ae%ae%ef%bc%9f.md.html" id="24 如何在线上环境里兼容多种RPC协议？.md.html">24 如何在线上环境里兼容多种RPC协议？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e5%8a%a0%e9%a4%90%20RPC%e6%a1%86%e6%9e%b6%e4%bb%a3%e7%a0%81%e5%ae%9e%e4%be%8b%e8%af%a6%e8%a7%a3.md.html" id="加餐 RPC框架代码实例详解.md.html">加餐 RPC框架代码实例详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e5%8a%a0%e9%a4%90%20%e8%b0%88%e8%b0%88%e6%88%91%e6%89%80%e7%bb%8f%e5%8e%86%e8%bf%87%e7%9a%84RPC.md.html" id="加餐 谈谈我所经历过的RPC.md.html">加餐 谈谈我所经历过的RPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e7%ad%94%e7%96%91%e8%af%be%e5%a0%82%20%e5%9f%ba%e7%a1%80%e7%af%87%e4%b8%8e%e8%bf%9b%e9%98%b6%e7%af%87%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88%e5%90%88%e9%9b%86.md.html" id="答疑课堂 基础篇与进阶篇思考题答案合集.md.html">答疑课堂 基础篇与进阶篇思考题答案合集.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ad%a6%e4%bc%9a%e4%bb%8e%e4%bc%98%e7%a7%80%e9%a1%b9%e7%9b%ae%e7%9a%84%e6%ba%90%e4%bb%a3%e7%a0%81%e4%b8%ad%e6%8c%96%e6%8e%98%e7%9f%a5%e8%af%86.md.html" id="结束语 学会从优秀项目的源代码中挖掘知识.md.html">结束语 学会从优秀项目的源代码中挖掘知识.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="07 架构设计：设计一个灵活的RPC框架" id="title">07 架构设计：设计一个灵活的RPC框架</h1>
+<div><p>你好，我是何小锋。到今天为止，基础篇的知识我们就全部学习完了，接下来我们进入进阶篇。</p>
+<p>在基础篇里面，我们讲了RPC的通信原理以及RPC里各个功能组件的作用，不妨用一段话再次回顾下：“其实RPC就是把拦截到的方法参数，转成可以在网络中传输的二进制，并保证在服务提供方能正确地还原出语义，最终实现像调用本地一样地调用远程的目的。”<strong>你记住了吗？</strong></p>
+<p>那学到这儿，距离实现一个灵活的RPC框架其实还是有距离的。知道了各个功能组件只是迈出了第一步，接下来你必须要清楚各个组件之间是怎么完成数据交互的，这也是今天这讲的重点，我们一起搞清楚RPC的架构设计。</p>
+<h2 id="rpc架构">RPC架构</h2>
+<p>说起架构设计，我相信你一定不陌生。我理解的架构设计呢，就是从顶层角度出发，厘清各模块组件之间数据交互的流程，让我们对系统有一个整体的宏观认识。我们先看看RPC里面都有哪些功能模块。</p>
+<p>我们讲过，RPC本质上就是一个远程调用，那肯定就需要通过网络来传输数据。虽然传输协议可以有多种选择，但考虑到可靠性的话，我们一般默认采用TCP协议。为了屏蔽网络传输的复杂性，我们需要封装一个单独的数据传输模块用来收发二进制数据，这个单独模块我们可以叫做传输模块。</p>
+<p>用户请求的时候是基于方法调用，方法出入参数都是对象数据，对象是肯定没法直接在网络中传输的，我们需要提前把它转成可传输的二进制，这就是我们说的序列化过程。但只是把方法调用参数的二进制数据传输到服务提供方是不够的，我们需要在方法调用参数的二进制数据后面增加“断句”符号来分隔出不同的请求，在两个“断句”符号中间放的内容就是我们请求的二进制数据，这个过程我们叫做协议封装。</p>
+<p><strong>虽然这是两个不同的过程，但其目的都是一样的，都是为了保证数据在网络中可以正确传输。</strong>这里我说的正确，可不仅指数据能够传输，还需要保证传输后能正确还原出传输前的语义。所以我们可以把这两个处理过程放在架构中的同一个模块，统称为协议模块。</p>
+<p>除此之外，我们还可以在协议模块中加入压缩功能，这是因为压缩过程也是对传输的二进制数据进行操作。在实际的网络传输过程中，我们的请求数据包在数据链路层可能会因为太大而被拆分成多个数据包进行传输，为了减少被拆分的次数，从而导致整个传输过程时间太长的问题，我们可以在RPC调用的时候这样操作：在方法调用参数或者返回值的二进制数据大于某个阈值的情况下，我们可以通过压缩框架进行无损压缩，然后在另外一端也用同样的压缩算法进行解压，保证数据可还原。</p>
+<p>传输和协议这两个模块是RPC里面最基础的功能，它们使对象可以正确地传输到服务提供方。但距离RPC的目标——实现像调用本地一样地调用远程，还缺少点东西。因为这两个模块所提供的都是一些基础能力，要让这两个模块同时工作的话，我们需要手写一些黏合的代码，但这些代码对我们使用RPC的研发人员来说是没有意义的，而且属于一个重复的工作，会导致使用过程的体验非常不友好。</p>
+<p>这就需要我们在RPC里面把这些细节对研发人员进行屏蔽，让他们感觉不到本地调用和远程调用的区别。假设有用到Spring的话，我们希望RPC能让我们把一个RPC接口定义成一个Spring Bean，并且这个Bean也会统一被Spring Bean Factory管理，可以在项目中通过Spring依赖注入到方式引用。这是RPC调用的入口，我们一般叫做Bootstrap模块。</p>
+<p><strong>学到这儿，一个点对点（Point to Point）版本的RPC框架就完成了。</strong>我一般称这种模式的RPC框架为单机版本，因为它没有集群能力。所谓集群能力，就是针对同一个接口有着多个服务提供者，但这多个服务提供者对于我们的调用方来说是透明的，所以在RPC里面我们还需要给调用方找到所有的服务提供方，并需要在RPC里面维护好接口跟服务提供者地址的关系，这样调用方在发起请求的时候才能快速地找到对应的接收地址，这就是我们常说的“服务发现”。</p>
+<p>但服务发现只是解决了接口和服务提供方地址映射关系的查找问题，这更多是一种“静态数据”。说它是静态数据是因为，对于我们的RPC来说，我们每次发送请求的时候都是需要用TCP连接的，相对服务提供方IP地址，TCP连接状态是瞬息万变的，所以我们的RPC框架里面要有连接管理器去维护TCP连接的状态。</p>
+<p>有了集群之后，提供方可能就需要管理好这些服务了，那我们的RPC就需要内置一些服务治理的功能，比如服务提供方权重的设置、调用授权等一些常规治理手段。而服务调用方需要额外做哪些事情呢？每次调用前，我们都需要根据服务提供方设置的规则，从集群中选择可用的连接用于发送请求。</p>
+<p>那到这儿，一个比较完善的RPC框架基本就完成了，功能也差不多就是这些了。按照分层设计的原则，我将这些功能模块分为了四层，具体内容见图示：</p>
+<p><img alt="" src="assets/db030426b9b84d3e9794aea11c751469.jpg"/></p>
+<h2 id="可扩展的架构">可扩展的架构</h2>
+<p>那RPC架构设计出来就完事了吗？当然不，技术迭代谁都躲不过。</p>
+<p>不知道你有没有这样的经历，你设计的一个系统它看上去很完善，也能很好地运行，然后你成功地把它交付给了业务方。有一天业务方有了新的需求，要加入很多新的功能，这时候你就会发现当前架构面临的可就是大挑战了，要修改很多地方才能实现。</p>
+<p>举个例子，假如你设计了一个商品发布系统，早些年我们只能在网上购买电脑、衣服等实物商品，但现在发展成可以在网上购买电话充值卡、游戏点卡等虚拟商品，实物商品的发布流程是需要选择购买区域的，但虚拟商品并没有这一限制。如果你想要在一套发布系统里面同时完成实物和虚拟商品发布的话，你就只能在代码里面加入很多的if else判断逻辑，这样是能行，可整个代码就臃肿、杂乱了，后期也极难维护。</p>
+<p>其实，我们设计RPC框架也是一样的，我们不可能在开始时就面面俱到。那有没有更好的方式来解决这些问题呢？这就是我们接下来要讲的插件化架构。</p>
+<p>在RPC框架里面，我们是怎么支持插件化架构的呢？我们可以将每个功能点抽象成一个接口，将这个接口作为插件的契约，然后把这个功能的接口与功能的实现分离，并提供接口的默认实现。在Java里面，JDK有自带的SPI（Service Provider Interface）服务发现机制，它可以动态地为某个接口寻找服务实现。使用SPI机制需要在Classpath下的META-INF/services目录里创建一个以服务接口命名的文件，这个文件里的内容就是这个接口的具体实现类。</p>
+<p>但在实际项目中，我们其实很少使用到JDK自带的SPI机制，首先它不能按需加载，ServiceLoader加载某个接口实现类的时候，会遍历全部获取，也就是接口的实现类得全部载入并实例化一遍，会造成不必要的浪费。另外就是扩展如果依赖其它的扩展，那就做不到自动注入和装配，这就很难和其他框架集成，比如扩展里面依赖了一个Spring Bean，原生的Java SPI就不支持。</p>
+<p>加上了插件功能之后，我们的RPC框架就包含了两大核心体系——核心功能体系与插件体系，如下图所示：</p>
+<p><img alt="" src="assets/8e566b59c5bf4e08bbed5e11c319e674.jpg"/></p>
+<p><strong>这时，整个架构就变成了一个微内核架构</strong>，我们将每个功能点抽象成一个接口，将这个接口作为插件的契约，然后把这个功能的接口与功能的实现分离并提供接口的默认实现。这样的架构相比之前的架构，有很多优势。首先它的可扩展性很好，实现了开闭原则，用户可以非常方便地通过插件扩展实现自己的功能，而且不需要修改核心功能的本身；其次就是保持了核心包的精简，依赖外部包少，这样可以有效减少开发人员引入RPC导致的包版本冲突问题。</p>
+<h2 id="总结">总结</h2>
+<p>我们都知道软件开发的过程很复杂，不仅是因为业务需求经常变化，更难的是在开发过程中要保证团队成员的目标统一。我们需要用一种可沟通的话语、可“触摸”的愿景达成目标，我认为这就是软件架构设计的意义。</p>
+<p>但仅从功能角度设计出的软件架构并不够健壮，系统不仅要能正确地运行，还要以最低的成本进行可持续的维护，因此我们十分有必要关注系统的可扩展性。只有这样，才能满足业务变化的需求，让系统的生命力不断延伸。</p>
+<h2 id="课后思考">课后思考</h2>
+<p>你能分享一下，在日常工作中，你都有哪些地方是用到了插件思想来解决扩展性问题的吗？</p>
+<p>欢迎留言和我分享你的思考，也欢迎你把文章分享给你的朋友，邀请他加入学习。我们下节课再见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#b9d5d5d5808d8888898ef9ded4d8d0d597dad6d4" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359bec45babf27e',t:'MTc0NTU0MTE2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

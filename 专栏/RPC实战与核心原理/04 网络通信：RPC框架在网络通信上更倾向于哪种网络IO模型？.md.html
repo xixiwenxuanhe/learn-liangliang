@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%88%ab%e8%80%81%e6%83%b3%e7%9d%80%e6%80%8e%e4%b9%88%e7%94%a8%e5%a5%bdRPC%e6%a1%86%e6%9e%b6%ef%bc%8c%e4%bd%a0%e5%be%97%e5%a4%9a%e8%8a%b1%e6%97%b6%e9%97%b4%e7%90%a2%e7%a3%a8%e5%8e%9f%e7%90%86.md.html" id="00 开篇词 别老想着怎么用好RPC框架，你得多花时间琢磨原理.md.html">00 开篇词 别老想着怎么用好RPC框架，你得多花时间琢磨原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/01%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%ef%bc%9a%e8%83%bd%e5%90%a6%e7%94%bb%e5%bc%a0%e5%9b%be%e8%a7%a3%e9%87%8a%e4%b8%8bRPC%e7%9a%84%e9%80%9a%e4%bf%a1%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="01 核心原理：能否画张图解释下RPC的通信流程？.md.html">01 核心原理：能否画张图解释下RPC的通信流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/02%20%e5%8d%8f%e8%ae%ae%ef%bc%9a%e6%80%8e%e4%b9%88%e8%ae%be%e8%ae%a1%e5%8f%af%e6%89%a9%e5%b1%95%e4%b8%94%e5%90%91%e5%90%8e%e5%85%bc%e5%ae%b9%e7%9a%84%e5%8d%8f%e8%ae%ae%ef%bc%9f.md.html" id="02 协议：怎么设计可扩展且向后兼容的协议？.md.html">02 协议：怎么设计可扩展且向后兼容的协议？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/03%20%e5%ba%8f%e5%88%97%e5%8c%96%ef%bc%9a%e5%af%b9%e8%b1%a1%e6%80%8e%e4%b9%88%e5%9c%a8%e7%bd%91%e7%bb%9c%e4%b8%ad%e4%bc%a0%e8%be%93%ef%bc%9f.md.html" id="03 序列化：对象怎么在网络中传输？.md.html">03 序列化：对象怎么在网络中传输？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/04%20%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%ef%bc%9aRPC%e6%a1%86%e6%9e%b6%e5%9c%a8%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%e4%b8%8a%e6%9b%b4%e5%80%be%e5%90%91%e4%ba%8e%e5%93%aa%e7%a7%8d%e7%bd%91%e7%bb%9cIO%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？.md.html">04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/05%20%e5%8a%a8%e6%80%81%e4%bb%a3%e7%90%86%ef%bc%9a%e9%9d%a2%e5%90%91%e6%8e%a5%e5%8f%a3%e7%bc%96%e7%a8%8b%ef%bc%8c%e5%b1%8f%e8%94%bdRPC%e5%a4%84%e7%90%86%e6%b5%81%e7%a8%8b.md.html" id="05 动态代理：面向接口编程，屏蔽RPC处理流程.md.html">05 动态代理：面向接口编程，屏蔽RPC处理流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/06%20RPC%e5%ae%9e%e6%88%98%ef%bc%9a%e5%89%96%e6%9e%90gRPC%e6%ba%90%e7%a0%81%ef%bc%8c%e5%8a%a8%e6%89%8b%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%ae%8c%e6%95%b4%e7%9a%84RPC.md.html" id="06 RPC实战：剖析gRPC源码，动手实现一个完整的RPC.md.html">06 RPC实战：剖析gRPC源码，动手实现一个完整的RPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/07%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e8%ae%be%e8%ae%a1%e4%b8%80%e4%b8%aa%e7%81%b5%e6%b4%bb%e7%9a%84RPC%e6%a1%86%e6%9e%b6.md.html" id="07 架构设计：设计一个灵活的RPC框架.md.html">07 架构设计：设计一个灵活的RPC框架.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/08%20%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0%ef%bc%9a%e5%88%b0%e5%ba%95%e6%98%af%e8%a6%81CP%e8%bf%98%e6%98%afAP%ef%bc%9f.md.html" id="08 服务发现：到底是要CP还是AP？.md.html">08 服务发现：到底是要CP还是AP？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/09%20%e5%81%a5%e5%ba%b7%e6%a3%80%e6%b5%8b%ef%bc%9a%e8%bf%99%e4%b8%aa%e8%8a%82%e7%82%b9%e9%83%bd%e6%8c%82%e4%ba%86%ef%bc%8c%e4%b8%ba%e5%95%a5%e8%bf%98%e8%a6%81%e7%96%af%e7%8b%82%e5%8f%91%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="09 健康检测：这个节点都挂了，为啥还要疯狂发请求？.md.html">09 健康检测：这个节点都挂了，为啥还要疯狂发请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/10%20%e8%b7%af%e7%94%b1%e7%ad%96%e7%95%a5%ef%bc%9a%e6%80%8e%e4%b9%88%e8%ae%a9%e8%af%b7%e6%b1%82%e6%8c%89%e7%85%a7%e8%ae%be%e5%ae%9a%e7%9a%84%e8%a7%84%e5%88%99%e5%8f%91%e5%88%b0%e4%b8%8d%e5%90%8c%e7%9a%84%e8%8a%82%e7%82%b9%e4%b8%8a%ef%bc%9f.md.html" id="10 路由策略：怎么让请求按照设定的规则发到不同的节点上？.md.html">10 路由策略：怎么让请求按照设定的规则发到不同的节点上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/11%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e8%8a%82%e7%82%b9%e8%b4%9f%e8%bd%bd%e5%b7%ae%e8%b7%9d%e8%bf%99%e4%b9%88%e5%a4%a7%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%94%b6%e5%88%b0%e7%9a%84%e6%b5%81%e9%87%8f%e8%bf%98%e4%b8%80%e6%a0%b7%ef%bc%9f.md.html" id="11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？.md.html">11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/12%20%e5%bc%82%e5%b8%b8%e9%87%8d%e8%af%95%ef%bc%9a%e5%9c%a8%e7%ba%a6%e5%ae%9a%e6%97%b6%e9%97%b4%e5%86%85%e5%ae%89%e5%85%a8%e5%8f%af%e9%9d%a0%e5%9c%b0%e9%87%8d%e8%af%95.md.html" id="12 异常重试：在约定时间内安全可靠地重试.md.html">12 异常重试：在约定时间内安全可靠地重试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/13%20%e4%bc%98%e9%9b%85%e5%85%b3%e9%97%ad%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%9c%8d%e5%8a%a1%e5%81%9c%e6%9c%ba%e5%b8%a6%e6%9d%a5%e7%9a%84%e4%b8%9a%e5%8a%a1%e6%8d%9f%e5%a4%b1%ef%bc%9f.md.html" id="13 优雅关闭：如何避免服务停机带来的业务损失？.md.html">13 优雅关闭：如何避免服务停机带来的业务损失？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/14%20%e4%bc%98%e9%9b%85%e5%90%af%e5%8a%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%b5%81%e9%87%8f%e6%89%93%e5%88%b0%e6%b2%a1%e6%9c%89%e5%90%af%e5%8a%a8%e5%ae%8c%e6%88%90%e7%9a%84%e8%8a%82%e7%82%b9%ef%bc%9f.md.html" id="14 优雅启动：如何避免流量打到没有启动完成的节点？.md.html">14 优雅启动：如何避免流量打到没有启动完成的节点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/15%20%e7%86%94%e6%96%ad%e9%99%90%e6%b5%81%ef%bc%9a%e4%b8%9a%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%87%aa%e6%88%91%e4%bf%9d%e6%8a%a4_.md.html" id="15 熔断限流：业务如何实现自我保护_.md.html">15 熔断限流：业务如何实现自我保护_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/16%20%e4%b8%9a%e5%8a%a1%e5%88%86%e7%bb%84%ef%bc%9a%e5%a6%82%e4%bd%95%e9%9a%94%e7%a6%bb%e6%b5%81%e9%87%8f%ef%bc%9f.md.html" id="16 业务分组：如何隔离流量？.md.html">16 业务分组：如何隔离流量？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/17%20%e5%bc%82%e6%ad%a5RPC%ef%bc%9a%e5%8e%8b%e6%a6%a8%e5%8d%95%e6%9c%ba%e5%90%9e%e5%90%90%e9%87%8f.md.html" id="17 异步RPC：压榨单机吞吐量.md.html">17 异步RPC：压榨单机吞吐量.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/18%20%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bb%ba%e7%ab%8b%e5%8f%af%e9%9d%a0%e7%9a%84%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="18 安全体系：如何建立可靠的安全体系？.md.html">18 安全体系：如何建立可靠的安全体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/19%20%e5%88%86%e5%b8%83%e5%bc%8f%e7%8e%af%e5%a2%83%e4%b8%8b%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e5%ae%9a%e4%bd%8d%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="19 分布式环境下如何快速定位问题？.md.html">19 分布式环境下如何快速定位问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/20%20%e8%af%a6%e8%a7%a3%e6%97%b6%e9%92%9f%e8%bd%ae%e5%9c%a8RPC%e4%b8%ad%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="20 详解时钟轮在RPC中的应用.md.html">20 详解时钟轮在RPC中的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/21%20%e6%b5%81%e9%87%8f%e5%9b%9e%e6%94%be%ef%bc%9a%e4%bf%9d%e9%9a%9c%e4%b8%9a%e5%8a%a1%e6%8a%80%e6%9c%af%e5%8d%87%e7%ba%a7%e7%9a%84%e7%a5%9e%e5%99%a8.md.html" id="21 流量回放：保障业务技术升级的神器.md.html">21 流量回放：保障业务技术升级的神器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/22%20%e5%8a%a8%e6%80%81%e5%88%86%e7%bb%84%ef%bc%9a%e8%b6%85%e9%ab%98%e6%95%88%e5%ae%9e%e7%8e%b0%e7%a7%92%e7%ba%a7%e6%89%a9%e7%bc%a9%e5%ae%b9.md.html" id="22 动态分组：超高效实现秒级扩缩容.md.html">22 动态分组：超高效实现秒级扩缩容.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/23%20%e5%a6%82%e4%bd%95%e5%9c%a8%e6%b2%a1%e6%9c%89%e6%8e%a5%e5%8f%a3%e7%9a%84%e6%83%85%e5%86%b5%e4%b8%8b%e8%bf%9b%e8%a1%8cRPC%e8%b0%83%e7%94%a8%ef%bc%9f.md.html" id="23 如何在没有接口的情况下进行RPC调用？.md.html">23 如何在没有接口的情况下进行RPC调用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/24%20%e5%a6%82%e4%bd%95%e5%9c%a8%e7%ba%bf%e4%b8%8a%e7%8e%af%e5%a2%83%e9%87%8c%e5%85%bc%e5%ae%b9%e5%a4%9a%e7%a7%8dRPC%e5%8d%8f%e8%ae%ae%ef%bc%9f.md.html" id="24 如何在线上环境里兼容多种RPC协议？.md.html">24 如何在线上环境里兼容多种RPC协议？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e5%8a%a0%e9%a4%90%20RPC%e6%a1%86%e6%9e%b6%e4%bb%a3%e7%a0%81%e5%ae%9e%e4%be%8b%e8%af%a6%e8%a7%a3.md.html" id="加餐 RPC框架代码实例详解.md.html">加餐 RPC框架代码实例详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e5%8a%a0%e9%a4%90%20%e8%b0%88%e8%b0%88%e6%88%91%e6%89%80%e7%bb%8f%e5%8e%86%e8%bf%87%e7%9a%84RPC.md.html" id="加餐 谈谈我所经历过的RPC.md.html">加餐 谈谈我所经历过的RPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e7%ad%94%e7%96%91%e8%af%be%e5%a0%82%20%e5%9f%ba%e7%a1%80%e7%af%87%e4%b8%8e%e8%bf%9b%e9%98%b6%e7%af%87%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88%e5%90%88%e9%9b%86.md.html" id="答疑课堂 基础篇与进阶篇思考题答案合集.md.html">答疑课堂 基础篇与进阶篇思考题答案合集.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ad%a6%e4%bc%9a%e4%bb%8e%e4%bc%98%e7%a7%80%e9%a1%b9%e7%9b%ae%e7%9a%84%e6%ba%90%e4%bb%a3%e7%a0%81%e4%b8%ad%e6%8c%96%e6%8e%98%e7%9f%a5%e8%af%86.md.html" id="结束语 学会从优秀项目的源代码中挖掘知识.md.html">结束语 学会从优秀项目的源代码中挖掘知识.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？" id="title">04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？</h1>
+<div><p>你好，我是何小锋。在上一讲我讲解了RPC框架中的序列化，通过上一讲，我们知道由于网络传输的数据都是二进制数据，所以我们要传递对象，就必须将对象进行序列化，而RPC框架在序列化的选择上，我们更关注序列化协议的安全性、通用性、兼容性，其次才关注序列化协议的性能、效率、空间开销。承接上一讲，这一讲，我要专门讲解下RPC框架中的网络通信，这也是我们在开篇词中就强调过的重要内容。</p>
+<p>那么网络通信在RPC调用中起到什么作用呢？</p>
+<p>我在<a href="https://time.geekbang.org/column/article/199650" target="_blank">[第 01 讲]</a> 中讲过，RPC是解决进程间通信的一种方式。一次RPC调用，本质就是服务消费者与服务提供者间的一次网络信息交换的过程。服务调用者通过网络IO发送一条请求消息，服务提供者接收并解析，处理完相关的业务逻辑之后，再发送一条响应消息给服务调用者，服务调用者接收并解析响应消息，处理完相关的响应逻辑，一次RPC调用便结束了。可以说，网络通信是整个RPC调用流程的基础。</p>
+<h2 id="常见的网络io模型">常见的网络IO模型</h2>
+<p>那说到网络通信，就不得不提一下网络IO模型。为什么要讲网络IO模型呢？因为所谓的两台PC机之间的网络通信，实际上就是两台PC机对网络IO的操作。</p>
+<p>常见的网络IO模型分为四种：同步阻塞IO（BIO）、同步非阻塞IO（NIO）、IO多路复用和异步非阻塞IO（AIO）。在这四种IO模型中，只有AIO为异步IO，其他都是同步IO。</p>
+<p>其中，最常用的就是同步阻塞IO和IO多路复用，这一点通过了解它们的机制，你会get到。至于其他两种IO模型，因为不常用，则不作为本讲的重点，有兴趣的话我们可以在留言区中讨论。</p>
+<h3 id="阻塞io-blocking-io">阻塞IO（blocking IO）</h3>
+<p>同步阻塞IO是最简单、最常见的IO模型，在Linux中，默认情况下所有的socket都是blocking的，先看下操作流程。</p>
+<p>首先，应用进程发起IO系统调用后，应用进程被阻塞，转到内核空间处理。之后，内核开始等待数据，等待到数据之后，再将内核中的数据拷贝到用户内存中，整个IO处理完毕后返回进程。最后应用的进程解除阻塞状态，运行业务逻辑。</p>
+<p>这里我们可以看到，系统内核处理IO操作分为两个阶段——等待数据和拷贝数据。而在这两个阶段中，应用进程中IO操作的线程会一直都处于阻塞状态，如果是基于Java多线程开发，那么每一个IO操作都要占用线程，直至IO操作结束。</p>
+<p>这个流程就好比我们去餐厅吃饭，我们到达餐厅，向服务员点餐，之后要一直在餐厅等待后厨将菜做好，然后服务员会将菜端给我们，我们才能享用。</p>
+<h3 id="io多路复用-io-multiplexing">IO多路复用（IO multiplexing）</h3>
+<p>多路复用IO是在高并发场景中使用最为广泛的一种IO模型，如Java的NIO、Redis、Nginx的底层实现就是此类IO模型的应用，经典的Reactor模式也是基于此类IO模型。</p>
+<p>那么什么是IO多路复用呢？通过字面上的理解，多路就是指多个通道，也就是多个网络连接的IO，而复用就是指多个通道复用在一个复用器上。</p>
+<p>多个网络连接的IO可以注册到一个复用器（select）上，当用户进程调用了select，那么整个进程会被阻塞。同时，内核会“监视”所有select负责的socket，当任何一个socket中的数据准备好了，select就会返回。这个时候用户进程再调用read操作，将数据从内核中拷贝到用户进程。</p>
+<p>这里我们可以看到，当用户进程发起了select调用，进程会被阻塞，当发现该select负责的socket有准备好的数据时才返回，之后才发起一次read，整个流程要比阻塞IO要复杂，似乎也更浪费性能。但它最大的优势在于，用户可以在一个线程内同时处理多个socket的IO请求。用户可以注册多个socket，然后不断地调用select读取被激活的socket，即可达到在同一个线程内同时处理多个IO请求的目的。而在同步阻塞模型中，必须通过多线程的方式才能达到这个目的。</p>
+<p>同样好比我们去餐厅吃饭，这次我们是几个人一起去的，我们专门留了一个人在餐厅排号等位，其他人就去逛街了，等排号的朋友通知我们可以吃饭了，我们就直接去享用了。</p>
+<h3 id="为什么说阻塞io和io多路复用最为常用">为什么说阻塞IO和IO多路复用最为常用？</h3>
+<p>了解完二者的机制，我们就可以回到起初的问题了——我为什么说阻塞IO和IO多路复用最为常用。对比这四种网络IO模型：阻塞IO、非阻塞IO、IO多路复用、异步IO。实际在网络IO的应用上，需要的是系统内核的支持以及编程语言的支持。</p>
+<p>在系统内核的支持上，现在大多数系统内核都会支持阻塞IO、非阻塞IO和IO多路复用，但像信号驱动IO、异步IO，只有高版本的Linux系统内核才会支持。</p>
+<p>在编程语言上，无论C++还是Java，在高性能的网络编程框架的编写上，大多数都是基于Reactor模式，其中最为典型的便是Java的Netty框架，而Reactor模式是基于IO多路复用的。当然，在非高并发场景下，同步阻塞IO是最为常见的。</p>
+<p>综合来讲，在这四种常用的IO模型中，应用最多的、系统内核与编程语言支持最为完善的，便是阻塞IO和IO多路复用。这两种IO模型，已经可以满足绝大多数网络IO的应用场景。</p>
+<h3 id="rpc框架在网络通信上倾向选择哪种网络io模型">RPC框架在网络通信上倾向选择哪种网络IO模型？</h3>
+<p>讲完了这两种最常用的网络IO模型，我们可以看看它们都适合什么样的场景。</p>
+<p>IO多路复用更适合高并发的场景，可以用较少的进程（线程）处理较多的socket的IO请求，但使用难度比较高。当然高级的编程语言支持得还是比较好的，比如Java语言有很多的开源框架对Java原生API做了封装，如Netty框架，使用非常简便；而GO语言，语言本身对IO多路复用的封装就已经很简洁了。</p>
+<p>而阻塞IO与IO多路复用相比，阻塞IO每处理一个socket的IO请求都会阻塞进程（线程），但使用难度较低。在并发量较低、业务逻辑只需要同步进行IO操作的场景下，阻塞IO已经满足了需求，并且不需要发起select调用，开销上还要比IO多路复用低。</p>
+<p>RPC调用在大多数的情况下，是一个高并发调用的场景，考虑到系统内核的支持、编程语言的支持以及IO模型本身的特点，在RPC框架的实现中，在网络通信的处理上，我们会选择IO多路复用的方式。开发语言的网络通信框架的选型上，我们最优的选择是基于Reactor模式实现的框架，如Java语言，首选的框架便是Netty框架（Java还有很多其他NIO框架，但目前Netty应用得最为广泛），并且在Linux环境下，也要开启epoll来提升系统性能（Windows环境下是无法开启epoll的，因为系统内核不支持）。</p>
+<p>了解完以上内容，我们可以继续看这样一个关键问题——零拷贝。在我们应用的过程中，他是非常重要的。</p>
+<h2 id="什么是零拷贝">什么是零拷贝？</h2>
+<p>刚才讲阻塞IO的时候我讲到，系统内核处理IO操作分为两个阶段——等待数据和拷贝数据。等待数据，就是系统内核在等待网卡接收到数据后，把数据写到内核中；而拷贝数据，就是系统内核在获取到数据后，将数据拷贝到用户进程的空间中。以下是具体流程：</p>
+<p><img alt="" src="assets/9a4abae2d37e496db24588b968837d1f.jpg"/></p>
+<p>应用进程的每一次写操作，都会把数据写到用户空间的缓冲区中，再由CPU将数据拷贝到系统内核的缓冲区中，之后再由DMA将这份数据拷贝到网卡中，最后由网卡发送出去。这里我们可以看到，一次写操作数据要拷贝两次才能通过网卡发送出去，而用户进程的读操作则是将整个流程反过来，数据同样会拷贝两次才能让应用程序读取到数据。</p>
+<p>应用进程的一次完整的读写操作，都需要在用户空间与内核空间中来回拷贝，并且每一次拷贝，都需要CPU进行一次上下文切换（由用户进程切换到系统内核，或由系统内核切换到用户进程），这样是不是很浪费CPU和性能呢？那有没有什么方式，可以减少进程间的数据拷贝，提高数据传输的效率呢？</p>
+<p>这时我们就需要零拷贝（Zero-copy）技术。</p>
+<p>所谓的零拷贝，就是取消用户空间与内核空间之间的数据拷贝操作，应用进程每一次的读写操作，都可以通过一种方式，让应用进程向用户空间写入或者读取数据，就如同直接向内核空间写入或者读取数据一样，再通过DMA将内核中的数据拷贝到网卡，或将网卡中的数据copy到内核。</p>
+<p>那怎么做到零拷贝？你想一下是不是用户空间与内核空间都将数据写到一个地方，就不需要拷贝了？此时你有没有想到虚拟内存？</p>
+<p><img alt="" src="assets/360e9107eafe4be593cece5d0e20b961.jpg"/></p>
+<p>零拷贝有两种解决方式，分别是 mmap+write 方式和 sendfile 方式，mmap+write方式的核心原理就是通过虚拟内存来解决的。这两种实现方式都不难，市面上可查阅的资料也很多，在此就不详述了，有问题，可以在留言区中解决。</p>
+<h2 id="netty中的零拷贝">Netty中的零拷贝</h2>
+<p>了解完零拷贝，我们再看看Netty中的零拷贝。</p>
+<p>我刚才讲到，RPC框架在网络通信框架的选型上，我们最优的选择是基于Reactor模式实现的框架，如Java语言，首选的便是Netty框架。那么Netty框架是否也有零拷贝机制呢？Netty框架中的零拷贝和我之前讲的零拷贝又有什么不同呢？</p>
+<p>刚才我讲的零拷贝是操作系统层面上的零拷贝，主要目标是避免用户空间与内核空间之间的数据拷贝操作，可以提升CPU的利用率。</p>
+<p>而Netty的零拷贝则不大一样，他完全站在了用户空间上，也就是JVM上，它的零拷贝主要是偏向于数据操作的优化上。</p>
+<p><strong>那么Netty这么做的意义是什么呢？</strong></p>
+<p>回想下<a href="https://time.geekbang.org/column/article/199651" target="_blank">[第 02 讲]</a>，在这一讲中我讲解了RPC框架如何去设计协议，其中我讲到：在传输过程中，RPC并不会把请求参数的所有二进制数据整体一下子发送到对端机器上，中间可能会拆分成好几个数据包，也可能会合并其他请求的数据包，所以消息都需要有边界。那么一端的机器收到消息之后，就需要对数据包进行处理，根据边界对数据包进行分割和合并，最终获得一条完整的消息。</p>
+<p>那收到消息后，对数据包的分割和合并，是在用户空间完成，还是在内核空间完成的呢？</p>
+<p>当然是在用户空间，因为对数据包的处理工作都是由应用程序来处理的，那么这里有没有可能存在数据的拷贝操作？可能会存在，当然不是在用户空间与内核空间之间的拷贝，是用户空间内部内存中的拷贝处理操作。Netty的零拷贝就是为了解决这个问题，在用户空间对数据操作进行优化。</p>
+<p>那么Netty是怎么对数据操作进行优化的呢？</p>
+<ul>
+<li>Netty 提供了 CompositeByteBuf 类，它可以将多个 ByteBuf 合并为一个逻辑上的 ByteBuf，避免了各个 ByteBuf 之间的拷贝。</li>
+<li>ByteBuf 支持 slice 操作，因此可以将 ByteBuf 分解为多个共享同一个存储区域的 ByteBuf，避免了内存的拷贝。</li>
+<li>通过 wrap 操作，我们可以将 byte[] 数组、ByteBuf、ByteBuffer 等包装成一个 Netty ByteBuf 对象, 进而避免拷贝操作。</li>
+</ul>
+<p>Netty框架中很多内部的ChannelHandler实现类，都是通过CompositeByteBuf、slice、wrap操作来处理TCP传输中的拆包与粘包问题的。</p>
+<p>那么Netty有没有解决用户空间与内核空间之间的数据拷贝问题的方法呢？</p>
+<p>Netty 的 ByteBuffer 可以采用 Direct Buffers，使用堆外直接内存进行Socket的读写操作，最终的效果与我刚才讲解的虚拟内存所实现的效果是一样的。</p>
+<p>Netty 还提供 FileRegion 中包装 NIO 的 FileChannel.transferTo() 方法实现了零拷贝，这与Linux 中的 sendfile 方式在原理上也是一样的。</p>
+<h2 id="总结">总结</h2>
+<p>今天我们详细地介绍了阻塞IO与IO多路复用，拓展了零拷贝相关的知识以及Netty框架中的零拷贝。</p>
+<p>考虑到系统内核的支持、编程语言的支持以及IO模型本身的特点，RPC框架在网络通信的处理上，我们更倾向选择IO多路复用的方式。</p>
+<p>零拷贝带来的好处就是避免没必要的CPU拷贝，让CPU解脱出来去做其他的事，同时也减少了CPU在用户空间与内核空间之间的上下文切换，从而提升了网络通信效率与应用程序的整体性能。</p>
+<p>而Netty的零拷贝与操作系统的零拷贝是有些区别的，Netty的零拷贝偏向于用户空间中对数据操作的优化，这对处理TCP传输中的拆包粘包问题有着重要的意义，对应用程序处理请求数据与返回数据也有重要的意义。</p>
+<p>在 RPC框架的开发与使用过程中，我们要深入了解网络通信相关的原理知识，尽量做到零拷贝，如使用Netty框架；我们要合理使用ByteBuf子类，做到完全零拷贝，提升RPC框架的整体性能。</p>
+<h2 id="课后思考">课后思考</h2>
+<p>回想一下，你所接触的开源中间件框架有哪些框架在网络通信上做到了零拷贝？都是使用哪种方式实现的零拷贝？</p>
+<p>欢迎留言和我分享你的思考和疑惑，也欢迎你把文章分享给你的朋友，邀请他加入学习。我们下节课再见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#107c7c7c29242121202750777d71797c3e737f7d" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359be686b04ef65',t:'MTc0NTU0MTE1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

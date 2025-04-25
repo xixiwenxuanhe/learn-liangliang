@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/00%20%e5%bc%80%e7%af%87%e8%af%8d%20%e5%88%ab%e8%80%81%e6%83%b3%e7%9d%80%e6%80%8e%e4%b9%88%e7%94%a8%e5%a5%bdRPC%e6%a1%86%e6%9e%b6%ef%bc%8c%e4%bd%a0%e5%be%97%e5%a4%9a%e8%8a%b1%e6%97%b6%e9%97%b4%e7%90%a2%e7%a3%a8%e5%8e%9f%e7%90%86.md.html" id="00 开篇词 别老想着怎么用好RPC框架，你得多花时间琢磨原理.md.html">00 开篇词 别老想着怎么用好RPC框架，你得多花时间琢磨原理.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/01%20%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%ef%bc%9a%e8%83%bd%e5%90%a6%e7%94%bb%e5%bc%a0%e5%9b%be%e8%a7%a3%e9%87%8a%e4%b8%8bRPC%e7%9a%84%e9%80%9a%e4%bf%a1%e6%b5%81%e7%a8%8b%ef%bc%9f.md.html" id="01 核心原理：能否画张图解释下RPC的通信流程？.md.html">01 核心原理：能否画张图解释下RPC的通信流程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/02%20%e5%8d%8f%e8%ae%ae%ef%bc%9a%e6%80%8e%e4%b9%88%e8%ae%be%e8%ae%a1%e5%8f%af%e6%89%a9%e5%b1%95%e4%b8%94%e5%90%91%e5%90%8e%e5%85%bc%e5%ae%b9%e7%9a%84%e5%8d%8f%e8%ae%ae%ef%bc%9f.md.html" id="02 协议：怎么设计可扩展且向后兼容的协议？.md.html">02 协议：怎么设计可扩展且向后兼容的协议？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/03%20%e5%ba%8f%e5%88%97%e5%8c%96%ef%bc%9a%e5%af%b9%e8%b1%a1%e6%80%8e%e4%b9%88%e5%9c%a8%e7%bd%91%e7%bb%9c%e4%b8%ad%e4%bc%a0%e8%be%93%ef%bc%9f.md.html" id="03 序列化：对象怎么在网络中传输？.md.html">03 序列化：对象怎么在网络中传输？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/04%20%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%ef%bc%9aRPC%e6%a1%86%e6%9e%b6%e5%9c%a8%e7%bd%91%e7%bb%9c%e9%80%9a%e4%bf%a1%e4%b8%8a%e6%9b%b4%e5%80%be%e5%90%91%e4%ba%8e%e5%93%aa%e7%a7%8d%e7%bd%91%e7%bb%9cIO%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？.md.html">04 网络通信：RPC框架在网络通信上更倾向于哪种网络IO模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/05%20%e5%8a%a8%e6%80%81%e4%bb%a3%e7%90%86%ef%bc%9a%e9%9d%a2%e5%90%91%e6%8e%a5%e5%8f%a3%e7%bc%96%e7%a8%8b%ef%bc%8c%e5%b1%8f%e8%94%bdRPC%e5%a4%84%e7%90%86%e6%b5%81%e7%a8%8b.md.html" id="05 动态代理：面向接口编程，屏蔽RPC处理流程.md.html">05 动态代理：面向接口编程，屏蔽RPC处理流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/06%20RPC%e5%ae%9e%e6%88%98%ef%bc%9a%e5%89%96%e6%9e%90gRPC%e6%ba%90%e7%a0%81%ef%bc%8c%e5%8a%a8%e6%89%8b%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e5%ae%8c%e6%95%b4%e7%9a%84RPC.md.html" id="06 RPC实战：剖析gRPC源码，动手实现一个完整的RPC.md.html">06 RPC实战：剖析gRPC源码，动手实现一个完整的RPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/07%20%e6%9e%b6%e6%9e%84%e8%ae%be%e8%ae%a1%ef%bc%9a%e8%ae%be%e8%ae%a1%e4%b8%80%e4%b8%aa%e7%81%b5%e6%b4%bb%e7%9a%84RPC%e6%a1%86%e6%9e%b6.md.html" id="07 架构设计：设计一个灵活的RPC框架.md.html">07 架构设计：设计一个灵活的RPC框架.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/08%20%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0%ef%bc%9a%e5%88%b0%e5%ba%95%e6%98%af%e8%a6%81CP%e8%bf%98%e6%98%afAP%ef%bc%9f.md.html" id="08 服务发现：到底是要CP还是AP？.md.html">08 服务发现：到底是要CP还是AP？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/09%20%e5%81%a5%e5%ba%b7%e6%a3%80%e6%b5%8b%ef%bc%9a%e8%bf%99%e4%b8%aa%e8%8a%82%e7%82%b9%e9%83%bd%e6%8c%82%e4%ba%86%ef%bc%8c%e4%b8%ba%e5%95%a5%e8%bf%98%e8%a6%81%e7%96%af%e7%8b%82%e5%8f%91%e8%af%b7%e6%b1%82%ef%bc%9f.md.html" id="09 健康检测：这个节点都挂了，为啥还要疯狂发请求？.md.html">09 健康检测：这个节点都挂了，为啥还要疯狂发请求？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/10%20%e8%b7%af%e7%94%b1%e7%ad%96%e7%95%a5%ef%bc%9a%e6%80%8e%e4%b9%88%e8%ae%a9%e8%af%b7%e6%b1%82%e6%8c%89%e7%85%a7%e8%ae%be%e5%ae%9a%e7%9a%84%e8%a7%84%e5%88%99%e5%8f%91%e5%88%b0%e4%b8%8d%e5%90%8c%e7%9a%84%e8%8a%82%e7%82%b9%e4%b8%8a%ef%bc%9f.md.html" id="10 路由策略：怎么让请求按照设定的规则发到不同的节点上？.md.html">10 路由策略：怎么让请求按照设定的规则发到不同的节点上？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/11%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e8%8a%82%e7%82%b9%e8%b4%9f%e8%bd%bd%e5%b7%ae%e8%b7%9d%e8%bf%99%e4%b9%88%e5%a4%a7%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e6%94%b6%e5%88%b0%e7%9a%84%e6%b5%81%e9%87%8f%e8%bf%98%e4%b8%80%e6%a0%b7%ef%bc%9f.md.html" id="11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？.md.html">11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/12%20%e5%bc%82%e5%b8%b8%e9%87%8d%e8%af%95%ef%bc%9a%e5%9c%a8%e7%ba%a6%e5%ae%9a%e6%97%b6%e9%97%b4%e5%86%85%e5%ae%89%e5%85%a8%e5%8f%af%e9%9d%a0%e5%9c%b0%e9%87%8d%e8%af%95.md.html" id="12 异常重试：在约定时间内安全可靠地重试.md.html">12 异常重试：在约定时间内安全可靠地重试.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/13%20%e4%bc%98%e9%9b%85%e5%85%b3%e9%97%ad%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%9c%8d%e5%8a%a1%e5%81%9c%e6%9c%ba%e5%b8%a6%e6%9d%a5%e7%9a%84%e4%b8%9a%e5%8a%a1%e6%8d%9f%e5%a4%b1%ef%bc%9f.md.html" id="13 优雅关闭：如何避免服务停机带来的业务损失？.md.html">13 优雅关闭：如何避免服务停机带来的业务损失？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/14%20%e4%bc%98%e9%9b%85%e5%90%af%e5%8a%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e6%b5%81%e9%87%8f%e6%89%93%e5%88%b0%e6%b2%a1%e6%9c%89%e5%90%af%e5%8a%a8%e5%ae%8c%e6%88%90%e7%9a%84%e8%8a%82%e7%82%b9%ef%bc%9f.md.html" id="14 优雅启动：如何避免流量打到没有启动完成的节点？.md.html">14 优雅启动：如何避免流量打到没有启动完成的节点？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/15%20%e7%86%94%e6%96%ad%e9%99%90%e6%b5%81%ef%bc%9a%e4%b8%9a%e5%8a%a1%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%87%aa%e6%88%91%e4%bf%9d%e6%8a%a4_.md.html" id="15 熔断限流：业务如何实现自我保护_.md.html">15 熔断限流：业务如何实现自我保护_.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/16%20%e4%b8%9a%e5%8a%a1%e5%88%86%e7%bb%84%ef%bc%9a%e5%a6%82%e4%bd%95%e9%9a%94%e7%a6%bb%e6%b5%81%e9%87%8f%ef%bc%9f.md.html" id="16 业务分组：如何隔离流量？.md.html">16 业务分组：如何隔离流量？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/17%20%e5%bc%82%e6%ad%a5RPC%ef%bc%9a%e5%8e%8b%e6%a6%a8%e5%8d%95%e6%9c%ba%e5%90%9e%e5%90%90%e9%87%8f.md.html" id="17 异步RPC：压榨单机吞吐量.md.html">17 异步RPC：压榨单机吞吐量.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/18%20%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%bb%ba%e7%ab%8b%e5%8f%af%e9%9d%a0%e7%9a%84%e5%ae%89%e5%85%a8%e4%bd%93%e7%b3%bb%ef%bc%9f.md.html" id="18 安全体系：如何建立可靠的安全体系？.md.html">18 安全体系：如何建立可靠的安全体系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/19%20%e5%88%86%e5%b8%83%e5%bc%8f%e7%8e%af%e5%a2%83%e4%b8%8b%e5%a6%82%e4%bd%95%e5%bf%ab%e9%80%9f%e5%ae%9a%e4%bd%8d%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="19 分布式环境下如何快速定位问题？.md.html">19 分布式环境下如何快速定位问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/20%20%e8%af%a6%e8%a7%a3%e6%97%b6%e9%92%9f%e8%bd%ae%e5%9c%a8RPC%e4%b8%ad%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="20 详解时钟轮在RPC中的应用.md.html">20 详解时钟轮在RPC中的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/21%20%e6%b5%81%e9%87%8f%e5%9b%9e%e6%94%be%ef%bc%9a%e4%bf%9d%e9%9a%9c%e4%b8%9a%e5%8a%a1%e6%8a%80%e6%9c%af%e5%8d%87%e7%ba%a7%e7%9a%84%e7%a5%9e%e5%99%a8.md.html" id="21 流量回放：保障业务技术升级的神器.md.html">21 流量回放：保障业务技术升级的神器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/22%20%e5%8a%a8%e6%80%81%e5%88%86%e7%bb%84%ef%bc%9a%e8%b6%85%e9%ab%98%e6%95%88%e5%ae%9e%e7%8e%b0%e7%a7%92%e7%ba%a7%e6%89%a9%e7%bc%a9%e5%ae%b9.md.html" id="22 动态分组：超高效实现秒级扩缩容.md.html">22 动态分组：超高效实现秒级扩缩容.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/23%20%e5%a6%82%e4%bd%95%e5%9c%a8%e6%b2%a1%e6%9c%89%e6%8e%a5%e5%8f%a3%e7%9a%84%e6%83%85%e5%86%b5%e4%b8%8b%e8%bf%9b%e8%a1%8cRPC%e8%b0%83%e7%94%a8%ef%bc%9f.md.html" id="23 如何在没有接口的情况下进行RPC调用？.md.html">23 如何在没有接口的情况下进行RPC调用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/24%20%e5%a6%82%e4%bd%95%e5%9c%a8%e7%ba%bf%e4%b8%8a%e7%8e%af%e5%a2%83%e9%87%8c%e5%85%bc%e5%ae%b9%e5%a4%9a%e7%a7%8dRPC%e5%8d%8f%e8%ae%ae%ef%bc%9f.md.html" id="24 如何在线上环境里兼容多种RPC协议？.md.html">24 如何在线上环境里兼容多种RPC协议？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e5%8a%a0%e9%a4%90%20RPC%e6%a1%86%e6%9e%b6%e4%bb%a3%e7%a0%81%e5%ae%9e%e4%be%8b%e8%af%a6%e8%a7%a3.md.html" id="加餐 RPC框架代码实例详解.md.html">加餐 RPC框架代码实例详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e5%8a%a0%e9%a4%90%20%e8%b0%88%e8%b0%88%e6%88%91%e6%89%80%e7%bb%8f%e5%8e%86%e8%bf%87%e7%9a%84RPC.md.html" id="加餐 谈谈我所经历过的RPC.md.html">加餐 谈谈我所经历过的RPC.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e7%ad%94%e7%96%91%e8%af%be%e5%a0%82%20%e5%9f%ba%e7%a1%80%e7%af%87%e4%b8%8e%e8%bf%9b%e9%98%b6%e7%af%87%e6%80%9d%e8%80%83%e9%a2%98%e7%ad%94%e6%a1%88%e5%90%88%e9%9b%86.md.html" id="答疑课堂 基础篇与进阶篇思考题答案合集.md.html">答疑课堂 基础篇与进阶篇思考题答案合集.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/RPC%e5%ae%9e%e6%88%98%e4%b8%8e%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e5%ad%a6%e4%bc%9a%e4%bb%8e%e4%bc%98%e7%a7%80%e9%a1%b9%e7%9b%ae%e7%9a%84%e6%ba%90%e4%bb%a3%e7%a0%81%e4%b8%ad%e6%8c%96%e6%8e%98%e7%9f%a5%e8%af%86.md.html" id="结束语 学会从优秀项目的源代码中挖掘知识.md.html">结束语 学会从优秀项目的源代码中挖掘知识.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？" id="title">11 负载均衡：节点负载差距这么大，为什么收到的流量还一样？</h1>
+<div><p>你好，我是何小锋。上一讲我讲解了“多场景的路由选择”，其核心就是“如何根据不同的场景控制选择合适的目标机器”。今天我们来聊一个新的话题，看看在RPC中如何实现负载均衡。</p>
+<h2 id="一个需求">一个需求</h2>
+<p>在进入主题之前，我想先和你分享一个需求，这是我们公司的业务部门给我们提的。</p>
+<p>他们反馈的问题是这样的：有一次碰上流量高峰，他们突然发现线上服务的可用率降低了，经过排查发现，是因为其中有几台机器比较旧了。当时最早申请的一批容器配置比较低，缩容的时候留下了几台，当流量达到高峰时，这几台容器由于负载太高，就扛不住压力了。业务问我们有没有好的服务治理策略？</p>
+<p><img alt="" src="assets/e6d7f8ff33d94ca3941e49adc9dd4f30.jpg"/></p>
+<p>这个问题其实挺好解决的，我们当时给出的方案是：在治理平台上调低这几台机器的权重，这样的话，访问的流量自然就减少了。</p>
+<p>但业务接着反馈了，说：当他们发现服务可用率降低的时候，业务请求已经受到影响了，这时再如此解决，需要时间啊，那这段时间里业务可能已经有损失了。紧接着他们就提出了需求，问：<strong>RPC框架有没有什么智能负载的机制？能否及时地自动控制服务节点接收到的访问量？</strong></p>
+<p>这个需求其实很合理，这也是一个比较普遍的问题。确实，虽说我们的服务治理平台能够动态地控制线上服务节点接收的访问量，但当业务方发现部分机器负载过高或者响应变慢的时候再去调整节点权重，真的很可能已经影响到线上服务的可用率了。</p>
+<p>看到这儿，你有没有想到什么好的处理方案呢？接下来，我们就以这个问题为背景，一起看看RPC框架的负载均衡。</p>
+<h2 id="什么是负载均衡">什么是负载均衡？</h2>
+<p>我先来简单地介绍下负载均衡。当我们的一个服务节点无法支撑现有的访问量时，我们会部署多个节点，组成一个集群，然后通过负载均衡，将请求分发给这个集群下的每个服务节点，从而达到多个服务节点共同分担请求压力的目的。</p>
+<p><img alt="" src="assets/e100112280464c859f66019f112352aa.jpg"/></p>
+<p>负载均衡主要分为软负载和硬负载，软负载就是在一台或多台服务器上安装负载均衡的软件，如LVS、Nginx等，硬负载就是通过硬件设备来实现的负载均衡，如F5服务器等。负载均衡的算法主要有随机法、轮询法、最小连接法等。</p>
+<p>我刚才介绍的负载均衡主要还是应用在Web服务上，Web服务的域名绑定负载均衡的地址，通过负载均衡将用户的请求分发到一个个后端服务上。</p>
+<h2 id="rpc框架中的负载均衡">RPC框架中的负载均衡</h2>
+<p>那RPC框架中的负载均衡是不是也是如此呢？和我上面讲的负载均衡，你觉得会有区别吗？</p>
+<p>我们可以回想下<a href="https://time.geekbang.org/column/article/208171" target="_blank">[第 08 讲]</a> 的开头：我讲到为什么不通过DNS来实现“服务发现”，之后我又讲解了为什么不采用添加负载均衡设备或者TCP/IP四层代理，域名绑定负载均衡设备的IP或者四层代理IP的方式。</p>
+<p>我的回答是这种方式会面临这样几个问题：</p>
+<ol>
+<li>搭建负载均衡设备或TCP/IP四层代理，需要额外成本；</li>
+<li>请求流量都经过负载均衡设备，多经过一次网络传输，会额外浪费一些性能；</li>
+<li>负载均衡添加节点和摘除节点，一般都要手动添加，当大批量扩容和下线时，会有大量的人工操作，“服务发现”在操作上是个问题；</li>
+<li>我们在服务治理的时候，针对不同接口服务、服务的不同分组，我们的负载均衡策略是需要可配的，如果大家都经过这一个负载均衡设备，就不容易根据不同的场景来配置不同的负载均衡策略了。</li>
+</ol>
+<p>我相信看到这儿，你应该已经知道了RPC实现的负载均衡所采用的策略与传统的Web服务实现负载均衡所采用策略的不同之处了。</p>
+<p>RPC的负载均衡完全由RPC框架自身实现，RPC的服务调用者会与“注册中心”下发的所有服务节点建立长连接，在每次发起RPC调用时，服务调用者都会通过配置的负载均衡插件，自主选择一个服务节点，发起RPC调用请求。</p>
+<p><img alt="" src="assets/cbde3d7e876e48c18b2a2fcc10dd857f.jpg"/></p>
+<p>RPC负载均衡策略一般包括随机权重、Hash、轮询。当然，这还是主要看RPC框架自身的实现。其中的随机权重策略应该是我们最常用的一种了，通过随机算法，我们基本可以保证每个节点接收到的请求流量是均匀的；同时我们还可以通过控制节点权重的方式，来进行流量控制。比如我们默认每个节点的权重都是100，但当我们把其中的一个节点的权重设置成50时，它接收到的流量就是其他节点的1/2。</p>
+<p>这几种负载均衡算法的实现还是很简单的，网上资料也非常多，在这我就不过多介绍了。有什么问题，咱们可以在留言区交流。</p>
+<p>由于负载均衡机制完全是由RPC框架自身实现的，所以它不再需要依赖任何负载均衡设备，自然也不会发生负载均衡设备的单点问题，服务调用方的负载均衡策略也完全可配，同时我们可以通过控制权重的方式，对负载均衡进行治理。</p>
+<p>了解完RPC框架的负载均衡，现在我们就可以回到这讲最开头业务提的那个需求：有没有什么办法可以动态地、智能地控制线上服务节点所接收到的请求流量？</p>
+<p>现在答案是不是就显而易见了，解决问题的关键就在于RPC框架的负载均衡上。对于这个问题，我们当时的方案就是，设计一种自适应的负载均衡策略。</p>
+<h2 id="如何设计自适应的负载均衡">如何设计自适应的负载均衡？</h2>
+<p>我刚才讲过，RPC的负载均衡完全由RPC框架自身实现，服务调用者发起请求时，会通过配置的负载均衡插件，自主地选择服务节点。那是不是只要调用者知道每个服务节点处理请求的能力，再根据服务处理节点处理请求的能力来判断要打给它多少流量就可以了？当一个服务节点负载过高或响应过慢时，就少给它发送请求，反之则多给它发送请求。</p>
+<p>这就有点像日常工作中的分配任务，要多考虑实际情况。当一位下属身体欠佳，就少给他些工作；若刚好另一位下属状态很好，手头工作又不是很多，就多分给他一点。</p>
+<p><strong>那服务调用者节点又该如何判定一个服务节点的处理能力呢？</strong></p>
+<p>这里我们可以采用一种打分的策略，服务调用者收集与之建立长连接的每个服务节点的指标数据，如服务节点的负载指标、CPU核数、内存大小、请求处理的耗时指标（如请求平均耗时、TP99、TP999）、服务节点的状态指标（如正常、亚健康）。通过这些指标，计算出一个分数，比如总分10分，如果CPU负载达到70%，就减它3分，当然了，减3分只是个类比，需要减多少分是需要一个计算策略的。</p>
+<p><strong>我们又该如果根据这些指标来打分呢？</strong></p>
+<p>这就有点像公司对员工进行年终考核。假设我是老板，我要考核专业能力、沟通能力和工作态度，这三项的占比分别是30%、30%、40%，我给一个员工的评分是10、8、8，那他的综合分数就是这样计算的：10*30%+8*30%+8*40%=8.6分。</p>
+<p>给服务节点打分也一样，我们可以为每个指标都设置一个指标权重占比，然后再根据这些指标数据，计算分数。</p>
+<p><strong>服务调用者给每个服务节点都打完分之后，会发送请求，那这时候我们又该如何根据分数去控制给每个服务节点发送多少流量呢？</strong></p>
+<p>我们可以配合随机权重的负载均衡策略去控制，通过最终的指标分数修改服务节点最终的权重。例如给一个服务节点综合打分是8分（满分10分），服务节点的权重是100，那么计算后最终权重就是80（100*80%）。服务调用者发送请求时，会通过随机权重的策略来选择服务节点，那么这个节点接收到的流量就是其他正常节点的80%（这里假设其他节点默认权重都是100，且指标正常，打分为10分的情况）。</p>
+<p>到这儿，一个自适应的负载均衡我们就完成了，整体的设计方案如下图所示：</p>
+<p><img alt="" src="assets/e8aa1dfaeffd4a6b8745a36a2c15be5a.jpg"/></p>
+<p>关键步骤我来解释下：</p>
+<ol>
+<li>添加服务指标收集器，并将其作为插件，默认有运行时状态指标收集器、请求耗时指标收集器。</li>
+<li>运行时状态指标收集器收集服务节点CPU核数、CPU负载以及内存等指标，在服务调用者与服务提供者的心跳数据中获取。</li>
+<li>请求耗时指标收集器收集请求耗时数据，如平均耗时、TP99、TP999等。</li>
+<li>可以配置开启哪些指标收集器，并设置这些参考指标的指标权重，再根据指标数据和指标权重来综合打分。</li>
+<li>通过服务节点的综合打分与节点的权重，最终计算出节点的最终权重，之后服务调用者会根据随机权重的策略，来选择服务节点。</li>
+</ol>
+<h2 id="总结">总结</h2>
+<p>今天我们详细讲解了RPC框架的负载均衡，它与Web服务的负载均衡的不同之处在于：RPC框架并不是依赖一个负载均衡设备或者负载均衡服务器来实现负载均衡的，而是由RPC框架本身实现的，服务调用者可以自主选择服务节点，发起服务调用。</p>
+<p>这样的好处是，RPC框架不再需要依赖专门的负载均衡设备，可以节约成本；还减少了与负载均衡设备间额外的网络传输，提升了传输效率；并且均衡策略可配，便于服务治理。</p>
+<p>除此之外，我们今天的重点还涉及到“如何设计一个自适应的负载均衡”，通过它，我们可以就能根据服务调用者依赖的服务集群中每个节点的自身状态，智能地控制发送给每个服务节点的请求流量，防止因某个服务节点负载过高、请求处理过慢而影响到整个服务集群的可用率。</p>
+<p>这个自适应负载均衡的实现方案，其实不只是应用于RPC框架中的负载均衡，它本身便是一个智能负载的解决方案，如果你在工作中需要设计一个智能的负载均衡服务，那么完全可以参考。</p>
+<h2 id="课后思考">课后思考</h2>
+<p>你知道RPC框架中还有哪些负载均衡策略吗？它们的优缺点是什么？期待你能在留言区中分享实现方法，与我共同探讨。</p>
+<p>也欢迎你把文章分享给你的朋友，邀请他加入学习。我们下节课再见！</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#a5c9c9c99c9194949592e5c2c8c4ccc98bc6cac8" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359bf2e5e5be5fb',t:'MTc0NTU0MTE4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
