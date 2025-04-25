@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="14.搞定不同环境下的Jenkins与Kubernetes集群连接配置" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>14.搞定不同环境下的Jenkins与Kubernetes集群连接配置 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/01.Jenkins%e7%9a%84%e5%ae%89%e8%a3%85%e9%85%8d%e7%bd%ae%e4%b8%8e%e6%97%a5%e5%b8%b8%e7%bb%b4%e6%8a%a4.md.html" id="01.Jenkins的安装配置与日常维护.md.html">01.Jenkins的安装配置与日常维护.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/02.Jenkins%e5%bc%ba%e5%a4%a7%e7%9a%84%e6%8f%92%e4%bb%b6%e5%8a%9f%e8%83%bd.md.html" id="02.Jenkins强大的插件功能.md.html">02.Jenkins强大的插件功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/03.Devops%e5%b7%a5%e5%85%b7%e9%93%be.md.html" id="03.Devops工具链.md.html">03.Devops工具链.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/04.%e5%88%9d%e6%8e%a2Jenkins%20CD%e5%ae%9e%e8%b7%b5.md.html" id="04.初探Jenkins CD实践.md.html">04.初探Jenkins CD实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/05.Jenkins%e5%b8%b8%e7%94%a8%e9%a1%b9%e7%9b%ae%e9%85%8d%e7%bd%ae%e5%8f%82%e6%95%b0.md.html" id="05.Jenkins常用项目配置参数.md.html">05.Jenkins常用项目配置参数.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/06.Jenkins%e9%83%a8%e7%bd%b2%e4%b9%8bDocker%e8%a6%81%e7%82%b9.md.html" id="06.Jenkins部署之Docker要点.md.html">06.Jenkins部署之Docker要点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/07.Jenkins%e9%9b%86%e6%88%90%e4%b9%8bAnsible%e8%a6%81%e7%82%b9.md.html" id="07.Jenkins集成之Ansible要点.md.html">07.Jenkins集成之Ansible要点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/08.Jenkins%e9%9b%86%e6%88%90Ansible%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0Docker%e5%ae%b9%e5%99%a8.md.html" id="08.Jenkins集成Ansible持续部署服务到Docker容器.md.html">08.Jenkins集成Ansible持续部署服务到Docker容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/09.%e5%ae%9e%e7%8e%b0%e8%87%aa%e5%8a%a8%e5%8c%96%e5%bc%95%e6%93%8e%e4%b9%8bJenkins%20Pipeline%e5%a3%b0%e6%98%8e%e5%bc%8f%e8%af%ad%e6%b3%95.md.html" id="09.实现自动化引擎之Jenkins Pipeline声明式语法.md.html">09.实现自动化引擎之Jenkins Pipeline声明式语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/10.%e5%ae%9e%e7%8e%b0%e8%87%aa%e5%8a%a8%e5%8c%96%e5%bc%95%e6%93%8e%e4%b9%8bJenkins%20Pipeline%e8%84%9a%e6%9c%ac%e5%bc%8f%e8%af%ad%e6%b3%95.md.html" id="10.实现自动化引擎之Jenkins Pipeline脚本式语法.md.html">10.实现自动化引擎之Jenkins Pipeline脚本式语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/11.Pipeline%e8%af%ad%e6%b3%95%e8%bf%9b%e8%a1%8c%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e4%b8%8e%e5%9f%ba%e7%a1%80%e5%ae%9e%e8%b7%b5.md.html" id="11.Pipeline语法进行持续交付与基础实践.md.html">11.Pipeline语法进行持续交付与基础实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/12.Jenkins%20Docker%20Pipeline%e6%8f%92%e4%bb%b6%e5%8a%a8%e6%80%81%e7%94%9f%e6%88%90Slave%e8%8a%82%e7%82%b9%e8%af%ad%e6%b3%95%e5%89%96%e6%9e%90.md.html" id="12.Jenkins Docker Pipeline插件动态生成Slave节点语法剖析.md.html">12.Jenkins Docker Pipeline插件动态生成Slave节点语法剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/13.%e4%bd%bf%e7%94%a8%20Docker%20Pipeline%e6%8f%92%e4%bb%b6%e5%8a%a8%e6%80%81%e7%94%9f%e6%88%90Jenkins%20Slave%20%e5%ae%9e%e8%b7%b5.md.html" id="13.使用 Docker Pipeline插件动态生成Jenkins Slave 实践.md.html">13.使用 Docker Pipeline插件动态生成Jenkins Slave 实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/14.%e6%90%9e%e5%ae%9a%e4%b8%8d%e5%90%8c%e7%8e%af%e5%a2%83%e4%b8%8b%e7%9a%84Jenkins%e4%b8%8eKubernetes%e9%9b%86%e7%be%a4%e8%bf%9e%e6%8e%a5%e9%85%8d%e7%bd%ae.md.html" id="14.搞定不同环境下的Jenkins与Kubernetes集群连接配置.md.html">14.搞定不同环境下的Jenkins与Kubernetes集群连接配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/15.Jenkins%20Kubernetes%20Plugin%e4%bb%8b%e7%bb%8d%e4%b8%8e%e8%af%ad%e6%b3%95%e8%af%a6%e8%a7%a3.md.html" id="15.Jenkins Kubernetes Plugin介绍与语法详解.md.html">15.Jenkins Kubernetes Plugin介绍与语法详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/16.%e4%bd%bf%e7%94%a8Kubernetes%e7%bc%96%e6%8e%92Jenkins%20Slave%e8%8a%82%e7%82%b9%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e9%a1%b9%e7%9b%ae.md.html" id="16.使用Kubernetes编排Jenkins Slave节点持续交付项目.md.html">16.使用Kubernetes编排Jenkins Slave节点持续交付项目.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/17.%e4%bd%bf%e7%94%a8Kubernetes%e6%8f%92%e4%bb%b6%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0Kubernetes%e9%9b%86%e7%be%a4.md.html" id="17.使用Kubernetes插件持续部署服务到Kubernetes集群.md.html">17.使用Kubernetes插件持续部署服务到Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/18.Ansible%20Plugin%e6%8f%92%e4%bb%b6%e8%af%ad%e6%b3%95%e8%af%a6%e8%a7%a3%e4%b8%8e%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0kubernetes%e9%9b%86%e7%be%a4.md.html" id="18.Ansible Plugin插件语法详解与持续部署服务到kubernetes集群.md.html">18.Ansible Plugin插件语法详解与持续部署服务到kubernetes集群.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="14.搞定不同环境下的Jenkins与Kubernetes集群连接配置" id="title">14.搞定不同环境下的Jenkins与Kubernetes集群连接配置</h1>
+<div><p>在前面的章节中，简单的介绍了使用Jenkins与Docker集成的一些基本语法以及实现持续交付和持续部署的配置。在Jenkins中除了可以与docker集成外，还可以与容器编排工具kubernetes集成。</p>
+<p>Jenkins使用kubernetes插件主要用于完成两方面的工作：一是用于在kubernetes集群内动态生成一个pod作为Jenkins 的slave节点，提供流水线执行的工作环境；二是用于将应用代码持续部署到kubernetes集群中。</p>
+<p>基于上面提到的这两方面的用途，在剩下的章节会详细介绍Jenkins与kubernetes的集成配置与使用方法。</p>
+<p>同docker pipeline一样，在Jenkins里集成kubernetes也是依赖于插件的，所以在介绍如何配置与使用jenkins集成kubernetes之前需要先安装插件：</p>
+<ul>
+<li>Kubernetes plugin</li>
+<li>Kubernetes CLI</li>
+<li>Kubernetes Continous Deploy</li>
+</ul>
+<p>上面列出的插件，第一个用于在kubernetes集群中动态生成jenkins slave节点，后两个插件用于通过不同的方式持续部署代码到kubernetes集群。无论哪种插件，使用前都要先保证jenkins能够连接到kubernetes集群，所以本章节就从不同环境下的jenkins连接kubernetes集群的配置说起。</p>
+<h1 id="配置jenkins连接kubernetes">配置Jenkins连接Kubernetes</h1>
+<p>使用docker pipeline做持续交付的时候，默认直接使用的宿主机的docker进程。而Jenkins与kubernetes的集成，主要是通过调用Kubernetes的API去kubernetes集群中进行工作的。大多数公司在安装kubernetes集群配置apiserver服务时使用了证书，所以在配置jenkins连接kubernetes集群时，需要根据kubernetes的配置文件生成一系列证书以及key，并将证书上传到Jenkins用来对apiserver进行认证。</p>
+<p>下面针对部署在kubernetes集群环境下的Jenkins和非kubernetes集群环境下的jenkins连接kubernetes集群的配置进行详细介绍。</p>
+<h2 id="部署在非kubernetes集群内jenkins连接kubernetes配置">部署在非kubernetes集群内Jenkins连接kubernetes配置</h2>
+<p>安装好插件以后，进入Jenkins首页，点击菜单”<strong>Manage Jenkins(系统管理)</strong>-–&gt; <strong>Configure System(系统设置)</strong>” 在跳转到的界面中，到最底部，点击” <strong>Add a new cloud（新建一个云）–&gt; kubernetes</strong>“。</p>
+<p>如下所示：</p>
+<p><img alt="" src="assets/88a7520c263f406db02cfb4fccc92651.jpg"/></p>
+<p><strong>其中：</strong></p>
+<p><strong>名称</strong>：这里用于填写要添加的这个云（cloud）的名称，默认为”kubernetes”，如果不想用这个可以自定义。在编写pipeline的时候会用到。</p>
+<p><strong>kubernetes 地址</strong>：用于填写kubernetes集群的地址，做了多master集群高可用的环境直接写vip地址加端口；只有单个master的环境直接写master加端口地址即可。</p>
+<p><strong>Kubernetes 服务证书 key</strong>：用于填写与kubernetes集群认证的证书内容。</p>
+<p><strong>Kubernetes 命名空间</strong>：用于填写调用kubernetes时生成的pod工作的namespace。</p>
+<p><strong>Credentials（凭据）</strong>：用于连接kubernetes的凭证。</p>
+<p><strong>Jenkins 地址</strong>：Jenkins的连接地址。</p>
+<p>了解了基本配置的参数说明，下面主要说一下”<strong>Kubernetes 服务证书 key</strong>“和<strong>Credentials（凭据）</strong>配置。</p>
+<p>kubernetes集群安装的时候生成了一系列证书以及key，并且在配置kubernetes中kubectl客户端命令权限的时候，根据这些证书以及key生成了一个<code>kubeconfig</code>文件，用于kubectl与集群通信，这个文件默认为<code>/root/.kube/config</code>文件，对集群有最高操作权限（如果给了cluster-admin权限）。</p>
+<p>Jenkins需要根据这个文件生成的证书与集群通信，所以我们在生产环境配置Jenkins连接kubernetes集群的时候，需要注意一下kubeconfig文件绑定的用户的权限，最好从新生成一个低权限的<code>kubeconfig</code>文件，而不要用kubectl命令使用的文件。</p>
+<p>我这里为了测试方便，就先使用kubectl命令使用的<code>kubeconfig</code>文件，至于如何生成低权限的<code>kubeconfig</code>文件，这里不做介绍，有兴趣的可以私聊我。</p>
+<p><strong>配置证书key</strong></p>
+<p>首先看一下config文件。</p>
+<pre><code>[root@k8s_master1 ~]# cat /root/.kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR2akNDQXFhZ0F3SUJBZ0lVT0g4cDd6QXZaR3p4cGxUVy9xe......
+WRnVRNm9IcjZ0Yk0wa1NJVkhvN2JNQjRWOGZoUWk4WjlLS243ZTFsQWdaVWhyWGMzTzRqVS9xVHRWRQpSRXc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    server: https://192.168.176.156:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: admin
+  name: kubernetes
+current-context: kubernetes
+kind: Config
+preferences: {}
+users:
+- name: admin
+  user:
+    client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQzVENDQXNXZ0F3SUJBZ0lVQmI1ZTJFaUk1WndSY1JVeFVyZ......
+Qk9DTzRBcEVzWXNOa084UVF2RTlwVEhpNlE0LzhLV0NtU0wyNgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBeDdjNkpRTFdQaC90REtjUDQrcDV5aCtWdWRCUmFacFJ2THM2MU1POGFZWFRCT09pCkJyZzFQb0laRzZEbXNBNnUyUStOVnlGOWg5RTQ3VVpFNjI5ND......    K3dGdUF2S29vRm9lRFZCS3I3NjdiTFA3ZTBibkVqS1ExRmNHVFFFQVU9Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+</code></pre>
+<p><strong>获取文件中<code>certificate-authority-data</code>的内容并转化成base64 encoded文件</strong></p>
+<pre><code>echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR2akNDQXFhZ0F3SUJBZ0lVT0g4cDd6QXZaR3p4cGxUVy9xejRWRmxLQllRd0RRWUpLb1pJaHZjTkFRRUwKQlFBd1pURUxNQWtHQTFVRUJoTUNRMDR4RURBT0JnTlZCQWdUQjBKbG......
+WRnVRNm9IcjZ0Yk0wa1NJVkhvN2JNQjRWOGZoUWk4WjlLS243ZTFsQWdaVWhyWGMzTzRqVS9xVHRWRQpSRXc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K |base64 -d &gt; ca.crt
+</code></pre>
+<p>将ca.crt的内容粘贴到<strong>kubernetes server certificate key(Kubernetes 服务证书 key)</strong>框里，如下图所示：</p>
+<p><img alt="" src="assets/470bc464493443bf950c8277aaca4e86.jpg"/></p>
+<p><strong>配置凭据</strong></p>
+<p><strong>获取<code>/root/.kube/config</code>文件中<code>client-certificate-data</code>和<code>client-key-data</code>的内容并转化成base64 encoded文件</strong></p>
+<pre><code>echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQzVENDQXNXZ0F3SUJBZ0lVQmI1ZTJFaUk1WndSY1JVeFVyZ......
+Qk9DTzRBcEVzWXNOa084UVF2RTlwVEhpNlE0LzhLV0NtU0wyNgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg== |base64 -d &gt;client.crt
+
+//生成key
+echo LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBeDdjNkpRTFdQaC90REtjUDQrc......
+K3dGdUF2S29vRm9lRFZCS3I3NjdiTFA3ZTBibkVqS1ExRmNHVFFFQVU9Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg== | base64 -d &gt;client.key
+</code></pre>
+<p><strong>生成Client P12认证文件cert.pfx，并下载至本地</strong></p>
+<pre><code>openssl pkcs12 -export -out cert.pfx -inkey client.key -in client.crt -certfile ca.crt
+Enter Export Password:　　　　　　　　　　　　//密码自定义，jenkins导入证书的时候需要用到
+Verifying - Enter Export Password:
+</code></pre>
+<p><strong>在jenkins凭据菜单添加凭据</strong></p>
+<p><img alt="" src="assets/fb09f21ee1b9429b9382c28ecacbd6c3.jpg"/></p>
+<p>如上图所指示，凭据类型为”<strong>Certiticate</strong>“，<strong>password</strong>为生成证书时的设置的密码。</p>
+<p><strong>添加完成后如下图所示，点击连接测试</strong></p>
+<p>连接成功如下所示：</p>
+<p><img alt="" src="assets/a65d18545a4e4a16abcff7e89057e652.jpg"/></p>
+<p>到此，部署在非kubernetes集群内的Jenkins连接kubernetes配置就完成了。</p>
+<h2 id="部署在kubernetes集群内jenkins连接kubernetes配置">部署在kubernetes集群内jenkins连接kubernetes配置</h2>
+<p>在前面介绍jenkins安装配置章节没有介绍如何在kubernetes集群中部署，所以本小节的开头就先介绍一下如何在kubernetes集群中部署jenkins。</p>
+<p>kubernetes系统中使用资源对象来描述某个系统的期望状态以及对象的基本信息。对于部署某个应用或者服务使用最多的资源对象就是deployment，所以这里使用deployment来描述jenkins的配置并部署。</p>
+<p><strong>在kubernetes集群部署jenkins</strong></p>
+<p>首先需要创建一个服务账户（ServiceAccount），用来绑定对某一个命名空间的一系列kubernetes资源对象的操作权限。</p>
+<p>如下jenkins-rbac.yaml文件：</p>
+<pre><code>---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins
+  namespace: kube-system
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins
+  namespace: kube-system
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: jenkins
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jenkins
+subjects:
+  - kind: ServiceAccount
+    name: jenkins
+</code></pre>
+<p>然后创建deployment资源对象文件，来描述jenkins的一些基本配置信息，比如开放的端口，启动参数，使用的镜像等。</p>
+<p>如下<code>jenkins-deployment.yaml</code>文件：</p>
+<pre><code>apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins
+  labels:
+    app-name: jenkins
+  namespace: kube-system
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app-name: jenkins
+    spec:
+      serviceAccount: "jenkins"
+      containers:
+      - name: jenkins
+        image: docker.io/jenkins:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: web
+          protocol: TCP
+        - containerPort: 50000
+          name: agent
+          protocol: TCP
+        volumeMounts:
+        - name: jenkins-home
+          mountPath: /var/jenkins_home
+        env:
+        - name: JAVA_OPTS
+          value: "-Duser.timezone=Asia/Shanghai -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85"
+      volumes:
+      - name: jenkins-home
+        persistentVolumeClaim:
+          claimName: jenkins-public-pvc
+</code></pre>
+<p>在资源对象的定义中使用了pv和pvc做持久化volume，所以还需要创建这两种资源对象定义的文件。</p>
+<pre><code>$ cat jenkins-pv.yaml
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  labels:
+    name: jenkins-public-pv
+  name: jenkins-public-pv
+  namespace: kube-system
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /data/nfs/jenkins-data
+    server: 192.168.177.43
+
+$ cat jenkins-pvc.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jenkins-public-pvc
+  namespace: kube-system
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      name: jenkins-public-pv
+</code></pre>
+<p>使用nfs作为共享存储，创建pvc使用pv，在实际工作中，一般使用storageclass替代pv作为动态存储。当然如果为了简单，你也可以用挂载nfs目录的方式，或者指定节点通过hostpath将工作目录挂在到宿主机，方法比较多，根据个人实际情况选择合适的存储即可。</p>
+<p>部署service资源对象，相当于给运行jenkins服务的pod加了一个代理。</p>
+<p>如下jenkins-service.yaml：</p>
+<pre><code>kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app-name: jenkins
+  name: jenkins
+  namespace: kube-system
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: web
+  - port: 50000
+    targetPort: 50000
+    name: agent
+  selector:
+    app-name: jenkins
+</code></pre>
+<p>部署ingress服务，直接跳过service接管service代理的pod。</p>
+<p>如下jenkins-ingress.yaml：</p>
+<pre><code>apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jenkins
+  namespace: kube-system
+spec:
+  rules:
+  - host: k8s-jenkins.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: jenkins
+          servicePort: 8080
+</code></pre>
+<p>创建好ingress后，需要添加部署<code>ingress controller</code>node节点的ip和ingress中定义的host到本地hosts文件做解析。如果没有部署ingress服务，可以直接编辑上一步骤中创建service时的类型为nodePort，这样就可以通过访问<code>nodeIP:nodePort</code>的方式访问jenkins了。</p>
+<p>部署完成后如下所示：</p>
+<pre><code>$ kubectl get pods,ingress,svc,deploy -n kube-system |grep jenkins
+
+pod/jenkins-78f658b5d6-25qgl                      1/1     Running   0          163d
+ingress.extensions/jenkins              k8s-jenkins.com                 80      10m
+
+service/jenkins                ClusterIP   10.254.179.172   &lt;none&gt;        8080/TCP,50000/TCP       198d
+
+deployment.extensions/jenkins                      1/1     1            1           198d
+</code></pre>
+<p><img alt="" src="assets/6734aa5a6b5441e0a993e6959fc392b4.jpg"/></p>
+<p>部署好后的其他配置与在前面章节安装配置jenkins的方法一样。有关在kubernetes集群中安装jenkins服务的方法就介绍到这里。</p>
+<p><strong>配置jenkins连接kubernetes</strong></p>
+<p>部署在kubernetes集群内的jenkins配置连接kubernetes相对较简单，同样在系统配置页进行配置，不用生成上面的一系列证书，kubernetes的地址直接写kubernetes的FQDN即可。</p>
+<p>如下所示：-
+<img alt="" src="assets/1e2352fb11e7445196e002a354f21870.jpg"/></p>
+<p><strong>说明</strong></p>
+<p><strong>Name</strong> 处默认为 kubernetes，也可以修改为其他名称，这里不做重复介绍。</p>
+<p><strong>Kubernetes URL</strong> 处可以填写 <a href="https://kubernetes.default" target="_blank">https://kubernetes.default</a> ，为Kubernetes Service 对应的 DNS 记录，通过该DNS记录可以解析成该 Service 的 Cluster IP。<strong>注意：这里也可以填写</strong> <a href="https://kubernetes.default.svc.cluster.local" target="_blank">https://kubernetes.default.svc.cluster.local</a> 完整 DNS 记录<strong>，因为它要符合</strong> <code>service_name.namespace_name.svc.cluster_domain</code>的命名方式。也可以直接填写外部 Kubernetes 的地址 <a href="https://ClusterIP:Ports" target="_blank">https://ClusterIP:Ports</a> （不推荐）。</p>
+<p><strong>Jenkins URL</strong> 处应该填写Jenkins的service地址和端口。比如我的：<code>http://jenkins.kube-system.svc.cluster.local:8080</code> 也可以写成<code>http://jenkins.kube-system:8080</code>， <strong>表示jenkins的service名称和所在的namespace名称</strong>，同<code>kubernetes url</code>设置类似，也是使用Jenkins Service 对应的 DNS 记录以及端口。如果暴露服务的方式为nodeport，也可以用<code>http://NodeIP:NodePort</code>（本示例没配置）的方式，根据自己实际情况修改即可。</p>
+<p><strong>Credentials</strong> ：同属于一个集群环境，对于集群认证的过程就不需要了，认证凭证也就不用填写了。</p>
+<p>Jenkins虽然能连接kubernetes了，但是通过kubernetes还不能生成动态的slave代理，因为slave agent（jnlp-agent）在启动的时候会通过50000（默认）端口与jenkins master进行通信。Jenkins这个端口默认是关闭的，所以还需要开启这个端口。</p>
+<p><strong>Manage Jenkins(系统管理)</strong>-–&gt;<strong>（Configure global Security）全局安全配置</strong>-–&gt; <strong>Agents(代理）</strong></p>
+<p><img alt="" src="assets/ea17b9aae6744787ac7831f764057be9.jpg"/></p>
+<p><strong>说明：</strong></p>
+<p>这里指定的端口是jnlp-agent连接jenkins-master使用的端口。</p>
+<p>如果Jenkins-master只是在Docker容器(没有使用容器编排系统)中启动的一定要记得将这个端口暴露到外部，不然jenkins-master会不知道slave是否已经启动，会反复去创建pod直到到超过重试次数。</p>
+<p>该端口的默认值是50000，如果要修改为其他端口，需要修改在创建jenkins”云”时对应的<strong>Jenkins Tunnel(通道)</strong>参数的配置，如果使用50000端口，这里可以不用填写，如果换成别的端口，这里需要单独设定，最好是<code>jenkins_url:port</code>的形式。</p>
+<p>如果不开启代理端口，Jenkins通过kubernetes动态生成slave节点的时候，jenkins后台会报如下错误，并且pod会不断的生成和删除。</p>
+<p><img alt="" src="assets/b6ba481394b54128a13b20daac4ee73e.jpg"/></p>
+<p>到这里，jenkins与kubernetes的集成就成功了。</p>
+<p>默认情况下，agent代理连Jenkins的接超时时间为100秒。在特殊情况下，如果想设置一个不同的值，可以将system属性设置<code>org.csanchez.jenkins.plugins.kubernetes.PodTemplate.connectionTimeout</code>为一个不同的值。但是100s的话其实够用了，如果超过100s还没生成代理pod，就需要根据jenkins日志去排查问题了。如果jenkins连接kubernetes配置成功了，大多数情况下的错误一般就是配置podtemplate（是什么，后面章节会介绍到）出现了问题。</p>
+<h1 id="示例">示例</h1>
+<p>上面配置好了如何连接kubernetes，下面用一个示例测试配置是否成功。</p>
+<p>将下面示例放到pipeline脚本中。</p>
+<pre><code>def label = "mypod-${UUID.randomUUID().toString()}"
+podTemplate(label: label, cloud: 'kubernetes') {
+    node(label) {
+        stage('Run shell') {
+            sh 'hostname'
+            sh 'echo hello world.'
+        }
+    }
+}
+</code></pre>
+<p><strong>说明：</strong></p>
+<p>PodTemplate中的label参数用于给Pod指定一个唯一的名称。</p>
+<p>PodTemplate中cloud参数的值必须是在系统配置添加的云的名称。</p>
+<p>node中直接使用”label”便可以引用上面定义的label变量，表示在该pod名称中执行命令，如果不指定的话，默认还是在Jenkins服务所在主机上执行流水线脚本。</p>
+<p>执行结果如下：</p>
+<p><img alt="" src="assets/46d2f873d0d04748811cc2f2a408f98d.jpg"/></p>
+<p><img alt="" src="assets/f44cfdb1a10d485db0dd35f4982ec45d.jpg"/></p>
+<p>根据上面的执行结果可以看到Jenkins通过kubernetes调用的资源对象pod的yaml定义；使用的镜像默认为<code>jenkins/jnlp-slave:3.35-5-alpine</code>；镜像名称以及一些pod的环境变量等信息。</p>
+<p>除了可以在pipeline类型的job中使用kubernetes插件外，也可以在其他类型的job中使用，但是此时需要在jenkins的系统配置中配置PodTemplate，此处先不介绍，在后面的实践章节会进行说明。</p>
+<p>无论哪种类型的job，在job执行的过程中，都可以通过kubectl命令在kubernetes集群中查看pod运行的一些详细信息，而关于该pod的资源定义又是怎么配置的，是否可以自定义呢？下节会通过学习kubernetes的基本语法来解答这个问题。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#204c4c4c19141111101760474d41494c0e434f4d" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359a9aa59558f28',t:'MTc0NTU0MDMwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

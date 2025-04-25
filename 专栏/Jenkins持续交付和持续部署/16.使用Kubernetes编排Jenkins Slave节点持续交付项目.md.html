@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="16.使用Kubernetes编排Jenkins Slave节点持续交付项目" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>16.使用Kubernetes编排Jenkins Slave节点持续交付项目 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/01.Jenkins%e7%9a%84%e5%ae%89%e8%a3%85%e9%85%8d%e7%bd%ae%e4%b8%8e%e6%97%a5%e5%b8%b8%e7%bb%b4%e6%8a%a4.md.html" id="01.Jenkins的安装配置与日常维护.md.html">01.Jenkins的安装配置与日常维护.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/02.Jenkins%e5%bc%ba%e5%a4%a7%e7%9a%84%e6%8f%92%e4%bb%b6%e5%8a%9f%e8%83%bd.md.html" id="02.Jenkins强大的插件功能.md.html">02.Jenkins强大的插件功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/03.Devops%e5%b7%a5%e5%85%b7%e9%93%be.md.html" id="03.Devops工具链.md.html">03.Devops工具链.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/04.%e5%88%9d%e6%8e%a2Jenkins%20CD%e5%ae%9e%e8%b7%b5.md.html" id="04.初探Jenkins CD实践.md.html">04.初探Jenkins CD实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/05.Jenkins%e5%b8%b8%e7%94%a8%e9%a1%b9%e7%9b%ae%e9%85%8d%e7%bd%ae%e5%8f%82%e6%95%b0.md.html" id="05.Jenkins常用项目配置参数.md.html">05.Jenkins常用项目配置参数.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/06.Jenkins%e9%83%a8%e7%bd%b2%e4%b9%8bDocker%e8%a6%81%e7%82%b9.md.html" id="06.Jenkins部署之Docker要点.md.html">06.Jenkins部署之Docker要点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/07.Jenkins%e9%9b%86%e6%88%90%e4%b9%8bAnsible%e8%a6%81%e7%82%b9.md.html" id="07.Jenkins集成之Ansible要点.md.html">07.Jenkins集成之Ansible要点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/08.Jenkins%e9%9b%86%e6%88%90Ansible%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0Docker%e5%ae%b9%e5%99%a8.md.html" id="08.Jenkins集成Ansible持续部署服务到Docker容器.md.html">08.Jenkins集成Ansible持续部署服务到Docker容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/09.%e5%ae%9e%e7%8e%b0%e8%87%aa%e5%8a%a8%e5%8c%96%e5%bc%95%e6%93%8e%e4%b9%8bJenkins%20Pipeline%e5%a3%b0%e6%98%8e%e5%bc%8f%e8%af%ad%e6%b3%95.md.html" id="09.实现自动化引擎之Jenkins Pipeline声明式语法.md.html">09.实现自动化引擎之Jenkins Pipeline声明式语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/10.%e5%ae%9e%e7%8e%b0%e8%87%aa%e5%8a%a8%e5%8c%96%e5%bc%95%e6%93%8e%e4%b9%8bJenkins%20Pipeline%e8%84%9a%e6%9c%ac%e5%bc%8f%e8%af%ad%e6%b3%95.md.html" id="10.实现自动化引擎之Jenkins Pipeline脚本式语法.md.html">10.实现自动化引擎之Jenkins Pipeline脚本式语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/11.Pipeline%e8%af%ad%e6%b3%95%e8%bf%9b%e8%a1%8c%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e4%b8%8e%e5%9f%ba%e7%a1%80%e5%ae%9e%e8%b7%b5.md.html" id="11.Pipeline语法进行持续交付与基础实践.md.html">11.Pipeline语法进行持续交付与基础实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/12.Jenkins%20Docker%20Pipeline%e6%8f%92%e4%bb%b6%e5%8a%a8%e6%80%81%e7%94%9f%e6%88%90Slave%e8%8a%82%e7%82%b9%e8%af%ad%e6%b3%95%e5%89%96%e6%9e%90.md.html" id="12.Jenkins Docker Pipeline插件动态生成Slave节点语法剖析.md.html">12.Jenkins Docker Pipeline插件动态生成Slave节点语法剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/13.%e4%bd%bf%e7%94%a8%20Docker%20Pipeline%e6%8f%92%e4%bb%b6%e5%8a%a8%e6%80%81%e7%94%9f%e6%88%90Jenkins%20Slave%20%e5%ae%9e%e8%b7%b5.md.html" id="13.使用 Docker Pipeline插件动态生成Jenkins Slave 实践.md.html">13.使用 Docker Pipeline插件动态生成Jenkins Slave 实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/14.%e6%90%9e%e5%ae%9a%e4%b8%8d%e5%90%8c%e7%8e%af%e5%a2%83%e4%b8%8b%e7%9a%84Jenkins%e4%b8%8eKubernetes%e9%9b%86%e7%be%a4%e8%bf%9e%e6%8e%a5%e9%85%8d%e7%bd%ae.md.html" id="14.搞定不同环境下的Jenkins与Kubernetes集群连接配置.md.html">14.搞定不同环境下的Jenkins与Kubernetes集群连接配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/15.Jenkins%20Kubernetes%20Plugin%e4%bb%8b%e7%bb%8d%e4%b8%8e%e8%af%ad%e6%b3%95%e8%af%a6%e8%a7%a3.md.html" id="15.Jenkins Kubernetes Plugin介绍与语法详解.md.html">15.Jenkins Kubernetes Plugin介绍与语法详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/16.%e4%bd%bf%e7%94%a8Kubernetes%e7%bc%96%e6%8e%92Jenkins%20Slave%e8%8a%82%e7%82%b9%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e9%a1%b9%e7%9b%ae.md.html" id="16.使用Kubernetes编排Jenkins Slave节点持续交付项目.md.html">16.使用Kubernetes编排Jenkins Slave节点持续交付项目.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/17.%e4%bd%bf%e7%94%a8Kubernetes%e6%8f%92%e4%bb%b6%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0Kubernetes%e9%9b%86%e7%be%a4.md.html" id="17.使用Kubernetes插件持续部署服务到Kubernetes集群.md.html">17.使用Kubernetes插件持续部署服务到Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/18.Ansible%20Plugin%e6%8f%92%e4%bb%b6%e8%af%ad%e6%b3%95%e8%af%a6%e8%a7%a3%e4%b8%8e%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0kubernetes%e9%9b%86%e7%be%a4.md.html" id="18.Ansible Plugin插件语法详解与持续部署服务到kubernetes集群.md.html">18.Ansible Plugin插件语法详解与持续部署服务到kubernetes集群.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="16.使用Kubernetes编排Jenkins Slave节点持续交付项目" id="title">16.使用Kubernetes编排Jenkins Slave节点持续交付项目</h1>
+<div><p>在上一节的内容中，简单介绍了一下使用kubernetes插件动态生成slave节点的基本语法和使用示例，本节会根据上节介绍到的一些语法知识进行一个基础的实践，并继续补充一些使用该插件时的一些配置细节。</p>
+<p>为了方便读者理解，本小节内容会分多个版本，以由浅入深的方式尽量将之前的pipeline语法融会贯通。</p>
+<h1 id="基础版">基础版</h1>
+<p><strong>本次版本说明：</strong></p>
+<p>1、 PodTemplate 配置以<code>pipeline script</code>的方式放到pipeline脚本里，没有在Jenkins 系统配置里进行定义。</p>
+<p>2、 Jenkins默认的Jenkins slave镜像为<code>jnlp-slave:3.35-5-alpine</code>，这是一个Jnlp方式的agent镜像，该镜像没有拉取/编译代码以及docker命令，需要基于此镜像自定义一个新的镜像。</p>
+<p>3、 构建应用镜像时的Dockerfile文件通过挂载nfs的方式引用。</p>
+<p>4、 使用最基础的shell命令实现一个简单的持续交付脚本，以方便了解该持续交付的流程。</p>
+<p>基于上面条件，用脚本式语法编写的pipeline脚本如下：</p>
+<pre><code>podTemplate(cloud: 'kubernetes',namespace: 'default', label: 'pre-CICD',
+  serviceAccount: 'default', containers: [
+  containerTemplate(
+      name: 'jnlp',
+      image: "192.168.176.155/library/jenkins-slave:latest",
+      args: '${computer.jnlpmac} ${computer.name}',
+      ttyEnabled: true,
+      privileged: true,
+      alwaysPullImage: false,
+    ),
+  ],
+  volumes: [
+        nfsVolume(mountPath: '/tmp', serverAddress: '192.168.177.43', serverPath: '/data/nfs', readOnly: true),
+        hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),   
+  ],
+){
+  node('pre-CICD') {
+    stage('build') {
+
+        container('jnlp') {
+            stage('git-clone') {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'c33d60bd-67c6-4182-b52c-d7aeebfab772', url: 'http://192.168.176.154/root/base-nop.git']]])
+            }
+
+            stage('Build a Maven project') {
+                sh 'cd base-nop/fw-base-nop &amp;&amp; mvn clean install -DskipTests -Denv=beta'
+            }
+
+            stage('build docker image'){
+                sh 'cp /tmp/Dockerfile base-nop/fw-base-nop/target/'
+                sh '/usr/bin/docker build -t 192.168.176.155/library/fw-base-nop:xxxx --build-arg jar_name="fw-base-nop.jar" base-nop/fw-base-nop/target/'
+            }    
+
+            stage('push registry') {
+                sh '''
+                    docker login -u admin -p da88e43d88722c2c9ca09da644eeb015 192.168.176.155
+                    docker push  192.168.176.155/library/fw-base-nop:xxxx
+                    docker rmi 192.168.176.155/library/fw-base-nop:xxxx
+                '''
+            }
+        }
+
+    }
+ }
+}
+</code></pre>
+<p><strong>说明：</strong></p>
+<p>PodTemplate(….)：配置的Pod模板，配置参数以及相关说明在语法章节有过介绍，不再过多赘述；不过<strong>有一点需要注意的是</strong>：<code>containerTemplate</code> 下的name参数和image参数的设定。</p>
+<p>Jenkins的Agent大概分两种： 一是基于SSH的，由master主动连接slave/Agent节点； 二是基于JNLP的，使用的是HTTP协议，由Agent/slave节点主动连接master节点，每个Agent需要配置一个独特的secret。 可以参考<a href="https://github.com/jenkinsci/docker-jnlp-slave" target="_blank">官方说明</a>。</p>
+<p>1、 如果name参数配置的值为<code>jnlp</code>，就表示使用基于Jnlp方式的<code>jnlp-agent</code>自启动连接Jenkins master。这就需要保证image参数指定的镜像里包含启动<code>jnlp-agent</code>的命令（官方提供的镜像启动命令为<code>jenkins-slave</code>（旧版本）或者<code>jenkins-agent</code>（新版本））命令，同时需要指定启动参数<code>${computer.jnlpmac} ${computer.name</code>；如果指定的镜像里没有这些命令，或者没有启动参数，动态pod就会创建失败。</p>
+<p>2、 如果name参数配置的值不是<code>jnlp</code>，而image参数指定的镜像为<code>jnlp agent</code>镜像时，动态pod也会生成失败。这是因为当该参数设置的值不是jnlp时，动态生成的pod默认会启动两个容器，使用的镜像一个是连接jenkins master默认的<code>jnlp-agent</code>镜像，也就是<code>jnlp-slave:3.35-5-alpine</code>；另一个就是通过image参数自定义的镜像。这两个<code>jnlp-agent</code>镜像启动时都会去连接jenkins master，而基于jnlp方式使用agent时，每个客户端只能有一个agent和一个secret，所以同时启动多个<code>jnlp-agent</code>就会导致Pod启动失败。</p>
+<p>3、 如果name参数配置的值不是<code>jnlp</code>，并且image参数指定的镜像为非<code>jnlp agent</code>镜像时（<strong>需要注意</strong>，此时启动容器时的参数应该去掉），同上面一样，动态生成的pod包含两个容器，一个名称是jnlp（根据默认的<code>jnlp agent</code>镜像默认在后台启动），一个名称是通过name参数设置的值，同时两个容器都能作为pipeline脚本执行的环境，使用时都是通过<code>container('container_name')</code>引用。</p>
+<p>4、 如果Pod内有多个容器，并且只要有一个容器为jnlp容器，其他容器的名称和镜像使用没有限制，也就是说，容器名称可以不是jnlp，但是镜像可以<code>jnlp agent</code>镜像。</p>
+<p>5、上面示例里的image参数配置的镜像为根据默认的<code>jnlp-agent</code>镜像自定义的镜像，dockerfile如下：</p>
+<pre><code>  FROM jenkins/jnlp-slave:3.35-5-alpine
+
+  USER root
+
+  RUN apk add maven git
+
+  COPY settings.xml /usr/share/java/maven-3/conf/settings.xml
+  COPY docker/docker /usr/bin/docker
+</code></pre>
+<p>其中settings.xml文件为maven配置文件，这里需要根据实际情况考虑要不要添加。</p>
+<p>执行结果如下：</p>
+<p><img alt="" src="assets/4df4393675ce4241adfd1232a65c3b70.jpg"/></p>
+<h2 id="声明式脚本">声明式脚本</h2>
+<p>对于该pipeline脚本相应的声明式语法如下：</p>
+<pre><code>pipeline {
+  agent {
+    kubernetes {
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: some-label-value
+  namespace: 'default'
+spec:
+  containers:
+  - name: jnlp
+    image: 192.168.176.155/library/jenkins-slave:latest
+    args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
+    tty: true
+    privileged: true
+    alwaysPullImage: false
+    volumeMounts:
+    - name: mount-nfs
+      mountPath: /tmp
+    - name: mount-docker
+      mountPath: /var/run/docker.sock
+  volumes: 
+  - name: mount-nfs
+    nfs:
+      path: /data/nfs
+      server: 192.168.177.43
+  - name: mount-docker
+    hostPath:
+      path: /var/run/docker.sock
+"""
+    }
+  }
+  stages {
+    stage('Run maven') {
+      steps {
+        container('jnlp') {
+          checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'c33d60bd-67c6-4182-b52c-d7aeebfab772', url: 'http://192.168.176.154/root/base-nop.git']]])"
+        }
+      }
+    }
+    stage('build code') {
+        steps {
+            container('jnlp') {
+              sh 'cd base-nop/fw-base-nop &amp;&amp; mvn clean install -DskipTests -Denv=beta'
+            }
+        }
+
+    }
+
+    stage('build image'){
+        steps{
+            container('jnlp') {
+              sh 'cp /tmp/Dockerfile base-nop/fw-base-nop/target/'
+              sh '/usr/bin/docker build -t 192.168.176.155/library/fw-base-nop:xxxx --build-arg jar_name="fw-base-nop.jar" base-nop/fw-base-nop/target/'
+            }
+        }
+    }
+
+    stage('push to registry') {
+        steps {
+            container('jnlp') {
+               sh '''
+                  docker login -u admin -p da88e43d88722c2c9ca09da644eeb015 192.168.176.155
+                  docker push  192.168.176.155/library/fw-base-nop:xxxx
+                  docker rmi 192.168.176.155/library/fw-base-nop:xxxx
+                '''
+            }
+        } 
+    }
+  }
+}
+</code></pre>
+<p><strong>说明：</strong></p>
+<p>声明式pipeline语法对于格式有严格要求，所以如果遇到有语法错误的情况需要有耐心排查。</p>
+<p>使用kubernetes插件时，使用脚本式流水线语法相对于声明式语法要更加简单，所以建议使用脚本式语法。</p>
+<h2 id="config-file-provider-plugin">Config File Provider Plugin</h2>
+<p>关于maven配置文件<code>settings.xml</code>的使用还有另一种方式，就是通过jenkins的<code>Config File Provider Plugin</code>插件。这个插件的作用就是在 Jenkins 中存储以properties、xml、json、Groovy结尾的文件以及<code>Maven settings.xml</code>内容。下面演示一下如何使用该插件。</p>
+<p>点击”<strong>系统管理</strong>—&gt;<strong>Managed files</strong>—&gt;<strong>Add a new Config</strong>—&gt;<strong>Global Maven settings.xml</strong>“，将上面setting.xml文件的内容放到”Content”对应的输入框里，如下所示：</p>
+<p><img alt="" src="assets/288b379da9fd43bb8300be14cf452a18.jpg"/></p>
+<p>编辑好提交即可。</p>
+<p>然后使用片段生成器<code>configfileProvider:...</code>根据配置的<code>maven settings.xml</code>文件生成语法片段，比如：</p>
+<p><img alt="" src="assets/f9ca580e1fb34eb8b901cee91bd4aa92.jpg"/></p>
+<p>配置好后就可以编辑pipeline脚本了，为了测试该插件的作用，我直接使用docker hub官方的maven镜像，脚本如下：</p>
+<pre><code>podTemplate(cloud: 'kubernetes', label: 'pre-CICD', containers: [
+  containerTemplate(
+      name: 'maven',
+      image: "maven:latest",
+      command: 'cat',
+      ttyEnabled: true,
+      privileged: true,
+      alwaysPullImage: false)
+  ],
+  volumes: [
+        nfsVolume(mountPath: '/tmp', serverAddress: '192.168.177.43', serverPath: '/data/nfs', readOnly: false),
+        hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+  ],
+){
+  node('pre-CICD') {
+
+    stage('build') {
+        container('maven') {
+            stage('clone code') {
+                sh "git clone http://root:<a class="__cf_email__" data-cfemail="f9c8cbcacdcccfcec1b9c8c0cbd7c8cfc1d7c8cecfd7c8cccd" href="/cdn-cgi/l/email-protection">[email protected]</a>/root/base-nop.git"
+            }
+            configFileProvider([configFile(fileId: 'f67fdaf1-4b17-4caa-86ad-e841f387ac7a', targetLocation: 'settings.xml')]) {
+                stage('Build project') {
+                    sh 'cd base-nop/fw-base-nop &amp;&amp; mvn clean install -DskipTests -Denv=beta --settings ${WORKSPACE}/settings.xml'
+                }
+            }
+
+        }
+    }
+
+ }
+
+}
+</code></pre>
+<p><strong>说明：</strong></p>
+<p>通过mvn命令编译代码时加上<code>--settings</code>参数，用于指定该文件。上面示例可以看到在指定<code>settings.xml</code>文件时添加了该job的workspace路径，这是因为在使用<code>configFileProvider</code>插件时，该插件默认会将指定的<code>settings.xml</code>文件拷贝到job的workspace目录下，如果不添加路径，有可能会报该文件找不到的错误。</p>
+<p>基础版的持续交付脚本就算是完成了。此版本的脚本只是为了让大家熟悉一下代码编译和镜像构建的一个基本流程，下面的版本将会该该版本进行一个简单的优化。继续往下看。</p>
+<h1 id="进阶版">进阶版</h1>
+<p><strong>说明（相对上一个版本）：</strong></p>
+<p>1、 本次版本开始引入变量，以提高灵活性。<strong>需要注意的是，引用变量的时候要使用双引号(“”)</strong>。-
+2、 将脚本内部分命令通过kubernetes插件和Docker插件内的相关方法实现。-
+3、 挂载共享目录，用于挂载maven的.m2仓库，提高代码编译效率。</p>
+<p>首先，用代码片段生成器生成部分命令的相关语法片段：</p>
+<p><code>checkout：Check out from version control</code>：生成拉取代码的片段，前面有介绍过，不在过多说明。</p>
+<p>使用<code>docker pipeline</code>插件的<code>withDockerRegistry</code>片段生成器生成对<code>docker Registry</code>认证的语法片段，如下所示：</p>
+<p><img alt="" src="assets/f7e3e38520b44b6d99545d83f4f68785.jpg"/></p>
+<p><strong>pipeline脚本如下</strong></p>
+<pre><code>def project_name = 'fw-base-nop'
+def registry_url = '192.168.176.155'
+
+podTemplate(cloud: 'kubernetes',namespace: 'default', label: 'pre-CICD',
+ , containers: [
+  containerTemplate(
+      name: 'jnlp',
+      image: "192.168.176.155/library/jenkins-slave:latest",
+      args: '${computer.jnlpmac} ${computer.name}',
+      ttyEnabled: true,
+      privileged: true,
+      alwaysPullImage: false,
+    ),
+  ],
+  volumes: [
+       nfsVolume(mountPath: '/tmp', serverAddress: '192.168.177.43', serverPath: '/data/nfs', readOnly: false),
+       nfsVolume(mountPath: '/root/.m2', serverAddress: '192.168.177.43', serverPath: '/data/nfs/.m2', readOnly: false),
+       hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),   
+  ],
+    nodeSelector: 'kubernetes.io/hostname=192.168.176.160',
+){
+  node('pre-CICD') {
+        stage('build') {
+            container('jnlp') {
+                stage('clone code') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'c33d60bd-67c6-4182-b52c-d7aeebfab772', url: 'http://192.168.176.154/root/base-nop.git']]])
+
+                    script {
+                        imageTag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    }
+                    echo "${imageTag}"
+                }
+
+                stage('Build a Maven project') {
+                    sh "cd ${project_name} &amp;&amp; mvn clean install -DskipTests -Denv=beta"
+                }
+
+                withDockerRegistry(credentialsId: 'auth_harbor', url: 'http://192.168.176.155') {
+                    stage('build and push docker image') {
+                        sh "cp /tmp/Dockerfile ${project_name}/target/"
+                        def customImage = docker.build("${registry_url}/library/${project_name}-${BUILD_NUMBER}:${imageTag}","--build-arg jar_name=${project_name}.jar ${project_name}/target/")
+                        echo "推送镜像"
+                        customImage.push()
+                    }
+                    stage('delete image') {
+                        echo "删除本地镜像"
+                        sh "docker rmi -f ${registry_url}/library/${project_name}-${BUILD_NUMBER}:${imageTag}"
+                    }   
+                }
+            }
+        }
+  }
+}
+</code></pre>
+<p><strong>说明</strong></p>
+<p>volumes配置中挂载maven的.m2仓库到nfs server上，以提高代码编译速度。</p>
+<p><code>clone code</code>阶段获取应用代码最后提交时的<code>commit short id</code>作为镜像构建时的tag。</p>
+<p>使用docker pipeline语法进行镜像的构建和推送到仓库操作。</p>
+<p>nodeSelector 用来选择一台固定的节点专门用来进行构建工作，以防止在拉取基础镜像时生成pod过慢影响效率，这里我使用了node节点默认自带的标签，如果不想用这个标签也可以自定义一个标签。</p>
+<p>该版本同样使用<code>pipeline script</code>的方式将脚本代码直接放到了job中。实际工作中，我们也可以将上面的代码放到Jenkinsfile文件中，并将该文件放到应用代码仓库的根目录（也可以单独放置），在配置pipeline job时使用<code>pipeline script from SCM</code>的方式，配置该Jenkinsfile的仓库地址，拉取后会自动进行构建。比如：</p>
+<p><img alt="" src="assets/f367c2669a4a4e66b1ceb424af40793a.jpg"/></p>
+<p>执行后会自动拉取该文件并执行。需要说明的是，如果该文件放到了应用代码仓库的根目录，拉取该文件时并不会拉取代码，所以在Jenkinsfile中拉取代码的操作是不能去掉的。</p>
+<p>对应的声明式脚本，只需要在版本一的基础上，替换做了更改的部分，并将用到的docker pipeline插件的方法加上<code>script{}</code>块即可。</p>
+<h1 id="在cloud中定义podtemplate">在Cloud中定义PodTemplate</h1>
+<p><strong>版本说明：</strong></p>
+<p>前两个版本的PodTemplate配置均通过在pipeline中使用代码的方式进行配置的，本次版本将PodTemplate配置通过Jenkins UI放到了全局配置里。</p>
+<p>编辑最开始“配置Jenkins连接kubernetes”时创建的cloud，增加PodTemplate和container的配置。如下所示：</p>
+<p><img alt="" src="assets/63ab741e2eb3492caa65c3559cc534e0.jpg"/>-
+<img alt="" src="assets/2950c24e8658400e87686eb3bd1105c6.jpg"/></p>
+<p>上面配置的参数说明应该不用再重复介绍了，有不懂的参数可以参考之前的文章即可。配置保存后修改pipeline，只需要将PodTemplate方法配置的部分去掉即可。</p>
+<p><strong>pipeline如下</strong></p>
+<pre><code>def project_name = 'fw-base-nop'  //项目名称
+def registry_url = '192.168.176.155' //镜像仓库地址 
+
+//node 这里依旧是填写podtemplate设置的标签的名称
+node('pre-CICD') {
+        stage('build') {
+
+            container('jnlp') {
+                stage('git-clone') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'c33d60bd-67c6-4182-b52c-d7aeebfab772', url: 'http://192.168.176.154/root/base-nop.git']]])
+
+                    script {
+                        imageTag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    }
+                    echo "${imageTag}"
+                }
+
+                stage('Build a Maven project') {
+                    sh "cd ${project_name} &amp;&amp; mvn clean install -DskipTests -Denv=beta"
+                }
+
+                withDockerRegistry(credentialsId: 'auth_harbor', url: 'http://192.168.176.155') {
+                    stage('build and push docker image') {
+                        sh "cp /tmp/Dockerfile ${project_name}/target/"
+                        def customImage = docker.build("${registry_url}/library/${project_name}-${BUILD_NUMBER}:${imageTag}","--build-arg jar_name=${project_name}.jar ${project_name}/target/")
+                        echo "推送镜像"
+                        customImage.push()
+                    }
+                    stage('delete image') {
+                        echo "删除本地镜像"
+                        sh "docker rmi -f ${registry_url}/library/${project_name}-${BUILD_NUMBER}:${imageTag}"
+                    }
+                }
+            }
+        }
+}  
+</code></pre>
+<p>同版本2一样，在配置pipeline类型的job时该脚本既可以通过<code>Pipeline script</code>的方式使用，也可以通过<code>Pipeline script from SCM</code>的方式使用。</p>
+<p>同时，在使用其他类型（比如 自由风格类型、maven类型）的job时也能够使用该PodTemplate方法，用于动态生成slave。比如创建一个自由风格类型的job，配置job时勾选 <code>Restrict where this project can be run</code> ，在显示的<code>Label Expression</code> 输入框里输入我们上边配置PodTemplate时设定的标签（Labels） 名称 <code>pre-CICD</code>即可。</p>
+<p><img alt="" src="assets/a547dac808274a2fa40599a5e0405852.jpg"/></p>
+<p>构建job时就会自动启动这个代理，如下所示：</p>
+<p><img alt="" src="assets/3d6da225b0884c3ab0f02b11bfa08f80.jpg"/></p>
+<p><strong>需要注意的是</strong>，如果使用这种方式的话，pipeline中的代码就不在适合此job，需要通过编写shell脚本或者其他方式（比如ansible）实现持续交付。</p>
+<h1 id="sonarqube">sonarqube</h1>
+<p>既然是持续交付，那么肯定少不了代码分析。上面一系列版本只是将代码进行了编译和构建，正常流程还需要进行代码质量分析，这就用到了之前搭建的sonarqube平台。关于sonarqube在前面的文章有详细介绍，这里不重复说明，接下来主要看一下如何在pod中使用<code>sonar-scanner</code>命令。</p>
+<p>使用sonar-scanner命令，既可以使用在Jenkins UI中配置的sonar-scanner命令工具，也可以通过自定义sonar-scanner容器镜像的方式引用此命令。下面对这两种方法分别进行介绍。</p>
+<p>首先看一下使用jenkins系统内配置的sonar-scanner工具（PodTemplate配置同上）实现代码质量分析。</p>
+<pre><code>def project_name = 'fw-base-nop'  //项目名称
+def registry_url = '192.168.176.155' //镜像仓库地址
+
+node('pre-CICD') {
+    stage('build') {      
+        stage('git-clone') {
+            container('jnlp'){
+                stage('clone code'){
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'c33d60bd-67c6-4182-b52c-d7aeebfab772', url: 'http://192.168.176.154/root/base-nop.git']]])
+                    script {
+                        imageTag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    }
+                    echo "${imageTag}"
+                }
+                stage('Build a Maven project') {
+                    echo "${project_name}"
+                    sh "cd ${project_name} &amp;&amp; mvn clean install -DskipTests -Pproduct -U"
+                }
+            }
+        }
+
+        stage('sonar'){
+            def sonarqubeScannerHome = tool name: 'sonar-scanner-4.2.0'
+            withSonarQubeEnv(credentialsId: 'sonarqube') {
+                sh "${sonarqubeScannerHome}/bin/sonar-scanner -X "+
+                "-Dsonar.login=admin " +
+                "-Dsonar.language=java " + 
+                "-Dsonar.projectKey=${JOB_NAME} " + 
+                "-Dsonar.projectName=${JOB_NAME} " + 
+                "-Dsonar.projectVersion=${BUILD_NUMBER} " + 
+                "-Dsonar.sources=${WORKSPACE}/fw-base-nop " + 
+                "-Dsonar.sourceEncoding=UTF-8 " + 
+                "-Dsonar.java.binaries=${WORKSPACE}/fw-base-nop/target/classes " + 
+                "-Dsonar.password=admin " 
+            }
+        }
+        withDockerRegistry(credentialsId: 'auth_harbor', url: 'http://192.168.176.155') {
+            stage('build and push docker image') {
+                sh "cp /tmp/Dockerfile ${project_name}/target/"
+                def customImage = docker.build("${registry_url}/library/${project_name}-${BUILD_NUMBER}:${imageTag}","--build-arg jar_name=${project_name}.jar ${project_name}/target/")
+                echo "推送镜像"
+                customImage.push()
+            }
+            stage('delete image') {
+                echo "删除本地镜像"
+                sh "docker rmi -f ${registry_url}/library/${project_name}-${BUILD_NUMBER}:${imageTag}"
+            }
+        }
+    }
+}
+</code></pre>
+<p>该示例通过tool指令指定了在jenkins的<code>global tool configuration</code>里配置的sonar-scanner环境变量，并赋给一个变量，通过<code>withSonarQubeEnv</code>片段生成器对sonar认证并进行代码分析操作。有关sonar-scanner命令各参数的说明在”基础工具配置”章节有做介绍，这里不在过多说明。</p>
+<p><strong>使用sonar-scanner自定义镜像</strong></p>
+<p>除了使用jenkins系统配置sonar-scanner工具，也可以根据sonar-scanner工具自定义一个sonar-scanner镜像，并使用该镜像启动一个容器来进行代码分析工作。</p>
+<p>sonar-scanner镜像默认可以从docker hub上获取，但是为了杜绝不必要的错误（测试中曾经遇到过），我选择了自定义。可以使用之前定义好的<code>jnlp-agent</code>镜像作为基础镜像，这样在持续交付步骤使用一个镜像就可以完成所有工作；有些人觉得这样会使镜像臃肿，也可以使用一个包含jdk的小体积镜像作为基础镜像，当然也可以根据自己的实际情况自定义。</p>
+<p>无论使用哪种镜像，都需要修改<code>${SONAR-SCANER_HOME}/bin/sonar-scanner</code>文件下的<code>use_embedded_jre</code>参数的值，默认为true，需要改成fasle，如下：</p>
+<pre><code>use_embedded_jre=false
+</code></pre>
+<p>为什么要修改此参数呢？是因为<code>use_embedded_jre</code>参数为true时，sonar-scanner命令默认会使用自己提供的jre，路径为<code>$sonar_scanner_home/jre</code>，而不会使用系统环境下的jre，所以需要将此参数改为false，否则会报找不到java环境变量的错误，如下所示</p>
+<pre><code>sonar-scanner:exec: line 73: xxx/sonar-scanner-4.2.0-linux/jre/bin/java:  not foun
+</code></pre>
+<p>修改好后编辑dockerfile，比如使用上面构建的<code>jnlp-agent</code>镜像作为基础镜像。</p>
+<pre><code>FROM 192.168.176.155/library/jenkins-slave:latest
+COPY sonar-scanner-4.2.0/ /opt/sonar-scanner-4.2.0/
+
+ENV SONAR_SCANNER_HOME /opt/sonar-scanner-4.2.0/
+ENV SONAR_RUNNER_HOME ${SONAR_SCANNER_HOME}
+ENV PATH $PATH:${SONAR_SCANNER_HOME}/bin
+</code></pre>
+<p>如果想使用openjdlk镜像作为基础镜像，可以将基础镜像修改为<code>openjdk:8-jre-alpine3.7</code>，编辑好构建即可。</p>
+<p>使用docker命令测试一下。</p>
+<pre><code>docker run -it --rm 192.168.176.155/library/jenkins-slave:sonar sonar-scanner
+</code></pre>
+<p>输出如下信息表示镜像构建成功 。</p>
+<pre><code>$ docker run -it --rm a9592584d82d sonar-scanner
+INFO: Scanner configuration file: /opt/sonar-scanner-4.2.0/conf/sonar-scanner.properties
+INFO: Project root configuration file: NONE
+INFO: SonarQube Scanner 4.2.0.1873
+INFO: Java 1.8.0_212 IcedTea (64-bit)
+INFO: Linux 5.4.13-1.el7.elrepo.x86_64 amd64
+INFO: User cache: /root/.sonar/cache
+INFO: SonarQube server 6.7.5
+
+......
+</code></pre>
+<p>构建好镜像，对pipeline脚本进行简单修改，<strong>为了区分显示</strong>，又新添加一个containerTemplate配置用于定义sonar镜像，同时在引用镜像时新增了一个container指令用于引用新镜像。如下示例：</p>
+<pre><code>def project_name = 'fw-base-nop'  //项目名称
+def registry_url = '192.168.176.155' //镜像仓库地址
+
+podTemplate(cloud: 'kubernetes',namespace: 'default', label: 'pre-CICD',
+  serviceAccount: 'default', containers: [
+  containerTemplate(
+      name: 'jnlp',
+      image: "192.168.176.155/library/jenkins-slave:latest",
+      args: '${computer.jnlpmac} ${computer.name}',
+      ttyEnabled: true,
+      privileged: true,
+      alwaysPullImage: false,
+    ),
+  containerTemplate(
+      name: 'sonar',
+      image: "192.168.176.155/library/jenkins-slave:sonar",
+      ttyEnabled: true,
+      privileged: true,
+      command: 'cat',
+      alwaysPullImage: false,
+    ),
+  ],
+  volumes: [
+       nfsVolume(mountPath: '/tmp', serverAddress: '192.168.177.43', serverPath: '/data/nfs', readOnly: false),
+       hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+       nfsVolume(mountPath: '/root/.m2', serverAddress: '192.168.177.43', serverPath: '/data/nfs/.m2', readOnly: false),
+  ],
+){
+  node('pre-CICD') {
+    stage('build') {
+        container('jnlp'){
+            stage('clone code'){
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'c33d60bd-67c6-4182-b52c-d7aeebfab772', url: 'http://192.168.176.154/root/base-nop.git']]])
+                script {
+                    imageTag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                }
+                echo "${imageTag}"
+            }
+            stage('Build a Maven project') {
+                echo "${project_name}"
+                sh "cd ${project_name} &amp;&amp; mvn clean install -DskipTests -Pproduct -U"
+            }
+       }
+
+        container('sonar'){
+            stage('sonar test'){
+                withSonarQubeEnv(credentialsId: 'sonarqube') {
+                    sh "sonar-scanner -X "+
+                    "-Dsonar.login=admin " +
+                    "-Dsonar.language=java " + 
+                    "-Dsonar.projectKey=${JOB_NAME} " + 
+                    "-Dsonar.projectName=${JOB_NAME} " + 
+                    "-Dsonar.projectVersion=${BUILD_NUMBER} " + 
+                    "-Dsonar.sources=${WORKSPACE}/fw-base-nop " + 
+                    "-Dsonar.sourceEncoding=UTF-8 " + 
+                    "-Dsonar.java.binaries=${WORKSPACE}/fw-base-nop/target/classes " + 
+                    "-Dsonar.password=admin " 
+                }
+            }
+       }
+       withDockerRegistry(credentialsId: 'auth_harbor', url: 'http://192.168.176.155') {
+            stage('build and push docker image') {
+                sh "cp /tmp/Dockerfile ${project_name}/target/"
+                def customImage = docker.build("${registry_url}/library/${project_name}:${imageTag}-${BUILD_NUMBER}","--build-arg jar_name=${project_name}.jar ${project_name}/target/")
+                echo "推送镜像"
+                customImage.push()
+            }
+            stage('delete image') {
+                echo "删除本地镜像"
+                sh "docker rmi -f ${registry_url}/library/${project_name}:${imageTag}-${BUILD_NUMBER}"
+            }
+        }
+    }
+  }  
+}         
+</code></pre>
+<p>有关jenkins与kubernetes集成持续交付的配置就简单的介绍到这里，下一章节内容介绍一下将代码持续部署到kubernetes集群中。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#7a161616434e4b4b4a4d3a1d171b131654191517" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359a9dacd426fc1',t:'MTc0NTU0MDMxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="10.实现自动化引擎之Jenkins Pipeline脚本式语法" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>10.实现自动化引擎之Jenkins Pipeline脚本式语法 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/01.Jenkins%e7%9a%84%e5%ae%89%e8%a3%85%e9%85%8d%e7%bd%ae%e4%b8%8e%e6%97%a5%e5%b8%b8%e7%bb%b4%e6%8a%a4.md.html" id="01.Jenkins的安装配置与日常维护.md.html">01.Jenkins的安装配置与日常维护.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/02.Jenkins%e5%bc%ba%e5%a4%a7%e7%9a%84%e6%8f%92%e4%bb%b6%e5%8a%9f%e8%83%bd.md.html" id="02.Jenkins强大的插件功能.md.html">02.Jenkins强大的插件功能.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/03.Devops%e5%b7%a5%e5%85%b7%e9%93%be.md.html" id="03.Devops工具链.md.html">03.Devops工具链.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/04.%e5%88%9d%e6%8e%a2Jenkins%20CD%e5%ae%9e%e8%b7%b5.md.html" id="04.初探Jenkins CD实践.md.html">04.初探Jenkins CD实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/05.Jenkins%e5%b8%b8%e7%94%a8%e9%a1%b9%e7%9b%ae%e9%85%8d%e7%bd%ae%e5%8f%82%e6%95%b0.md.html" id="05.Jenkins常用项目配置参数.md.html">05.Jenkins常用项目配置参数.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/06.Jenkins%e9%83%a8%e7%bd%b2%e4%b9%8bDocker%e8%a6%81%e7%82%b9.md.html" id="06.Jenkins部署之Docker要点.md.html">06.Jenkins部署之Docker要点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/07.Jenkins%e9%9b%86%e6%88%90%e4%b9%8bAnsible%e8%a6%81%e7%82%b9.md.html" id="07.Jenkins集成之Ansible要点.md.html">07.Jenkins集成之Ansible要点.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/08.Jenkins%e9%9b%86%e6%88%90Ansible%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0Docker%e5%ae%b9%e5%99%a8.md.html" id="08.Jenkins集成Ansible持续部署服务到Docker容器.md.html">08.Jenkins集成Ansible持续部署服务到Docker容器.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/09.%e5%ae%9e%e7%8e%b0%e8%87%aa%e5%8a%a8%e5%8c%96%e5%bc%95%e6%93%8e%e4%b9%8bJenkins%20Pipeline%e5%a3%b0%e6%98%8e%e5%bc%8f%e8%af%ad%e6%b3%95.md.html" id="09.实现自动化引擎之Jenkins Pipeline声明式语法.md.html">09.实现自动化引擎之Jenkins Pipeline声明式语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/10.%e5%ae%9e%e7%8e%b0%e8%87%aa%e5%8a%a8%e5%8c%96%e5%bc%95%e6%93%8e%e4%b9%8bJenkins%20Pipeline%e8%84%9a%e6%9c%ac%e5%bc%8f%e8%af%ad%e6%b3%95.md.html" id="10.实现自动化引擎之Jenkins Pipeline脚本式语法.md.html">10.实现自动化引擎之Jenkins Pipeline脚本式语法.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/11.Pipeline%e8%af%ad%e6%b3%95%e8%bf%9b%e8%a1%8c%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e4%b8%8e%e5%9f%ba%e7%a1%80%e5%ae%9e%e8%b7%b5.md.html" id="11.Pipeline语法进行持续交付与基础实践.md.html">11.Pipeline语法进行持续交付与基础实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/12.Jenkins%20Docker%20Pipeline%e6%8f%92%e4%bb%b6%e5%8a%a8%e6%80%81%e7%94%9f%e6%88%90Slave%e8%8a%82%e7%82%b9%e8%af%ad%e6%b3%95%e5%89%96%e6%9e%90.md.html" id="12.Jenkins Docker Pipeline插件动态生成Slave节点语法剖析.md.html">12.Jenkins Docker Pipeline插件动态生成Slave节点语法剖析.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/13.%e4%bd%bf%e7%94%a8%20Docker%20Pipeline%e6%8f%92%e4%bb%b6%e5%8a%a8%e6%80%81%e7%94%9f%e6%88%90Jenkins%20Slave%20%e5%ae%9e%e8%b7%b5.md.html" id="13.使用 Docker Pipeline插件动态生成Jenkins Slave 实践.md.html">13.使用 Docker Pipeline插件动态生成Jenkins Slave 实践.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/14.%e6%90%9e%e5%ae%9a%e4%b8%8d%e5%90%8c%e7%8e%af%e5%a2%83%e4%b8%8b%e7%9a%84Jenkins%e4%b8%8eKubernetes%e9%9b%86%e7%be%a4%e8%bf%9e%e6%8e%a5%e9%85%8d%e7%bd%ae.md.html" id="14.搞定不同环境下的Jenkins与Kubernetes集群连接配置.md.html">14.搞定不同环境下的Jenkins与Kubernetes集群连接配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/15.Jenkins%20Kubernetes%20Plugin%e4%bb%8b%e7%bb%8d%e4%b8%8e%e8%af%ad%e6%b3%95%e8%af%a6%e8%a7%a3.md.html" id="15.Jenkins Kubernetes Plugin介绍与语法详解.md.html">15.Jenkins Kubernetes Plugin介绍与语法详解.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/16.%e4%bd%bf%e7%94%a8Kubernetes%e7%bc%96%e6%8e%92Jenkins%20Slave%e8%8a%82%e7%82%b9%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e9%a1%b9%e7%9b%ae.md.html" id="16.使用Kubernetes编排Jenkins Slave节点持续交付项目.md.html">16.使用Kubernetes编排Jenkins Slave节点持续交付项目.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/17.%e4%bd%bf%e7%94%a8Kubernetes%e6%8f%92%e4%bb%b6%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0Kubernetes%e9%9b%86%e7%be%a4.md.html" id="17.使用Kubernetes插件持续部署服务到Kubernetes集群.md.html">17.使用Kubernetes插件持续部署服务到Kubernetes集群.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/Jenkins%e6%8c%81%e7%bb%ad%e4%ba%a4%e4%bb%98%e5%92%8c%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2/18.Ansible%20Plugin%e6%8f%92%e4%bb%b6%e8%af%ad%e6%b3%95%e8%af%a6%e8%a7%a3%e4%b8%8e%e6%8c%81%e7%bb%ad%e9%83%a8%e7%bd%b2%e6%9c%8d%e5%8a%a1%e5%88%b0kubernetes%e9%9b%86%e7%be%a4.md.html" id="18.Ansible Plugin插件语法详解与持续部署服务到kubernetes集群.md.html">18.Ansible Plugin插件语法详解与持续部署服务到kubernetes集群.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="10.实现自动化引擎之Jenkins Pipeline脚本式语法" id="title">10.实现自动化引擎之Jenkins Pipeline脚本式语法</h1>
+<div><p>前面章节介绍了pipeline的声明式语法， 本节通过对比来介绍一下脚本式语法的使用。虽然两种类型的语法都是建立在底层流水线的子系统上的语法，但是脚本式流水线在使用一些常用插件的时候显得更加容易，脚本式流水线只有stage指令，在声明式流水线中的stages和steps关键字在脚本式流水线中是不能使用的。下面针对在声明式流水线中介绍到的部分关键字介绍一下在脚本式流水线中的实现方法。</p>
+<h1 id="node">node</h1>
+<p>声明式流水线中，使用agent关键字指定执行Jenkins流水线的代理，在脚本式流水线中通过node关键字来指定代理节点。</p>
+<p>基本示例如下</p>
+<pre><code>node('jenkins-slave1') {
+    stage('test1') {
+        sh 'hostname'
+    }
+
+}
+</code></pre>
+<p>其中<code>jenkins-slave</code>为jenkins代理节点的名称或者标签名称，如果”()“为空，则默认会从所有的节点中选择一个slave节点</p>
+<p>除了可以为所有stage提供一个全局的代理节点以外，也可以为不同的stage提供不同的代理节点。</p>
+<p>如下示例</p>
+<pre><code>node() {
+    stage('test-node'){
+        node('jenkins-slave1'){
+            stage('test1'){
+                sh 'hostname'
+            }   
+        }
+    }
+    stage('test-node2'){
+        node('jenkins-slave169'){
+            stage('test2'){
+                sh 'hostname'
+            }
+        }
+    }
+}
+</code></pre>
+<p>该示例为不同的stage步骤使用了不同的slave节点</p>
+<p>使用node也可以用容器作为agent，比如</p>
+<pre><code>node() {
+    docker.image('maven').inside {
+        stage('te') {
+            sh "hostname"
+        }
+    }
+    docker.image('nginx').inside {
+        stage('te1') {
+            sh "hostname"
+        }
+    }
+}
+</code></pre>
+<p>该配置针对不同的流水线stage使用不同的镜像启动容器提供脚本执行的环境，docker.image().inside()是docker pipeline插件里的一个指定镜像并启动容器的方法，在以后的章节会介绍，这里只需要知道可以这么操作即可</p>
+<p>基于上面示例的思考，是不是可以在不同的节点上分别启动容器来进行不同的工作呢？答案是可以的，如下示例</p>
+<pre><code>node() {
+    stage('test1'){
+        node('slave1'){
+            docker.image('maven').inside {
+                stage('te') {
+                    sh "hostname"
+                }
+            }
+        }
+    }
+    stage('test2'){
+        node('slave2'){
+            docker.image('nginx').inside {
+                stage('te1') {
+                    sh "hostname"
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>该示例会在两个slave节点上分别启动容器作为流水线的执行环境。既然使用脚本式语法能实现在不同的slave节点启动不同的容器，在声明式语法中也能做到，在以后的章节中会有说明</p>
+<h1 id="tool">tool</h1>
+<p>声明式流水线中使用tools定义在jenkins系统中设置的工具的环境变量，在脚本式流水线中使用def 和tool关键字来使用这些工具，例如</p>
+<pre><code>node{
+    def maven = tool name: 'maven-3.5.4'
+    env.PATH = "${maven}/bin:${env.PATH}"
+    stage('test'){
+        sh 'mvn --version'
+    }
+}
+</code></pre>
+<p>该指令的语法片段也可以通过片段生成器生成。</p>
+<h1 id="withenv">withEnv</h1>
+<p>在声明式pipeline中通过<code>environment</code>来定义流水线中用到的环境变量，而在脚本式pipeline中使用withEnv来定义全局或者局部环境变量。</p>
+<p>比如定义maven的环境变量</p>
+<pre><code>node() {
+    withEnv(["PATH+MAVEN=${tool 'maven-3.5.4'}/bin"]) {
+        sh 'mvn --version'
+    }
+}
+</code></pre>
+<p>也可以写成这样</p>
+<pre><code>def maven = 'maven-3.5.4'
+withEnv(["PATH+MAVEN=${tool maven}/bin"]) {
+    sh 'mvn --version'
+
+}
+</code></pre>
+<p>也可以直接指定实际的值</p>
+<pre><code>withEnv(['MYTOOL_HOME=/usr/local/']) {
+          sh '$MYTOOL_HOME/bin/start'
+}
+</code></pre>
+<h1 id="parallel-并行">parallel(并行)</h1>
+<p>parallel除了可以使用声明式语法定义外，也可以使用脚本式语法定义。</p>
+<p>下面的例子可以放到脚本式语法中执行</p>
+<pre><code class="language-groovy">node {
+    stage('Test') {
+        parallel slave1: {
+            node('jenkins-slave1') {
+                try {
+                    sh 'hostname'
+                }
+                finally {
+                    echo "test"
+                }
+            }
+        },
+        slave169: {
+            node('jenkins-slave169') {
+                sh 'hostname'
+            }
+        }
+    }
+}
+</code></pre>
+<p>同时在两个节点执行shell命令</p>
+<h1 id="properties">properties</h1>
+<p>声明式脚本通过<code>parameters</code>来定义流水线中使用到的参数，在脚本式语法中则需要通过<code>properties</code>关键字来定义在stage中使用的参数，可以通过片段生成器生（参考下面）成相应的语法片段。</p>
+<p>如下示例-
+<img alt="" src="assets/3e4b0633c6c44d4b950eabb035b76eae.jpg"/></p>
+<p>生成的语法片段如下</p>
+<pre><code>properties([
+    buildDiscarder(
+        logRotator(artifactDaysToKeepStr: '', 
+            artifactNumToKeepStr: '', 
+            daysToKeepStr: '2', 
+            numToKeepStr: '4')
+        ), 
+        parameters([string(defaultValue: 'v1', 
+            description: '镜像tag', 
+            name: 'tag', 
+            trim: true)
+        ])
+])
+</code></pre>
+<p>示例如下</p>
+<pre><code>properties([
+        buildDiscarder(
+            logRotator(artifactDaysToKeepStr: '', 
+                artifactNumToKeepStr: '', 
+                daysToKeepStr: '2', 
+                numToKeepStr: '4')
+        ), 
+        parameters([
+            string(
+                defaultValue: 'v1', 
+                description: '镜像tag', 
+                name: 'tag', 
+                trim: true
+            )
+        ])
+])
+
+node{
+    stage('test1'){
+        echo "${params.tag}"
+    }
+}
+</code></pre>
+<p>这里需要说明的是，properties语法片段既可以放到<code>node{}</code>里，也可以放到<code>node{}</code>上面</p>
+<h1 id="异常处理">异常处理</h1>
+<p>在使用jenkins的时候难免遇到job执行失败的情况。声明式语法中可以通过post关键字对故障进行处理，而在脚本式流水线中则需要使用 <code>try/catch/finally</code>块来处理故障。当step失败 ，无论什么原因，它们都会抛出一个异常。</p>
+<p>如下示例</p>
+<pre><code>node {
+    stage('Example') {
+        try {
+            sh 'exit 1'
+            currentBuild.result = 'SUCCESS'
+        }
+        catch (exc) {
+            currentBuild.result = 'FAILURE' 
+            throw exc
+        }finally{
+            if(currentBuild.currentResult == "ABORTED" || currentBuild.currentResult == "FAILURE" || currentBuild.currentResult == "UNSTABLE"') {
+                echo "---currentBuild.currentResult
+result is:${currentBuild.currentResult
+}"
+            }
+            else {
+                echo "---currentBuild.currentResult
+result is:${currentBuild.currentResult
+}"
+            }
+        }
+  }
+}
+</code></pre>
+<p>需要注意的是，try语句后面一定要有catch或者finally语句，catch与finally语句可以同时存在，也可以只存在一个。</p>
+<h1 id="jenkinsfile">Jenkinsfile</h1>
+<p>通过学习pipeline的两种语法，对于如何编写脚本式和声明式pipeline脚本应该有了基本的认识，实际工作中使用的<code>jenkinsfile</code>大多数是用声明式脚本编写的（当然脚本式也能用)，至于在什么情况下使用哪种类型的语法，取决于个人对两种语法的熟悉程度。有些情况下，比如在后面章节要用到的docker插件，kubernetes插件，使用脚本式语法可以很方便的与这些插件集成，而如果使用声明式语法就会复杂一些，所以在准备使用pipeline之前有必要先做一下调研。</p>
+<p>jenkinsfile脚本文件通常用于放到源码仓库中，在配置jenkins流水线项目时通过<code>checkout script from SCM</code>的方式拉取jenkinsfile和所需的文件，拉取下来以后会自动进行流水线操作。</p>
+<p>比如在定义流水线脚本使用方式时使用<code>Pipeline Script</code>的方式配置</p>
+<pre><code class="language-groovy">node {
+    checkout scm 
+}
+</code></pre>
+<p><strong>说明</strong></p>
+<ul>
+<li><code>checkout scm</code>这里应该为实际的拉取代码的指令，用于从代码仓库拉取代码。比如<code>git clone</code>等。</li>
+<li>此时放到Jenkinsfile中的流水线脚本就不需要使用<code>node{}</code>块包含了</li>
+</ul>
+<p>也可以通过<code>Pipeline script from SCM</code>的方式配置，如下所示-
+<img alt="" src="assets/d3d4b032a7224981bd269ff58336187b.jpg"/></p>
+<p>需要注意的是，脚本路径指定的文件名称为从git仓库获取的根目录下的文件名称。文件拉取到本地后就会自动执行流水线操作。</p>
+<p>了解了Jenkinsfile文件如何使用后，下面介绍一下针对两种pipeline语法都能使用的一些指令和关键字。</p>
+<h2 id="变量">变量</h2>
+<p>pipeline脚本支持使用变量。在pipeline中的变量分为多种形式，可以自定义变量，可以使用jenkins的环境变量，也可以将通过命令获取的结果动态设置为变量等。下面对这些变量一一进行介绍</p>
+<p>自定义变量</p>
+<p>Jenkins 使用与 <a href="http://groovy-lang.org/" target="_blank">Groovy</a> 相同的规则进行变量赋值。Groovy 支持使用单引号或双引号声明一个字符串，例如：</p>
+<pre><code>def singlyQuoted = 'Hello'
+def doublyQuoted = "World"
+</code></pre>
+<p>对于变量的引用，可以使用单引号和双引号。如果没有特殊字符，用单引号和双引号是一样的<strong>；如果要执行多行命令，用三个单引号或三个双引号</strong>。如果有特殊字符需要解释，用双引号，需要转义的情况，用<code>\</code>转义符。</p>
+<p>在单引号之间的所有特殊字符都失去了特殊含义；而在双引号之间的绝大多数特殊字符都失去了特殊含义，除了以下特例：</p>
+<ul>
+<li><code>$</code> 美元号用来提取变量的值</li>
+<li>` 反冒号用于执行命令</li>
+<li><code>\</code> 反斜杠用来转义字符</li>
+</ul>
+<p>比如：</p>
+<pre><code>def username = 'Jenkins'
+echo 'Hello Mr. ${username}'
+echo "I said, Hello Mr. ${username}"
+</code></pre>
+<p>其结果是：</p>
+<pre><code>Hello Mr. ${username}
+I said, Hello Mr. Jenkins
+</code></pre>
+<p>执行命令示例如下：</p>
+<pre><code>sh '''
+    whoami
+    pwd
+    ls -ltra
+'''
+</code></pre>
+<p>结果</p>
+<pre><code>+ whoami
+root
++ pwd
+/var/lib/jenkins/workspace/test-mytest
++ ls -ltra
+total 4
+drwxr-xr-x 2 root root    6 Mar 16 17:02 .
+drwxr-xr-x 8 root root 4096 Mar 16 17:02 ..
+</code></pre>
+<p>而对于定义多个变量如果每个变量都都使用def指令定义，那酒显得有些重复造轮子了。groovy官方也给出了解决办法，对于上面的示例，可以写成这样：</p>
+<pre><code>def cc=[username='jenkins',version="v2.19.0"]
+</code></pre>
+<p>引用时也简单</p>
+<pre><code>echo "$cc.usernmae $cc.version"
+</code></pre>
+<p>如果要在脚本式语法中使用通过def命令定义的变量，需要使用<code>script{}</code>块将变量定义的步骤包含起来。</p>
+<h2 id="环境变量">环境变量</h2>
+<p>在 Jenkins 流水线中，可以定义整个流水线使用的环境变量，也可以使用jenkins自带的环境变量。</p>
+<p>对于如何自定义环境变量，取决于使用的是声明式还是脚本式流水线语法，它们设置环境变量的方法不同。关于在声明式和脚本式语法中使用环境变量的方法在前面已经介绍过，这里不再多说，下面看一下使用jenkins内置的环境变量。</p>
+<p>Jenkins 流水线通过全局变量 <code>env</code> 提供环境变量，它在 <code>Jenkinsfile</code> 文件的任何地方都可以使用。Jenkins 流水线中可访问的完整的环境变量列表记录在 <code>${YOUR_JENKINS_URL}/pipeline-syntax/globals#env</code></p>
+<p>比如:</p>
+<ul>
+<li><p><strong>BUILD_ID</strong>-
+当前构建的 ID，与早期jenkins版本的 BUILD_NUMBER 是完全相同的。</p></li>
+<li><p><strong>BUILD_NUMBER</strong>-
+当前构建号，比如 “153”。</p></li>
+<li><p><strong>BUILD_TAG</strong>-
+字符串 <code>jenkins-${JOB_NAME}-${BUILD_NUMBER}</code>。可以放到源代码、jar 等文件中便于识别。</p></li>
+<li><p><strong>BUILD_URL</strong>-
+可以定位此次构建结果的 URL（比如 <a href="http://buildserver/jenkins/job/MyJobName/17/" target="_blank">http://buildserver/jenkins/job/MyJobName/17/</a> ）</p></li>
+<li><p><strong>EXECUTOR_NUMBER</strong>-
+用于识别执行当前构建的执行者的唯一编号（在同一台机器的所有执行者中）。这个就是你在“构建执行状态”中看到的编号，只不过编号从 0 开始，而不是 1。</p></li>
+<li><p><strong>JAVA_HOME</strong>-
+如果你的任务配置了特定的 JDK工具，那么这个变量就被设置为此 JDK 的 JAVA_HOME。当设置了此变量时，PATH 也将包括 JAVA_HOME 的 bin 子目录。</p></li>
+<li><p><strong>JENKINS_URL</strong>-
+Jenkins 服务器的完整 URL，比如 <a href="https://example.com:port/jenkins/" target="_blank">https://example.com:port/jenkins/</a> （注意：只有在“系统设置”中设置了 Jenkins URL 才可用）。</p></li>
+<li><p><strong>JOB_NAME</strong>-
+本次构建的项目名称</p></li>
+<li><p><strong>NODE_NAME</strong>-
+运行本次构建的节点名称。对于 master 节点则为 “master”。</p></li>
+<li><p><strong>WORKSPACE</strong>-
+workspace 的绝对路径。也是job的路径</p></li>
+<li><p>……</p></li>
+</ul>
+<p>更多变量内容参考<code>pipeline-sytanx</code>即可</p>
+<p>示例如下</p>
+<pre><code>pipeline {
+    agent any
+    stages {
+        stage('Example') {
+            steps {
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+            }
+        }
+    }
+}
+</code></pre>
+<h2 id="动态设置变量"><strong>动态设置变量</strong></h2>
+<p>环境变量可以在运行时设置，可以通过shell命令（linux sh）、Windows 批处理脚本（<code>bat</code>）和 Powershell 脚本（<code>powershell</code>）获取变量的值并提供给下面的各stage阶段使用。各种脚本都可以返回 <code>returnStatus</code> 或 <code>returnStdout</code>。</p>
+<p>下面是一个使用 <code>sh</code>（shell）的声明式脚本的例子，既有 <code>returnStatus</code> 也有 <code>returnStdout</code>：</p>
+<pre><code>pipeline {
+    agent any 
+    environment {
+        // 使用 returnStdout
+        CC = """
+            ${sh(
+                returnStdout: true,
+                script: 'echo "clang"'
+            )}
+        """ 
+
+        // 使用 returnStatus
+        EXIT_STATUS = """
+            ${sh(
+                returnStatus: true,
+                script: 'exit 1'
+            )}
+        """
+    }
+    stages {
+        stage('Example') {
+            environment {
+                DEBUG_FLAGS = '-g'
+            }
+            steps {
+                sh 'printenv'
+            }
+        }
+    }
+}
+</code></pre>
+<p><strong>说明：</strong></p>
+<ul>
+<li>使用 <code>returnStdout</code> 时，返回的字符串末尾会追加一个空格。可以使用 <code>.trim()</code> 将其移除。</li>
+<li>该指令可以通过片段生成器生成语法片段</li>
+</ul>
+<p>相对于脚本式语法就简单的多</p>
+<pre><code>node {
+    stage('s'){
+        script {
+          cc=sh(returnStdout: true, script: 'hostname').trim()
+        }
+        echo "$cc"
+    }
+}
+</code></pre>
+<h1 id="条件判断">条件判断</h1>
+<p><code>Jenkinsfile</code> 从顶部开始向下串行执行，执行过程中难免遇到使用条件判断的情况，声明式语法中可以通过when关键字做一些基础的判断，但是在脚本式语法中无法使用when关键字。而使用<code>if/else</code>语句在两种pipeline语法中都可以使用，并且提高条件判断的灵活性。</p>
+<p>在pipeline中使用的if/else语句同样遵循Groovy语法，如下示例</p>
+<pre><code>node {
+    stage('Example') {
+        if (env.BRANCH_NAME == 'master') {
+            echo 'I only execute on the master branch'
+        } else {
+            echo 'I execute elsewhere'
+        }
+    }
+}
+</code></pre>
+<p>或者如下示例</p>
+<pre><code>script{
+    test_result=sh(script:"ls /tmp/uu.txt",returnStatus:true)
+    echo test_result
+    if(test_result == 0){
+        echo "file is exist"   
+    }else if(test_resultt == 2){
+        echo "file is not exist"
+    }else{
+        error("command is error,please check")  
+    }
+    }
+}
+</code></pre>
+<h1 id="fileexists">fileExists</h1>
+<p>该关键字用来判断当前工作空间下指定的文件是否存在，文件的路径设定时使用基于当前工作空间的相对路径，返回的结果为布尔值。该关键字的使用语法可以通过片段生成器来生成。</p>
+<p>如下示例</p>
+<pre><code>script {
+    json_file = "${env.WORKSPACE}/testdata/test_json.json"
+    if(fileExists(json_file) == true) {
+        echo("json file is exists")
+    }else {
+        error("here haven't find json file")
+    }
+}
+</code></pre>
+<p><strong>说明：</strong></p>
+<ul>
+<li>该示例用于判断<code>json_file</code>变量指定的文件是否存在</li>
+<li>error指令用于定义并返回自定义的错误信息</li>
+</ul>
+<h1 id="dir">dir</h1>
+<p>dir()方法用于改变当前的工作目录，在dir语句块填写要进入的目录路径即可。</p>
+<p>示例如下</p>
+<pre><code>stages{
+    stage("dir") {
+        steps{
+            echo env.WORKSPACE
+            dir("${env.WORKSPACE}/fw-base-nop"){
+                sh "pwd"
+            }
+        }
+    }
+}
+</code></pre>
+<h1 id="deletedir">deletedir</h1>
+<p>deleteDir()方法默认递归删除<code>WORKSPACE</code>下的文件和文件夹，没有参数，通常它与<code>dir</code>步骤一起使用，用于删除指定目录下的内容。</p>
+<p>示例如下</p>
+<pre><code>stage("deleteDir") {
+    steps{
+        script{
+            sh("ls -al ${env.WORKSPACE}")
+            deleteDir()  // clean up current work directory
+            sh("ls -al ${env.WORKSPACE}")
+        }
+    }
+}
+</code></pre>
+<p>或者删除指定目录</p>
+<pre><code>node {
+    stage('s'){
+        dir('/base'){
+            deleteDir()
+        }
+
+    }
+}
+</code></pre>
+<h1 id="script">script</h1>
+<p><code>script</code> 步骤需要<code>script-pipeline</code>块并在流水线中执行。 对于大多数用例来说，声明式流水线中的script步骤是不必要的，该关键字大多数情况下用来执行命令。</p>
+<p>示例如下</p>
+<pre><code>pipeline {
+    agent any
+    stages {
+        stage('Example') {
+            steps {
+                echo 'Hello World'
+
+                script {
+                    def browsers = ['chrome', 'firefox']
+                    for (int i = 0; i &lt; browsers.size(); ++i) {
+                        echo "Testing the ${browsers[i]} browser"
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>其中，通过def定义的变量可以在下面的stage的中被引用</p>
+<h1 id="stash-unstash">stash/unstash</h1>
+<p>stash用于将文件保存起来，以便同一次构建的其他stage或step使用。 如果整个流水线在同一台机器上执行，那stash是多余的。stash一般用于跨Jenkins node使用， <code>stash</code>步骤会将文件存储在<code>tar</code>文件中，对于大文件的<code>stash</code>操作将会消耗Jenkins master的计算资源。Jenkins官方文档推荐，当文件大小为5∼100MB时，应该考虑使用其他替代方案。</p>
+<p>stash 指令的参数如下：</p>
+<ul>
+<li>name：字符串类型，保存文件的集合的唯一标识</li>
+<li>allowEmpty：布尔类型，允许stash内容为空</li>
+<li>excludes：字符串类型，排除文件，如果排除多个使用「逗号」分隔</li>
+<li>includes：字符串类型，stash文件，留空表示全部</li>
+<li>useDefaultExcludes：布尔类型，true：使用Ant风格路径默认排除文件 Ant风格路径表达式</li>
+</ul>
+<p>除了<code>name</code>参数，其他参数都是可选的。<code>excludes</code>和<code>includes</code>使用的是Ant风格路径表达式。</p>
+<p>与stash对应的是unstash。该指令用于取出之前stash的文件。-
+<code>unstash</code>步骤只有一个<code>name</code>参数，即<code>stash</code>时的唯一标识。通常情况下，<code>stash</code>与<code>unstash</code>步骤同时使用。示例如下</p>
+<pre><code>pipeline {
+    agent none
+    stages {
+        stage('stash') {
+            agent { label "master" }
+            steps {
+                dir('target') {
+                    stash(name: "abc", include: "xx.jar")
+                }
+            }
+        }
+        stage("unstash") {
+            agent { label "jenkins-slave1" }
+            steps {
+                script {
+                    unstash("abc")
+                    cp xx.jar /data
+                    ...
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>unstash根据stash指定的name的值获取文件，等流水线执行完毕后，文件会删除</p>
+<h1 id="archiveartifacts">archiveArtifacts</h1>
+<p>jenkins流水线的<code>archiveArtifacts</code>指令也是用来保存文档文件，与stash不同的是，该指令会将文件保存到本地，流水线执行完成后不会被销毁。保存的文件会放到到 <em>Jenkins</em> 的 <strong><code>jobs/JOB_NAME/builds/BUILD_NO</code></strong>目录下</p>
+<p>示例如下</p>
+<pre><code>pipeline {
+    agent any
+    stages {
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: '**/target/*.jar', onlyIfSuccessful: true 
+            }
+        }
+    }
+}
+</code></pre>
+<p><code>archiveArtifacts</code>指令包含多个参数，其中<code>artifacts</code>参数为必须参数，<code>onlyIfSuccessful</code>参数表示只有成功时保存文件。其他参数使用可以参考官方文档</p>
+<h1 id="片段生成器">片段生成器</h1>
+<p>jenkins内置的<code>Snippet Generator</code>工具（片段生成器）用于将插件或者关键字的使用语法动态的生成steps语法片段，添加到流水线中。片段生成器界面可以从pipeline项目中最底部的<code>pipeline syntax</code>超链接中进入，也可以直接通过<code>${YOUR_JENKINS_URL}/pipeline-syntax</code>访问。</p>
+<p>Jenkins对于片段生成器分成了两种类别，一种是基于pipeline声明式语法的片段生成器（<code>Declarative Directive Generator</code>菜单），另一种是基于jenkins内置插件以及脚本式语法使用（片段生成器菜单）的片段生成器。下面分别对这两种生成器进行介绍</p>
+<p>基于声明式语法的片段生成器，用于在不知道关键字语法的情况下生成语法片段。同样是访问上面的连接，点击<code>Declarative Directive Generator</code>菜单，如下所示-
+<img alt="" src="assets/901a517af1f6486daaa4202a7d4374c2.jpg"/></p>
+<p>可以看到，在下拉框中显示了这些指令的相关语法，选中任意指令配置好后点击下面的<code>Generate Declarative Directive</code>即可生成相应的语法片段</p>
+<p>而对于声明式脚本以及内置插件使用的片段生成器，直接点击”<strong>片段生成器</strong>“菜单即可，点击”<strong>Sample Setp</strong>“会列出所有支持的插件列表，选中一个，比如下图所示：</p>
+<p><img alt="" src="assets/bc55ef449b54434fb60ad0a050e3b5e1.jpg"/></p>
+<p>根据需要配置好必须项，点击下方的<code>Generate Pipeline Script</code>就会生成相应的代码片段</p>
+<p><img alt="" src="assets/910251dfb15b4b8f98803103bf5716b7.jpg"/></p>
+<p>然后就可以复制粘贴放到pipeline项目中的脚本中去了。</p>
+<p>有关Jenkins脚本式语法的内容就介绍到这里，在下一节中将使用实践案例在对本节以及上节学习的内容进行实践，以加深理解</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#f69a9a9acfc2c7c7c6c1b6919b979f9ad895999b" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359a9438b14c9b5',t:'MTc0NTU0MDI4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
