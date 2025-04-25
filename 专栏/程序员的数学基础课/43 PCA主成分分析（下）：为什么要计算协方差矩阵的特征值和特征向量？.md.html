@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="43 PCA主成分分析（下）：为什么要计算协方差矩阵的特征值和特征向量？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>43 PCA主成分分析（下）：为什么要计算协方差矩阵的特征值和特征向量？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/01%20%e4%ba%8c%e8%bf%9b%e5%88%b6%ef%bc%9a%e4%b8%8d%e4%ba%86%e8%a7%a3%e8%ae%a1%e7%ae%97%e6%9c%ba%e7%9a%84%e6%ba%90%e5%a4%b4%ef%bc%8c%e4%bd%a0%e5%ad%a6%e4%bb%80%e4%b9%88%e7%bc%96%e7%a8%8b.md.html" id="01 二进制：不了解计算机的源头，你学什么编程.md.html">01 二进制：不了解计算机的源头，你学什么编程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/02%20%e4%bd%99%e6%95%b0%ef%bc%9a%e5%8e%9f%e6%9d%a5%e5%8f%96%e4%bd%99%e6%93%8d%e4%bd%9c%e6%9c%ac%e8%ba%ab%e5%b0%b1%e6%98%af%e4%b8%aa%e5%93%88%e5%b8%8c%e5%87%bd%e6%95%b0.md.html" id="02 余数：原来取余操作本身就是个哈希函数.md.html">02 余数：原来取余操作本身就是个哈希函数.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/03%20%e8%bf%ad%e4%bb%a3%e6%b3%95%ef%bc%9a%e4%b8%8d%e7%94%a8%e7%bc%96%e7%a8%8b%e8%af%ad%e8%a8%80%e7%9a%84%e8%87%aa%e5%b8%a6%e5%87%bd%e6%95%b0%ef%bc%8c%e4%bd%a0%e4%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a1%e7%ae%97%e5%b9%b3%e6%96%b9%e6%a0%b9%ef%bc%9f.md.html" id="03 迭代法：不用编程语言的自带函数，你会如何计算平方根？.md.html">03 迭代法：不用编程语言的自带函数，你会如何计算平方根？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/04%20%e6%95%b0%e5%ad%a6%e5%bd%92%e7%ba%b3%e6%b3%95%ef%bc%9a%e5%a6%82%e4%bd%95%e7%94%a8%e6%95%b0%e5%ad%a6%e5%bd%92%e7%ba%b3%e6%8f%90%e5%8d%87%e4%bb%a3%e7%a0%81%e7%9a%84%e8%bf%90%e8%a1%8c%e6%95%88%e7%8e%87%ef%bc%9f.md.html" id="04 数学归纳法：如何用数学归纳提升代码的运行效率？.md.html">04 数学归纳法：如何用数学归纳提升代码的运行效率？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/05%20%e9%80%92%e5%bd%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e6%b3%9b%e5%8c%96%e6%95%b0%e5%ad%a6%e5%bd%92%e7%ba%b3%ef%bc%8c%e5%a6%82%e4%bd%95%e5%b0%86%e5%a4%8d%e6%9d%82%e9%97%ae%e9%a2%98%e7%ae%80%e5%8d%95%e5%8c%96%ef%bc%9f.md.html" id="05 递归（上）：泛化数学归纳，如何将复杂问题简单化？.md.html">05 递归（上）：泛化数学归纳，如何将复杂问题简单化？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/06%20%e9%80%92%e5%bd%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%88%86%e8%80%8c%e6%b2%bb%e4%b9%8b%ef%bc%8c%e4%bb%8e%e5%bd%92%e5%b9%b6%e6%8e%92%e5%ba%8f%e5%88%b0MapReduce.md.html" id="06 递归（下）：分而治之，从归并排序到MapReduce.md.html">06 递归（下）：分而治之，从归并排序到MapReduce.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/07%20%e6%8e%92%e5%88%97%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%ad%a6%e4%bc%9a%e2%80%9c%e7%94%b0%e5%bf%8c%e8%b5%9b%e9%a9%ac%e2%80%9d%ef%bc%9f.md.html" id="07 排列：如何让计算机学会“田忌赛马”？.md.html">07 排列：如何让计算机学会“田忌赛马”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/08%20%e7%bb%84%e5%90%88%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%ae%89%e6%8e%92%e4%b8%96%e7%95%8c%e6%9d%af%e7%9a%84%e8%b5%9b%e7%a8%8b%ef%bc%9f.md.html" id="08 组合：如何让计算机安排世界杯的赛程？.md.html">08 组合：如何让计算机安排世界杯的赛程？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/09%20%e5%8a%a8%e6%80%81%e8%a7%84%e5%88%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%9f%ba%e4%ba%8e%e7%bc%96%e8%be%91%e8%b7%9d%e7%a6%bb%e7%9a%84%e6%9f%a5%e8%af%a2%e6%8e%a8%e8%8d%90%ef%bc%9f.md.html" id="09 动态规划（上）：如何实现基于编辑距离的查询推荐？.md.html">09 动态规划（上）：如何实现基于编辑距离的查询推荐？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/10%20%e5%8a%a8%e6%80%81%e8%a7%84%e5%88%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%b1%82%e5%be%97%e7%8a%b6%e6%80%81%e8%bd%ac%e7%a7%bb%e6%96%b9%e7%a8%8b%e5%b9%b6%e8%bf%9b%e8%a1%8c%e7%bc%96%e7%a8%8b%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="10 动态规划（下）：如何求得状态转移方程并进行编程实现？.md.html">10 动态规划（下）：如何求得状态转移方程并进行编程实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/11%20%e6%a0%91%e7%9a%84%e6%b7%b1%e5%ba%a6%e4%bc%98%e5%85%88%e6%90%9c%e7%b4%a2%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%89%8d%e8%83%bd%e9%ab%98%e6%95%88%e7%8e%87%e5%9c%b0%e6%9f%a5%e5%ad%97%e5%85%b8%ef%bc%9f.md.html" id="11 树的深度优先搜索（上）：如何才能高效率地查字典？.md.html">11 树的深度优先搜索（上）：如何才能高效率地查字典？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/12%20%e6%a0%91%e7%9a%84%e6%b7%b1%e5%ba%a6%e4%bc%98%e5%85%88%e6%90%9c%e7%b4%a2%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e6%89%8d%e8%83%bd%e9%ab%98%e6%95%88%e7%8e%87%e5%9c%b0%e6%9f%a5%e5%ad%97%e5%85%b8%ef%bc%9f.md.html" id="12 树的深度优先搜索（下）：如何才能高效率地查字典？.md.html">12 树的深度优先搜索（下）：如何才能高效率地查字典？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/13%20%e6%a0%91%e7%9a%84%e5%b9%bf%e5%ba%a6%e4%bc%98%e5%85%88%e6%90%9c%e7%b4%a2%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%ba%ba%e9%99%85%e5%85%b3%e7%b3%bb%e7%9a%84%e5%85%ad%e5%ba%a6%e7%90%86%e8%ae%ba%e6%98%af%e7%9c%9f%e7%9a%84%e5%90%97%ef%bc%9f.md.html" id="13 树的广度优先搜索（上）：人际关系的六度理论是真的吗？.md.html">13 树的广度优先搜索（上）：人际关系的六度理论是真的吗？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/14%20%e6%a0%91%e7%9a%84%e5%b9%bf%e5%ba%a6%e4%bc%98%e5%85%88%e6%90%9c%e7%b4%a2%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8f%8c%e5%90%91%e5%b9%bf%e5%ba%a6%e4%bc%98%e5%85%88%e6%90%9c%e7%b4%a2%e7%9a%84%e6%95%88%e7%8e%87%e6%9b%b4%e9%ab%98%ef%bc%9f.md.html" id="14 树的广度优先搜索（下）：为什么双向广度优先搜索的效率更高？.md.html">14 树的广度优先搜索（下）：为什么双向广度优先搜索的效率更高？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/15%20%e4%bb%8e%e6%a0%91%e5%88%b0%e5%9b%be%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%ad%a6%e4%bc%9a%e7%9c%8b%e5%9c%b0%e5%9b%be%ef%bc%9f.md.html" id="15 从树到图：如何让计算机学会看地图？.md.html">15 从树到图：如何让计算机学会看地图？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/16%20%e6%97%b6%e9%97%b4%e5%92%8c%e7%a9%ba%e9%97%b4%e5%a4%8d%e6%9d%82%e5%ba%a6%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%bc%98%e5%8c%96%e6%80%a7%e8%83%bd%e6%98%af%e5%90%a6%e5%8f%aa%e6%98%af%e2%80%9c%e7%ba%b8%e4%b8%8a%e8%b0%88%e5%85%b5%e2%80%9d%ef%bc%9f.md.html" id="16 时间和空间复杂度（上）：优化性能是否只是“纸上谈兵”？.md.html">16 时间和空间复杂度（上）：优化性能是否只是“纸上谈兵”？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/17%20%e6%97%b6%e9%97%b4%e5%92%8c%e7%a9%ba%e9%97%b4%e5%a4%8d%e6%9d%82%e5%ba%a6%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e5%85%ad%e4%b8%aa%e6%b3%95%e5%88%99%e8%bf%9b%e8%a1%8c%e5%a4%8d%e6%9d%82%e5%ba%a6%e5%88%86%e6%9e%90%ef%bc%9f.md.html" id="17 时间和空间复杂度（下）：如何使用六个法则进行复杂度分析？.md.html">17 时间和空间复杂度（下）：如何使用六个法则进行复杂度分析？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/18%20%e6%80%bb%e7%bb%93%e8%af%be%ef%bc%9a%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e3%80%81%e7%bc%96%e7%a8%8b%e8%af%ad%e5%8f%a5%e5%92%8c%e5%9f%ba%e7%a1%80%e7%ae%97%e6%b3%95%e4%bd%93%e7%8e%b0%e4%ba%86%e5%93%aa%e4%ba%9b%e6%95%b0%e5%ad%a6%e6%80%9d%e6%83%b3%ef%bc%9f.md.html" id="18 总结课：数据结构、编程语句和基础算法体现了哪些数学思想？.md.html">18 总结课：数据结构、编程语句和基础算法体现了哪些数学思想？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/19%20%e6%a6%82%e7%8e%87%e5%92%8c%e7%bb%9f%e8%ae%a1%ef%bc%9a%e7%bc%96%e7%a8%8b%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e6%a6%82%e7%8e%87%e5%92%8c%e7%bb%9f%e8%ae%a1%ef%bc%9f.md.html" id="19 概率和统计：编程为什么需要概率和统计？.md.html">19 概率和统计：编程为什么需要概率和统计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/20%20%e6%a6%82%e7%8e%87%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e4%b8%80%e7%af%87%e6%96%87%e7%ab%a0%e5%b8%ae%e4%bd%a0%e7%90%86%e8%a7%a3%e9%9a%8f%e6%9c%ba%e5%8f%98%e9%87%8f%e3%80%81%e6%a6%82%e7%8e%87%e5%88%86%e5%b8%83%e5%92%8c%e6%9c%9f%e6%9c%9b%e5%80%bc.md.html" id="20 概率基础（上）：一篇文章帮你理解随机变量、概率分布和期望值.md.html">20 概率基础（上）：一篇文章帮你理解随机变量、概率分布和期望值.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/21%20%e6%a6%82%e7%8e%87%e5%9f%ba%e7%a1%80%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e8%81%94%e5%90%88%e6%a6%82%e7%8e%87%e3%80%81%e6%9d%a1%e4%bb%b6%e6%a6%82%e7%8e%87%e5%92%8c%e8%b4%9d%e5%8f%b6%e6%96%af%e6%b3%95%e5%88%99%ef%bc%8c%e8%bf%99%e4%ba%9b%e6%a6%82%e7%8e%87%e5%85%ac%e5%bc%8f%e7%a9%b6%e7%ab%9f%e8%83%bd%e5%81%9a%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="21 概率基础（下）：联合概率、条件概率和贝叶斯法则，这些概率公式究竟能做什么？.md.html">21 概率基础（下）：联合概率、条件概率和贝叶斯法则，这些概率公式究竟能做什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/22%20%e6%9c%b4%e7%b4%a0%e8%b4%9d%e5%8f%b6%e6%96%af%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%ad%a6%e4%bc%9a%e8%87%aa%e5%8a%a8%e5%88%86%e7%b1%bb%ef%bc%9f.md.html" id="22 朴素贝叶斯：如何让计算机学会自动分类？.md.html">22 朴素贝叶斯：如何让计算机学会自动分类？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/23%20%e6%96%87%e6%9c%ac%e5%88%86%e7%b1%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e5%8c%ba%e5%88%86%e7%89%b9%e5%ae%9a%e7%b1%bb%e5%9e%8b%e7%9a%84%e6%96%b0%e9%97%bb%ef%bc%9f.md.html" id="23 文本分类：如何区分特定类型的新闻？.md.html">23 文本分类：如何区分特定类型的新闻？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/24%20%e8%af%ad%e8%a8%80%e6%a8%a1%e5%9e%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e9%93%be%e5%bc%8f%e6%b3%95%e5%88%99%e5%92%8c%e9%a9%ac%e5%b0%94%e7%a7%91%e5%a4%ab%e5%81%87%e8%ae%be%e7%ae%80%e5%8c%96%e6%a6%82%e7%8e%87%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="24 语言模型：如何使用链式法则和马尔科夫假设简化概率模型？.md.html">24 语言模型：如何使用链式法则和马尔科夫假设简化概率模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/25%20%e9%a9%ac%e5%b0%94%e7%a7%91%e5%a4%ab%e6%a8%a1%e5%9e%8b%ef%bc%9a%e4%bb%8ePageRank%e5%88%b0%e8%af%ad%e9%9f%b3%e8%af%86%e5%88%ab%ef%bc%8c%e8%83%8c%e5%90%8e%e6%98%af%e4%bb%80%e4%b9%88%e6%a8%a1%e5%9e%8b%e5%9c%a8%e6%94%af%e6%92%91%ef%bc%9f.md.html" id="25 马尔科夫模型：从PageRank到语音识别，背后是什么模型在支撑？.md.html">25 马尔科夫模型：从PageRank到语音识别，背后是什么模型在支撑？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/26%20%e4%bf%a1%e6%81%af%e7%86%b5%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e5%87%a0%e4%b8%aa%e9%97%ae%e9%a2%98%ef%bc%8c%e6%b5%8b%e5%87%ba%e4%bd%a0%e5%af%b9%e5%ba%94%e7%9a%84%e6%ad%a6%e4%be%a0%e4%ba%ba%e7%89%a9%ef%bc%9f.md.html" id="26 信息熵：如何通过几个问题，测出你对应的武侠人物？.md.html">26 信息熵：如何通过几个问题，测出你对应的武侠人物？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/27%20%e5%86%b3%e7%ad%96%e6%a0%91%ef%bc%9a%e4%bf%a1%e6%81%af%e5%a2%9e%e7%9b%8a%e3%80%81%e5%a2%9e%e7%9b%8a%e6%af%94%e7%8e%87%e5%92%8c%e5%9f%ba%e5%b0%bc%e6%8c%87%e6%95%b0%e7%9a%84%e8%bf%90%e7%94%a8.md.html" id="27 决策树：信息增益、增益比率和基尼指数的运用.md.html">27 决策树：信息增益、增益比率和基尼指数的运用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/28%20%e7%86%b5%e3%80%81%e4%bf%a1%e6%81%af%e5%a2%9e%e7%9b%8a%e5%92%8c%e5%8d%a1%e6%96%b9%ef%bc%9a%e5%a6%82%e4%bd%95%e5%af%bb%e6%89%be%e5%85%b3%e9%94%ae%e7%89%b9%e5%be%81%ef%bc%9f.md.html" id="28 熵、信息增益和卡方：如何寻找关键特征？.md.html">28 熵、信息增益和卡方：如何寻找关键特征？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/29%20%e5%bd%92%e4%b8%80%e5%8c%96%e5%92%8c%e6%a0%87%e5%87%86%e5%8c%96%ef%bc%9a%e5%90%84%e7%a7%8d%e7%89%b9%e5%be%81%e5%a6%82%e4%bd%95%e7%bb%bc%e5%90%88%e6%89%8d%e6%98%af%e6%9c%80%e5%90%88%e7%90%86%e7%9a%84%ef%bc%9f.md.html" id="29 归一化和标准化：各种特征如何综合才是最合理的？.md.html">29 归一化和标准化：各种特征如何综合才是最合理的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/30%20%e7%bb%9f%e8%ae%a1%e6%84%8f%e4%b9%89%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e6%98%be%e8%91%97%e6%80%a7%e6%a3%80%e9%aa%8c%ef%bc%8c%e5%88%a4%e6%96%ad%e4%bd%a0%e7%9a%84A_B%e6%b5%8b%e8%af%95%e7%bb%93%e6%9e%9c%e6%98%af%e4%b8%8d%e6%98%af%e5%b7%a7%e5%90%88%ef%bc%9f.md.html" id="30 统计意义（上）：如何通过显著性检验，判断你的A_B测试结果是不是巧合？.md.html">30 统计意义（上）：如何通过显著性检验，判断你的A_B测试结果是不是巧合？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/31%20%e7%bb%9f%e8%ae%a1%e6%84%8f%e4%b9%89%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e6%98%be%e8%91%97%e6%80%a7%e6%a3%80%e9%aa%8c%ef%bc%8c%e5%88%a4%e6%96%ad%e4%bd%a0%e7%9a%84A_B%e6%b5%8b%e8%af%95%e7%bb%93%e6%9e%9c%e6%98%af%e4%b8%8d%e6%98%af%e5%b7%a7%e5%90%88%ef%bc%9f.md.html" id="31 统计意义（下）：如何通过显著性检验，判断你的A_B测试结果是不是巧合？.md.html">31 统计意义（下）：如何通过显著性检验，判断你的A_B测试结果是不是巧合？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/32%20%e6%a6%82%e7%8e%87%e7%bb%9f%e8%ae%a1%e7%af%87%e7%ad%94%e7%96%91%e5%92%8c%e6%80%bb%e7%bb%93%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bc%9a%e6%9c%89%e6%ac%a0%e6%8b%9f%e5%90%88%e5%92%8c%e8%bf%87%e6%8b%9f%e5%90%88%ef%bc%9f.md.html" id="32 概率统计篇答疑和总结：为什么会有欠拟合和过拟合？.md.html">32 概率统计篇答疑和总结：为什么会有欠拟合和过拟合？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/33%20%e7%ba%bf%e6%80%a7%e4%bb%a3%e6%95%b0%ef%bc%9a%e7%ba%bf%e6%80%a7%e4%bb%a3%e6%95%b0%e5%88%b0%e5%ba%95%e9%83%bd%e8%ae%b2%e4%ba%86%e4%ba%9b%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="33 线性代数：线性代数到底都讲了些什么？.md.html">33 线性代数：线性代数到底都讲了些什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/34%20%e5%90%91%e9%87%8f%e7%a9%ba%e9%97%b4%e6%a8%a1%e5%9e%8b%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e8%ae%a1%e7%ae%97%e6%9c%ba%e7%90%86%e8%a7%a3%e7%8e%b0%e5%ae%9e%e4%ba%8b%e7%89%a9%e4%b9%8b%e9%97%b4%e7%9a%84%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="34 向量空间模型：如何让计算机理解现实事物之间的关系？.md.html">34 向量空间模型：如何让计算机理解现实事物之间的关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/35%20%e6%96%87%e6%9c%ac%e6%a3%80%e7%b4%a2%ef%bc%9a%e5%a6%82%e4%bd%95%e8%ae%a9%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%a4%84%e7%90%86%e8%87%aa%e7%84%b6%e8%af%ad%e8%a8%80%ef%bc%9f.md.html" id="35 文本检索：如何让计算机处理自然语言？.md.html">35 文本检索：如何让计算机处理自然语言？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/36%20%e6%96%87%e6%9c%ac%e8%81%9a%e7%b1%bb%ef%bc%9a%e5%a6%82%e4%bd%95%e8%bf%87%e6%bb%a4%e5%86%97%e4%bd%99%e7%9a%84%e6%96%b0%e9%97%bb%ef%bc%9f.md.html" id="36 文本聚类：如何过滤冗余的新闻？.md.html">36 文本聚类：如何过滤冗余的新闻？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/37%20%e7%9f%a9%e9%98%b5%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e7%9f%a9%e9%98%b5%e6%93%8d%e4%bd%9c%e8%bf%9b%e8%a1%8cPageRank%e8%ae%a1%e7%ae%97%ef%bc%9f.md.html" id="37 矩阵（上）：如何使用矩阵操作进行PageRank计算？.md.html">37 矩阵（上）：如何使用矩阵操作进行PageRank计算？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/38%20%e7%9f%a9%e9%98%b5%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e7%9f%a9%e9%98%b5%e6%93%8d%e4%bd%9c%e8%bf%9b%e8%a1%8c%e5%8d%8f%e5%90%8c%e8%bf%87%e6%bb%a4%e6%8e%a8%e8%8d%90%ef%bc%9f.md.html" id="38 矩阵（下）：如何使用矩阵操作进行协同过滤推荐？.md.html">38 矩阵（下）：如何使用矩阵操作进行协同过滤推荐？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/39%20%e7%ba%bf%e6%80%a7%e5%9b%9e%e5%bd%92%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e9%ab%98%e6%96%af%e6%b6%88%e5%85%83%e6%b1%82%e8%a7%a3%e7%ba%bf%e6%80%a7%e6%96%b9%e7%a8%8b%e7%bb%84%ef%bc%9f.md.html" id="39 线性回归（上）：如何使用高斯消元求解线性方程组？.md.html">39 线性回归（上）：如何使用高斯消元求解线性方程组？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/40%20%e7%ba%bf%e6%80%a7%e5%9b%9e%e5%bd%92%ef%bc%88%e4%b8%ad%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e6%9c%80%e5%b0%8f%e4%ba%8c%e4%b9%98%e6%b3%95%e8%bf%9b%e8%a1%8c%e7%9b%b4%e7%ba%bf%e6%8b%9f%e5%90%88%ef%bc%9f.md.html" id="40 线性回归（中）：如何使用最小二乘法进行直线拟合？.md.html">40 线性回归（中）：如何使用最小二乘法进行直线拟合？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/41%20%e7%ba%bf%e6%80%a7%e5%9b%9e%e5%bd%92%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e6%9c%80%e5%b0%8f%e4%ba%8c%e4%b9%98%e6%b3%95%e8%bf%9b%e8%a1%8c%e6%95%88%e6%9e%9c%e9%aa%8c%e8%af%81%ef%bc%9f.md.html" id="41 线性回归（下）：如何使用最小二乘法进行效果验证？.md.html">41 线性回归（下）：如何使用最小二乘法进行效果验证？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/42%20PCA%e4%b8%bb%e6%88%90%e5%88%86%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%88%a9%e7%94%a8%e5%8d%8f%e6%96%b9%e5%b7%ae%e7%9f%a9%e9%98%b5%e6%9d%a5%e9%99%8d%e7%bb%b4%ef%bc%9f.md.html" id="42 PCA主成分分析（上）：如何利用协方差矩阵来降维？.md.html">42 PCA主成分分析（上）：如何利用协方差矩阵来降维？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/43%20PCA%e4%b8%bb%e6%88%90%e5%88%86%e5%88%86%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e8%ae%a1%e7%ae%97%e5%8d%8f%e6%96%b9%e5%b7%ae%e7%9f%a9%e9%98%b5%e7%9a%84%e7%89%b9%e5%be%81%e5%80%bc%e5%92%8c%e7%89%b9%e5%be%81%e5%90%91%e9%87%8f%ef%bc%9f.md.html" id="43 PCA主成分分析（下）：为什么要计算协方差矩阵的特征值和特征向量？.md.html">43 PCA主成分分析（下）：为什么要计算协方差矩阵的特征值和特征向量？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/44%20%e5%a5%87%e5%bc%82%e5%80%bc%e5%88%86%e8%a7%a3%ef%bc%9a%e5%a6%82%e4%bd%95%e6%8c%96%e6%8e%98%e6%bd%9c%e5%9c%a8%e7%9a%84%e8%af%ad%e4%b9%89%e5%85%b3%e7%b3%bb%ef%bc%9f.md.html" id="44 奇异值分解：如何挖掘潜在的语义关系？.md.html">44 奇异值分解：如何挖掘潜在的语义关系？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/45%20%e7%ba%bf%e6%80%a7%e4%bb%a3%e6%95%b0%e7%af%87%e7%ad%94%e7%96%91%e5%92%8c%e6%80%bb%e7%bb%93%ef%bc%9a%e7%9f%a9%e9%98%b5%e4%b9%98%e6%b3%95%e7%9a%84%e5%87%a0%e4%bd%95%e6%84%8f%e4%b9%89%e6%98%af%e4%bb%80%e4%b9%88%ef%bc%9f.md.html" id="45 线性代数篇答疑和总结：矩阵乘法的几何意义是什么？.md.html">45 线性代数篇答疑和总结：矩阵乘法的几何意义是什么？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/46%20%e7%bc%93%e5%ad%98%e7%b3%bb%e7%bb%9f%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e5%93%88%e5%b8%8c%e8%a1%a8%e5%92%8c%e9%98%9f%e5%88%97%e5%ae%9e%e7%8e%b0%e9%ab%98%e6%95%88%e8%ae%bf%e9%97%ae%ef%bc%9f.md.html" id="46 缓存系统：如何通过哈希表和队列实现高效访问？.md.html">46 缓存系统：如何通过哈希表和队列实现高效访问？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/47%20%e6%90%9c%e7%b4%a2%e5%bc%95%e6%93%8e%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e5%80%92%e6%8e%92%e7%b4%a2%e5%bc%95%e5%92%8c%e5%90%91%e9%87%8f%e7%a9%ba%e9%97%b4%e6%a8%a1%e5%9e%8b%ef%bc%8c%e6%89%93%e9%80%a0%e4%b8%80%e4%b8%aa%e7%ae%80%e5%8d%95%e7%9a%84%e6%90%9c%e7%b4%a2%e5%bc%95%e6%93%8e%ef%bc%9f.md.html" id="47 搜索引擎（上）：如何通过倒排索引和向量空间模型，打造一个简单的搜索引擎？.md.html">47 搜索引擎（上）：如何通过倒排索引和向量空间模型，打造一个简单的搜索引擎？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/48%20%e6%90%9c%e7%b4%a2%e5%bc%95%e6%93%8e%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87%e6%9f%a5%e8%af%a2%e7%9a%84%e5%88%86%e7%b1%bb%ef%bc%8c%e8%ae%a9%e7%94%b5%e5%95%86%e5%b9%b3%e5%8f%b0%e7%9a%84%e6%90%9c%e7%b4%a2%e7%bb%93%e6%9e%9c%e6%9b%b4%e7%9b%b8%e5%85%b3%ef%bc%9f.md.html" id="48 搜索引擎（下）：如何通过查询的分类，让电商平台的搜索结果更相关？.md.html">48 搜索引擎（下）：如何通过查询的分类，让电商平台的搜索结果更相关？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/49%20%e6%8e%a8%e8%8d%90%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%8a%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%9f%ba%e4%ba%8e%e7%9b%b8%e4%bc%bc%e5%ba%a6%e7%9a%84%e5%8d%8f%e5%90%8c%e8%bf%87%e6%bb%a4%ef%bc%9f.md.html" id="49 推荐系统（上）：如何实现基于相似度的协同过滤？.md.html">49 推荐系统（上）：如何实现基于相似度的协同过滤？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/50%20%e6%8e%a8%e8%8d%90%e7%b3%bb%e7%bb%9f%ef%bc%88%e4%b8%8b%ef%bc%89%ef%bc%9a%e5%a6%82%e4%bd%95%e9%80%9a%e8%bf%87SVD%e5%88%86%e6%9e%90%e7%94%a8%e6%88%b7%e5%92%8c%e7%89%a9%e5%93%81%e7%9a%84%e7%9f%a9%e9%98%b5%ef%bc%9f.md.html" id="50 推荐系统（下）：如何通过SVD分析用户和物品的矩阵？.md.html">50 推荐系统（下）：如何通过SVD分析用户和物品的矩阵？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/51%20%e7%bb%bc%e5%90%88%e5%ba%94%e7%94%a8%e7%af%87%e7%ad%94%e7%96%91%e5%92%8c%e6%80%bb%e7%bb%93%ef%bc%9a%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e4%b8%aa%e6%80%a7%e5%8c%96%e7%94%a8%e6%88%b7%e7%94%bb%e5%83%8f%e7%9a%84%e8%ae%be%e8%ae%a1%ef%bc%9f.md.html" id="51 综合应用篇答疑和总结：如何进行个性化用户画像的设计？.md.html">51 综合应用篇答疑和总结：如何进行个性化用户画像的设计？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/%e5%af%bc%e8%af%bb%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e5%ba%94%e8%af%a5%e6%80%8e%e4%b9%88%e5%ad%a6%e6%95%b0%e5%ad%a6%ef%bc%9f.md.html" id="导读：程序员应该怎么学数学？.md.html">导读：程序员应该怎么学数学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/%e5%bc%80%e7%af%87%e8%af%8d%20%e4%bd%9c%e4%b8%ba%e7%a8%8b%e5%ba%8f%e5%91%98%ef%bc%8c%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%a0%e5%ba%94%e8%af%a5%e5%ad%a6%e5%a5%bd%e6%95%b0%e5%ad%a6%ef%bc%9f.md.html" id="开篇词 作为程序员，为什么你应该学好数学？.md.html">开篇词 作为程序员，为什么你应该学好数学？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/%e6%95%b0%e5%ad%a6%e4%b8%93%e6%a0%8f%e8%af%be%e5%a4%96%e5%8a%a0%e9%a4%90%ef%bc%88%e4%b8%80%ef%bc%89%20%e6%88%91%e4%bb%ac%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%8f%8d%e7%a0%81%e5%92%8c%e8%a1%a5%e7%a0%81%ef%bc%9f.md.html" id="数学专栏课外加餐（一） 我们为什么需要反码和补码？.md.html">数学专栏课外加餐（一） 我们为什么需要反码和补码？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/%e6%95%b0%e5%ad%a6%e4%b8%93%e6%a0%8f%e8%af%be%e5%a4%96%e5%8a%a0%e9%a4%90%ef%bc%88%e4%b8%89%ef%bc%89%ef%bc%9a%e7%a8%8b%e5%ba%8f%e5%91%98%e9%9c%80%e8%a6%81%e8%af%bb%e5%93%aa%e4%ba%9b%e6%95%b0%e5%ad%a6%e4%b9%a6%ef%bc%9f.md.html" id="数学专栏课外加餐（三）：程序员需要读哪些数学书？.md.html">数学专栏课外加餐（三）：程序员需要读哪些数学书？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/%e6%95%b0%e5%ad%a6%e4%b8%93%e6%a0%8f%e8%af%be%e5%a4%96%e5%8a%a0%e9%a4%90%ef%bc%88%e4%ba%8c%ef%bc%89%20%e4%bd%8d%e6%93%8d%e4%bd%9c%e7%9a%84%e4%b8%89%e4%b8%aa%e5%ba%94%e7%94%a8%e5%ae%9e%e4%be%8b.md.html" id="数学专栏课外加餐（二） 位操作的三个应用实例.md.html">数学专栏课外加餐（二） 位操作的三个应用实例.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9a%84%e6%95%b0%e5%ad%a6%e5%9f%ba%e7%a1%80%e8%af%be/%e7%bb%93%e6%9d%9f%e8%af%ad%20%e4%bb%8e%e6%95%b0%e5%ad%a6%e5%88%b0%e7%bc%96%e7%a8%8b%ef%bc%8c%e6%9c%ac%e8%ba%ab%e5%b0%b1%e6%98%af%e4%b8%80%e4%b8%aa%e5%be%88%e9%95%bf%e7%9a%84%e9%93%be%e6%9d%a1.md.html" id="结束语 从数学到编程，本身就是一个很长的链条.md.html">结束语 从数学到编程，本身就是一个很长的链条.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="43 PCA主成分分析（下）：为什么要计算协方差矩阵的特征值和特征向量？" id="title">43 PCA主成分分析（下）：为什么要计算协方差矩阵的特征值和特征向量？</h1>
+<div><p>你好，我是黄申，今天我们继续来聊PCA主成分分析的下半部分。</p>
+<p>上一节，我们讲解了一种特征降维的方法：PCA主成分分析。这个方法主要是利用不同维度特征之间的协方差，构造一个协方差矩阵，然后获取这个矩阵的特征值和特征向量。根据特征值的大小，我们可以选取那些更为重要的特征向量，或者说主成分。最终，根据这些主成分，我们就可以对原始的数据矩阵进行降维。</p>
+<p>PCA方法的操作步骤有些繁琐，并且背后的理论支持也不是很直观，因此对于初学者来说并不好理解。考虑到这些，我今天会使用一个具体的矩阵示例，详细讲解每一步操作的过程和结果，并辅以基于Python的核心代码进行分析验证。除此之外，我还会从多个角度出发，分析PCA方法背后的理论，帮助你进一步的理解和记忆。</p>
+<h2 id="基于python的案例分析">基于Python的案例分析</h2>
+<p>这么说可能有一些抽象，让我使用一个具体的案例来帮你理解。假设我们有一个样本集合，包含了3个样本，每个样本有3维特征<span class="math inline">\(x\_1\)</span>，<span class="math inline">\(x\_2\)</span>和<span class="math inline">\(x\_3\)</span>。</p>
+<p><img alt="" src="assets/4196b62602fc4de5989ab7bb8fa899d3.jpg"/></p>
+<p>在标准化的时候，需要注意的是，我们的分母都使用m而不是m-1，这是为了和之后Python中sklearn库的默认实现保持一致。</p>
+<p>首先需要获取标准化之后的数据。</p>
+<p>第一维特征的数据是1，2，-3。平均值是0，方差是</p>
+<p><span class="math inline">\(\\sqrt{\\frac{1+4+9}{3}}≈2.16\)</span></p>
+<p>标准化之后第一维特征的数据是1/2.16=0.463，2/2.16=0.926，-<sup>3</sup>⁄<sub>2</sub>.16=-1.389。以此类推，我们可以获得第二个维度和第三个维度标准化之后的数据。</p>
+<p>当然，全部手动计算工作量不小，这时可以让计算机做它擅长的事情：重复性计算。下面的Python代码展示了如何对样本矩阵的数据进行标准化。</p>
+<pre><code>from numpy import *
+from numpy import linalg as LA
+from sklearn.preprocessing import scale
+
+# 原始数据，包含了3个样本和3个特征，每一行表示一个样本，每一列表示一维特征
+x = mat([[1,3,-7],[2,5,-14],[-3,-7,2]])
+
+# 矩阵按列进行标准化
+x_s = scale(x, with_mean=True, with_std=True, axis=0)
+print("标准化后的矩阵：", x_s)
+</code></pre>
+<p>其中，scale函数使用了axis=0，表示对列进行标准化，因为目前的矩阵排列中，每一列代表一个特征维度，这点需要注意。如果矩阵排列中每一行代表一个特征维度，那么可以使用axis=1对行进行标准化。</p>
+<p>最终标准化之后的矩阵是这样的：</p>
+<p><img alt="" src="assets/43c7f3185a194befbdbed99517859d3a.jpg"/></p>
+<p>接下来是协方差的计算。对于第1维向量的方差，有</p>
+<p><span class="math inline">\(\\frac{0.463^2 +0.926^2+(-1.389^2)}{2}≈1.5\)</span></p>
+<p>第1维和第2维向量之间的协方差是</p>
+<p><span class="math inline">\(\\frac{0.463×0.508+0.926×0.889+(-1.389)×(-1.397)}{2}≈1.5\)</span></p>
+<p>以此类推，我们就可以获得完整的协方差矩阵。同样的，为了减少推算的工作量，我们可以使用Python代码获得协方差矩阵。</p>
+<pre><code># 计算协方差矩阵，注意这里需要先进行转置，因为这里的函数是看行与行之间的协方差
+x_cov = cov(x_s.transpose())
+# 输出协方差矩阵
+print("协方差矩阵：\n", x_cov, "\n")
+</code></pre>
+<p>和sklearn中的标准化函数scale有所不同，numpy中的协方差函数cov除以的是(m-1)，而不是m。最终完整的协方差矩阵是：</p>
+<p><img alt="" src="assets/dc98a21a48fb444bb93b6143b993afa7.jpg"/></p>
+<p>然后，我们要求解协方差矩阵的特征值和特征向量。</p>
+<p><img alt="" src="assets/1db79b52ed7a42e7abbeb7c211dd7a0b.jpg"/></p>
+<p>最后化简为：</p>
+<p><span class="math inline">\(-λ^3+4.5λ^2=0.343λ=0\)</span>-
+<span class="math inline">\(λ(0.0777-λ)(λ-4.4223)=0\)</span></p>
+<p>所以<span class="math inline">\(λ\)</span>有3个近似解，分别是0、0.0777和4.4223。</p>
+<p>特征向量的求解过程如果手动推算比较繁琐，我们还是利用Python语言直接求出特征值和对应的特征向量。</p>
+<pre><code># 求协方差矩阵的特征值和特征向量
+eigVals,eigVects = LA.eig(x_cov)
+print("协方差矩阵的特征值：", eigVals)
+print("协方差的特征向量（主成分）：\n", eigVects, "\n")
+</code></pre>
+<p>我们可以得到三个特征值及它们对应的特征向量。</p>
+<p><img alt="" src="assets/ebe745b364ba45ebbe32b3fa6be0dbf2.jpg"/></p>
+<p>需要注意，Python代码输出的特征向量是列向量，而我表格中列出的是行向量。</p>
+<p>我使用下面的这段代码，找出特征值最大的特征向量，也就是最重要的主成分，然后利用这个主成分，对原始的样本矩阵进行变换。</p>
+<pre><code># 找到最大的特征值，及其对应的特征向量
+max_eigVal = -1
+max_eigVal_index = -1
+
+for i in range(0, eigVals.size):
+    if (eigVals[i] &gt; max_eigVal):
+        max_eigVal = eigVals[i]
+        max_eigVal_index = i
+
+    eigVect_with_max_eigVal = eigVects[:,max_eigVal_index]
+
+# 输出最大的特征值及其对应的特征向量，也就是第一个主成分
+print("最大的特征值：", max_eigVal)
+print("最大特征值所对应的特征向量：", eigVect_with_max_eigVal)
+
+# 输出变换后的数据矩阵。注意，这里的三个值是表示三个样本，而特征从3维变为1维了。
+print("变换后的数据矩阵：", x_s.dot(eigVect_with_max_eigVal), "\n")
+</code></pre>
+<p>很明显，最大的特征值是4.422311507725755，对应的特征向量是[-0.58077228 -0.57896098 0.57228292]。变换后的样本矩阵是：</p>
+<p><img alt="" src="assets/ec70b079efce42b8a04eb265c011054d.jpg"/>-
+它从原来的3个特征维度降为1个特征维度了。</p>
+<p>Python的sklearn库也实现了PCA，我们可以通过下面的代码来尝试一下。</p>
+<pre><code>from sklearn.decomposition import PCA
+
+# 挑选前2个主成分
+pca = PCA(n_components=2)
+
+# 进行PCA分析
+pca.fit(x_s)
+
+# 输出变换后的数据矩阵。注意，这里的三个值是表示三个样本，而特征从3维变为1维了。
+print("方差（特征值）: ", pca.explained_variance_)
+print("主成分（特征向量）", pca.components_)
+print("变换后的样本矩阵：", pca.transform(x_s))
+print("信息量: ", pca.explained_variance_ratio_)
+</code></pre>
+<p>这段代码中，我把输出的主成分设置为2，也就是说挑出前2个最重要的主成分。相应的，变化后的样本矩阵有2个特征维度。</p>
+<p><img alt="" src="assets/b431eff61a764126a55b64ebdb269e96.jpg"/></p>
+<p>除了输出主成分和变换后的矩阵，sklearn的PCA分析还提供了信息量的数据。</p>
+<pre><code>信息量:  [0.98273589 0.01726411]
+</code></pre>
+<p>它是各个主成分的方差所占的比例，表示第一个主成分包含了原始样本矩阵中的98.27%的信息，而第二个主成分包含了原始样本矩阵中的1.73%的信息，可想而知，最后一个主成分提供的信息量基本为0了，我们可以忽略不计了。如果我们觉得95%以上的信息量就足够了，那么就可以只保留第一个主成分，把原始的样本矩阵的特征维度降到1维。</p>
+<p>当然，学习的更高境界，不是仅仅“知其然”，还要做到“知其所以然”。即使现在你对PCA的操作步骤了如指掌，可能还是有不少疑惑，比如，为什么我们要使用协方差矩阵？这个矩阵的特征值和特征向量又表示什么？为什么选择特征值最大的主成分，就能涵盖最多的信息量呢？不用着急，接下来，我会给你做出更透彻的解释，让你不仅明白如何进行PCA分析，同时还明白为什么要这么做。</p>
+<h2 id="pca背后的核心思想">PCA背后的核心思想</h2>
+<h3 id="为什么要使用协方差矩阵">为什么要使用协方差矩阵？</h3>
+<p>首先要回答的第一个问题是，为什么我们要使用样本数据中，各个维度之间的协方差，来构建一个新的协方差矩阵？要弄清楚这一点，首先要回到PCA最终的目标：降维。降维就是要去除那些表达信息量少，或者冗余的维度。</p>
+<p>我们首先来看如何定义维度的信息量大小。这里我们认为样本在某个特征上的差异就越大，那么这个特征包含的信息量就越大，就越重要。相反，信息量就越小，需要被过滤掉。很自然，我们就能想到使用某维特征的方差来定义样本在这个特征维度上的差异。</p>
+<p>另一方面，我们要看如何发现冗余的信息。如果两种特征是有很高的相关性，那我们可以从一个维度的值推算出另一个维度的值，所表达的信息就是重复的。在概率和统计模块，我介绍过多个变量间的相关性，而在实际运用中，我们可以使用皮尔森（Pearson）相关系数，来描述两个变量之间的线性相关程度。这个系数的取值范围是<span class="math inline">\(\[-1,1\]\)</span>，绝对值越大，说明相关性越高，正数表示正相关，负数表示负相关。</p>
+<p>我使用下面这张图，来表示正相关和负相关的含义。左侧<span class="math inline">\(X\)</span>曲线和<span class="math inline">\(Y\)</span>曲线有非常近似的变化趋势，当<span class="math inline">\(X\)</span>上升<span class="math inline">\(Y\)</span>往往也是上升的，<span class="math inline">\(X\)</span>下降<span class="math inline">\(Y\)</span>往往也下降，这表示两者有较强的正相关性。右侧<span class="math inline">\(X\)</span>和<span class="math inline">\(Y\)</span>两者相反，当<span class="math inline">\(X\)</span>上升的时候，<span class="math inline">\(Y\)</span>往往是下降的，<span class="math inline">\(X\)</span>下降的时候，<span class="math inline">\(Y\)</span>往往是上升，这表示两者有较强的负相关性。</p>
+<p><img alt="" src="assets/c9872e710a9e4fd493518f8b8ca5cf3f.jpg"/></p>
+<p>皮尔森系数计算公式如下：</p>
+<p><img alt="" src="assets/a4e2f29fbd4c44849299568a4be1e4f1.jpg"/></p>
+<p>其中<span class="math inline">\(n\)</span>表示向量维度，<span class="math inline">\(x\_{k,i}\)</span>和<span class="math inline">\(x\_{k,j}\)</span>分别为两个特征维度<span class="math inline">\(i\)</span>和<span class="math inline">\(j\)</span>在第<span class="math inline">\(k\)</span>个采样上的数值。 <span class="math inline">\(\\bar{x\_{,i}}\)</span>和<span class="math inline">\(\\bar{x\_{,j}}\)</span>分别表示两个特征维度上所有样本的均值，<span class="math inline">\(σx\)</span>和<span class="math inline">\(σy\)</span>分别表示两个特征维度上所有样本的标准差。</p>
+<p>我把皮尔森系数的公式稍加变化，你来观察一下皮尔森系数和协方差之间的关系。</p>
+<p><img alt="" src="assets/06b5d7e97fc645548c84bff688033cb1.jpg"/></p>
+<p>你看，变换后的分子不就是协方差吗？而分母类似于标准化数据中的分母。所以在本质上，皮尔森相关系数和数据标准化后的协方差是一致的。</p>
+<p>考虑到协方差既可以衡量信息量的大小，也可以衡量不同维度之间的相关性，因此我们就使用各个维度之间的协方差所构成的矩阵，作为PCA分析的对象。就如前面所讲述的，这个协方差矩阵主对角线上的元素是各维度上的方差，也就体现了信息量，而其他元素是两两维度间的协方差，也就体现了相关性。</p>
+<p>既然协方差矩阵提供了我们所需要的方差和相关性，那么下一步，我们就要考虑对这个矩阵进行怎样的操作了。</p>
+<h3 id="为什么要计算协方差矩阵的特征值和特征向量">为什么要计算协方差矩阵的特征值和特征向量？</h3>
+<p>关于这点，我们可以从两个角度来理解。</p>
+<p>第一个角度是对角矩阵。所谓对角矩阵，就是说只有矩阵主对角线之上的元素有非0值，而其他元素的值都为0。我们刚刚解释了协方差矩阵的主对角线上，都是表示信息量的方差，而其他元素都是表示相关性的协方差。既然我们希望尽可能保留大信息量的维度，而去除相关的维度，那么就意味着我们希望对协方差进行对角化，尽可能地使得矩阵只有主对角线上有非0元素。</p>
+<p>假如我们确实可以把矩阵尽可能地对角化，那么对角化之后的矩阵，它的主对角线上元素就是、或者接近矩阵的特征值，而特征值本身又表示了转换后的方差，也就是信息量。而此时，对应的各个特征向量之间是基本正交的，也就是相关性极低甚至没有相关性。</p>
+<p>第二个角度是特征值和特征向量的几何意义。在向量空间中，对某个向量左乘一个矩阵，实际上是对这个向量进行了一次变换。在这个变换的过程中，被左乘的向量主要发生旋转和伸缩这两种变化。如果左乘矩阵对某一个向量或某些向量只发生伸缩变换，不对这些向量产生旋转的效果，那么这些向量就称为这个矩阵的特征向量，而伸缩的比例就是特征值。换句话来说，某个矩阵的特征向量表示了这个矩阵在空间中的变换方向，这些方向都是趋于正交的，而特征值表示每个方向上伸缩的比例。</p>
+<p>如果一个特征值很大，那么说明在对应的特征向量所表示的方向上，伸缩幅度很大。这也是为什么，我们需要使用原始的数据去左乘这个特征向量，来获取降维后的新数据。因为这样做可以帮助我们找到一个方向，让它最大程度地包含原有的信息。需要注意的是，这个新的方向，往往不代表原始的特征，而是多个原始特征的组合和缩放。</p>
+<h2 id="小结">小结</h2>
+<p>这两节，我详细讲解了PCA主成分分析法，它是一种针对数值型特征、较为通用的降维方法。和特征选择不同，它并不需要监督式学习中的样本标签，而是从不同维度特征之间的关系出发，进行了一系列的操作和分析。主要步骤包括，标准化原始的数据矩阵、构建协方差矩阵、计算这种协方差矩阵的特征值和特征向量、挑选较大特征值所对应的特征向量、进行原始特征数据的转换。如果排名靠前的特征向量，或者说主成分，已经包括了足够的信息量，那么我们就可以通过选择较少的主成分，对原始的样本矩阵进行转换，从而达到降维的目的。</p>
+<p>PCA方法一开始不是很好理解，其主要的原因之一是它背后的核心思想并不是很直观。为此，我详细解释了为什么PCA会从标准化和协方差入手来构建协方差矩阵。对于同类的特征来说，标准化之后的协方差就是方差，表示了这一维特征所包含的信息量。而对于不同类的特征来说，标准化之后的协方差体现了这两维特征的相关性。鉴于这两个特性，我们需要求解协方差矩阵的特征值和特征向量。如果你弄清楚了这几个关键点，那么PCA方法也就不难理解了。</p>
+<h2 id="思考题">思考题</h2>
+<p>到目前为止，我们讲解了两种特征降维的方法。第一，在监督式学习中，基于分类标签的特征选择；第二，基于特征协方差矩阵的PCA主成分分析。请尝试从你自己的理解，来说说这两种降维方法各自的优缺点。</p>
+<p>欢迎留言和我分享，也欢迎你在留言区写下今天的学习笔记。你可以点击“请朋友读”，把今天的内容分享给你的好友，和他一起精进。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#6b070707525f5a5a5b5c2b0c060a020745080406" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359ce428d8a2418',t:'MTc0NTU0MTgwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
