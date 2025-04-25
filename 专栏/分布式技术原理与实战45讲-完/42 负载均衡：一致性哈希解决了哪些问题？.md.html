@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="42 负载均衡：一致性哈希解决了哪些问题？" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>42 负载均衡：一致性哈希解决了哪些问题？ </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/00%20%e5%bc%80%e7%af%87%e8%af%8d%ef%bc%9a%e6%90%ad%e5%bb%ba%e5%88%86%e5%b8%83%e5%bc%8f%e7%9f%a5%e8%af%86%e4%bd%93%e7%b3%bb%ef%bc%8c%e6%8c%91%e6%88%98%e9%ab%98%e8%96%aa%20Offer.md.html" id="00 开篇词：搭建分布式知识体系，挑战高薪 Offer.md.html">00 开篇词：搭建分布式知识体系，挑战高薪 Offer.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/01%20%e5%a6%82%e4%bd%95%e8%af%81%e6%98%8e%e5%88%86%e5%b8%83%e5%bc%8f%e7%b3%bb%e7%bb%9f%e7%9a%84%20CAP%20%e7%90%86%e8%ae%ba%ef%bc%9f.md.html" id="01 如何证明分布式系统的 CAP 理论？.md.html">01 如何证明分布式系统的 CAP 理论？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/02%20%e4%b8%8d%e5%90%8c%e6%95%b0%e6%8d%ae%e4%b8%80%e8%87%b4%e6%80%a7%e6%a8%a1%e5%9e%8b%e6%9c%89%e5%93%aa%e4%ba%9b%e5%ba%94%e7%94%a8%ef%bc%9f.md.html" id="02 不同数据一致性模型有哪些应用？.md.html">02 不同数据一致性模型有哪些应用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/03%20%e5%a6%82%e4%bd%95%e9%80%8f%e5%bd%bb%e7%90%86%e8%a7%a3%20Paxos%20%e7%ae%97%e6%b3%95%ef%bc%9f.md.html" id="03 如何透彻理解 Paxos 算法？.md.html">03 如何透彻理解 Paxos 算法？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/04%20ZooKeeper%20%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e6%95%b0%e6%8d%ae%e4%b8%80%e8%87%b4%e6%80%a7%ef%bc%9f.md.html" id="04 ZooKeeper 如何保证数据一致性？.md.html">04 ZooKeeper 如何保证数据一致性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/05%20%e5%85%b1%e8%af%86%e9%97%ae%e9%a2%98%ef%bc%9a%e5%8c%ba%e5%9d%97%e9%93%be%e5%a6%82%e4%bd%95%e7%a1%ae%e8%ae%a4%e8%ae%b0%e8%b4%a6%e6%9d%83%ef%bc%9f.md.html" id="05 共识问题：区块链如何确认记账权？.md.html">05 共识问题：区块链如何确认记账权？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/06%20%e5%a6%82%e4%bd%95%e5%87%86%e5%a4%87%e4%b8%80%e7%ba%bf%e4%ba%92%e8%81%94%e7%bd%91%e5%85%ac%e5%8f%b8%e9%9d%a2%e8%af%95%ef%bc%9f.md.html" id="06 如何准备一线互联网公司面试？.md.html">06 如何准备一线互联网公司面试？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/07%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%e6%9c%89%e5%93%aa%e4%ba%9b%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88%ef%bc%9f.md.html" id="07 分布式事务有哪些解决方案？.md.html">07 分布式事务有哪些解决方案？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/08%20%e5%af%b9%e6%af%94%e4%b8%a4%e9%98%b6%e6%ae%b5%e6%8f%90%e4%ba%a4%ef%bc%8c%e4%b8%89%e9%98%b6%e6%ae%b5%e5%8d%8f%e8%ae%ae%e6%9c%89%e5%93%aa%e4%ba%9b%e6%94%b9%e8%bf%9b%ef%bc%9f.md.html" id="08 对比两阶段提交，三阶段协议有哪些改进？.md.html">08 对比两阶段提交，三阶段协议有哪些改进？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/09%20MySQL%20%e6%95%b0%e6%8d%ae%e5%ba%93%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%20XA%20%e8%a7%84%e8%8c%83%ef%bc%9f.md.html" id="09 MySQL 数据库如何实现 XA 规范？.md.html">09 MySQL 数据库如何实现 XA 规范？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/10%20%e5%a6%82%e4%bd%95%e5%9c%a8%e4%b8%9a%e5%8a%a1%e4%b8%ad%e4%bd%93%e7%8e%b0%20TCC%20%e4%ba%8b%e5%8a%a1%e6%a8%a1%e5%9e%8b%ef%bc%9f.md.html" id="10 如何在业务中体现 TCC 事务模型？.md.html">10 如何在业务中体现 TCC 事务模型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/11%20%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%e6%9c%89%e5%93%aa%e4%ba%9b%e5%ba%94%e7%94%a8%e5%9c%ba%e6%99%af%e5%92%8c%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="11 分布式锁有哪些应用场景和实现？.md.html">11 分布式锁有哪些应用场景和实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/12%20%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%20Redis%20%e5%bf%ab%e9%80%9f%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81%ef%bc%9f.md.html" id="12 如何使用 Redis 快速实现分布式锁？.md.html">12 如何使用 Redis 快速实现分布式锁？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/13%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%ba%8b%e5%8a%a1%e8%80%83%e7%82%b9%e6%a2%b3%e7%90%86%20+%20%e9%ab%98%e9%a2%91%e9%9d%a2%e8%af%95%e9%a2%98.md.html" id="13 分布式事务考点梳理 + 高频面试题.md.html">13 分布式事务考点梳理 + 高频面试题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/14%20%e5%a6%82%e4%bd%95%e7%90%86%e8%a7%a3%20RPC%20%e8%bf%9c%e7%a8%8b%e6%9c%8d%e5%8a%a1%e8%b0%83%e7%94%a8%ef%bc%9f.md.html" id="14 如何理解 RPC 远程服务调用？.md.html">14 如何理解 RPC 远程服务调用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/15%20%e4%b8%ba%e4%bb%80%e4%b9%88%e5%be%ae%e6%9c%8d%e5%8a%a1%e9%9c%80%e8%a6%81%20API%20%e7%bd%91%e5%85%b3%ef%bc%9f.md.html" id="15 为什么微服务需要 API 网关？.md.html">15 为什么微服务需要 API 网关？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/16%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%9c%8d%e5%8a%a1%e6%b3%a8%e5%86%8c%e4%b8%8e%e5%8f%91%e7%8e%b0%ef%bc%9f.md.html" id="16 如何实现服务注册与发现？.md.html">16 如何实现服务注册与发现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/17%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e8%b0%83%e7%94%a8%e8%b7%9f%e8%b8%aa%ef%bc%9f.md.html" id="17 如何实现分布式调用跟踪？.md.html">17 如何实现分布式调用跟踪？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/18%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%b8%8b%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%85%8d%e7%bd%ae%e7%ae%a1%e7%90%86%ef%bc%9f.md.html" id="18 分布式下如何实现配置管理？.md.html">18 分布式下如何实现配置管理？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/19%20%e5%ae%b9%e5%99%a8%e5%8c%96%e5%8d%87%e7%ba%a7%e5%af%b9%e6%9c%8d%e5%8a%a1%e6%9c%89%e5%93%aa%e4%ba%9b%e5%bd%b1%e5%93%8d%ef%bc%9f.md.html" id="19 容器化升级对服务有哪些影响？.md.html">19 容器化升级对服务有哪些影响？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/20%20ServiceMesh%ef%bc%9a%e6%9c%8d%e5%8a%a1%e7%bd%91%e6%a0%bc%e6%9c%89%e5%93%aa%e4%ba%9b%e5%ba%94%e7%94%a8%ef%bc%9f.md.html" id="20 ServiceMesh：服务网格有哪些应用？.md.html">20 ServiceMesh：服务网格有哪些应用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/21%20Dubbo%20vs%20Spring%20Cloud%ef%bc%9a%e4%b8%a4%e5%a4%a7%e6%8a%80%e6%9c%af%e6%a0%88%e5%a6%82%e4%bd%95%e9%80%89%e5%9e%8b%ef%bc%9f.md.html" id="21 Dubbo vs Spring Cloud：两大技术栈如何选型？.md.html">21 Dubbo vs Spring Cloud：两大技术栈如何选型？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/22%20%e5%88%86%e5%b8%83%e5%bc%8f%e6%9c%8d%e5%8a%a1%e8%80%83%e7%82%b9%e6%a2%b3%e7%90%86%20+%20%e9%ab%98%e9%a2%91%e9%9d%a2%e8%af%95%e9%a2%98.md.html" id="22 分布式服务考点梳理 + 高频面试题.md.html">22 分布式服务考点梳理 + 高频面试题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/23%20%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb%e5%a6%82%e4%bd%95%e5%9c%a8%e4%b8%9a%e5%8a%a1%e4%b8%ad%e8%90%bd%e5%9c%b0%ef%bc%9f.md.html" id="23 读写分离如何在业务中落地？.md.html">23 读写分离如何在业务中落地？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/24%20%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%88%86%e5%ba%93%e5%88%86%e8%a1%a8%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%ef%bc%9f.md.html" id="24 为什么需要分库分表，如何实现？.md.html">24 为什么需要分库分表，如何实现？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/25%20%e5%ad%98%e5%82%a8%e6%8b%86%e5%88%86%e5%90%8e%ef%bc%8c%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e5%94%af%e4%b8%80%e4%b8%bb%e9%94%ae%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="25 存储拆分后，如何解决唯一主键问题？.md.html">25 存储拆分后，如何解决唯一主键问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/26%20%e5%88%86%e5%ba%93%e5%88%86%e8%a1%a8%e4%bb%a5%e5%90%8e%ef%bc%8c%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%89%a9%e5%ae%b9%ef%bc%9f.md.html" id="26 分库分表以后，如何实现扩容？.md.html">26 分库分表以后，如何实现扩容？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/27%20NoSQL%20%e6%95%b0%e6%8d%ae%e5%ba%93%e6%9c%89%e5%93%aa%e4%ba%9b%e5%85%b8%e5%9e%8b%e5%ba%94%e7%94%a8%ef%bc%9f.md.html" id="27 NoSQL 数据库有哪些典型应用？.md.html">27 NoSQL 数据库有哪些典型应用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/28%20ElasticSearch%20%e6%98%af%e5%a6%82%e4%bd%95%e5%bb%ba%e7%ab%8b%e7%b4%a2%e5%bc%95%e7%9a%84%ef%bc%9f.md.html" id="28 ElasticSearch 是如何建立索引的？.md.html">28 ElasticSearch 是如何建立索引的？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/29%20%e5%88%86%e5%b8%83%e5%bc%8f%e5%ad%98%e5%82%a8%e8%80%83%e7%82%b9%e6%a2%b3%e7%90%86%20+%20%e9%ab%98%e9%a2%91%e9%9d%a2%e8%af%95%e9%a2%98.md.html" id="29 分布式存储考点梳理 + 高频面试题.md.html">29 分布式存储考点梳理 + 高频面试题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/30%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e6%9c%89%e5%93%aa%e4%ba%9b%e5%ba%94%e7%94%a8%e5%9c%ba%e6%99%af%ef%bc%9f.md.html" id="30 消息队列有哪些应用场景？.md.html">30 消息队列有哪些应用场景？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/31%20%e9%9b%86%e7%be%a4%e6%b6%88%e8%b4%b9%e5%92%8c%e5%b9%bf%e6%92%ad%e6%b6%88%e8%b4%b9%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab%ef%bc%9f.md.html" id="31 集群消费和广播消费有什么区别？.md.html">31 集群消费和广播消费有什么区别？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/32%20%e4%b8%9a%e5%8a%a1%e4%b8%8a%e9%9c%80%e8%a6%81%e9%a1%ba%e5%ba%8f%e6%b6%88%e8%b4%b9%ef%bc%8c%e6%80%8e%e4%b9%88%e4%bf%9d%e8%af%81%e6%97%b6%e5%ba%8f%e6%80%a7%ef%bc%9f.md.html" id="32 业务上需要顺序消费，怎么保证时序性？.md.html">32 业务上需要顺序消费，怎么保证时序性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/33%20%e6%b6%88%e6%81%af%e5%b9%82%e7%ad%89%ef%bc%9a%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e6%b6%88%e6%81%af%e4%b8%8d%e8%a2%ab%e9%87%8d%e5%a4%8d%e6%b6%88%e8%b4%b9%ef%bc%9f.md.html" id="33 消息幂等：如何保证消息不被重复消费？.md.html">33 消息幂等：如何保证消息不被重复消费？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/34%20%e9%ab%98%e5%8f%af%e7%94%a8%ef%bc%9a%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e7%9a%84%20HA%ef%bc%9f.md.html" id="34 高可用：如何实现消息队列的 HA？.md.html">34 高可用：如何实现消息队列的 HA？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/35%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e9%80%89%e5%9e%8b%ef%bc%9aKafka%20%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e9%ab%98%e6%80%a7%e8%83%bd%ef%bc%9f.md.html" id="35 消息队列选型：Kafka 如何实现高性能？.md.html">35 消息队列选型：Kafka 如何实现高性能？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/36%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e9%80%89%e5%9e%8b%ef%bc%9aRocketMQ%20%e9%80%82%e7%94%a8%e5%93%aa%e4%ba%9b%e5%9c%ba%e6%99%af%ef%bc%9f.md.html" id="36 消息队列选型：RocketMQ 适用哪些场景？.md.html">36 消息队列选型：RocketMQ 适用哪些场景？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/37%20%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e8%80%83%e7%82%b9%e6%a2%b3%e7%90%86%20+%20%e9%ab%98%e9%a2%91%e9%9d%a2%e8%af%95%e9%a2%98.md.html" id="37 消息队列考点梳理 + 高频面试题.md.html">37 消息队列考点梳理 + 高频面试题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/38%20%e4%b8%8d%e6%ad%a2%e4%b8%9a%e5%8a%a1%e7%bc%93%e5%ad%98%ef%bc%8c%e5%88%86%e5%b8%83%e5%bc%8f%e7%b3%bb%e7%bb%9f%e4%b8%ad%e8%bf%98%e6%9c%89%e5%93%aa%e4%ba%9b%e7%bc%93%e5%ad%98%ef%bc%9f.md.html" id="38 不止业务缓存，分布式系统中还有哪些缓存？.md.html">38 不止业务缓存，分布式系统中还有哪些缓存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/39%20%e5%a6%82%e4%bd%95%e9%81%bf%e5%85%8d%e7%bc%93%e5%ad%98%e7%a9%bf%e9%80%8f%e3%80%81%e7%bc%93%e5%ad%98%e5%87%bb%e7%a9%bf%e3%80%81%e7%bc%93%e5%ad%98%e9%9b%aa%e5%b4%a9%ef%bc%9f.md.html" id="39 如何避免缓存穿透、缓存击穿、缓存雪崩？.md.html">39 如何避免缓存穿透、缓存击穿、缓存雪崩？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/40%20%e7%bb%8f%e5%85%b8%e9%97%ae%e9%a2%98%ef%bc%9a%e5%85%88%e6%9b%b4%e6%96%b0%e6%95%b0%e6%8d%ae%e5%ba%93%ef%bc%8c%e8%bf%98%e6%98%af%e5%85%88%e6%9b%b4%e6%96%b0%e7%bc%93%e5%ad%98%ef%bc%9f.md.html" id="40 经典问题：先更新数据库，还是先更新缓存？.md.html">40 经典问题：先更新数据库，还是先更新缓存？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/41%20%e5%a4%b1%e6%95%88%e7%ad%96%e7%95%a5%ef%bc%9a%e7%bc%93%e5%ad%98%e8%bf%87%e6%9c%9f%e9%83%bd%e6%9c%89%e5%93%aa%e4%ba%9b%e7%ad%96%e7%95%a5%ef%bc%9f.md.html" id="41 失效策略：缓存过期都有哪些策略？.md.html">41 失效策略：缓存过期都有哪些策略？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/42%20%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%ef%bc%9a%e4%b8%80%e8%87%b4%e6%80%a7%e5%93%88%e5%b8%8c%e8%a7%a3%e5%86%b3%e4%ba%86%e5%93%aa%e4%ba%9b%e9%97%ae%e9%a2%98%ef%bc%9f.md.html" id="42 负载均衡：一致性哈希解决了哪些问题？.md.html">42 负载均衡：一致性哈希解决了哪些问题？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/43%20%e7%bc%93%e5%ad%98%e9%ab%98%e5%8f%af%e7%94%a8%ef%bc%9a%e7%bc%93%e5%ad%98%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e9%ab%98%e5%8f%af%e7%94%a8%ef%bc%9f.md.html" id="43 缓存高可用：缓存如何保证高可用？.md.html">43 缓存高可用：缓存如何保证高可用？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/44%20%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%93%e5%ad%98%e8%80%83%e7%82%b9%e6%a2%b3%e7%90%86%20+%20%e9%ab%98%e9%a2%91%e9%9d%a2%e8%af%95%e9%a2%98.md.html" id="44 分布式缓存考点梳理 + 高频面试题.md.html">44 分布式缓存考点梳理 + 高频面试题.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/45%20%e4%bb%8e%e5%8f%8c%e5%8d%81%e4%b8%80%e7%9c%8b%e9%ab%98%e5%8f%af%e7%94%a8%e7%9a%84%e4%bf%9d%e9%9a%9c%e6%96%b9%e5%bc%8f.md.html" id="45 从双十一看高可用的保障方式.md.html">45 从双十一看高可用的保障方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/46%20%e9%ab%98%e5%b9%b6%e5%8f%91%e5%9c%ba%e6%99%af%e4%b8%8b%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%b3%bb%e7%bb%9f%e9%99%90%e6%b5%81%ef%bc%9f.md.html" id="46 高并发场景下如何实现系统限流？.md.html">46 高并发场景下如何实现系统限流？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/47%20%e9%99%8d%e7%ba%a7%e5%92%8c%e7%86%94%e6%96%ad%ef%bc%9a%e5%a6%82%e4%bd%95%e5%a2%9e%e5%bc%ba%e6%9c%8d%e5%8a%a1%e7%a8%b3%e5%ae%9a%e6%80%a7%ef%bc%9f.md.html" id="47 降级和熔断：如何增强服务稳定性？.md.html">47 降级和熔断：如何增强服务稳定性？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/48%20%e5%a6%82%e4%bd%95%e9%80%89%e6%8b%a9%e9%80%82%e5%90%88%e4%b8%9a%e5%8a%a1%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e7%ad%96%e7%95%a5%ef%bc%9f.md.html" id="48 如何选择适合业务的负载均衡策略？.md.html">48 如何选择适合业务的负载均衡策略？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/49%20%e7%ba%bf%e4%b8%8a%e6%9c%8d%e5%8a%a1%e6%9c%89%e5%93%aa%e4%ba%9b%e7%a8%b3%e5%ae%9a%e6%80%a7%e6%8c%87%e6%a0%87%ef%bc%9f.md.html" id="49 线上服务有哪些稳定性指标？.md.html">49 线上服务有哪些稳定性指标？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/50%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%b8%8b%e6%9c%89%e5%93%aa%e4%ba%9b%e5%a5%bd%e7%94%a8%e7%9a%84%e7%9b%91%e6%8e%a7%e7%bb%84%e4%bb%b6%ef%bc%9f.md.html" id="50 分布式下有哪些好用的监控组件？.md.html">50 分布式下有哪些好用的监控组件？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/51%20%e5%88%86%e5%b8%83%e5%bc%8f%e4%b8%8b%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%bb%9f%e4%b8%80%e6%97%a5%e5%bf%97%e7%b3%bb%e7%bb%9f%ef%bc%9f.md.html" id="51 分布式下如何实现统一日志系统？.md.html">51 分布式下如何实现统一日志系统？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e5%88%86%e5%b8%83%e5%bc%8f%e6%8a%80%e6%9c%af%e5%8e%9f%e7%90%86%e4%b8%8e%e5%ae%9e%e6%88%9845%e8%ae%b2-%e5%ae%8c/52%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%b7%af%e6%bc%ab%e6%bc%ab%ef%bc%8c%e5%8e%9a%e7%a7%af%e8%96%84%e5%8f%91%e6%89%8d%e6%98%af%e7%8e%8b%e9%81%93.md.html" id="52 分布式路漫漫，厚积薄发才是王道.md.html">52 分布式路漫漫，厚积薄发才是王道.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="42 负载均衡：一致性哈希解决了哪些问题？" id="title">42 负载均衡：一致性哈希解决了哪些问题？</h1>
+<div><p>在业务开发中，缓存服务和其他数据服务一样，需要满足高可用性，而高可用最常用的手段就是<strong>集群扩展</strong>。</p>
+<h3 id="缓存的集群高可用">缓存的集群高可用</h3>
+<p>目前 Redis 流行的集群方案有 官方 Cluster 方案、twemproxy 代理方案、哨兵模式、Codis 等方案，关于这几种方案的具体应用，我们在下一课时将详细展开讲解。</p>
+<p>缓存服务从单点扩展到集群以后，势必会产生缓存数据的分发问题，假设我们的缓存服务器有 3 台，每台缓存的数据是不相同的，那么我们在更新缓存时，该放置在哪台机器上呢？根据 key 获取缓存时，该从哪台服务器上获取？这就涉及缓存的<strong>负载均衡策略</strong>。</p>
+<p>关于缓存集群高可用的配置方式，有数据同步和不同步之分。在数据同步的方案下，所有节点之间数据都是一样的，不同节点互为副本，这种方式不需要关心缓存数据的分发，实现了缓存集群的最大可用，但是由于冗余了多份缓存数据，会造成比较多的服务器资源浪费；另外一方面，在更新缓存数据时，还要考虑不同节点之间的一致性。</p>
+<p>数据不同步的方案，就是每个缓存节点存储的数据不同，在缓存读写时使用一定的策略进行分发。在实际开发中，大部分都是应用数据不同步的方案，如果需要冗余数据，则可以通过缓存集群主从同步实现。</p>
+<h3 id="不同路由方案的扩容问题">不同路由方案的扩容问题</h3>
+<p>在第 22 课时讲解数据库分库分表时，我们分析了数据库分库分表扩容的问题，分库分表以后，当存储节点发生增加或减少时，合理的配置分表策略，可以使得数据迁移最小。</p>
+<p>其实不只是数据库，缓存集群也有一样的问题。下面来看一下几种负载均衡策略，以及对应的优缺点。</p>
+<h4 id="哈希取模路由">哈希取模路由</h4>
+<p>最常见的方式是对缓存数据进行哈希，典型的操作就是通过对缓存 hash（缓存 Key）/ 节点数量。</p>
+<p>假设我们有 5 台缓存服务器，伪代码如下：</p>
+<pre><code>//获取缓存服务器下标 
+
+public Integer getRoute(String key){ 
+
+int cacheIndex = key.hashcode() % 5; 
+
+return cacheIndex; 
+
+} 
+</code></pre>
+<p>哈希取模的方式，适合对固定数量的缓存集群进行路由，但是对横向扩展不友好。如果缓存机器数量发生变更过，比如从 5 台服务器调整为 10 台服务器，原来的缓存数据无法分配到正确机器，就会出现路由不正确，从而业务请求直接落到数据库上。</p>
+<h4 id="一致性哈希">一致性哈希</h4>
+<p>在负载均衡策略中，可以应用一致性哈希，减少节点扩展时的数据失效或者迁移的情况。维基百科对一致性哈希是这么定义的：</p>
+<blockquote>
+<p>一致性哈希是一种特殊的哈希算法。在使用一致性哈希算法后，哈希表槽位数（大小）的改变平均只需要对 K/n 个关键字重新映射，其中 K 是关键字的数量，n 是槽位数量。然而在传统的哈希表中，添加或删除一个槽位几乎需要对所有关键字进行重新映射。</p>
+</blockquote>
+<p>一致性哈希通过一个哈希环实现，Hash 环的基本思路是获取所有的服务器节点 hash 值，然后获取 key 的 hash，与节点的 hash 进行对比，找出顺时针最近的节点进行存储和读取。</p>
+<p>以电商中的商品数据为例，假设我们有 4 台缓存服务器：</p>
+<ul>
+<li>A 服务器，地址 hash 结果是 100</li>
+<li>B 服务器，地址 hash 结果是 200</li>
+<li>C 服务器，地址 hash 结果是 300</li>
+<li>D 服务器，地址 hash 结果是 400</li>
+</ul>
+<p>现在有某条数据的 Key 进行哈希操作，得到 200，则存储在 B 服务器；某条数据的 Key 进行哈希操作，得到 260，则存储在 C 服务器；某条数据的 Key 进行哈希操作，得到 500，则存储在 A 服务器。</p>
+<p>一致性哈希算法在扩展时，只需要迁移少量的数据就可以。例如，我们刚才的例子中，如果 D 服务器下线，原先路由到 D 服务器的数据，只要顺时针迁移到 A 服务器就可以，其他服务器不受影响，我们只需要移动一台机器的数据即可。</p>
+<p>一致性哈希虽然对扩容和缩容友好，但是存在另外一个问题，就很容易出现数据倾斜。</p>
+<p>相信你已经考虑到了，假设我们有 A、B、C 一直到 J 服务器，总共 10 台，组成一个哈希环。如果从 F 服务器一直到 J 服务器的 5 个节点宕机，那么这 5 台服务器原来的访问，都会被转移到服务器 A 之上，服务器的流量可能是原来的 5 倍或者更高，直到把服务器 A 打爆，这时候流量继续转移到 B 服务器，就出现我们在第 34 课时提到的<strong>缓存雪崩</strong>。</p>
+<p>那么数据倾斜是如何解决的呢? 一个方案就是添加虚拟节点，对服务器节点也进行哈希操作，在整个哈希环上，均匀添加若干个节点。比如 a1 和 a2 都属于 A 节点，b1、b2 都属于 B 节点，这样在哈希时可以平衡各个节点的数据。</p>
+<p>另外，在面试中，面试官可能会要求你实现一致性哈希算法。以 Java 为例，可以应用 TreeMap 这个数据结构。</p>
+<p>TreeMap 基于红黑树实现，元素默认按照 keys 的自然排序排列，对外开放了一个 tailMap(K fromKey) 方法，该方法可以返回比 fromKey 顺序的下一个节点，大大简化了一致性哈希的实现。这里我就不添加代码了，感兴趣的同学可以去动手模拟实现一下。</p>
+<h3 id="总结">总结</h3>
+<p>这一课时的内容，和你分享了应用缓存集群的知识点，包括集群下的高可用，以及哈希取模和一致性哈希的负载均衡策略。</p>
+<p>一致性哈希算法的应用，主要是考虑到分布式系统每个节点都有可能失效，并且新的节点很可能动态地增加进来的情况，如何保证当系统的节点数目发生变化的时候，我们的系统仍然能够对外提供良好的服务。</p>
+<p>负载均衡在分布式系统设计中是非常重要的一部分，今天主要关注的是数据路由方案，除了数据路由，负载均衡在 API 网关、分布式服务调用中也非常关键。在服务调用中常用的负载均衡策略还包括轮训、随机，根据响应时间判断等。在你的工作中，有哪些场景用到了负载均衡，又是如何进行应用的呢？欢迎留言进行分享。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#1d71717124292c2c2d2a5d7a707c7471337e7270" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359e3472dc43903',t:'MTc0NTU0MjY2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
