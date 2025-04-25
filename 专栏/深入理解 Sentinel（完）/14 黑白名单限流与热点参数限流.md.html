@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="14 黑白名单限流与热点参数限流" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>14 黑白名单限流与热点参数限流 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/01%20%e5%bc%80%e7%af%87%e8%af%8d%ef%bc%9a%e4%b8%80%e6%ac%a1%e6%9c%8d%e5%8a%a1%e9%9b%aa%e5%b4%a9%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e7%bb%8f%e5%8e%86.md.html" id="01 开篇词：一次服务雪崩问题排查经历.md.html">01 开篇词：一次服务雪崩问题排查经历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/02%20%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e6%9c%8d%e5%8a%a1%e9%99%8d%e7%ba%a7%e4%bb%a5%e5%8f%8a%e5%b8%b8%e8%a7%81%e7%9a%84%e5%87%a0%e7%a7%8d%e9%99%8d%e7%ba%a7%e6%96%b9%e5%bc%8f.md.html" id="02 为什么需要服务降级以及常见的几种降级方式.md.html">02 为什么需要服务降级以及常见的几种降级方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/03%20%e4%b8%ba%e4%bb%80%e4%b9%88%e9%80%89%e6%8b%a9%20Sentinel%ef%bc%8cSentinel%20%e4%b8%8e%20Hystrix%20%e7%9a%84%e5%af%b9%e6%af%94.md.html" id="03 为什么选择 Sentinel，Sentinel 与 Hystrix 的对比.md.html">03 为什么选择 Sentinel，Sentinel 与 Hystrix 的对比.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/04%20Sentinel%20%e5%9f%ba%e4%ba%8e%e6%bb%91%e5%8a%a8%e7%aa%97%e5%8f%a3%e7%9a%84%e5%ae%9e%e6%97%b6%e6%8c%87%e6%a0%87%e6%95%b0%e6%8d%ae%e7%bb%9f%e8%ae%a1.md.html" id="04 Sentinel 基于滑动窗口的实时指标数据统计.md.html">04 Sentinel 基于滑动窗口的实时指标数据统计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/05%20Sentinel%20%e7%9a%84%e4%b8%80%e4%ba%9b%e6%a6%82%e5%bf%b5%e4%b8%8e%e6%a0%b8%e5%bf%83%e7%b1%bb%e4%bb%8b%e7%bb%8d.md.html" id="05 Sentinel 的一些概念与核心类介绍.md.html">05 Sentinel 的一些概念与核心类介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/06%20Sentinel%20%e4%b8%ad%e7%9a%84%e8%b4%a3%e4%bb%bb%e9%93%be%e6%a8%a1%e5%bc%8f%e4%b8%8e%20Sentinel%20%e7%9a%84%e6%95%b4%e4%bd%93%e5%b7%a5%e4%bd%9c%e6%b5%81%e7%a8%8b.md.html" id="06 Sentinel 中的责任链模式与 Sentinel 的整体工作流程.md.html">06 Sentinel 中的责任链模式与 Sentinel 的整体工作流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/07%20Java%20SPI%20%e5%8f%8a%20SPI%20%e5%9c%a8%20Sentinel%20%e4%b8%ad%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="07 Java SPI 及 SPI 在 Sentinel 中的应用.md.html">07 Java SPI 及 SPI 在 Sentinel 中的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/08%20%e8%b5%84%e6%ba%90%e6%8c%87%e6%a0%87%e6%95%b0%e6%8d%ae%e7%bb%9f%e8%ae%a1%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%85%a8%e8%a7%a3%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="08 资源指标数据统计的实现全解析（上）.md.html">08 资源指标数据统计的实现全解析（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/09%20%e8%b5%84%e6%ba%90%e6%8c%87%e6%a0%87%e6%95%b0%e6%8d%ae%e7%bb%9f%e8%ae%a1%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%85%a8%e8%a7%a3%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="09 资源指标数据统计的实现全解析（下）.md.html">09 资源指标数据统计的实现全解析（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/10%20%e9%99%90%e6%b5%81%e9%99%8d%e7%ba%a7%e4%b8%8e%e6%b5%81%e9%87%8f%e6%95%88%e6%9e%9c%e6%8e%a7%e5%88%b6%e5%99%a8%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="10 限流降级与流量效果控制器（上）.md.html">10 限流降级与流量效果控制器（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/11%20%e9%99%90%e6%b5%81%e9%99%8d%e7%ba%a7%e4%b8%8e%e6%b5%81%e9%87%8f%e6%95%88%e6%9e%9c%e6%8e%a7%e5%88%b6%e5%99%a8%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="11 限流降级与流量效果控制器（中）.md.html">11 限流降级与流量效果控制器（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/12%20%e9%99%90%e6%b5%81%e9%99%8d%e7%ba%a7%e4%b8%8e%e6%b5%81%e9%87%8f%e6%95%88%e6%9e%9c%e6%8e%a7%e5%88%b6%e5%99%a8%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12 限流降级与流量效果控制器（下）.md.html">12 限流降级与流量效果控制器（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/13%20%e7%86%94%e6%96%ad%e9%99%8d%e7%ba%a7%e4%b8%8e%e7%b3%bb%e7%bb%9f%e8%87%aa%e9%80%82%e5%ba%94%e9%99%90%e6%b5%81.md.html" id="13 熔断降级与系统自适应限流.md.html">13 熔断降级与系统自适应限流.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/14%20%e9%bb%91%e7%99%bd%e5%90%8d%e5%8d%95%e9%99%90%e6%b5%81%e4%b8%8e%e7%83%ad%e7%82%b9%e5%8f%82%e6%95%b0%e9%99%90%e6%b5%81.md.html" id="14 黑白名单限流与热点参数限流.md.html">14 黑白名单限流与热点参数限流.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/15%20%e8%87%aa%e5%ae%9a%e4%b9%89%20ProcessorSlot%20%e5%ae%9e%e7%8e%b0%e5%bc%80%e5%85%b3%e9%99%8d%e7%ba%a7.md.html" id="15 自定义 ProcessorSlot 实现开关降级.md.html">15 自定义 ProcessorSlot 实现开关降级.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/16%20Sentinel%20%e5%8a%a8%e6%80%81%e6%95%b0%e6%8d%ae%e6%ba%90%ef%bc%9a%e8%a7%84%e5%88%99%e5%8a%a8%e6%80%81%e9%85%8d%e7%bd%ae.md.html" id="16 Sentinel 动态数据源：规则动态配置.md.html">16 Sentinel 动态数据源：规则动态配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/17%20Sentinel%20%e4%b8%bb%e6%b5%81%e6%a1%86%e6%9e%b6%e9%80%82%e9%85%8d.md.html" id="17 Sentinel 主流框架适配.md.html">17 Sentinel 主流框架适配.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/18%20Sentinel%20%e9%9b%86%e7%be%a4%e9%99%90%e6%b5%81%e7%9a%84%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="18 Sentinel 集群限流的实现（上）.md.html">18 Sentinel 集群限流的实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/19%20Sentinel%20%e9%9b%86%e7%be%a4%e9%99%90%e6%b5%81%e7%9a%84%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="19 Sentinel 集群限流的实现（下）.md.html">19 Sentinel 集群限流的实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/20%20%e7%bb%93%e6%9d%9f%e8%af%ad%ef%bc%9aSentinel%20%e5%af%b9%e5%ba%94%e7%94%a8%e7%9a%84%e6%80%a7%e8%83%bd%e5%bd%b1%e5%93%8d%e5%a6%82%e4%bd%95%ef%bc%9f.md.html" id="20 结束语：Sentinel 对应用的性能影响如何？.md.html">20 结束语：Sentinel 对应用的性能影响如何？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/21%20%e7%95%aa%e5%a4%96%e7%af%87%ef%bc%9aSentinel%201.8.0%20%e7%86%94%e6%96%ad%e9%99%8d%e7%ba%a7%e6%96%b0%e7%89%b9%e6%80%a7%e8%a7%a3%e8%af%bb.md.html" id="21 番外篇：Sentinel 1.8.0 熔断降级新特性解读.md.html">21 番外篇：Sentinel 1.8.0 熔断降级新特性解读.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="14 黑白名单限流与热点参数限流" id="title">14 黑白名单限流与热点参数限流</h1>
+<div><h3 id="黑白名单限流">黑白名单限流</h3>
+<p>黑白名单过滤是使用最为广泛的一种过滤规则，例如，用于实现接口安全的 IP 黑白名单规则过滤，用于防骚扰的短信、来电拦截黑白名单过滤。所以 Sentinel 中的黑白名单限流并不难理解，如果配置了黑名单，且请求来源存在黑名单中，则拦截（拒绝）请求，如果配置了白名单，且请求来源存在白名单中则放行。Sentinel 不支持一个黑白名单规则同时配置黑名单和白名单，因此不存优先级的问题。</p>
+<p>黑白名单过滤功能更像是一种授权机制，它简单的将权限分为有权限和无权限两种情况，如果支持冲突，可使用优先级策略解决冲突问题。Sentinel 把黑白名作为授权策略，实现黑白名单限流即实现授权限流。Sentinel 在命名上也是使用 Authority，而非 BlackWhiteList。</p>
+<p>一些关键类说明：</p>
+<ul>
+<li>AuthoritySlot：实现黑白名称授权功能的切入点（ProcessorSlot）</li>
+<li>AuthorityRule：授权规则类</li>
+<li>AuthorityRuleChecker：授权检测类</li>
+<li>AuthorityRuleManager：授权规则管理者，提供 loadRuls API</li>
+<li>AuthorityException：授权检测异常，继承 BlockException</li>
+</ul>
+<h4 id="authorityrule"><strong>AuthorityRule</strong></h4>
+<p>授权规则（AuthorityRule）是 Sentinel 中最易于理解的一种规则，AuthorityRule 的配置项如下：</p>
+<pre><code class="language-java">public class AuthorityRule extends AbstractRule {
+    private int strategy = RuleConstant.AUTHORITY_WHITE;
+}
+
+</code></pre>
+<ul>
+<li>resource：资源名称，从父类继承而来。</li>
+<li>limitApp：限制的来源名称，在 AuthorityRule 中可配置多个，使用‘,’号分隔。</li>
+<li>strategy：限流策略，白名单：AUTHORITY_WHITE，黑名单：AUTHORITY_BLACK。</li>
+</ul>
+<p>当 strategy 配置为 AUTHORITY_WHITE 时，limitApp 即为白名单；当 strategy 配置为 AUTHORITY_BLACK 时，limitApp 即为黑明单。例如：</p>
+<pre><code class="language-java">AuthorityRule rule = new AuthorityRule();
+// 资源名称
+rule.setResource("GET:/hello");
+// 白名单策略
+rule.setStrategy(RuleConstant.AUTHORITY_WHITE);
+// 白名单
+rule.setLimitApp("serviceA,serviceC");
+AuthorityRuleManager.loadRules(Collections.singletonList(rule));
+
+</code></pre>
+<p>上述规则用于限制资源 “GET:/hello” 只允许服务 A 和服务 C 访问。</p>
+<h4 id="authorityslot"><strong>AuthoritySlot</strong></h4>
+<p>在使用默认的 SlotChainBuilder 情况下，AuthoritySlot 被放在 SystemSlot、FlowSlot、DegradeSlot 的前面，其优先级更高。</p>
+<p>原因之一是授权限流不需要使用统计的指标数据，另一个原因则是提升性能，在未授权的情况下没必要判断是否需要熔断、系统负载能否接住这个请求、QPS 是否过高等，这与用户授权功能是一样的道理，未登陆无需判断是否有权限访问某个资源。</p>
+<p>AuthoritySlot 的实现源码如下：</p>
+<pre><code class="language-java">public class AuthoritySlot extends AbstractLinkedProcessorSlot&lt;DefaultNode&gt; {
+
+    @Override
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
+        throws Throwable {
+        checkBlackWhiteAuthority(resourceWrapper, context);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
+    }
+
+    @Override
+    public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        fireExit(context, resourceWrapper, count, args);
+    }
+
+    void checkBlackWhiteAuthority(ResourceWrapper resource, Context context) throws AuthorityException {
+        // (1)
+        Map&lt;String, Set&lt;AuthorityRule&gt;&gt; authorityRules = AuthorityRuleManager.getAuthorityRules();
+        if (authorityRules == null) {
+            return;
+        }
+        // (2)
+        Set&lt;AuthorityRule&gt; rules = authorityRules.get(resource.getName());
+        if (rules == null) {
+            return;
+        }
+        // (3)
+        for (AuthorityRule rule : rules) {
+            if (!AuthorityRuleChecker.passCheck(rule, context)) {
+                throw new AuthorityException(context.getOrigin(), rule);
+            }
+        }
+    }
+}
+
+</code></pre>
+<ul>
+<li>从 AuthorityRuleManager 获取当前配置的所有授权规则；</li>
+<li>获取为当前资源配置的所有授权规则；</li>
+<li>遍历授权规则，调用 AuthorityRuleChecker#passCheck 方法判断是否拒绝当前请求，是则抛出 AuthorityException 异常。</li>
+</ul>
+<h4 id="authorityrulechecker"><strong>AuthorityRuleChecker</strong></h4>
+<p>AuthorityRuleChecker 负责实现黑白名单的过滤逻辑，其 passCheck 方法源码如下：</p>
+<pre><code class="language-java">    static boolean passCheck(AuthorityRule rule, Context context) {
+        // 获取来源
+        String requester = context.getOrigin();
+        // 来源为空，或者来源等于规则配置的 limitApp 则拦截请求
+        if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(rule.getLimitApp())) {
+            return true;
+        }
+        // 字符串查找，这一步起到快速过滤的作用，提升性能
+        int pos = rule.getLimitApp().indexOf(requester);
+        boolean contain = pos &gt; -1;
+        // 存在才精确匹配
+        if (contain) {
+            boolean exactlyMatch = false;
+            // 分隔数组
+            String[] appArray = rule.getLimitApp().split(",");
+            for (String app : appArray) {
+                if (requester.equals(app)) {
+                    // 标志设置为 true
+                    exactlyMatch = true;
+                    break;
+                }
+            }
+            contain = exactlyMatch;
+        }
+        // 策略
+        int strategy = rule.getStrategy();
+        // 如果是黑名单，且来源存在规则配置的黑名单中
+        if (strategy == RuleConstant.AUTHORITY_BLACK &amp;&amp; contain) {
+            return false;
+        }
+        // 如果是白名单，且来源不存在规则配置的白名单中
+        if (strategy == RuleConstant.AUTHORITY_WHITE &amp;&amp; !contain) {
+            return false;
+        }
+        return true;
+    }
+
+</code></pre>
+<p>整个方法都比较简单，首先是从当前 Context 获取调用来源的名称，只有在调用来源不为空且规则配置了黑名单或者白名单的情况下，才会走黑白名单的过滤逻辑，这也说明，要实现黑白名单限流的前提是，每个服务消费端在发起请求时都必须要携带自身服务的名称，这取决于 Sentinel 主流框架适配器；其次，Sentinel 通过使用 indexOf 先简单匹配一次黑名单或白名单，再切割黑名单或白名单数组实现精确匹配，这有助于提升性能；如果当前请求来源存在名单中，则根据策略判断这份名称是黑名单还是白名单，再决定是否需要拒绝请求。</p>
+<h3 id="热点参数限流">热点参数限流</h3>
+<p>热点参数限流并非在 Sentinel 的 core 模块中实现的，但也是非常实用的一种限流方式。并且，Sentinel 支持 API Gateway 网关限流也是基于参数限流实现的，了解热点参数限流的实现原理，也有助于我们更好地理解网关限流。</p>
+<p>参数限流，即根据方法调用传递的参数实现限流，又或者说是根据接口的请求参数限流；热点参数限流，即针对访问频繁的参数限流。</p>
+<p>例如，都是调用一个下单接口，但购买的商品不同，比如主播带货的商品下单流量较大，而一般商品购买量很少，同时因为商品数量有限，不太可能每个下单请求都能购买成功，如果能实现根据客户端请求传递的商品 ID 实现限流，将流量控制在商品的库存总量左右，并且使用 QPS 限流等兜底，这种有针对性的限流将接口通过的有效流量最大化。</p>
+<p>热点参数限流功能在 Sentinel 源码的扩展功能模块为 sentinel-extension，子模块为 sentinel-parameter-flow-control。</p>
+<h4 id="基于滑动窗口的热点参数指标数据统计"><strong>基于滑动窗口的热点参数指标数据统计</strong></h4>
+<p>热点参数限流使用的指标数据不再是 core 模块中统计的指标数据，而是重新实现了一套指标数据统计功能，依旧是基于滑动窗口。</p>
+<ul>
+<li>ParamMapBucket：实现参数指标数据统计的 Bucket，用于统计某个参数对应不同取值的被限流总数、被放行的总数。</li>
+<li>HotParameterLeapArray：实现滑动窗口，持有 WindowWrap 数组，WindowWrap 包装 ParamMapBucket。</li>
+</ul>
+<p>与 core 模块的 MetricBucket 实现不同，MetricBucket 只统计每个指标的数值，而 ParamMapBucket 需要统计每个指标、参数的每种取值的数值，MetricBucket 更像是 Redis 中的 String 结构，而 ParamMapBucket 更像 Redis 中的 Hash 结构。</p>
+<p>ParamMapBucket 的源码如下：</p>
+<pre><code class="language-java">public class ParamMapBucket {
+
+    // 数组类型为 CacheMap&lt;Object, AtomicInteger&gt;
+    private final CacheMap&lt;Object, AtomicInteger&gt;[] data;
+
+    public ParamMapBucket() {
+        this(DEFAULT_MAX_CAPACITY);
+    }
+
+    public ParamMapBucket(int capacity) {
+        RollingParamEvent[] events = RollingParamEvent.values();
+        // 根据需要统计的指标数据创建数组
+        this.data = new CacheMap[events.length];
+        // RollingParamEvent 可取值为 REQUEST_PASSED、REQUEST_BLOCKED
+        for (RollingParamEvent event : events) {
+            data[event.ordinal()] = new ConcurrentLinkedHashMapWrapper&lt;Object, AtomicInteger&gt;(capacity);
+        }
+    }
+
+}
+
+</code></pre>
+<ul>
+<li>data：数组元素类型为 <code>CacheMap&lt;Object, AtomicInteger&gt;</code>，下标为 0 存储的是统计请求通过的指标数据，下标为 1 统计的是请求被拒绝的指标数据。</li>
+<li><code>CacheMap&lt;Object, AtomicInteger&gt;</code>：key 为参数的取值，例如商品的 ID，value 才是指标数值。</li>
+</ul>
+<p>HotParameterLeapArray 继承 LeapArray，即实现滑动窗口。ParamMapBucket 不存储窗口时间信息，窗口时间信息依然由 WindowWrap 存储，HotParameterLeapArray 使用 WindowWrap 包装 ParamMapBucket。</p>
+<p>笔者也是看了 HotParameterLeapArray 之后才明白为什么 Sentienl 将滑动窗口抽象为 LeapArray，这为扩展实现收集自定义指标数据的滑动窗口提供了支持。</p>
+<p>HotParameterLeapArray 的提供的几个 API 如下：</p>
+<pre><code class="language-java">public class HotParameterLeapArray extends LeapArray&lt;ParamMapBucket&gt; {
+   //.....
+    public void addValue(RollingParamEvent event, int count, Object value) {
+        // ....
+    }
+
+    public Map&lt;Object, Double&gt; getTopValues(RollingParamEvent event, int number) {
+       // .....
+    }
+
+    public long getRollingSum(RollingParamEvent event, Object value) {
+        // .....
+    }
+
+    public double getRollingAvg(RollingParamEvent event, Object value) {
+        // ....
+    }
+}
+
+</code></pre>
+<ul>
+<li>addValue：添加参数的指标数值，例如，给 REQUEST_PASSED 指标且参数取值为 4343433 的指标数值加上 count，假设这个滑动窗口是用于统计商品 ID 参数的，4343433 表示商品 ID，count 为 1，调用该方法表示给商品 ID 为 4343433 的请求通过总数加 1。</li>
+<li>getTopValues：获取热点参数的 QPS，即获取某个指标排名前 number 的参数取值与指标数据。例如，获取 REQUEST_PASSED 指标排名前 10 的 QPS，方法返回值类型为 Map，key 为参数的取值，value 为 QPS。</li>
+<li>getRollingSum：计算某个指标、参数的某个取值的总请求数。例如，获取 REQUEST_PASSED 且商品 ID 为 4343433 的请求总数。</li>
+<li>getRollingAvg：获取某个指标、参数的某个取值的平均 QPS。例如，获取 REQUEST_PASSED 且商品 ID 为 4343433 的平均 QPS。</li>
+</ul>
+<p>可见，如果是分钟级的滑动窗口，一分内参数的取值越多，其占用的内存就越多。</p>
+<h4 id="参数限流中的-node"><strong>参数限流中的 Node</strong></h4>
+<p>两个需要重点关注的类：</p>
+<ul>
+<li>ParameterMetric：用于实现类似 ClusterNode 的统计功能。</li>
+<li>ParameterMetricStorage：用于实现类似 EntranceNode 功能，管理和存储每个资源对应的 ParameterMetric。</li>
+</ul>
+<p>ParameterMetric 有三个静态字段，源码如下：</p>
+<pre><code class="language-java">public class ParameterMetric {
+
+    private final Map&lt;ParamFlowRule, CacheMap&lt;Object, AtomicLong&gt;&gt; ruleTimeCounters = new HashMap&lt;&gt;();
+    private final Map&lt;ParamFlowRule, CacheMap&lt;Object, AtomicLong&gt;&gt; ruleTokenCounter = new HashMap&lt;&gt;();
+    private final Map&lt;Integer, CacheMap&lt;Object, AtomicInteger&gt;&gt; threadCountMap = new HashMap&lt;&gt;();
+
+}
+
+</code></pre>
+<ul>
+<li>ruleTimeCounters：用于实现匀速流量控制效果，key 为参数限流规则（ParamFlowRule），值为参数不同取值对应的上次生产令牌的时间。</li>
+<li>ruleTokenCounter：用于实现匀速流量控制效果，key 为参数限流规则（ParamFlowRule），值为参数不同取值对应的当前令牌桶中的令牌数。</li>
+<li>threadCountMap：key 为参数索引，值为参数不同取值对应的当前并行占用的线程总数。</li>
+</ul>
+<p>ParameterMetricStorage 使用 ConcurrentHashMap 缓存每个资源对应的 ParameterMetric，只会为配置了参数限流规则的资源创建 ParameterMetric。其部份源码如下所示：</p>
+<pre><code class="language-java">public final class ParameterMetricStorage {
+    private static final Map&lt;String, ParameterMetric&gt; metricsMap = new ConcurrentHashMap&lt;&gt;();
+    private static final Object LOCK = new Object();
+
+    public static void initParamMetricsFor(ResourceWrapper resourceWrapper,ParamFlowRule rule) {
+        if (resourceWrapper == null || resourceWrapper.getName() == null) {
+            return;
+        }
+        String resourceName = resourceWrapper.getName();
+        ParameterMetric metric;
+        // 双重检测，线程安全，为资源创建全局唯一的 ParameterMetric
+        if ((metric = metricsMap.get(resourceName)) == null) {
+            synchronized (LOCK) {
+                if ((metric = metricsMap.get(resourceName)) == null) {
+                    metric = new ParameterMetric();
+                    metricsMap.put(resourceWrapper.getName(), metric);
+                }
+            }
+        }
+        // 初始化 ParameterMetric
+        metric.initialize(rule);
+    }
+}
+
+</code></pre>
+<p>initParamMetricsFor 方法用于为资源创建 ParameterMetric 并初始化，该方法在资源被访问时由 ParamFlowSlot 调用，并且该方法只在为资源配置了参数限流规则的情况下被调用。</p>
+<h4 id="热点参数限流功能的实现"><strong>热点参数限流功能的实现</strong></h4>
+<p>sentinel-parameter-flow-control 模块通过 Java SPI 注册自定义的 SlotChainBuilder，即注册 HotParamSlotChainBuilder，将 ParamFlowSlot 放置在 StatisticSlot 的后面，这个 ParamFlowSlot 就是实现热点参数限流功能的切入点。</p>
+<pre><code class="language-java">public class ParamFlowSlot extends AbstractLinkedProcessorSlot&lt;DefaultNode&gt; {
+
+    @Override
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
+                      boolean prioritized, Object... args) throws Throwable {
+        if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
+            fireEntry(context, resourceWrapper, node, count, prioritized, args);
+            return;
+        }
+        checkFlow(resourceWrapper, count, args);
+        fireEntry(context, resourceWrapper, node, count, prioritized, args);
+    }
+
+    @Override
+    public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        fireExit(context, resourceWrapper, count, args);
+    }
+}
+
+</code></pre>
+<p>既然是参数限流，那么肯定是需要能够拿到参数了，而 ProcessorSlot#entry 方法的最后一个参数就是请求传递过来的参数，通过 SphU#entry 方法一层层往下传递。例如：</p>
+<pre><code class="language-java">    @GetMapping("/hello")
+    public String apiHello(String name) throws BlockException {
+        ContextUtil.enter("my_context");
+        Entry entry = null;
+        try {
+            entry = SphU.entry("GET:/hello", EntryType.IN,1,name);
+            doBusiness();
+            return "Hello!";
+        } catch (Exception e) {
+            if (!(e instanceof BlockException)) {
+                Tracer.trace(e);
+            }
+            throw e;
+        } finally {
+            if (entry != null) {
+                entry.exit(1);
+            }
+            ContextUtil.exit();
+        }
+    }
+
+</code></pre>
+<p>当 SphU#entry 调用到 ParamFlowSlot#entry 方法时，ParamFlowSlot 调用 checkFlow 方法判断是否需要限流。checkFlow 方法的实现如下：</p>
+<pre><code class="language-java">   void checkFlow(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+        //（1）
+        if (args == null) {
+            return;
+        }
+        if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
+            return;
+        }
+        List&lt;ParamFlowRule&gt; rules = ParamFlowRuleManager.getRulesOfResource(resourceWrapper.getName());
+        //（2）
+        for (ParamFlowRule rule : rules) {
+            applyRealParamIdx(rule, args.length);
+
+            // Initialize the parameter metrics.
+            ParameterMetricStorage.initParamMetricsFor(resourceWrapper, rule);
+
+            if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
+                String triggeredParam = "";
+                if (args.length &gt; rule.getParamIdx()) {
+                    Object value = args[rule.getParamIdx()];
+                    triggeredParam = String.valueOf(value);
+                }
+                throw new ParamFlowException(resourceWrapper.getName(), triggeredParam, rule);
+            }
+        }
+    }
+
+</code></pre>
+<ul>
+<li>checkFlow 方法的最后一个参数是请求参数，也就是调用 SphU#entry 方法传递进来的参数。</li>
+<li>checkFlow 方法首先调用 ParamFlowRuleManager 的 API 判断当前资源有没有配置参数限流规则，如果有，则获取为当前资源配置的所有参数限流规则。</li>
+<li>遍历参数限流规则，调用 ParameterMetricStorage#initParamMetricsFor 方法判断是否需要为当前资源初始化创建 ParameterMetric，然后调用 ParamFlowChecker#passCheck 方法判断当前请求是否可以放行，如果需要拒绝请求，则抛出 ParamFlowException 异常。</li>
+</ul>
+<p>在阅读 ParamFlowChecker#passCheck 方法的源码之前，我们需要先了解参数限流规则的配置，了解每个配置项的作用。</p>
+<p>参数限流规则 ParamFlowRule 的源码如下（有删减）：</p>
+<pre><code class="language-java">public class ParamFlowRule extends AbstractRule {
+    private int grade = RuleConstant.FLOW_GRADE_QPS;
+    private double count;
+    private Integer paramIdx;
+    private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
+    private int maxQueueingTimeMs = 0;
+    private long durationInSec = 1;
+    private int burstCount = 0;
+}
+
+</code></pre>
+<ul>
+<li>grade：限流规则的阈值类型，支持的类型同 FlowRule。</li>
+<li>count：阈值，同 FlowRule。</li>
+<li>paramIdx：参数索引，ParamFlowChecker 根据限流规则的参数索引获取参数的值，下标从 0 开始，例如方法 <code>public String apiHello(String name)</code>，该方法只有一个参数，索引为 0 对应 name 参数。</li>
+<li>controlBehavior：流量控制效果，同 FlowRule，但只支持快速失败和匀速排队。</li>
+<li>maxQueueingTimeMs：实现匀速排队流量控制效果的虚拟队列最大等待时间，超过该值的请求被抛弃，同 FlowRule；</li>
+<li>durationInSec：统计指标数据的窗口时间大小，单位为秒。</li>
+<li>burstCount：支持的突发流量总数。</li>
+</ul>
+<p>假设需要针对资源“GET:/hello”的 name 参数限流，当 name 取值为“jackson”时限流 QPS 阈值为 5，则配置如下：</p>
+<pre><code class="language-java">ParamFlowRule rule = new ParamFlowRule();
+// 资源为/hello
+rule.setResource("GET:/hello");
+// 索引 0 对应的参数为 name
+rule.setParamIdx(0); 
+// qps 限流
+rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
+// 阈值为 5
+rule.setCount(5);
+ParamFlowRuleManager.loadRules(Collections.singletonList(rule));
+
+</code></pre>
+<p>以此为例，我们分析 ParamFlowChecker#passCheck 方法源码，passCheck 返回 true 表示放行，返回 false 表示拒绝。</p>
+<p>ParamFlowChecker#passCheck 方法源码如下：</p>
+<pre><code class="language-java">    public static boolean passCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
+                             Object... args) {
+        if (args == null) {
+            return true;
+        }
+        // 判断参数索引是否合法
+        int paramIdx = rule.getParamIdx();
+        if (args.length &lt;= paramIdx) {
+            return true;
+        }
+        // 获取参数值，如果值为空则允许通过
+        Object value = args[paramIdx];
+        if (value == null) {
+            return true;
+        }
+        // 集群限流
+        if (rule.isClusterMode() &amp;&amp; rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
+            return passClusterCheck(resourceWrapper, rule, count, value);
+        }
+        // 单机限流
+        return passLocalCheck(resourceWrapper, rule, count, value);
+    }
+
+</code></pre>
+<ul>
+<li>如果参数为空、或者参数的总数小于等于规则配置的参数索引值、或者参数索引对应的参数的值为空，则放行请求；</li>
+<li>如果是集群限流模式，则调用 passClusterCheck 方法，否则调用 passLocalCheck 方法。</li>
+</ul>
+<p>我们先不讨论集群限流情况，仅看单机本地限流情况。passLocalCheck 方法的源码如下：</p>
+<pre><code class="language-java">  private static boolean passLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
+                                          Object value) {
+        try {
+            // 基本数据类型
+            if (Collection.class.isAssignableFrom(value.getClass())) {
+                for (Object param : ((Collection)value)) {
+                    if (!passSingleValueCheck(resourceWrapper, rule, count, param)) {
+                        return false;
+                    }
+                }
+            }
+            // 数组类
+            else if (value.getClass().isArray()) {
+                int length = Array.getLength(value);
+                for (int i = 0; i &lt; length; i++) {
+                    Object param = Array.get(value, i);
+                    if (!passSingleValueCheck(resourceWrapper, rule, count, param)) {
+                        return false;
+                    }
+                }
+            }
+            // 引用类型
+            else {
+                return passSingleValueCheck(resourceWrapper, rule, count, value);
+            }
+        } catch (Throwable e) {
+        }
+        return true;
+    }
+
+</code></pre>
+<p>由于参数可能是基本数据类型，也可能是数组类型，或者引用类型，所以 passLocalCheck 方法分三种情况处理。我们只讨论其中一种情况，其它情况的实现类似。</p>
+<p>以资源“GET:/hello”为例，其方法 apiHello 的 name 参数为 String 类型，因此会调用 passSingleValueCheck 方法，该方法源码如下：</p>
+<pre><code class="language-java">  static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,Object value) {
+       //（1） 
+       if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
+            if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
+                return passThrottleLocalCheck(resourceWrapper, rule, acquireCount, value);
+            } else {
+                return passDefaultLocalCheck(resourceWrapper, rule, acquireCount, value);
+            }
+        } 
+        // （2）
+        else if (rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD) {
+            Set&lt;Object&gt; exclusionItems = rule.getParsedHotItems().keySet();
+            long threadCount = getParameterMetric(resourceWrapper).getThreadCount(rule.getParamIdx(), value);
+            if (exclusionItems.contains(value)) {
+                int itemThreshold = rule.getParsedHotItems().get(value);
+                return ++threadCount &lt;= itemThreshold;
+            }
+            long threshold = (long)rule.getCount();
+            return ++threadCount &lt;= threshold;
+        }
+
+        return true;
+    }
+
+</code></pre>
+<ul>
+<li>当规则配置的阈值类型为 QPS 时，根据流控效果调用 passThrottleLocalCheck 或 passDefaultLocalCheck 方法；</li>
+<li>当规则配置的阈值类型为 THREAD 时，获取当前资源的 ParameterMetric，从而取得当前资源、当前参数的值对应的并行占用的线程总数，如果并行占用的线程总数+1 大于限流阈值则限流，否则放行。</li>
+</ul>
+<p>你可能好奇，并行占用线程总数是在哪里自增和自减的呢？</p>
+<p>这是由 ParamFlowStatisticEntryCallback 与 ParamFlowStatisticExitCallback 这两个 Callback 实现的，分别在 StatisticSlot 的 entry 方法和 exit 方法中被回调执行，这是我们前面分析 StatisticSlot 源码时故意遗漏的细节。</p>
+<h4 id="快速失败-直接拒绝-与匀速排队"><strong>快速失败（直接拒绝）与匀速排队</strong></h4>
+<p><strong>1. 快速失败</strong></p>
+<p>快速失败基于令牌桶算法实现。passDefaultLocalCheck 方法控制每个时间窗口只生产一次令牌，将令牌放入令牌桶，每个请求都从令牌桶中取走令牌，当令牌足够时放行，当令牌不足时直接拒绝。ParameterMetric#tokenCounters 用作令牌桶，timeCounters 存储最近一次生产令牌的时间。</p>
+<p>passDefaultLocalCheck 方法源码如下：</p>
+<pre><code class="language-java">static boolean passDefaultLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
+                                         Object value) {
+        //（1）
+        ParameterMetric metric = getParameterMetric(resourceWrapper);
+        CacheMap&lt;Object, AtomicLong&gt; tokenCounters = metric == null ? null : metric.getRuleTokenCounter(rule);
+        CacheMap&lt;Object, AtomicLong&gt; timeCounters = metric == null ? null : metric.getRuleTimeCounter(rule);
+        if (tokenCounters == null || timeCounters == null) {
+            return true;
+        }
+        // （2）
+        Set&lt;Object&gt; exclusionItems = rule.getParsedHotItems().keySet();
+        long tokenCount = (long)rule.getCount();
+        if (exclusionItems.contains(value)) {
+            tokenCount = rule.getParsedHotItems().get(value);
+        }
+        if (tokenCount == 0) {
+            return false;
+        }
+        // （3）
+        long maxCount = tokenCount + rule.getBurstCount();
+        if (acquireCount &gt; maxCount) {
+            return false;
+        }
+        while (true) {
+            // （4）
+            long currentTime = TimeUtil.currentTimeMillis();
+            AtomicLong lastAddTokenTime = timeCounters.putIfAbsent(value, new AtomicLong(currentTime));
+            if (lastAddTokenTime == null) {
+                tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
+                return true;
+            }
+
+            //（5）
+            long passTime = currentTime - lastAddTokenTime.get();
+            if (passTime &gt; rule.getDurationInSec() * 1000) {
+                // 确保非 NULL
+                AtomicLong oldQps = tokenCounters.putIfAbsent(value, new AtomicLong(maxCount - acquireCount));
+                if (oldQps == null) {
+                    lastAddTokenTime.set(currentTime);
+                    return true;
+                } else {
+                     //（6）
+                    long restQps = oldQps.get();
+                    // 计算需要新增的令牌数，根据时间间隔、限流阈值、窗口时间计算
+                    long toAddCount = (passTime * tokenCount) / (rule.getDurationInSec() * 1000);
+                    // 计算新的令牌总数，并立即使用（扣减 acquireCount 个令牌）
+                    long newQps = toAddCount + restQps &gt; maxCount ? (maxCount - acquireCount)
+                        : (restQps + toAddCount - acquireCount);
+
+                    if (newQps &lt; 0) {
+                        return false;
+                    }
+                    if (oldQps.compareAndSet(restQps, newQps)) {
+                        lastAddTokenTime.set(currentTime);
+                        return true;
+                    }
+                    Thread.yield();
+                }
+            } else {
+                // （7）
+                AtomicLong oldQps = tokenCounters.get(value);
+                if (oldQps != null) {
+                    long oldQpsValue = oldQps.get();
+                    // 令牌是否足够
+                    if (oldQpsValue - acquireCount &gt;= 0) {
+                        // 从令牌桶中取走令牌
+                        if (oldQps.compareAndSet(oldQpsValue, oldQpsValue - acquireCount)) {
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+                Thread.yield();
+            }
+        }
+    }
+
+</code></pre>
+<ol>
+<li>根据资源获取 ParameterMetric，从 ParameterMetric 获取当前限流规则的令牌桶和最近一次生产令牌的时间，时间精确到毫秒。</li>
+<li>计算限流阈值，即令牌桶最大存放的令牌总数（tokenCount）。</li>
+<li>重新计算限流阈值，将当前限流阈值加上允许突增流量的数量。</li>
+<li>获取当前时间，如果当前参数值未生产过令牌，则初始化生产令牌，并立即使用（maxCount - acquireCount）。</li>
+<li>获取当前时间与上次生产令牌的时间间隔，如果间隔时间大于一个窗口时间见（6），否则见（7）。</li>
+<li>计算需要生产的令牌总数，并与当前桶中剩余的令牌数相加得到新的令牌总数，如果新的令牌总数大于限流阈值，则使用限流阈值作为新的令牌总数，并且生产完成立即使用（maxCount - acquireCount），最后更新最近一次生产令牌的时间。</li>
+<li>从令牌桶中获取令牌，如果获取成功（oldQpsValue - acquireCount &gt;= 0），则放行当前请求，否则拒绝当前请求。</li>
+</ol>
+<p><strong>2. 匀速排队</strong></p>
+<p>与 RateLimiterController 实现原理一样，passThrottleLocalCheck 方法让请求在虚拟队列中排队，控制请求通过的时间间隔，该时间间隔通过阈值与窗口时间大小计算出来，如果当前请求计算出来的排队等待时间大于限流规则指定的 maxQueueingTimeMs，则拒绝当前请求。</p>
+<p>passThrottleLocalCheck 方法源码如下：</p>
+<pre><code class="language-java">  static boolean passThrottleLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,Object value) {
+        //（1）
+        ParameterMetric metric = getParameterMetric(resourceWrapper);
+        CacheMap&lt;Object, AtomicLong&gt; timeRecorderMap = metric == null ? null : metric.getRuleTimeCounter(rule);
+        if (timeRecorderMap == null) {
+            return true;
+        }
+        // （2）
+        Set&lt;Object&gt; exclusionItems = rule.getParsedHotItems().keySet();
+        long tokenCount = (long)rule.getCount();
+        if (exclusionItems.contains(value)) {
+            tokenCount = rule.getParsedHotItems().get(value);
+        }
+        if (tokenCount == 0) {
+            return false;
+        }
+        //（3）
+        long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / tokenCount);
+        while (true) {
+            //（4）
+            long currentTime = TimeUtil.currentTimeMillis();
+            AtomicLong timeRecorder = timeRecorderMap.putIfAbsent(value, new AtomicLong(currentTime));
+            if (timeRecorder == null) {
+                return true;
+            }
+            long lastPassTime = timeRecorder.get();
+            // 计算当前请求的期望通过时间，最近一次请求的期望通过时间 + 请求通过的时间间隔
+            long expectedTime = lastPassTime + costTime;
+            //（5）
+            if (expectedTime &lt;= currentTime 
+                 || expectedTime - currentTime &lt; rule.getMaxQueueingTimeMs()) {
+                AtomicLong lastPastTimeRef = timeRecorderMap.get(value);
+                if (lastPastTimeRef.compareAndSet(lastPassTime, currentTime)) {
+                    long waitTime = expectedTime - currentTime;
+                    if (waitTime &gt; 0) {
+                        lastPastTimeRef.set(expectedTime);
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(waitTime);
+                        } catch (InterruptedException e) {
+                            RecordLog.warn("passThrottleLocalCheck: wait interrupted", e);
+                        }
+                    }
+                    return true;
+                } else {
+                    Thread.yield();
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+
+</code></pre>
+<ol>
+<li>当流控效果选择匀速限流时，ParameterMetric 的 ruleTimeCounters 不再是记录上次生产令牌的时间，而是记录最后一个请求的期望通过时间。</li>
+<li>计算限流阈值，不支持突增流量。</li>
+<li>计算请求通过的时间间隔，例如，当 acquireCount 等于 1、限流阈值配置为 200 且窗口时间大小为 1 秒时，计算出来的 costTime 等于 5ms，即每 5ms 只允许通过一个请求。</li>
+<li>计算当前请求的期望通过时间，值为最近一次请求的期望通过时间 + 请求通过的时间间隔，最近一次请求的期望通过时间也就是虚拟队列中队列尾部的那个请求的期望通过时间。</li>
+<li>如果期望通过时间与当前时间间隔大于规则配置的允许队列最大等待时间（maxQueueingTimeMs），则拒绝当前请求，否则将当前请求“放入”虚拟队列等待，计算出当前请求需要等待的时间，让当前线程休眠指定时长之后再放行该请求。</li>
+</ol>
+<h3 id="总结">总结</h3>
+<p>黑白名单限流的实现相对简单，热点参数限流的实现相对复杂。热点参数限流自己实现了一个滑动窗口用于收集指标数据，但该滑动窗口并未被使用，而是使用 ParameterMetric 与 ParameterMetricStorage，这应该是出于性能的考虑。热点参数限流对性能的影响和对内存的占用与参数的取值有多少种可能成正比，限流参数的取值可能性越多，占用的内存就越大，对性能的影响也就越大，在使用热点参数限流功能时，一定要考虑参数的取值。</p>
+<p>例如，根据商品 ID 限流，如果有十万个商品下单，那么 CacheMap 将会存在十万个 key-value，并且不会被移除，随着进程运行的时长而增长。如果限流阈值类型选择为 THREAD 则不会存在这个问题，因为在 ParamFlowStatisticExitCallback 方法会调用 ParameterMetric#decreaseThreadCount 方法扣减参数值占用的线程数，当线程数为零时，会将当前参数值对应的 key-value 从 CacheMap 中移除。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#7b171717424f4a4a4b4c3b1c161a121755181416" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359d1056a8d3926',t:'MTc0NTU0MTkxNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>

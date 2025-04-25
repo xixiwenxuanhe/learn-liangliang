@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="zh-cn" http-equiv="content-language"/>
+<meta content="15 自定义 ProcessorSlot 实现开关降级" name="description"/>
+<link href="/static/favicon.png" rel="icon"/>
+<title>15 自定义 ProcessorSlot 实现开关降级 </title>
+<link href="/static/index.css" rel="stylesheet"/>
+<link href="/static/highlight.min.css" rel="stylesheet"/>
+<script src="/static/highlight.min.js"></script>
+<meta content="Hexo 4.2.0" name="generator"/>
+<script data-website-id="83e5d5db-9d06-40e3-b780-cbae722fdf8c" defer="" src="https://umami.lianglianglee.com/script.js"></script>
+</head>
+<body>
+<div class="book-container">
+<div class="book-sidebar">
+<div class="book-brand">
+<a href="/">
+<img src="/static/favicon.png"/>
+<span>技术文章摘抄</span>
+</a>
+</div>
+<div class="book-menu uncollapsible">
+<ul class="uncollapsible">
+<li><a class="current-tab" href="/">首页</a></li>
+<li><a href="../">上一级</a></li>
+</ul>
+<ul class="uncollapsible">
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/01%20%e5%bc%80%e7%af%87%e8%af%8d%ef%bc%9a%e4%b8%80%e6%ac%a1%e6%9c%8d%e5%8a%a1%e9%9b%aa%e5%b4%a9%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%e7%bb%8f%e5%8e%86.md.html" id="01 开篇词：一次服务雪崩问题排查经历.md.html">01 开篇词：一次服务雪崩问题排查经历.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/02%20%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e6%9c%8d%e5%8a%a1%e9%99%8d%e7%ba%a7%e4%bb%a5%e5%8f%8a%e5%b8%b8%e8%a7%81%e7%9a%84%e5%87%a0%e7%a7%8d%e9%99%8d%e7%ba%a7%e6%96%b9%e5%bc%8f.md.html" id="02 为什么需要服务降级以及常见的几种降级方式.md.html">02 为什么需要服务降级以及常见的几种降级方式.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/03%20%e4%b8%ba%e4%bb%80%e4%b9%88%e9%80%89%e6%8b%a9%20Sentinel%ef%bc%8cSentinel%20%e4%b8%8e%20Hystrix%20%e7%9a%84%e5%af%b9%e6%af%94.md.html" id="03 为什么选择 Sentinel，Sentinel 与 Hystrix 的对比.md.html">03 为什么选择 Sentinel，Sentinel 与 Hystrix 的对比.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/04%20Sentinel%20%e5%9f%ba%e4%ba%8e%e6%bb%91%e5%8a%a8%e7%aa%97%e5%8f%a3%e7%9a%84%e5%ae%9e%e6%97%b6%e6%8c%87%e6%a0%87%e6%95%b0%e6%8d%ae%e7%bb%9f%e8%ae%a1.md.html" id="04 Sentinel 基于滑动窗口的实时指标数据统计.md.html">04 Sentinel 基于滑动窗口的实时指标数据统计.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/05%20Sentinel%20%e7%9a%84%e4%b8%80%e4%ba%9b%e6%a6%82%e5%bf%b5%e4%b8%8e%e6%a0%b8%e5%bf%83%e7%b1%bb%e4%bb%8b%e7%bb%8d.md.html" id="05 Sentinel 的一些概念与核心类介绍.md.html">05 Sentinel 的一些概念与核心类介绍.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/06%20Sentinel%20%e4%b8%ad%e7%9a%84%e8%b4%a3%e4%bb%bb%e9%93%be%e6%a8%a1%e5%bc%8f%e4%b8%8e%20Sentinel%20%e7%9a%84%e6%95%b4%e4%bd%93%e5%b7%a5%e4%bd%9c%e6%b5%81%e7%a8%8b.md.html" id="06 Sentinel 中的责任链模式与 Sentinel 的整体工作流程.md.html">06 Sentinel 中的责任链模式与 Sentinel 的整体工作流程.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/07%20Java%20SPI%20%e5%8f%8a%20SPI%20%e5%9c%a8%20Sentinel%20%e4%b8%ad%e7%9a%84%e5%ba%94%e7%94%a8.md.html" id="07 Java SPI 及 SPI 在 Sentinel 中的应用.md.html">07 Java SPI 及 SPI 在 Sentinel 中的应用.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/08%20%e8%b5%84%e6%ba%90%e6%8c%87%e6%a0%87%e6%95%b0%e6%8d%ae%e7%bb%9f%e8%ae%a1%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%85%a8%e8%a7%a3%e6%9e%90%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="08 资源指标数据统计的实现全解析（上）.md.html">08 资源指标数据统计的实现全解析（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/09%20%e8%b5%84%e6%ba%90%e6%8c%87%e6%a0%87%e6%95%b0%e6%8d%ae%e7%bb%9f%e8%ae%a1%e7%9a%84%e5%ae%9e%e7%8e%b0%e5%85%a8%e8%a7%a3%e6%9e%90%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="09 资源指标数据统计的实现全解析（下）.md.html">09 资源指标数据统计的实现全解析（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/10%20%e9%99%90%e6%b5%81%e9%99%8d%e7%ba%a7%e4%b8%8e%e6%b5%81%e9%87%8f%e6%95%88%e6%9e%9c%e6%8e%a7%e5%88%b6%e5%99%a8%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="10 限流降级与流量效果控制器（上）.md.html">10 限流降级与流量效果控制器（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/11%20%e9%99%90%e6%b5%81%e9%99%8d%e7%ba%a7%e4%b8%8e%e6%b5%81%e9%87%8f%e6%95%88%e6%9e%9c%e6%8e%a7%e5%88%b6%e5%99%a8%ef%bc%88%e4%b8%ad%ef%bc%89.md.html" id="11 限流降级与流量效果控制器（中）.md.html">11 限流降级与流量效果控制器（中）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/12%20%e9%99%90%e6%b5%81%e9%99%8d%e7%ba%a7%e4%b8%8e%e6%b5%81%e9%87%8f%e6%95%88%e6%9e%9c%e6%8e%a7%e5%88%b6%e5%99%a8%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="12 限流降级与流量效果控制器（下）.md.html">12 限流降级与流量效果控制器（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/13%20%e7%86%94%e6%96%ad%e9%99%8d%e7%ba%a7%e4%b8%8e%e7%b3%bb%e7%bb%9f%e8%87%aa%e9%80%82%e5%ba%94%e9%99%90%e6%b5%81.md.html" id="13 熔断降级与系统自适应限流.md.html">13 熔断降级与系统自适应限流.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/14%20%e9%bb%91%e7%99%bd%e5%90%8d%e5%8d%95%e9%99%90%e6%b5%81%e4%b8%8e%e7%83%ad%e7%82%b9%e5%8f%82%e6%95%b0%e9%99%90%e6%b5%81.md.html" id="14 黑白名单限流与热点参数限流.md.html">14 黑白名单限流与热点参数限流.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/15%20%e8%87%aa%e5%ae%9a%e4%b9%89%20ProcessorSlot%20%e5%ae%9e%e7%8e%b0%e5%bc%80%e5%85%b3%e9%99%8d%e7%ba%a7.md.html" id="15 自定义 ProcessorSlot 实现开关降级.md.html">15 自定义 ProcessorSlot 实现开关降级.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/16%20Sentinel%20%e5%8a%a8%e6%80%81%e6%95%b0%e6%8d%ae%e6%ba%90%ef%bc%9a%e8%a7%84%e5%88%99%e5%8a%a8%e6%80%81%e9%85%8d%e7%bd%ae.md.html" id="16 Sentinel 动态数据源：规则动态配置.md.html">16 Sentinel 动态数据源：规则动态配置.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/17%20Sentinel%20%e4%b8%bb%e6%b5%81%e6%a1%86%e6%9e%b6%e9%80%82%e9%85%8d.md.html" id="17 Sentinel 主流框架适配.md.html">17 Sentinel 主流框架适配.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/18%20Sentinel%20%e9%9b%86%e7%be%a4%e9%99%90%e6%b5%81%e7%9a%84%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8a%ef%bc%89.md.html" id="18 Sentinel 集群限流的实现（上）.md.html">18 Sentinel 集群限流的实现（上）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/19%20Sentinel%20%e9%9b%86%e7%be%a4%e9%99%90%e6%b5%81%e7%9a%84%e5%ae%9e%e7%8e%b0%ef%bc%88%e4%b8%8b%ef%bc%89.md.html" id="19 Sentinel 集群限流的实现（下）.md.html">19 Sentinel 集群限流的实现（下）.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/20%20%e7%bb%93%e6%9d%9f%e8%af%ad%ef%bc%9aSentinel%20%e5%af%b9%e5%ba%94%e7%94%a8%e7%9a%84%e6%80%a7%e8%83%bd%e5%bd%b1%e5%93%8d%e5%a6%82%e4%bd%95%ef%bc%9f.md.html" id="20 结束语：Sentinel 对应用的性能影响如何？.md.html">20 结束语：Sentinel 对应用的性能影响如何？.md.html</a>
+</li>
+<li>
+<a class="menu-item" href="/%e4%b8%93%e6%a0%8f/%e6%b7%b1%e5%85%a5%e7%90%86%e8%a7%a3%20Sentinel%ef%bc%88%e5%ae%8c%ef%bc%89/21%20%e7%95%aa%e5%a4%96%e7%af%87%ef%bc%9aSentinel%201.8.0%20%e7%86%94%e6%96%ad%e9%99%8d%e7%ba%a7%e6%96%b0%e7%89%b9%e6%80%a7%e8%a7%a3%e8%af%bb.md.html" id="21 番外篇：Sentinel 1.8.0 熔断降级新特性解读.md.html">21 番外篇：Sentinel 1.8.0 熔断降级新特性解读.md.html</a>
+</li>
+<li><a href="/assets/捐赠.md.html">捐赠</a></li>
+</ul>
+</div>
+</div>
+<div class="sidebar-toggle" onclick="sidebar_toggle()" onmouseleave="remove_inner()" onmouseover="add_inner()">
+<div class="sidebar-toggle-inner"></div>
+</div>
+<div class="off-canvas-content">
+<div class="columns">
+<div class="column col-12 col-lg-12">
+<div class="book-navbar">
+<header class="navbar">
+<section class="navbar-section">
+<a onclick="open_sidebar()">
+<i class="icon icon-menu"></i>
+</a>
+</section>
+</header>
+</div>
+<div class="book-content" style="max-width: 960px; margin: 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;">
+<div class="book-post">
+<div align="center">因收到Google相关通知，网站将会择期关闭。<a href="https://lumendatabase.org/notices/44265620" target="_blank">相关通知内容</a><hr/></div>
+<p align="center" id="tip"></p>
+<h1 class="title" data-id="15 自定义 ProcessorSlot 实现开关降级" id="title">15 自定义 ProcessorSlot 实现开关降级</h1>
+<div><p>开关降级在我们公司的电商项目中是每个微服务都必须支持的一项功能，主要用于活动期间、每日流量高峰期间、主播带货期间关闭一些无关紧要功能，降低数据库的压力。</p>
+<p>开关降级实现起来很简单，例如，我们可以使用 Spring AOP 或者动态代理模式拦截目标方法的执行，在方法执行之前，先根据 key 从 Redis 读取 value，如果 value 是 true，则不执行目标方法，直接响应服务降级。这种方式付出的性能损耗就只有一次 redis 的 get 操作，如果不想每个请求都读 Redis 缓存，也可以通过动态配置方式，使用配置中心去管理开关。</p>
+<h3 id="使用-spring-aop-实现开关降级功能">使用 Spring AOP 实现开关降级功能</h3>
+<p>以 Redis 缓存开关为例，使用切面实现开关降级只需要三步：定义注解、实现开关降级切面、在需要使用开关降级的接口方法上添加开关降级注解。</p>
+<p>\1. 定义开关降级注解 @SwitchDegrade，代码如下：</p>
+<pre><code class="language-java">@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+public @interface SwitchDegrade {
+    // 缓存 key
+    String key() default "";
+}
+
+</code></pre>
+<p>提示：如果是应用在实际项目中，建议为 @SwitchDegrade 注解添加一个前缀属性，限制同一个应用下的开关 key 都是有同一个前缀，避免多个应用之间的缓存 key 冲突。</p>
+<p>\2. 实现切面 SwitchDegradeAspect，拦截接口方法的执行，代码如下：</p>
+<pre><code class="language-java">@Aspect
+public class SwitchDegradeAspect {
+    // 切点定义
+    @Pointcut("@annotation(com.wujiuye.demo.common.sentinel.SwitchDegrade)")
+    public void degradePointCut() {
+    }
+
+    /**
+     * 拦截请求判断是否开启开关降级
+     */
+    @Around("degradePointCut()&amp;&amp;@annotation(switchDegrade)")
+    public Object around(ProceedingJoinPoint point, SwitchDegrade switchDegrade) throws Throwable {
+        String cacheKey = switchDegrade.key();
+        RedisTemplate redisTemplate = SpringContextUtils.getBean(RedisTemplate.class);
+        String value = redisTemplate.get(cacheKey);
+        if ("true".equalsIgnoreCase(value)) {
+            throw new SwitchDegradeException(cacheKey, "开关降级打开");
+        }
+        return point.proceed();
+    }
+}
+
+</code></pre>
+<p>如代码所示，SwitchDegradeAspect 拦截目标方法的执行，先从方法上的 @SwitchDegrade 注解获取开关的缓存 key，根据 key 从 redis 读取当前开关的状态，如果 key 存在且 value 为 true，则抛出一个开关降级异常。</p>
+<p>当开关打开时，SwitchDegradeAspect 并不直接响应请求，而是抛出异常由全局异常处理器处理，这是因为并不是每个接口方法都会有返回值，且返回值类型也不固定。所以还需要在全局异常处理器处理开关降级抛出的异常，代码如下：</p>
+<pre><code class="language-java">    @ExceptionHandler(SwitchDegradeException.class)
+    public BaseResponse handleSwitchDegradeException(SwitchDegradeException ex) {
+        log.error("Switch Degrade! switch key is:{}, message:{}", ex.getSwitchKey(), ex.getMessage());
+        return new BaseResponse(ResultCode.SERVICE_DEGRADE, ex.getMessage());
+    }
+
+</code></pre>
+<p>提示：如果是整合 OpenFeign 使用，且配置了 Fallback，则全局异常可以不配置。</p>
+<p>\3. 在需要被开关控制的接口方法上使用 @SwitchDegrade 注解，例如：</p>
+<pre><code class="language-java">@RestController
+@RequestMapping("/v1/test")
+public class DemoController {
+    @SwitchDegrade(key = "auth:switch")
+    @PostMapping("/demo")
+    public GenericResponse&lt;Void&gt; demo(@RequestBody Invocation&lt;DemoFrom&gt; invocation) {
+       //.....
+    }
+}
+
+</code></pre>
+<p>这种方式虽然能满足需求，但也有一个缺点，就是必须要在方法上添加 @SwitchDegrade 注解，配置不够灵活，但也不失为一个好方法。</p>
+<h3 id="基于-sentinel-自定义-processorslot-实现开关降级功能">基于 Sentinel 自定义 ProcessorSlot 实现开关降级功能</h3>
+<p>Sentinel 将降级功能的实现抽象为处理器插槽（ProcessorSlot），由一个个 ProcessorSlot 提供丰富的降级功能的实现，并且使用 SPI 机制提供扩展功能，使用者可通过自定义 SlotChainBuilder 自己构建 ProcessorSlotChain，这相当于给我们提供插件的功能。因此，我们可以通过自定义 ProcessorSlot 为 Sentinel 添加开关降级功能。</p>
+<p>与熔断降级、限流降级一样，我们也先定义开关降级规则类，实现 loadRules API；然后提供一个 Checker，由 Checker 判断开关是否打开，是否需要拒绝当前请求；最后自定义 ProcessorSlot 与 SlotChainBuilder。</p>
+<p>与使用切面实现开关降级有所不同，使用 Sentinel 实现开关降级我们不需要再在接口方法或者类上添加注解，我们想要实现的是与熔断降级、限流降级一样全部通过配置规则实现，这也是我们为什么选择基于 Sentinel 实现开关降级功能的原因。</p>
+<p>通常，一个开关会控制很多的接口，而不仅仅只是一个，所以，一个开关对应一个降级规则，一个降级规则可配置多个资源。开关降级规则类 SwitchRule 实现代码如下：</p>
+<pre><code class="language-java">@Data
+@ToString
+public class SwitchRule {
+    public static final String SWITCH_KEY_OPEN = "open";
+    public static final String SWITCH_KEY_CLOSE = "close";
+    // 开关状态
+    private String status = SWITCH_KEY_OPEN;
+    // 开关控制的资源
+    private Resources resources;
+    @Data
+    @ToString
+    public static class Resources {
+        // 包含
+        private Set&lt;String&gt; include;
+        // 排除
+        private Set&lt;String&gt; exclude;
+    }
+}
+
+</code></pre>
+<p>灵活，不仅仅只是去掉注解的使用，更需要可以灵活指定开关控制某些资源，因此，配置开关控制的资源应支持这几种情况：指定该开关只控制哪些资源、除了某些资源外其它都受控制、控制全部。所以，SwitchRule 的资源配置与 Sentinel 的熔断降级、限流降级规则配置不一样，SwitchRule 支持三种资源配置方式：</p>
+<ul>
+<li>如果资源不配置，则开关作用到全部资源；</li>
+<li>如果配置 inclode，则作用到 include 指定的所有资源；</li>
+<li>如果不配置 inclode 且配置了 exclude，则除了 exclude 指定的资源外，其它资源都受这个开关的控制。</li>
+</ul>
+<p>接着实现 loadRules API。在 Sentinel 中，提供 loadRules API 的类通常命名为 XxxRuleManager，即 Xxx 规则管理器，所以我们定义的开关降级规则管理器命名为 SwitchRuleManager。SwitchRuleManager 的实现代码如下：</p>
+<pre><code class="language-java">public class SwitchRuleManager {
+    private static volatile Set&lt;SwitchRule&gt; switchRuleSet = new HashSet&lt;&gt;();
+    public static void loadSwitchRules(Set&lt;SwitchRule&gt; rules) {
+        SwitchRuleManager.switchRuleSet = rules;
+    }
+    static Set&lt;SwitchRule&gt; getRules() {
+        return switchRuleSet;
+    }
+}
+
+</code></pre>
+<p>SwitchRuleManager 提供两个接口：</p>
+<ul>
+<li>loadSwitchRules：用于更新或者加载开关降级规则</li>
+<li>getRules：获取当前生效的全部开关降级规则</li>
+</ul>
+<p>同样地，在 Sentinel 中，一般会将检查规则是否达到触发降级的阈值由 XxxRuleChecker 完成，即 Xxx 规则检查员，所以我们定义的开关降级规则检查员命名为 SwitchRuleChecker，由 SwitchRuleChecker 检查开关是否打开，如果开关打开则触发开关降级。SwitchRuleChecker 的代码实现如下：</p>
+<pre><code class="language-java">public class SwitchRuleChecker {
+
+    public static void checkSwitch(ResourceWrapper resource, Context context) throws SwitchException {
+        Set&lt;SwitchRule&gt; switchRuleSet = SwitchRuleManager.getRules();
+        // 遍历规则
+        for (SwitchRule rule : switchRuleSet) {
+            // 判断开关状态，开关未打开则跳过
+            if (!rule.getStatus().equalsIgnoreCase(SwitchRule.SWITCH_KEY_OPEN)) {
+                continue;
+            }
+            if (rule.getResources() == null) {
+                continue;
+            }
+            // 实现 include 语意
+            if (!CollectionUtils.isEmpty(rule.getResources().getInclude())) {
+                if (rule.getResources().getInclude().contains(resource.getName())) {
+                    throw new SwitchException(resource.getName(), "switch");
+                }
+            }
+            // 实现 exclude 语意
+            if (!CollectionUtils.isEmpty(rule.getResources().getExclude())) {
+                if (!rule.getResources().getExclude().contains(resource.getName())) {
+                    throw new SwitchException(resource.getName(), "switch");
+                }
+            }
+        }
+    }
+
+}
+
+</code></pre>
+<p>如代码所示，SwitchRuleChecker 从 SwitchRuleManager 获取配置的开关降级规则，遍历开关降级规则，如果开关打开，且匹配到当前资源名称被该开关控制，则抛出 SwitchException。</p>
+<p>SwitchException 需继承 BlockException，抛出的 SwitchException 如果不被捕获，则由全局异常处理器处理。一定是要抛出 BlockException 的子类，否则抛出的异常会被资源指标数据统计收集，会影响到熔断降级等功能的准确性。</p>
+<p>虽然 SwitchRuleChecker 使用了 for 循环遍历开关降级规则，但一个项目中的开关是很少的，一般就一个或者几个。</p>
+<p>与熔断降级、限流降级一样，开关降级也支持一个资源被多个开关规则控制。</p>
+<p>最后，还需要自定义实现开关降级功能的切入点 SwitchSlot。SwitchSlot 继承 AbstractLinkedProcessorSlot，在 entry 方法中调用 SwitchRuleChecker#checkSwitch 方法检查当前资源是否已经降级。SwitchSlot 的代码实现如下：</p>
+<pre><code class="language-java">public class SwitchSlot extends AbstractLinkedProcessorSlot&lt;Object&gt; {
+
+    @Override
+    public void entry(Context context, ResourceWrapper resourceWrapper, Object param, int count, boolean prioritized, Object... args) throws Throwable {
+        SwitchRuleChecker.checkSwitch(resourceWrapper, context);
+        fireEntry(context, resourceWrapper, param, count, prioritized, args);
+    }
+
+    @Override
+    public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        fireExit(context, resourceWrapper, count, args);
+    }
+
+}
+
+</code></pre>
+<p>自定义 ProcessorSlotChain 构建器 MySlotChainBuilder，将自定义的 SwitchSlot 添加到 ProcessorSlot 链表的末尾。当然，可以添加到任何位置，因为 SwitchSlot 没有用到指标数据，SwitchSlot 放置何处都不会影响到 Sentinel 的正常工作。</p>
+<p>MySlotChainBuilder 代码实现如下：</p>
+<pre><code class="language-java">public class MySlotChainBuilder extends DefaultSlotChainBuilder {
+    @Override
+    public ProcessorSlotChain build() {
+        ProcessorSlotChain chain = super.build();
+        chain.addLast(new SwitchSlot());
+        return chain;
+    }
+}
+
+</code></pre>
+<p>MySlotChainBuilder 继承 DefaultSlotChainBuilder 只是为了使用 DefaultSlotChainBuilder#build 方法，简化 ProcessorSlotChain 的构造步骤，只需要在 DefaultSlotChainBuilder 构造的链表尾部添加一个 SwitchSlot 即可。</p>
+<p>现在 MySlotChainBuilder 生效了吗？当然还不行，还需要将 MySlotChainBuilder 注册到 SlotChainBuilder 接口的配置文件。</p>
+<p>在当前项目的 resources 资源目录的 META-INF/service 目录下创建一个名为“com.alibaba.csp.sentinel.slotchain.SlotChainBuilder”的文件，在该文件中配置 MySlotChainBuilder 类的全名，例如：</p>
+<pre><code class="language-txt">com.wujiuye.demo.common.sentinel.MySlotChainBuilder
+
+</code></pre>
+<p>现在，您可以在 MySlotChainBuilder#build 方法中添加断点，然后启动项目，正常情况下程序会在该断点停下。但由于我们并未配置开关降级规则，所以还看不到效果。</p>
+<p>我们可以写一个配置类，在配置类调用 SwitchRuleManager#loadRules API 添加开关降级规则。例如：</p>
+<pre><code class="language-java">@Configuration
+public class SentinelRuleConfiguration{
+
+    static {
+           Set&lt;SwitchRule&gt; rules = new HashSet&lt;&gt;();
+            // 
+            SwitchRule rule = new SwitchRule();
+            rule.setStatus(SwitchRule.SWITCH_KEY_OPEN);
+            SwitchRule.Resources resources = new SwitchRule.Resources();
+            Set&lt;String&gt; include = new HashSet&lt;&gt;();
+            include.add("/v1/test/demo");
+            resources.setInclude(include);
+            // 
+            rules.add(rule);
+            SwitchRuleManager.loadSwitchRules(rules);
+    }
+}
+
+</code></pre>
+<p>上面代码配置了一个开关降级规则，该降级规则只控制接口（资源）<code>"/v1/test/demo"</code>，SwitchRule.status 控制开关是否打开，测试这里就不演示了。当然，这种配置方式只适用于本地测试，实际项目中我们可通过动态配置实现，这将在后面介绍 Sentinel 动态数据源时再介绍如何实现。</p>
+<p>提示：实现动态配置规则并不一定需要使用 Sentinel 的动态数据源。</p>
+</div>
+</div>
+<div>
+<div id="prePage" style="float: left">
+</div>
+<div id="nextPage" style="float: right">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="copyright">
+<hr/>
+<p>© 2019 - 2023 <a href="/cdn-cgi/l/email-protection#a1cdcdcd989590909196e1c6ccc0c8cd8fc2cecc" target="_blank">Liangliang Lee</a>.
+                    Powered by <a href="https://github.com/gin-gonic/gin" target="_blank">gin</a> and <a href="https://github.com/kaiiiz/hexo-theme-book" target="_blank">hexo-theme-book</a>.</p>
+</div>
+</div>
+<a class="off-canvas-overlay" onclick="hide_canvas()"></a>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9359d10f1b3a0821',t:'MTc0NTU0MTkxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NPSEEVD756"></script>
+<script src="/static/index.js"></script>
+</head></html>
