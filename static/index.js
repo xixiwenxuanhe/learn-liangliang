@@ -171,3 +171,79 @@ function hide_canvas() {
   document.body.appendChild(script);
 })();
 
+// 动态注入 giscus 评论区
+(function() {
+    // 创建评论区容器
+    var commentsDiv = document.createElement('div');
+    commentsDiv.id = 'giscus-container';
+    
+    // 添加一个小提示
+    var commentsTip = document.createElement('p');
+    commentsTip.className = 'comments-tip';
+    // commentsTip.textContent = '欢迎留下您的想法和问题，与其他读者交流讨论！';
+    commentsTip.textContent = '在思想的碰撞中，我们找到理解、共鸣与希望。';
+    commentsDiv.appendChild(commentsTip);
+    
+    // 寻找页面内容区域插入评论区
+    var contentArea = document.querySelector('.book-page-inner') || 
+                      document.querySelector('.book-content') || 
+                      document.querySelector('main');
+    
+    // 如果在主页，使用特殊处理
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+        // 在主页上，找到适合放置评论的区域，例如某个内容区块之后
+        var mainContent = document.querySelector('.book-content') || document.body;
+        
+        // 创建一个分割线
+        var divider = document.createElement('hr');
+        divider.style.margin = '3rem auto';
+        divider.style.maxWidth = '900px';
+        divider.style.border = 'none';
+        divider.style.borderTop = '1px solid #f0e3c0';
+        
+        mainContent.appendChild(divider);
+        mainContent.appendChild(commentsDiv);
+    } else if (contentArea) {
+        // 在内容页面，附加到内容区域的末尾
+        contentArea.appendChild(commentsDiv);
+    } else {
+        // 如果没有找到合适的内容区域，则插入到body
+        document.body.appendChild(commentsDiv);
+    }
+    
+    // 创建Giscus脚本
+    var giscusScript = document.createElement('script');
+    giscusScript.src = 'https://giscus.app/client.js';
+    giscusScript.setAttribute('data-repo', 'xixiwenxuanhe/blog-comments');
+    giscusScript.setAttribute('data-repo-id', 'R_kgDOOS4Wtg');
+    giscusScript.setAttribute('data-category', 'Announcements');
+    giscusScript.setAttribute('data-category-id', 'DIC_kwDOOS4Wts4Cotby');
+    giscusScript.setAttribute('data-mapping', 'pathname');
+    giscusScript.setAttribute('data-strict', '0');
+    giscusScript.setAttribute('data-reactions-enabled', '1');
+    giscusScript.setAttribute('data-emit-metadata', '0');
+    giscusScript.setAttribute('data-input-position', 'bottom');
+    giscusScript.setAttribute('data-theme', 'light');  // 使用浅色主题
+    giscusScript.setAttribute('data-lang', 'zh-CN');
+    giscusScript.crossOrigin = 'anonymous';
+    giscusScript.async = true;
+    
+    commentsDiv.appendChild(giscusScript);
+    
+    // 添加动画效果
+    setTimeout(function() {
+        var container = document.getElementById('giscus-container');
+        if (container) {
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            container.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            // 延迟显示评论区，创造一个淡入效果
+            setTimeout(function() {
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 200);
+        }
+    }, 500);
+})();
+
