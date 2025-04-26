@@ -2,7 +2,7 @@
 
 原始网站： [learn.lianglianglee.com](https://learn.lianglianglee.com)
 
-备用网站： [learn-liangliang.wenxuanhe.top](https://learn-liangliang.wenxuanhe.top)
+推荐访问： [learn-liangliang.wenxuanhe.top](https://learn-liangliang.wenxuanhe.top) (我们对网站进行了性能优化，并且增加了一些趣味功能)
 
 ---
 
