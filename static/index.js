@@ -218,12 +218,12 @@ function hide_canvas() {
     giscusScript.setAttribute('data-repo-id', 'R_kgDOOS4Wtg');
     giscusScript.setAttribute('data-category', 'Announcements');
     giscusScript.setAttribute('data-category-id', 'DIC_kwDOOS4Wts4Cotby');
-    giscusScript.setAttribute('data-mapping', 'pathname');
+    giscusScript.setAttribute('data-mapping', 'title');
     giscusScript.setAttribute('data-strict', '0');
     giscusScript.setAttribute('data-reactions-enabled', '1');
     giscusScript.setAttribute('data-emit-metadata', '0');
     giscusScript.setAttribute('data-input-position', 'bottom');
-    giscusScript.setAttribute('data-theme', 'light');  // 使用浅色主题
+    giscusScript.setAttribute('data-theme', 'light');
     giscusScript.setAttribute('data-lang', 'zh-CN');
     giscusScript.crossOrigin = 'anonymous';
     giscusScript.async = true;
