@@ -247,3 +247,28 @@ function hide_canvas() {
     }, 500);
 })();
 
+// 修改页脚内容
+(function() {
+    // 查找所有包含版权信息的段落
+    var paragraphs = document.getElementsByTagName('p');
+    for (var i = 0; i < paragraphs.length; i++) {
+        var p = paragraphs[i];
+        if (p.innerHTML.includes('© 2019 - 2023') && p.innerHTML.includes('Liangliang Lee')) {
+            // 设置艺术字体样式
+            p.style.fontFamily = "'Brush Script MT', cursive";
+            p.style.fontSize = '1.2em';
+            p.style.color = '#b8860b';
+            p.style.textAlign = 'center';
+            p.style.margin = '2rem auto';
+            p.style.padding = '1rem';
+            p.style.borderTop = '1px solid #b8860b';
+            p.style.borderBottom = '1px solid #b8860b';
+            p.style.letterSpacing = '1px';
+            
+            // 设置新的内容，添加符号
+            p.innerHTML = '内容源自网络收集，仅供交流学习使用<br>✦ xixiwenxuanhe 2025-2026 ✦';
+            break; // 找到并修改后退出循环
+        }
+    }
+})();
+
